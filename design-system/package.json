@@ -1,0 +1,28 @@
+{
+  "name": "solutions-library-design-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Solutions Library design system — tokens, components and Storybook, ported from the Figma source library.",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "lint": "echo \"(add eslint here if you want it)\""
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^8.3.0",
+    "@storybook/addon-essentials": "^8.3.0",
+    "@storybook/addon-interactions": "^8.3.0",
+    "@storybook/react": "^8.3.0",
+    "@storybook/react-vite": "^8.3.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "storybook": "^8.3.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

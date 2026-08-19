@@ -1,0 +1,18 @@
+.link { color: var(--primary); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid transparent; }
+.link:hover { border-bottom-color: currentColor; }
+.link.neutral { color: var(--text-primary); }
+.link.visited { color: var(--brand-purple); }
+.link[aria-disabled="true"] { color: var(--text-tertiary); cursor: not-allowed; }
+
+.link-inline { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
+.link-inline svg { width: 14px; height: 14px; }
+
+.pagination { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  min-width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);
+  background: transparent; border: 1px solid transparent; cursor: pointer;
+}
+.page-btn:hover { background: var(--bg-sunken); }
+.page-btn.active { background: var(--primary); color: var(--text-on-brand); }
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }

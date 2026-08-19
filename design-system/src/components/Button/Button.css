@@ -1,0 +1,88 @@
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  position: relative;
+  transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
+}
+.btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.btn-lg { font-size: 21px; line-height: 28px; padding: 14px 18px; gap: 8px; border-radius: var(--radius-md); }
+.btn-md { font-size: 18px; line-height: 24px; padding: 12px 16px; gap: 8px; border-radius: var(--radius-sm); }
+.btn-sm { font-size: 14px; line-height: 20px; padding: 10px 12px; gap: 4px; border-radius: var(--radius-xs); }
+
+/* Primary solid / rounded */
+.btn-primary.btn-solid, .btn-primary.btn-rounded { background: var(--btn-gradient-primary); color: var(--text-on-brand); }
+.btn-primary.btn-rounded { border-radius: var(--radius-pill); }
+.btn-primary.btn-solid:hover, .btn-primary.btn-rounded:hover { background: var(--btn-gradient-primary-hover); border-color: var(--btn-c-default); }
+.btn-primary.btn-solid:focus-visible, .btn-primary.btn-rounded:focus-visible {
+  background: var(--btn-gradient-primary-active); outline: none;
+  box-shadow: 0 0 0 2px var(--focus-ring-offset, var(--bg)), 0 0 0 4px var(--focus-ring-color);
+}
+.btn-primary.btn-solid:active, .btn-primary.btn-rounded:active {
+  background: var(--btn-gradient-primary-active); border-color: var(--btn-c-default);
+  box-shadow: rgba(0,0,0,0.25) 0px 4px 4px inset;
+}
+.btn-primary.btn-solid:disabled, .btn-primary.btn-rounded:disabled {
+  opacity: 0.5; cursor: not-allowed; background: var(--btn-gradient-primary); border-color: transparent; box-shadow: none;
+}
+
+/* Force-state classes: for documentation, so we can show hover/focus/pressed side by side */
+.btn-primary.btn-solid.force-hover, .btn-primary.btn-rounded.force-hover {
+  background: var(--btn-gradient-primary-hover) !important; border-color: var(--btn-c-default) !important;
+}
+.btn-primary.btn-solid.force-focus, .btn-primary.btn-rounded.force-focus {
+  background: var(--btn-gradient-primary-active) !important;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring-color) !important;
+}
+.btn-primary.btn-solid.force-active, .btn-primary.btn-rounded.force-active {
+  background: var(--btn-gradient-primary-active) !important; border-color: var(--btn-c-default) !important;
+  box-shadow: rgba(0,0,0,0.25) 0px 4px 4px inset !important;
+}
+
+/* Primary outline (glass) */
+.btn-primary.btn-outline {
+  background: var(--glass-bg-1); backdrop-filter: blur(50px); border-color: var(--btn-c-default);
+  color: var(--primary-text-on-outline); box-shadow: var(--shadow-glass);
+}
+.btn-primary.btn-outline:hover { border-color: var(--btn-c-active); }
+.btn-primary.btn-outline:focus-visible {
+  outline: none; border-color: var(--btn-c-active);
+  box-shadow: 0 0 0 2px var(--focus-ring-offset, var(--bg)), 0 0 0 4px var(--focus-ring-color);
+}
+.btn-primary.btn-outline:active { border-color: var(--btn-c-default); box-shadow: rgba(0,0,0,0.15) 0px 4px 4px inset; }
+.btn-primary.btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Neutral */
+.btn-neutral.btn-solid { background: var(--btn-gradient-neutral); color: var(--neutral-solid-text); }
+.btn-neutral.btn-solid:hover { background: var(--btn-gradient-neutral-hover); border-color: var(--btn-n-border-hover); }
+.btn-neutral.btn-solid:focus-visible {
+  outline: none; box-shadow: 0 0 0 2px var(--focus-ring-offset, var(--bg)), 0 0 0 4px var(--focus-ring-color);
+}
+.btn-neutral.btn-solid:active { box-shadow: rgba(0,0,0,0.25) 0px 4px 4px inset; }
+.btn-neutral.btn-solid:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-neutral.btn-outline { background: transparent; border-color: var(--neutral-outline-border); color: var(--neutral-outline-text); }
+.btn-neutral.btn-outline:hover { background: var(--bg-sunken); }
+.btn-neutral.btn-outline:focus-visible {
+  outline: none; box-shadow: 0 0 0 2px var(--focus-ring-offset, var(--bg)), 0 0 0 4px var(--focus-ring-color);
+}
+.btn-neutral.btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Icon button + help text link */
+.btn-icon {
+  width: 40px; height: 40px; padding: 0; border-radius: var(--radius-md);
+  background: var(--bg-sunken); border-color: var(--border); color: var(--text-secondary);
+}
+.btn-icon:hover { background: var(--border); color: var(--text-primary); }
+
+.btn-help {
+  background: none; border: none; color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  text-decoration: underline; text-decoration-color: var(--border-strong); cursor: pointer; padding: 4px 0;
+}
+.btn-help:hover { color: var(--primary); }

@@ -1,0 +1,188 @@
+/*
+  Solutions Library — Design Tokens
+  Ported 1:1 from the Figma source library export.
+  Edit values here to update every component at once.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Font */
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Spacing (4px base scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Brand */
+  --brand-blue: #0B5FFF;
+  --brand-blue-600: #004AD7;
+  --brand-blue-700: #0038A8;
+  --brand-purple: #7C5CFF;
+
+  /* Surfaces */
+  --bg: #FBFCFE;
+  --bg-raised: #FFFFFF;
+  --bg-sunken: #F1F4F9;
+
+  /* Text */
+  --text-primary: #0B1220;
+  --text-secondary: #4B5565;
+  --text-tertiary: #7A8496;
+  --text-on-brand: #FFFFFF;
+
+  /* Borders */
+  --border: #E1E6EF;
+  --border-strong: #C9D1E0;
+
+  /* Glass */
+  --glass-bg-1: rgba(255,255,255,0.9);
+  --glass-bg-2: rgba(246,248,255,0.65);
+  --glass-line: rgba(11,95,255,0.18);
+  --glass-shadow: 0px 0px 6px 1px rgba(173,201,255,0.35);
+
+  /* Primary semantic */
+  --primary: var(--brand-blue);
+  --primary-hover: #094FDA;
+  --primary-press: #0742B8;
+  --primary-text-on-outline: var(--brand-blue-600);
+  --primary-soft-bg: #EAF1FF;
+  --primary-soft-text: #0043C7;
+
+  /* Neutral semantic */
+  --neutral-solid-bg: #10131A;
+  --neutral-solid-text: #FFFFFF;
+  --neutral-outline-border: #C9D1E0;
+  --neutral-outline-text: #0B1220;
+
+  /* Focus */
+  --focus-ring: #0B5FFF;
+  --focus-ring-offset: #FBFCFE;
+
+  /* Status */
+  --success: #12875A;
+  --success-bg: #E7F7EF;
+  --danger: #D33B3B;
+  --danger-bg: #FDEBEB;
+  --warning: #B4740A;
+  --warning-bg: #FBF0DC;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(16,24,40,0.06), 0 1px 1px rgba(16,24,40,0.04);
+  --shadow-2: 0 4px 10px rgba(16,24,40,0.08), 0 2px 4px rgba(16,24,40,0.05);
+  --shadow-glass: var(--glass-shadow);
+
+  /* Button gradient tokens */
+  --btn-c-default: #0B5FFF;
+  --btn-c-hover: #377CFF;
+  --btn-c-active: #003EB3;
+  --btn-n-default: #404B5D;
+  --btn-n-hover: #505E73;
+  --btn-n-border-hover: rgba(255,255,255,0.7);
+  --focus-ring-color: #377CFF;
+  --btn-gradient-primary: linear-gradient(225deg, var(--btn-c-hover) 37.2%, var(--btn-c-default) 63.4%);
+  --btn-gradient-primary-hover: linear-gradient(242deg, var(--btn-c-default) 10.4%, var(--btn-c-hover) 104%);
+  --btn-gradient-primary-active: linear-gradient(225deg, var(--btn-c-active) 37.2%, var(--btn-c-default) 63.4%);
+  --btn-gradient-neutral: linear-gradient(225deg, var(--btn-n-hover) 37.2%, var(--btn-n-default) 63.4%);
+  --btn-gradient-neutral-hover: linear-gradient(242deg, var(--btn-n-default) 10.4%, var(--btn-n-hover) 104%);
+
+  /* Chip / tag / label tokens */
+  --chip-bg: #F7FAFF;
+  --chip-text: #262C37;
+  --tag-tonal-bg: #E7EFFF;
+  --tag-tonal-text: #00256C;
+  --label-tonal-bg: #E7EFFF;
+  --label-tonal-text: #00256C;
+  --label-grad-1: #EDF3FF;
+  --label-grad-2: #EDE2FF;
+  --label-grad-text: #1F2531;
+
+  /* Card tokens */
+  --card-bg-grey: #F7F7F7;
+  --card-text-primary: #F3F6FC;
+  --card-text-secondary: #C7D0E0;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0A0E17;
+  --bg-raised: #10141F;
+  --bg-sunken: #06090F;
+
+  --text-primary: #F3F6FC;
+  --text-secondary: #A7B0C2;
+  --text-tertiary: #6E7789;
+  --text-on-brand: #06090F;
+
+  --border: #212838;
+  --border-strong: #303A4F;
+
+  --glass-bg-1: rgba(20,25,38,0.75);
+  --glass-bg-2: rgba(13,17,28,0.55);
+  --glass-line: rgba(111,160,255,0.4);
+  --glass-shadow: 0px 0px 8px 1px rgba(60,100,255,0.25);
+
+  --primary: #3D8BFF;
+  --primary-hover: #5C9DFF;
+  --primary-press: #7CB0FF;
+  --primary-text-on-outline: #8FB8FF;
+  --primary-soft-bg: #132445;
+  --primary-soft-text: #9DC2FF;
+
+  --neutral-solid-bg: #F3F6FC;
+  --neutral-solid-text: #0A0E17;
+  --neutral-outline-border: #303A4F;
+  --neutral-outline-text: #F3F6FC;
+
+  --focus-ring: #5C9DFF;
+  --focus-ring-offset: #0A0E17;
+
+  --success: #35D68C;
+  --success-bg: #0E2A20;
+  --danger: #FF6B6B;
+  --danger-bg: #2E1414;
+  --warning: #FFC24B;
+  --warning-bg: #2E2410;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-2: 0 8px 24px rgba(0,0,0,0.45);
+
+  --btn-c-default: #3D8BFF;
+  --btn-c-hover: #5C9DFF;
+  --btn-c-active: #7CB0FF;
+  --btn-n-default: #545F73;
+  --btn-n-hover: #6B7688;
+  --btn-gradient-primary: linear-gradient(225deg, var(--btn-c-hover) 37.2%, var(--btn-c-default) 63.4%);
+  --btn-gradient-primary-hover: linear-gradient(242deg, var(--btn-c-default) 10.4%, var(--btn-c-hover) 104%);
+  --btn-gradient-primary-active: linear-gradient(225deg, var(--btn-c-active) 37.2%, var(--btn-c-default) 63.4%);
+  --btn-gradient-neutral: linear-gradient(225deg, var(--btn-n-hover) 37.2%, var(--btn-n-default) 63.4%);
+  --btn-gradient-neutral-hover: linear-gradient(242deg, var(--btn-n-default) 10.4%, var(--btn-n-hover) 104%);
+
+  --chip-bg: #111A2E;
+  --chip-text: #F3F6FC;
+  --tag-tonal-bg: #132445;
+  --tag-tonal-text: #9DC2FF;
+  --label-tonal-bg: #132445;
+  --label-tonal-text: #9DC2FF;
+  --label-grad-1: #16233F;
+  --label-grad-2: #241B3D;
+  --label-grad-text: #F3F6FC;
+}

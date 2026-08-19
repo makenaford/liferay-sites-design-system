@@ -1,0 +1,4 @@
+.search-result { padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
+.search-result:hover, .search-result.focus { background: var(--bg-sunken); border-color: var(--border); }
+.search-result .title { font-weight: 700; font-size: 14px; color: var(--primary); margin-bottom: 2px; }
+.search-result .desc { font-size: 13px; color: var(--text-secondary); }

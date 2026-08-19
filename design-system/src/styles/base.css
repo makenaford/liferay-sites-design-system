@@ -1,0 +1,90 @@
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+h1, h2, h3, h4, p, figure { margin: 0; }
+
+a { color: inherit; }
+
+img { max-width: 100%; display: block; }
+
+::selection { background: var(--primary); color: var(--text-on-brand); }
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+code, .mono { font-family: var(--font-mono); }
+
+table.ds-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.ds-table th {
+  text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-tertiary); font-weight: 700; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); background: var(--bg-sunken);
+}
+table.ds-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+table.ds-table tr:last-child td { border-bottom: none; }
+table.ds-table tr:hover td { background: var(--bg-sunken); }
+
+.divider-h { height: 1px; background: var(--border); width: 100%; }
+.divider-v { width: 1px; background: var(--border); height: 60px; }
+.divider-gradient { height: 1px; width: 100%; background: linear-gradient(90deg, transparent, var(--border-strong), transparent); }
+
+.aspect {
+  background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; color: var(--text-tertiary);
+  font-size: 12px; font-weight: 600; overflow: hidden;
+}
+
+.focus-demo {
+  display: flex; align-items: center; justify-content: center; width: 90px; height: 44px;
+  border-radius: var(--radius-sm); border: 1.5px solid var(--border-strong); font-size: 12px;
+  font-weight: 600; color: var(--text-tertiary);
+}
+.focus-demo.ring { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* Storybook helper: swatch used in the Colors / Surfaces foundations pages */
+.token-swatch { border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
+.token-swatch .fill { height: 64px; }
+.token-swatch .meta { padding: 10px 12px; background: var(--bg-raised); }
+.token-swatch .meta .name { font-size: 13px; font-weight: 600; }
+.token-swatch .meta .val { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-mono); }
+
+.card-demo {
+  background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-6); box-shadow: var(--shadow-1);
+}
+
+.demo-row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; margin-bottom: var(--space-4); }
+.demo-row:last-child { margin-bottom: 0; }
+.demo-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary);
+  font-weight: 600; width: 100%; margin-bottom: -2px;
+}
+.subgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-6); }
+
+.surface {
+  width: 150px; height: 150px; border-radius: var(--radius-md); display: flex;
+  align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-tertiary);
+}
+.surface.glass {
+  background: linear-gradient(160deg, var(--glass-bg-1), var(--glass-bg-2));
+  border: 1px solid var(--glass-line); box-shadow: var(--shadow-glass); backdrop-filter: blur(20px);
+}
+.surface.nobg { background: transparent; border: 1px dashed var(--border-strong); }
+.surface.blue { background: var(--primary-soft-bg); color: var(--primary-soft-text); border: 1px solid transparent; }
+.surface.grey { background: var(--bg-sunken); border: 1px solid var(--border); }
+.surface.gradblue { background: linear-gradient(135deg, #0B5FFF, #63A0FF); color: #fff; border: none; }
+.surface.gradpurple { background: linear-gradient(135deg, #7C5CFF, #B98CFF); color: #fff; border: none; }

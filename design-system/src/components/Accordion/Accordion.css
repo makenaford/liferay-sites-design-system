@@ -1,0 +1,7 @@
+.accordion-item { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 10px; background: var(--bg-raised); }
+.accordion-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; cursor: pointer; font-weight: 600; font-size: 15px; }
+.accordion-head .chevron { transition: transform 0.2s; color: var(--text-tertiary); flex-shrink: 0; }
+.accordion-item.open .chevron { transform: rotate(180deg); }
+.accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.25s; }
+.accordion-item.open .accordion-body { max-height: 200px; }
+.accordion-body p { padding: 0 18px 18px; font-size: 14px; color: var(--text-secondary); }
