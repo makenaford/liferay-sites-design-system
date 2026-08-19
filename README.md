@@ -376,7 +376,7 @@ the selected stroke is deliberately fully transparent in light, where an opaque 
 | rest | `Surfaces/Text/Secondary`, SemiBold | as drawn |
 | hover | `Action/Link/Hover Link`, plus a `Brand/Primary/Lighten/4` glow at (-1, 1) r4 spread 4 and a 40-radius blur | as drawn |
 | selected | `Action/Neutral/Inverted` at Bold, on the `Glass Tab/bg-gradient` fill with its 1.5px stroke, blur and `tab-focus-shadow` | as drawn |
-| pressed | a brief `scale(0.97)` | **inferred** |
+| pressed | `scale(0.985)`, faster in than out | **inferred** |
 | focus | `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, offset 2px | **inferred** |
 | disabled | the resting appearance at 50% opacity | **inferred** |
 
@@ -386,9 +386,24 @@ system has everywhere else, and disabled copies Button, whose Figma disabled sta
 appearance at half opacity.
 
 The selected segment is **one pill that travels** rather than a fill redrawn per segment — Mantine's
-floating indicator, at 220ms on an emphasised curve. That motion is not in Figma, which has no
-prototype here; `prefers-reduced-motion` drops it to an instant move and removes the press scale,
-keeping the state change while discarding the movement (WCAG 2.3.3).
+floating indicator, at 280ms on `cubic-bezier(0.05, 0.7, 0.1, 1)`: it leaves immediately and settles
+slowly with no overshoot, so most of that duration is the last few pixels and the movement reads as
+gliding to a stop. Three smaller pieces are tuned to the same curve so the whole interaction feels
+like one gesture:
+
+- **The press** is `scale(0.985)` — under a pixel on a 48px segment — and asymmetric, arriving in half
+  the time it takes to relax, so the control answers the pointer without snapping back at it.
+- **The label colour and the hover glow** cross-fade over the same 280ms rather than the 120ms used for
+  state changes elsewhere, which stops hover from flicking on ahead of the pill.
+- **The newly selected segment settles**: its label slides 2px and lifts from 85% opacity as the
+  indicator arrives. It is keyed on the selected state arriving, so it replays on every selection. The
+  offset is a fixed direction rather than the direction of travel — distinguishing those needs the
+  previous index in JavaScript, and at 2px it is not worth putting state into a component that
+  otherwise has none.
+
+None of this motion is in Figma, which has no prototype here. `prefers-reduced-motion` drops the
+indicator to an instant move and removes the press, the settle and the transform transitions, keeping
+every state change while discarding the movement (WCAG 2.3.3).
 
 Contrast, measured in the browser with each state composited over what actually sits behind it:
 

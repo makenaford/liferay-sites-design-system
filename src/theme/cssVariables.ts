@@ -102,10 +102,19 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     /**
      * Also not published by Figma. Used where something travels a distance rather than just changing
      * colour — the segmented control's indicator sliding between segments — which needs longer than a
-     * state change and an emphasised curve to read as one object moving.
+     * state change to read as one object moving.
+     *
+     * The curve leaves almost immediately and settles slowly, with no overshoot, so the movement reads
+     * as gliding to a stop rather than snapping into place. Its long tail is why the duration is
+     * longer than it looks: most of it is the final few pixels.
      */
-    '--sds-motion-medium': '220ms',
-    '--sds-motion-ease-out': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+    '--sds-motion-medium': '280ms',
+    '--sds-motion-ease-out': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+    /**
+     * The same feel over a short distance: the press of a control, and the small settle a segment
+     * makes as it becomes selected. Fast enough to feel like a response, slow enough not to snap.
+     */
+    '--sds-motion-press': '180ms',
   },
   light: {
     '--mantine-color-body': colorLight['surfaces-page-bg-base-default'],

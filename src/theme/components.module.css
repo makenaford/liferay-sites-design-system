@@ -729,16 +729,47 @@
   /* Nothing in the design is uppercase or tracked out. */
   text-transform: none;
   letter-spacing: 0;
+  /*
+   * The colour and the glow cross-fade on the same glide curve as the indicator, so hovering and
+   * selecting feel like one movement rather than three separate switches. `transform` gets the longer
+   * release deliberately: the press below shortens it on the way down only.
+   */
   transition:
-    color var(--sds-motion-fast) var(--sds-motion-ease),
-    box-shadow var(--sds-motion-fast) var(--sds-motion-ease),
-    transform var(--sds-motion-fast) var(--sds-motion-ease);
+    color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
+    transform var(--sds-motion-press) var(--sds-motion-ease-out);
 }
 
 /* Figma's `Tab Content` `State=Active`: `Action/Neutral/Inverted`, and the weight steps up to Bold. */
 .scRoot .scLabel[data-active] {
   color: var(--sds-action-neutral-inverted);
   font-weight: 700;
+}
+
+/*
+ * The gentle slide a segment makes as it becomes the selected one. Keyed on `[data-active]` arriving,
+ * so it replays on every selection rather than only the first, and kept to 2px and a hair of opacity —
+ * enough to read as the label settling under the indicator that just travelled to it, not as a
+ * separate animation competing with it.
+ *
+ * The offset is a fixed direction rather than the direction of travel: telling those apart needs the
+ * previous index in JavaScript, and at 2px the difference is not worth putting state into a component
+ * that otherwise has none.
+ */
+@keyframes sc-settle {
+  from {
+    transform: translateX(-2px);
+    opacity: 0.85;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.scRoot .scLabel[data-active] .scInnerLabel {
+  animation: sc-settle var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 /*
@@ -760,12 +791,15 @@
 }
 
 /*
- * Not specified by Figma, which draws no pressed state for a tab. Inferred as the same press this
- * system's buttons give: a small, brief scale-down, so the segment acknowledges the pointer before
- * the indicator arrives. The reduced-motion block below removes the movement, not the state.
+ * Not specified by Figma, which draws no pressed state for a tab. Inferred as a press the pointer can
+ * feel rather than see: a 1.5% scale-down, which at a 48px segment is under a pixel of travel. It
+ * arrives faster than it leaves — half the duration on the way down, the full glide on release — so
+ * the control answers immediately and then relaxes, instead of snapping in both directions. The
+ * reduced-motion block below removes the movement, not the state.
  */
 .scRoot .scLabel:not([data-disabled], [data-read-only]):active {
-  transform: scale(0.97);
+  transform: scale(0.985);
+  transition-duration: calc(var(--sds-motion-press) / 2);
 }
 
 /*
@@ -903,6 +937,10 @@
 
   .scRoot .scLabel:not([data-disabled], [data-read-only]):active {
     transform: none;
+  }
+
+  .scRoot .scLabel[data-active] .scInnerLabel {
+    animation: none;
   }
 }
 
