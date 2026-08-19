@@ -548,3 +548,381 @@
     content: none;
   }
 }
+
+/* ==================================================================== Segmented control
+ *
+ * Figma source: the `Tabs Menu Carded` component set (node `17900:62310`) in the Tabs section
+ * `24385:68195`, plus the `Tab Text` (`20517:21553`) and `Tab Content` (`20640:6602`) sets it
+ * instantiates for each segment.
+ *
+ * Figma models the size as a `Sizes` variant — Desktop and Mobile — and the segment as a `State`
+ * variant: Default, Hover, Selected. Here the size axis is a **media query** rather than a prop,
+ * because a segmented control cannot pick its own breakpoint at the call site the way a button picks
+ * its size, and because the token layer is already responsive (the typography collection ships
+ * Mobile 0+, Tablet 576+, Desktop 1200+). The switch is at Figma's own desktop breakpoint, 1200px:
+ * the mobile treatment covers everything below it.
+ *
+ *                          Mobile (< 1200px)      Desktop (>= 1200px)
+ *   container height       60px                   64px
+ *   segment height         44px                   48px
+ *   segment padding        12px all round         12px / 36px
+ *   segment gap            12px (`gap/12`)        0
+ *   segment width          hugs, row scrolls      equal, fills the container
+ *   label                  14/20px                18/24px
+ *   icon box               16px                   20px
+ *
+ * The `Components/Glass Tab/*` group is mode-aware throughout, so unlike Button's `neutral` and the
+ * Link's `secondary` nothing here has to be restructured for light mode: the selected fill resolves
+ * to the opaque `Brand/Primary` blue pair in light and to translucent white on dark, and the stroke
+ * pair is deliberately transparent in light mode, where the opaque fill needs no edge.
+ *
+ * Mantine's anatomy maps onto the design one for one: `root` is the carded container, `indicator` is
+ * the selected pill (which slides, rather than being redrawn per segment), `label` is each segment's
+ * hit area and `innerLabel` its content row.
+ */
+
+/* ------------------------------------------------------------------------------- the container */
+
+/*
+ * The `[role]` qualifier is load-bearing rather than decoration: Mantine declares the root's padding,
+ * background and overflow at single-class specificity, so a bare `.scRoot` rule ties and loses on
+ * stylesheet order. Every segmented control is a `role="radiogroup"`, so this always matches —
+ * `[data-full-width]` would not, since a call site can turn that off.
+ */
+.scRoot[role] {
+  /* `padding/8`, and `Border Radius/round` via `--sc-radius`. */
+  padding: var(--sds-sc-padding);
+  /* `Components/Glass Tab/tab fill 1` */
+  background-color: var(--sds-tab-fill-1);
+  /*
+   * No real border: Figma aligns the container's stroke inside, so it must not add to the height —
+   * 48px segment + 8px padding twice is exactly the drawn 64px. The hairline is painted by `::before`
+   * over the padding edge instead.
+   */
+  /* `Components/Glass Card/shadow`, as Figma's inner shadow: radius 8, offset (2, 2). */
+  box-shadow: inset 2px 2px 8px 0 var(--sds-glass-shadow);
+  /*
+   * Mantine clips the root, which would cut off the selected pill's cast shadow. Below the desktop
+   * breakpoint the same rule has to allow scrolling, which is set in the media query.
+   */
+  overflow: visible;
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * `Components/Glass Line/01` -> `/02` at 1px. Same construction as the Label's outline variant: a
+ * gradient cannot be a border directly without losing the radius, so it is a masked background on a
+ * pseudo-element — on the pseudo-element rather than the root because a mask applies to everything an
+ * element renders, and here that would include every segment.
+ */
+.scRoot[role]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ------------------------------------------------------------------ the selected pill (indicator)
+ *
+ * Figma's `State=Selected`: the `Glass Tab/bg-gradient-01` -> `-02` radial fill, a 1.5px
+ * `stroke-gradient-01` -> `-02` edge, a 40-radius background blur and a `tab-focus-shadow` drop
+ * shadow at (-1, 1) with radius 7 and spread 2.
+ */
+.scRoot .scIndicator {
+  border-radius: var(--sc-radius);
+  /*
+   * Figma expresses the fill as a transformed radial gradient; inverting its matrix puts the centre
+   * at 86% / 10% of the segment box — the same position as the outline button's sheen — with radii of
+   * roughly 100% and 260%. Reproduced as the equivalent CSS ellipse.
+   */
+  background-image: radial-gradient(
+    ellipse 100% 260% at 86% 10%,
+    var(--sds-tab-bg-from) 0%,
+    var(--sds-tab-bg-to) 100%
+  );
+  /* A 40-radius Figma background blur is a 20px CSS blur. */
+  backdrop-filter: blur(20px);
+  box-shadow: -1px 1px 7px 2px var(--sds-tab-shadow);
+  /*
+   * Mantine's floating indicator hardcodes `ease` for its travel; restating the transition is what
+   * lets the emphasised curve through. The duration still comes from the same variable, so the
+   * reduced-motion override below continues to apply.
+   */
+  transition:
+    transform var(--sc-transition-duration) var(--sc-transition-timing-function),
+    width var(--sc-transition-duration) var(--sc-transition-timing-function),
+    height var(--sc-transition-duration) var(--sc-transition-timing-function);
+}
+
+/* The 1.5px gradient stroke, by the same masked-ring construction as the container's hairline. */
+.scRoot .scIndicator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    to bottom right,
+    var(--sds-tab-stroke-from) 50%,
+    var(--sds-tab-stroke-to) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+ * Before the indicator has measured itself Mantine paints the active segment's fill on the label's
+ * own `::before` instead, and hides it once mounted. Giving it the same treatment keeps the first
+ * paint from flashing a plain rectangle.
+ */
+.scRoot .scLabel[data-active]::before {
+  background-image: radial-gradient(
+    ellipse 100% 260% at 86% 10%,
+    var(--sds-tab-bg-from) 0%,
+    var(--sds-tab-bg-to) 100%
+  );
+  border-radius: var(--sc-radius);
+  box-shadow: -1px 1px 7px 2px var(--sds-tab-shadow);
+}
+
+/* ------------------------------------------------------------------------------- the segments */
+
+.scRoot .scControl {
+  /* Equal widths, as Figma's desktop tab bar draws them; the media query lets them hug below. */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.scRoot .scLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sc-radius);
+  /* Figma's label style is Source Sans 3 SemiBold; only the selected segment goes Bold. */
+  font-weight: 600;
+  /* `Surfaces/Text/Secondary` — the `Tab Content` `State=Default` colour. */
+  color: var(--sds-surfaces-text-secondary);
+  /* Nothing in the design is uppercase or tracked out. */
+  text-transform: none;
+  letter-spacing: 0;
+  transition:
+    color var(--sds-motion-fast) var(--sds-motion-ease),
+    box-shadow var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/* Figma's `Tab Content` `State=Active`: `Action/Neutral/Inverted`, and the weight steps up to Bold. */
+.scRoot .scLabel[data-active] {
+  color: var(--sds-action-neutral-inverted);
+  font-weight: 700;
+}
+
+/*
+ * Figma's `State=Hover` carries no fill — only the label colour from `Tab Content`
+ * (`Action/Link/Hover Link`) and two effects: a 40-radius background blur and a
+ * `Brand/Primary/Lighten/4` shadow at (-1, 1), radius 4, spread 4. That soft glow is reproduced as
+ * drawn rather than being replaced with a fill, so hover reads as "not yet selected" while the
+ * indicator stays the only filled pill.
+ *
+ * Wrapped in `hover: hover` so a touch device does not latch the state after a tap, and excluded on
+ * the selected segment, which has nothing left to promise.
+ */
+@media (hover: hover) {
+  .scRoot .scLabel:not([data-active], [data-disabled], [data-read-only]):hover {
+    color: var(--sds-action-link-hover-link);
+    box-shadow: -1px 1px 4px 4px var(--sds-brand-primary-lighten-4);
+    backdrop-filter: blur(20px);
+  }
+}
+
+/*
+ * Not specified by Figma, which draws no pressed state for a tab. Inferred as the same press this
+ * system's buttons give: a small, brief scale-down, so the segment acknowledges the pointer before
+ * the indicator arrives. The reduced-motion block below removes the movement, not the state.
+ */
+.scRoot .scLabel:not([data-disabled], [data-read-only]):active {
+  transform: scale(0.97);
+}
+
+/*
+ * Also not specified. `Styles/focus-ring` is this system's focus treatment everywhere else — 2px
+ * `Brand/Primary/Lighten/1` — so it is used here too, on the label, since the real radio input is
+ * visually hidden. Mantine's own ring is overridden rather than themed because it resolves to
+ * Mantine's primary colour, not the token.
+ */
+.scRoot .scInput:focus-visible + .scLabel {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/*
+ * Not specified either. Figma has no disabled tab; this follows Button, whose Figma disabled state is
+ * the resting appearance at half opacity, and keeps the label's own colour rather than Mantine's grey.
+ */
+.scRoot .scLabel[data-disabled] {
+  opacity: 0.5;
+  color: var(--sds-surfaces-text-secondary);
+  cursor: not-allowed;
+}
+
+/*
+ * A plain text label is a block, so that a segment too narrow for it ends in an ellipsis rather than a
+ * hard cut — `text-overflow` needs a block container, and a flex one would ignore it.
+ */
+.scRoot .scInnerLabel {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * With an icon it becomes Figma's auto-layout row: icon and label centred, `gap/8`. `:has` is what
+ * lets one rule serve both shapes, since an item's label is arbitrary JSX rather than a known element.
+ */
+.scRoot .scInnerLabel:has(> svg) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.scRoot .scInnerLabel > svg {
+  width: var(--sds-sc-icon);
+  height: var(--sds-sc-icon);
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------- Sizes=Mobile (< 1200px)
+ *
+ * Figma's Mobile variant: a 44px segment with 12px padding on every side, a 12px gap between
+ * segments, a 14/20px label and a 16px icon box. Its tab bar is 762px wide inside a 366px container,
+ * i.e. the row is meant to scroll — so the segments hug their labels here rather than dividing the
+ * width, and the container scrolls horizontally with snap points.
+ */
+.scRoot[role] {
+  --sds-sc-icon: 16px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x proximity;
+  /* A hairline scrollbar inside a pill reads as damage; the row is still scrollable and swipeable. */
+  scrollbar-width: none;
+}
+
+.scRoot[role]::-webkit-scrollbar {
+  display: none;
+}
+
+.scRoot .scControl {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+}
+
+.scRoot .scControl + .scControl {
+  /* `gap/12`. Set as a margin rather than a row gap so it survives Mantine's own control rules. */
+  margin-inline-start: 12px;
+}
+
+.scRoot .scLabel {
+  min-height: 44px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* -------------------------------------------------------------------- Sizes=Desktop (>= 1200px) */
+
+@media (min-width: 1200px) {
+  .scRoot[role] {
+    --sds-sc-icon: 20px;
+    /* The row fits by construction, so the pill's cast shadow is not clipped. */
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .scRoot .scControl {
+    flex: 1 1 0;
+  }
+
+  /* Desktop draws the segments edge to edge — Figma's tab bar has a zero gap. */
+  .scRoot .scControl + .scControl {
+    margin-inline-start: 0;
+  }
+
+  .scRoot .scLabel {
+    min-height: 48px;
+    /*
+     * Figma's 12px / 36px, literally. A percentage that contracts on narrow segments is tempting here,
+     * but percentage padding resolves to zero while a browser is measuring intrinsic width, so a
+     * shrink-to-fit container collapses the whole control. Long labels in a container narrower than
+     * Figma's 1280px frame ellipsize instead — see `.scInnerLabel`.
+     */
+    padding: 12px 36px;
+    font-size: 18px;
+    line-height: 24px;
+  }
+}
+
+/* ---------------------------------------------------------------------- reduced motion
+ *
+ * WCAG 2.3.3. The indicator still moves to the selected segment — that is the state, not decoration —
+ * but it arrives immediately instead of travelling, and the press stops scaling.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .scRoot[role] {
+    --sc-transition-duration: 0ms;
+  }
+
+  .scRoot .scLabel {
+    transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+  }
+
+  .scRoot .scLabel:not([data-disabled], [data-read-only]):active {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------------- forced colours
+ *
+ * The selected pill is a background, and backgrounds are replaced wholesale in a forced-colours mode,
+ * which would leave no way to tell which segment is selected. A real border on the indicator and the
+ * system highlight colour restore that.
+ */
+@media (forced-colors: active) {
+  .scRoot .scIndicator {
+    border: 2px solid Highlight;
+    background-image: none;
+  }
+
+  .scRoot .scIndicator::before {
+    content: none;
+  }
+
+  .scRoot .scInput:focus-visible + .scLabel {
+    outline-color: Highlight;
+  }
+}

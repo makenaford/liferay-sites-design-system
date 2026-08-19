@@ -50,6 +50,28 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      * README.md as a value for the design file to tokenise.
      */
     'label-grad-text': '#1f2531',
+
+    /**
+     * `Components/Glass Tab/*` — the segmented control. The whole group is properly mode-aware, which
+     * is why this component needs no restructuring: in light mode `bg-gradient-*` is the opaque blue
+     * `Brand/Primary` pair and the stroke pair is fully transparent, and on dark the fill becomes
+     * translucent white and the stroke picks up the brand/accent gradient.
+     */
+    'tab-fill-1': scheme === 'light' ? '#f8faff' : 'rgba(121, 121, 121, 0.03)',
+    'tab-bg-from':
+      scheme === 'light' ? color['brand-primary-primary'] : 'rgba(255, 255, 255, 0.1)',
+    'tab-bg-to': scheme === 'light' ? color['brand-primary-darken-1'] : 'rgba(121, 121, 121, 0.05)',
+    /** Transparent in light mode by design — there the fill is opaque and needs no edge. */
+    'tab-stroke-from':
+      scheme === 'light' ? 'rgba(55, 124, 255, 0)' : color['brand-primary-lighten-1'],
+    'tab-stroke-to': scheme === 'light' ? 'rgba(116, 20, 255, 0)' : color['accent-purple'],
+    /** `Components/Glass Tab/tab-focus-shadow` — the selected segment's cast shadow. */
+    'tab-shadow': scheme === 'light' ? color['brand-primary-lighten-4'] : color['neutral-01'],
+
+    /** `Components/Glass Line/01` / `02` — the two stops of the container's hairline. */
+    'glass-line-from':
+      scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)',
+    'glass-line-to': scheme === 'light' ? 'rgba(111, 160, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
   }
 }
 
@@ -77,6 +99,13 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     /** Not published by Figma: the transition applied to interactive state changes. */
     '--sds-motion-fast': '120ms',
     '--sds-motion-ease': 'cubic-bezier(0.4, 0, 0.2, 1)',
+    /**
+     * Also not published by Figma. Used where something travels a distance rather than just changing
+     * colour — the segmented control's indicator sliding between segments — which needs longer than a
+     * state change and an emphasised curve to read as one object moving.
+     */
+    '--sds-motion-medium': '220ms',
+    '--sds-motion-ease-out': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
   },
   light: {
     '--mantine-color-body': colorLight['surfaces-page-bg-base-default'],

@@ -320,6 +320,96 @@ Contrast, measured in the browser against each variant's own background:
 | `filled` (both gradient stops) | 13.8 / 12.4 | 6.1 / 6.2 |
 | `outline` (against the page) | 13.7 | 17.5 |
 
+## SegmentedControl
+
+From the Figma `Tabs Menu Carded` component set (node `17900:62310`) — the carded strip in the Tabs
+section — together with the `Tab Text` (`20517:21553`) and `Tab Content` (`20640:6602`) sets it
+instantiates for each segment. A themed Mantine `SegmentedControl`.
+
+```tsx
+import { IconSearch, SegmentedControl } from 'scratch'
+
+<SegmentedControl
+  defaultValue="docs"
+  data={[
+    { value: 'all', label: 'All results' },
+    { value: 'docs', label: <><IconSearch />Documentation</> },
+  ]}
+/>
+```
+
+| Figma axis | Prop |
+| --- | --- |
+| `Sizes` — Desktop / Mobile | **responsive**, not a prop — a media query at 1200px |
+| `Tab Text` `State` — Default | the resting segment |
+| `State` — Hover | the real `:hover` state |
+| `State` — Selected | `value` / `defaultValue` |
+| Each tab's label, and `Show Icon Left` + its swap | one entry in `data` |
+
+Measurements, taken from the component:
+
+| | Container | Segment | Padding | Gap | Label | Icon | Widths |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Desktop | 64px | 48px | 12/36px | 0 | 18/24px | 20px | equal, fills the container |
+| Mobile | 60px | 44px | 12px | 12px | 14/20px | 16px | hug, the row scrolls |
+
+Both keep Figma's 8px container padding and `Border Radius/round` pill.
+
+### Why the size axis is a media query
+
+Figma models size as a `Sizes` variant, and Button and Label both turn such an axis into a `size`
+prop. This one does not: a strip of tabs spanning a page cannot sensibly have its breakpoint chosen at
+the call site, and the token layer is already responsive — Figma ships three typography modes and the
+generator emits all three as media queries. The switch is at **1200px**, the design's own desktop
+breakpoint, with the mobile treatment below it. Mobile is also where Figma's own tab bar is 762px wide
+inside a 366px container, so the row scrolls (with scroll snapping) rather than squeezing.
+
+### States
+
+The whole `Components/Glass Tab/*` group is mode-aware, which is why — unlike Button's `neutral` or
+the Link's `secondary` — **nothing here had to be restructured for light mode**. The selected fill
+resolves to the opaque `Brand/Primary` blue pair in light mode and to translucent white on dark, and
+the selected stroke is deliberately fully transparent in light, where an opaque fill needs no edge.
+
+| State | Treatment | Source |
+| --- | --- | --- |
+| rest | `Surfaces/Text/Secondary`, SemiBold | as drawn |
+| hover | `Action/Link/Hover Link`, plus a `Brand/Primary/Lighten/4` glow at (-1, 1) r4 spread 4 and a 40-radius blur | as drawn |
+| selected | `Action/Neutral/Inverted` at Bold, on the `Glass Tab/bg-gradient` fill with its 1.5px stroke, blur and `tab-focus-shadow` | as drawn |
+| pressed | a brief `scale(0.97)` | **inferred** |
+| focus | `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, offset 2px | **inferred** |
+| disabled | the resting appearance at 50% opacity | **inferred** |
+
+The three inferred states are marked as such in `components.module.css` too. Figma draws none of them
+for a tab: pressed follows the other action components, focus reuses the one focus treatment this
+system has everywhere else, and disabled copies Button, whose Figma disabled state is its resting
+appearance at half opacity.
+
+The selected segment is **one pill that travels** rather than a fill redrawn per segment — Mantine's
+floating indicator, at 220ms on an emphasised curve. That motion is not in Figma, which has no
+prototype here; `prefers-reduced-motion` drops it to an instant move and removes the press scale,
+keeping the state change while discarding the movement (WCAG 2.3.3).
+
+Contrast, measured in the browser with each state composited over what actually sits behind it:
+
+| | light | dark |
+| --- | --- | --- |
+| rest | 10.3 | 13.2 |
+| hover | 8.6 | 12.6 |
+| selected (both fill stops) | 5.1 / 6.0 | 15.1 / 18.5 |
+| focus ring vs the container | 3.7 | 5.0 |
+
+### It is a radio group, not tabs
+
+This renders radio inputs in a `role="radiogroup"`, which is what a segmented control is: one choice
+among a few, where the choice itself is the outcome, navigable with the arrow keys. Figma files often
+use the same carded strip for **tabs that swap panels** — that needs `role="tablist"` semantics and
+Mantine's `Tabs` instead. A segmented control announced as tabs promises a screen reader user panels
+that do not exist.
+
+Long labels ellipsize rather than being cut: five segments of Figma's 18px label need the design's own
+1280px frame, and below that the text has to give somewhere.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -477,11 +567,37 @@ Still missing: `Components/*` (49 variables) and `Surfaces/Page Background/*`. T
 together, because the former aliases the latter. Until then the handful of `Components/*` values the
 components actually use are transcribed in `src/theme/cssVariables.ts`, expressed as references to
 exported tokens wherever the alias target exists: `Button Outline/*` and `Glass Card/shadow` for the
-outline button, and `Label/lab-tonal-bg`, `lab-tonal-text` and `lab-grad-bg-step-01/-02` for the Label.
-Re-exporting the whole collection from Figma would close this and let those literals go.
+outline button, `Label/lab-tonal-bg`, `lab-tonal-text` and `lab-grad-bg-step-01/-02` for the Label, and
+`Glass Tab/*` plus `Glass Line/01`–`02` for the segmented control. Re-exporting the whole collection
+from Figma would close this and let those literals go.
 
 The collection also has a **third mode, `Learn-Dark`**, alongside `Light` and `LRDC-Dark`. Only the
 first two are wired up; Mantine has two colour schemes, so a third would need a different mechanism.
+
+### The segmented control's two size variants disagree with each other
+
+`Tabs Menu Carded` draws Desktop and Mobile differently in ways that read as drift rather than intent,
+so the implementation takes the Desktop treatment at both breakpoints and only the geometry changes:
+
+- **The container fill differs.** Desktop is a flat `Components/Glass Tab/tab fill 1` with a
+  `Glass Card/shadow` inner shadow; Mobile is a three-stop radial of `Glass Card/Glass Step 02` →
+  `01` → `02` with no inner shadow. Same component, same surface, two treatments.
+- **The selected segment's stroke binds to different variables.** Desktop uses
+  `Glass Tab/stroke-gradient-01` → `-02`; Mobile uses `Brand/Primary/Lighten/1` →
+  `Accent/Product Accent` directly. Those are nearly the same colours on dark — `stroke-gradient-02`
+  resolves to `Accent/Purple` (`#ad80f5`) rather than `Accent/Product Accent` (`#ba8fff`) — but in
+  light mode the `Glass Tab` pair is deliberately transparent while the raw pair is not, so the two
+  sizes would disagree about whether a selected segment has an edge at all.
+- **Mobile's Hover variant has no effects.** Desktop hover carries the `Brand/Primary/Lighten/4` glow
+  and the 40-radius blur; Mobile carries neither, though both change the label colour. The glow is
+  applied at every width here, inside a `hover: hover` query so a touch device never latches it.
+
+### Tabs have no focus, pressed or disabled state
+
+`Tab Text` draws Default, Hover and Selected only. Focus, pressed and disabled are inferred — see the
+SegmentedControl state table above for what each became and why. Two hints in the file support the
+focus choice: the Default variant carries a *hidden* drop shadow bound to `Brand/Primary/Lighten/4`,
+and `Styles/focus-ring` is `Brand/Primary/Lighten/1`, which is what every other component here uses.
 
 ### Smaller things
 
@@ -512,7 +628,7 @@ first two are wired up; Mantine has two colour schemes, so a third would need a 
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Label, Link)
+src/components/          One directory per component (Button, Label, Link, SegmentedControl)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the set; generated.tsx is built from @mingcute/svg
 src/docs/                Storybook Overview pages
