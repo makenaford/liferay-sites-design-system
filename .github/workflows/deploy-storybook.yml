@@ -1,8 +1,10 @@
-# Builds Storybook and publishes it to the gh-pages branch, which is what GitHub Pages serves.
+# Builds Storybook and publishes it to GitHub Pages at https://makenaford.github.io/scratch/
 #
-# Ported from the workflow that shipped with the previous plain-React library in this repo. Two
-# things changed with the move to Mantine: the package now lives at the repo root rather than in a
-# design-system/ subdirectory, and the toolchain is pnpm rather than npm.
+# Ported from the workflow that shipped with the previous plain-React library in this repo, with
+# three changes: the package is now at the repo root rather than in a design-system/ subdirectory,
+# the toolchain is pnpm rather than npm, and the deploy uses GitHub's own Pages actions — this
+# repository's Pages source is set to "GitHub Actions", so publishing to a gh-pages branch would
+# build successfully and then never be served.
 name: Deploy Storybook
 
 on:
@@ -10,9 +12,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Least privilege: the job only needs to write the gh-pages branch.
 permissions:
-  contents: write
+  contents: read
+  # Required by actions/deploy-pages.
+  pages: write
+  id-token: write
 
 # A superseded run has nothing useful to publish, so cancel it rather than racing the newer one.
 concurrency:
@@ -20,9 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,11 +56,18 @@ jobs:
       - name: Build Storybook
         run: pnpm build-storybook
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./storybook-static
-          publish_branch: gh-pages
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          path: ./storybook-static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
