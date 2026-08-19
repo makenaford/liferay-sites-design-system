@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Group, Stack, Text, Title } from '@mantine/core'
 import { Button } from './components/Button'
-import { IconArrowRight, IconRefresh } from './icons'
+import { IconArrowRight, IconRefresh2 } from './icons'
 import { ScratchProvider } from './theme'
 
 /**
@@ -20,16 +20,16 @@ function App() {
           </Text>
         </Stack>
         <Group gap="16">
-          <Button leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
+          <Button leftSection={<IconRefresh2 />} rightSection={<IconArrowRight />}>
             Button
           </Button>
-          <Button variant="outline" leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
+          <Button variant="outline" leftSection={<IconRefresh2 />} rightSection={<IconArrowRight />}>
             Button
           </Button>
-          <Button variant="rounded" leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
+          <Button variant="rounded" leftSection={<IconRefresh2 />} rightSection={<IconArrowRight />}>
             Button
           </Button>
-          <Button variant="neutral" leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
+          <Button variant="neutral" leftSection={<IconRefresh2 />} rightSection={<IconArrowRight />}>
             Button
           </Button>
         </Group>

@@ -8,7 +8,7 @@
 export { Button, type ButtonProps } from './components/Button'
 export { Link, type LinkProps, type LinkSize, type LinkVariant } from './components/Link'
 
-export { IconArrowForward, IconArrowRight, IconRefresh, type IconProps } from './icons'
+export * from './icons'
 
 export {
   ScratchProvider,

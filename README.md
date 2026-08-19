@@ -21,6 +21,8 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm dev` | Minimal Vite preview page |
 | `pnpm tokens` | Regenerate the theme from `tokens/figma/` |
 | `pnpm tokens:check` | Fail if the generated files are out of date (used by `pnpm build`) |
+| `pnpm icons` | Regenerate the icon set from `src/icons/manifest.json` |
+| `pnpm icons:check` | Fail if the generated icons are out of date (used by `pnpm build`) |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm build` | Check tokens, typecheck, build the library bundle |
 | `pnpm build-storybook` | Static Storybook into `storybook-static/` |
@@ -201,6 +203,48 @@ temporarily unavailable is a `Button`.
 Renders an `<a>`. For a router link pass `component={NavLink}`; for an action that is not navigation,
 use `Button`.
 
+## Icons
+
+Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
+stroke.
+
+This is not a third-party set bolted on. **The Figma library's icons already are MingCute**: what Figma
+calls `system/refresh_2` and `arrow/arrow_right` are MingCute's `refresh_2` and `arrow_right`, in the
+same categories, drawn the same way. Depending on the package keeps both sides on one set instead of
+re-exporting each glyph from Figma by hand.
+
+```tsx
+import { Button, IconArrowRight } from 'scratch'
+
+<Button rightSection={<IconArrowRight />}>Continue</Button>
+```
+
+Icons accept any SVG prop, default to `1em` square so they scale with surrounding text, and draw in
+`currentColor`. Button and Link fix the icon box themselves, at the size Figma specifies per component
+size. They are `aria-hidden` — correct beside a label; an icon used alone as the whole control needs an
+`aria-label` on the control.
+
+### Adding one
+
+1. Find its MingCute name. Ask by keyword via the **MingCute MCP server** (`search_icons`), or browse
+   [mingcute.com](https://mingcute.com).
+2. Add the name to `src/icons/manifest.json`.
+3. Run `pnpm icons`.
+
+Only declared icons are generated, so the bundle carries what the library uses rather than all 1,660. A
+misspelled name fails the build with suggested corrections.
+
+The MCP server is a search tool, not a build dependency — `scripts/build-icons.mjs` reads
+`@mingcute/svg` from `node_modules`, so the build is offline, reproducible, and lockfile-pinned. To
+connect the server:
+
+```bash
+claude mcp add mingcute --scope user -- npx -y @mingcute/mcp-server@0.1.1
+```
+
+Pinned deliberately: an unpinned `npx -y` adopts any future release at launch, which is the exposure the
+`minimumReleaseAge` policy exists to prevent.
+
 ### Adding a component
 
 1. Read the spec out of Figma (`get_design_context` on the node) — don't eyeball it.
@@ -268,12 +312,10 @@ named `Action/Link/X-small` rather than `Small`, which does not match the Size a
 
 ### The Link's icons are inconsistent across variants
 
-Two separate problems in the same place.
-
-**Two different glyphs.** Large is drawn with the stroked `arrow/arrow_right` (Outline), while Medium
-and Small use the filled `Navigation / arrow forward`. Both are exported and both ship
-(`IconArrowRight`, `IconArrowForward`), and since the icon is a prop this is the consumer's choice —
-see the **Arrow Glyphs** story. Worth picking one in Figma.
+**Two different glyphs — resolved.** Large is drawn with the stroked `arrow/arrow_right`, while Medium
+and Small use `Navigation / arrow forward`. The first is MingCute; the second is a Material Symbols
+name, so it is the foreign one. Now that the library is on MingCute, both use `IconArrowRight`. Worth
+replacing the Material glyph in Figma too.
 
 **Two different sizes at Large.** The icon box is 20px in `Style=Primary, Size=Large, State=Default`
 and 18px in the other nine Large variants, including `Style=Secondary, State=Default`. Medium (16px)
@@ -312,6 +354,10 @@ first two are wired up; Mantine has two colour schemes, so a third would need a 
   pressed treatment.
 - **Large button padding is off-scale.** 18px is not a step on the `padding` scale, which jumps
   16 → 20. Figma sets it directly on the component, so it is reproduced literally.
+- **MingCute's stroke is 2px, the Figma export's was 1.5px.** Rendered in a 20px icon box the glyph ink
+  is 15px either way — the proportions match exactly — but the stroke lands at 1.67px rather than
+  1.25px, so icons read very slightly heavier than the current Figma frames. 2px is MingCute's canonical
+  weight, which is the one to keep now the set is the source of truth.
 - **The outline glass sheen is an approximation.** Figma expresses it as a radial gradient with a
   transform matrix; CSS has no direct equivalent, so it is reproduced as an ellipse at the same
   position and scale. It reads the same but is not mathematically identical.
@@ -324,7 +370,7 @@ scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
 src/components/          One directory per component (Button, Link)
 src/figma/               Code Connect mappings
-src/icons/               Icons exported from Figma, re-framed to 24x24 currentColor
+src/icons/               manifest.json declares the set; generated.tsx is built from @mingcute/svg
 src/docs/                Storybook Overview pages
 .storybook/              Storybook config and the shared story frame
 ```

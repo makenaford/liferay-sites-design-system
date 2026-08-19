@@ -1,0 +1,24 @@
+{
+  "$comment": [
+    "The MingCute icons this library ships, by their MingCute name. Run `pnpm icons` after editing.",
+    "Find a name with the MingCute MCP server (search_icons), or browse https://mingcute.com.",
+    "`regular` is MingCute's stroked outline style, which is what the Figma library uses;",
+    "`filled` is the solid style, and generates a component with a `Filled` suffix."
+  ],
+  "regular": [
+    "arrow_right",
+    "arrow_left",
+    "arrow_up",
+    "arrow_down",
+    "right",
+    "down",
+    "refresh_2",
+    "check",
+    "close",
+    "search",
+    "external_link",
+    "information",
+    "alert"
+  ],
+  "filled": []
+}

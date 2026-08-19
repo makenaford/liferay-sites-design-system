@@ -11,15 +11,17 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "pnpm tokens:check && tsc --noEmit && vite build",
+    "build": "pnpm tokens:check && pnpm icons:check && tsc --noEmit && vite build",
     "tokens": "node scripts/build-tokens.mjs",
     "tokens:check": "node scripts/build-tokens.mjs --check",
+    "icons": "node scripts/build-icons.mjs",
+    "icons:check": "node scripts/build-icons.mjs --check",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006 --no-open",
+    "storybook:6007": "storybook dev -p 6007 --no-open",
     "build-storybook": "storybook build",
     "figma:publish": "figma connect publish",
-    "figma:unpublish": "figma connect unpublish",
-    "storybook:6007": "storybook dev -p 6007 --no-open"
+    "figma:unpublish": "figma connect unpublish"
   },
   "peerDependencies": {
     "@mantine/core": "^9.5.1",
@@ -34,6 +36,7 @@
     "@figma/code-connect": "^1.5.2",
     "@mantine/core": "9.5.1",
     "@mantine/hooks": "9.5.1",
+    "@mingcute/svg": "3.0.2",
     "@storybook/addon-docs": "^10.5.7",
     "@storybook/react-vite": "^10.5.7",
     "@types/react": "^19.2.18",

@@ -50,6 +50,10 @@ jobs:
       - name: Check tokens are in sync
         run: pnpm tokens:check
 
+      # Same for the icon set: fails if src/icons/generated.tsx no longer matches manifest.json.
+      - name: Check icons are in sync
+        run: pnpm icons:check
+
       - name: Typecheck
         run: pnpm typecheck
 

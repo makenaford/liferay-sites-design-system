@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Group, Stack, Text } from '@mantine/core'
 import { Link } from './Link'
-import { IconArrowForward, IconArrowRight } from '../../icons'
+import { IconArrowRight } from '../../icons'
 
 const VARIANTS = ['default', 'secondary'] as const
 const SIZES = ['lg', 'md', 'sm'] as const
@@ -66,7 +66,7 @@ type Story = StoryObj<typeof meta>
 /** Every prop wired to a control. Hover and click to see the colour shifts. */
 export const Playground: Story = {
   args: {
-    rightSection: <IconArrowForward />,
+    rightSection: <IconArrowRight />,
   },
 }
 
@@ -86,7 +86,7 @@ export const Variants: Story = {
     </Group>
   ),
   args: {
-    rightSection: <IconArrowForward />,
+    rightSection: <IconArrowRight />,
   },
 }
 
@@ -102,7 +102,7 @@ export const Sizes: Story = {
     </Group>
   ),
   args: {
-    rightSection: <IconArrowForward />,
+    rightSection: <IconArrowRight />,
   },
 }
 
@@ -110,13 +110,13 @@ export const Sizes: Story = {
 export const Icons: Story = {
   render: (args) => (
     <Group gap="32">
-      <Link {...args} leftSection={<IconArrowForward />}>
+      <Link {...args} leftSection={<IconArrowRight />}>
         Left
       </Link>
-      <Link {...args} rightSection={<IconArrowForward />}>
+      <Link {...args} rightSection={<IconArrowRight />}>
         Right
       </Link>
-      <Link {...args} leftSection={<IconArrowForward />} rightSection={<IconArrowForward />}>
+      <Link {...args} leftSection={<IconArrowRight />} rightSection={<IconArrowRight />}>
         Both
       </Link>
       <Link {...args}>None</Link>
@@ -159,7 +159,7 @@ export const States: Story = {
     </Stack>
   ),
   args: {
-    rightSection: <IconArrowForward />,
+    rightSection: <IconArrowRight />,
   },
 }
 
@@ -187,32 +187,6 @@ export const InProse: Story = {
   parameters: { frame: { width: 560 } },
 }
 
-/**
- * Figma's Large link is drawn with the stroked `arrow/arrow_right` icon while Medium and Small use
- * the filled `Navigation / arrow forward`. Both ship, and the icon is a prop, so this is a choice
- * rather than something the component decides — see the note in README.md.
- */
-export const ArrowGlyphs: Story = {
-  render: (args) => (
-    <Stack gap="16">
-      <Group gap="32" align="center">
-        {SIZES.map((size) => (
-          <Link key={size} {...args} size={size} rightSection={<IconArrowForward />}>
-            arrow forward
-          </Link>
-        ))}
-      </Group>
-      <Group gap="32" align="center">
-        {SIZES.map((size) => (
-          <Link key={size} {...args} size={size} rightSection={<IconArrowRight />}>
-            arrow_right
-          </Link>
-        ))}
-      </Group>
-    </Stack>
-  ),
-}
-
 /** Every style against every size. */
 export const Matrix: Story = {
   render: (args) => (
@@ -229,6 +203,6 @@ export const Matrix: Story = {
     </Stack>
   ),
   args: {
-    rightSection: <IconArrowForward />,
+    rightSection: <IconArrowRight />,
   },
 }

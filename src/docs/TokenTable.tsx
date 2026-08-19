@@ -1,23 +1,6 @@
-import type { ReactNode } from 'react'
 import { Box, Group, Paper, SimpleGrid, Stack, Table, Text } from '@mantine/core'
 import { colorDark, colorLight, radius, spacing, typography } from '../theme/tokens.generated'
-import { ScratchProvider } from '../theme'
-import classes from './docs.module.css'
-
-/**
- * Storybook applies the `preview.tsx` decorators to *stories*, not to loose JSX inside an `.mdx`
- * page, so anything rendered directly in the docs has to bring its own provider. Every export below
- * is wrapped in this one rather than each repeating the setup.
- */
-function DocsFrame({ children }: { children: ReactNode }) {
-  return (
-    <ScratchProvider>
-      <Box className={classes.frame} bg="var(--mantine-color-body)" p="16" bdrs="md">
-        {children}
-      </Box>
-    </ScratchProvider>
-  )
-}
+import { DocsFrame } from './DocsFrame'
 
 /** Groups the flat colour token record by its first Figma path segment. */
 function groupByFamily(tokens: Record<string, string>) {

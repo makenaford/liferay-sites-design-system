@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Group, Stack, Text } from '@mantine/core'
 import { Button } from './Button'
-import { IconArrowRight, IconRefresh } from '../../icons'
+import { IconArrowRight, IconRefresh2 } from '../../icons'
 
 /** The four Figma appearances, in the order they are enumerated for design review. */
 const VARIANTS = ['filled', 'outline', 'neutral', 'rounded'] as const
@@ -55,7 +55,7 @@ type Story = StoryObj<typeof meta>
 /** Every prop wired to a control. Start here to try a combination. */
 export const Playground: Story = {
   args: {
-    leftSection: <IconRefresh />,
+    leftSection: <IconRefresh2 />,
     rightSection: <IconArrowRight />,
   },
 }
@@ -76,7 +76,7 @@ export const Variants: Story = {
     </Group>
   ),
   args: {
-    leftSection: <IconRefresh />,
+    leftSection: <IconRefresh2 />,
     rightSection: <IconArrowRight />,
   },
 }
@@ -93,7 +93,7 @@ export const Sizes: Story = {
     </Group>
   ),
   args: {
-    leftSection: <IconRefresh />,
+    leftSection: <IconRefresh2 />,
     rightSection: <IconArrowRight />,
   },
 }
@@ -102,13 +102,13 @@ export const Sizes: Story = {
 export const Icons: Story = {
   render: (args) => (
     <Group gap="16">
-      <Button {...args} leftSection={<IconRefresh />}>
+      <Button {...args} leftSection={<IconRefresh2 />}>
         Left
       </Button>
       <Button {...args} rightSection={<IconArrowRight />}>
         Right
       </Button>
-      <Button {...args} leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
+      <Button {...args} leftSection={<IconRefresh2 />} rightSection={<IconArrowRight />}>
         Both
       </Button>
       <Button {...args}>None</Button>
@@ -142,7 +142,7 @@ export const States: Story = {
     </Stack>
   ),
   args: {
-    leftSection: <IconRefresh />,
+    leftSection: <IconRefresh2 />,
     rightSection: <IconArrowRight />,
   },
 }
@@ -163,7 +163,7 @@ export const Matrix: Story = {
     </Stack>
   ),
   args: {
-    leftSection: <IconRefresh />,
+    leftSection: <IconRefresh2 />,
     rightSection: <IconArrowRight />,
   },
 }

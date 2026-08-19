@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { IconGallery } from './IconGallery'
+
+<Meta title="Overview/Icons" />
+
+# Icons
+
+Icons come from [MingCute](https://mingcute.com) — an Apache-2.0 set of around 1,660 icons, drawn on a
+24×24 grid with a 2px stroke.
+
+This is not a third-party set bolted on: **the Figma library's icons already are MingCute.** What Figma
+calls `system/refresh_2` and `arrow/arrow_right` are MingCute's `refresh_2` and `arrow_right`, with the
+same categories and the same construction. Using the package directly keeps both sides on one set,
+instead of re-exporting each glyph out of Figma by hand.
+
+## Using one
+
+```tsx
+import { Button, IconArrowRight } from 'scratch'
+
+<Button rightSection={<IconArrowRight />}>Continue</Button>
+```
+
+Icons take any SVG prop. They default to `1em` square so they scale with surrounding text, and they
+draw in `currentColor` so they inherit whatever they sit in — a Button or Link fixes the icon box
+itself, at the size Figma specifies for each component size.
+
+They are `aria-hidden`, which is right beside a text label. An icon used *alone* as the whole control
+needs an accessible name at the call site, e.g. `aria-label` on the button.
+
+## Adding one
+
+1. Find its MingCute name — ask for it by keyword (the MingCute MCP server's `search_icons`), or browse
+   [mingcute.com](https://mingcute.com).
+2. Add the name to `src/icons/manifest.json`.
+3. Run `pnpm icons`.
+
+Only declared icons are generated, so the bundle carries what the library actually uses rather than all
+1,660. A misspelled name fails the build with suggestions.
+
+<IconGallery />

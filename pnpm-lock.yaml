@@ -21,6 +21,9 @@ importers:
       '@mantine/hooks':
         specifier: 9.5.1
         version: 9.5.1(react@19.2.8)
+      '@mingcute/svg':
+        specifier: 3.0.2
+        version: 3.0.2
       '@storybook/addon-docs':
         specifier: ^10.5.7
         version: 10.5.7(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(esbuild@0.28.2)(rollup@4.62.4)(storybook@10.5.7(@types/react@19.2.18)(prettier@2.8.8)(react@19.2.8))(vite@5.4.21(sugarss@5.0.1(postcss@8.5.26)))
@@ -571,6 +574,9 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
+
+  '@mingcute/svg@3.0.2':
+    resolution: {integrity: sha512-M9l+tNgXibeAJ/QMjmnRlHY/G5T0YgEu+ieM0tRfZ6UAHo7Qr40sVdUM8KXoikB2B/NEnyf5lSAkpiwBx497IQ==}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     resolution: {integrity: sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==}
@@ -2693,6 +2699,8 @@ snapshots:
       '@types/mdx': 2.0.14
       '@types/react': 19.2.18
       react: 19.2.8
+
+  '@mingcute/svg@3.0.2': {}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
