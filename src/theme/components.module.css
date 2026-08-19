@@ -101,7 +101,7 @@
     var(--btn-hover-to) 104.03%
   );
   /* `Base Colors/Primary Btn Solid/button-stroke` */
-  border-color: var(--sds-btn-stroke);
+  border-color: var(--sds-btn-outline-line);
 }
 
 /* Focus adopts the pressed gradient, per the Focus variant, and adds the ring from `.root`. */
@@ -123,7 +123,7 @@
     var(--btn-active-from) 37.232%,
     var(--btn-active-to) 63.409%
   );
-  border-color: var(--sds-btn-stroke);
+  border-color: var(--sds-btn-outline-line);
   /* `Button/Pressed Inner Shadow` */
   box-shadow: var(--sds-btn-pressed-shadow);
 }
@@ -159,12 +159,12 @@
 
 /*
  * Hover and Pressed differ from Default only in the stroke colour
- * (`Components/Button Outline/line-stp-02`) — Figma draws the two states identically otherwise.
+ * (`Action/Primary/Active`) — Figma draws the two states identically otherwise.
  */
 .root[data-variant='outline']:hover:not(:disabled, [data-disabled]),
 .root[data-variant='outline']:active:not(:disabled, [data-disabled]),
 .root[data-variant='outline']:focus-visible {
-  border-color: var(--sds-btn-outline-line-active);
+  border-color: var(--sds-action-primary-active);
   background-color: transparent;
 }
 
@@ -207,4 +207,117 @@
 
 .root .label {
   line-height: var(--sds-button-lh);
+}
+
+/* ============================================================================== Link
+ *
+ * Figma models the link on three axes — Style (Default | Secondary), Size (Small | Medium | Large)
+ * and Icon — which map onto `variant`, `size` and the `leftSection` / `rightSection` props. It also
+ * has a State axis (Default | Hover | Active | Visited | Disabled), and every one of the 30 variants
+ * binds its label to a colour token, so all four non-default states below are read from the file
+ * rather than derived. Figma names the two styles Primary and Secondary; the prop values follow the
+ * variation sheet's Default / Secondary, and the Code Connect mapping bridges the two.
+ *
+ * Mantine's Anchor root is a single `<a>` at specificity 0,1,0, so every rule here carries an
+ * attribute selector alongside the class and stays ahead of it.
+ */
+
+/*
+ * The `[data-variant]` qualifier is load-bearing, not decoration: Anchor's own `display` and Text's
+ * own `font-weight` are declared at single-class specificity, so a bare `.link` rule ties with them
+ * and loses on stylesheet order. Every Link carries a variant (the theme sets a default), so this
+ * always matches.
+ */
+.link[data-variant] {
+  /*
+   * Figma lays the link out as an auto-layout row. `inline-flex` overrides Anchor's `display: inline`
+   * so the gap applies and the icons centre against the label.
+   */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sds-link-gap);
+  /* Figma's label style is Source Sans 3 SemiBold at every size. */
+  font-weight: 600;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/* Both icon slots. Figma scales the icon box with the label: 20px, 16px, 12px. */
+.link > [data-section] {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--sds-link-icon);
+  height: var(--sds-link-icon);
+}
+
+.link > [data-section] > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* `Styles/focus-ring` — the same 2px ring the button uses, offset so it clears the text. */
+.link:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+  border-radius: var(--mantine-radius-xs);
+}
+
+/* ------------------------------------------------------------- Style = Default (Figma: Primary) */
+
+.link[data-variant='default'] {
+  color: var(--sds-action-link-default-link);
+}
+
+.link[data-variant='default']:visited {
+  color: var(--sds-action-link-visited-link);
+}
+
+.link[data-variant='default']:hover {
+  color: var(--sds-action-link-hover-link);
+}
+
+.link[data-variant='default']:active {
+  color: var(--sds-action-link-active-link);
+}
+
+/* --------------------------------------------------------------------------- Style = Secondary
+ *
+ * The resting colour is `Action/Neutral/Default`, which is `#ffffff` in both Figma colour modes — so
+ * this style only reads on a dark surface. See the note in README.md.
+ *
+ * Its other states move to `Surfaces/Text/Primary`, which is mode-dependent: an almost imperceptible
+ * shift on dark (#ffffff -> #f0f1f5), and a jump from invisible to near-black on light. Reproduced as
+ * drawn.
+ */
+
+.link[data-variant='secondary'] {
+  color: var(--sds-action-neutral-default);
+}
+
+.link[data-variant='secondary']:visited {
+  color: var(--sds-action-link-visited-link);
+}
+
+.link[data-variant='secondary']:hover,
+.link[data-variant='secondary']:active {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* ------------------------------------------------------------------------ State = Disabled
+ *
+ * `aria-disabled` carries the state, since an `<a>` has no `disabled` attribute. Figma gives the two
+ * styles different disabled colours — and notably leaves Secondary at full-contrast
+ * `Surfaces/Text/Primary`, which does not read as disabled at all.
+ */
+
+.link[data-variant='default'][aria-disabled='true'] {
+  color: var(--sds-action-link-disabled-link);
+}
+
+.link[data-variant='secondary'][aria-disabled='true'] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.link[aria-disabled='true'] {
+  pointer-events: none;
+  cursor: default;
 }

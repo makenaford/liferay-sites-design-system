@@ -19,6 +19,17 @@ const figmaDir = join(root, 'tokens', 'figma')
 const outDir = join(root, 'src', 'theme')
 const checkOnly = process.argv.includes('--check')
 
+/**
+ * The colour files that make up each mode. Figma's variable export writes one file per mode, but a
+ * mode can be assembled from several files — `color.action.*` was read out of the Plugin API because
+ * the UI export omitted the `Action/*` group. Later files override earlier ones on key collisions,
+ * and aliases are resolved across the whole merged set.
+ */
+const COLOR_MODES = {
+  light: ['color.light.tokens.json', 'color.action.light.tokens.json'],
+  dark: ['color.dark.tokens.json', 'color.action.dark.tokens.json'],
+}
+
 /** The three Figma typography modes, and the min-width each one takes over at. */
 const BREAKPOINTS = [
   { mode: 'mobile', file: 'typography.mobile.tokens.json', minWidth: null },
@@ -75,8 +86,8 @@ function toCss(value) {
  * until they reach a literal. Cycles and dangling references fail loudly rather than silently
  * producing `undefined` in the theme.
  */
-function resolveColors(file) {
-  const entries = flatten(read(file))
+function resolveColors(files) {
+  const entries = files.flatMap((file) => flatten(read(file)))
   const byDotPath = new Map(entries.map(([path, token]) => [path.replace(/\//g, '.'), token]))
   const out = {}
 
@@ -110,8 +121,8 @@ function resolveNumbers(file, stripPrefix = '') {
 
 // ------------------------------------------------------------------------------------ generating
 
-const light = resolveColors('color.light.tokens.json')
-const dark = resolveColors('color.dark.tokens.json')
+const light = resolveColors(COLOR_MODES.light)
+const dark = resolveColors(COLOR_MODES.dark)
 
 const radius = resolveNumbers('radius.tokens.json')
 const spacingAll = resolveNumbers('spacing.tokens.json')

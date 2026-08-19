@@ -1,4 +1,4 @@
-import { Button, type MantineThemeComponents } from '@mantine/core'
+import { Anchor, Button, type MantineThemeComponents } from '@mantine/core'
 import classes from './components.module.css'
 import { radius } from './tokens.generated'
 
@@ -32,6 +32,22 @@ const BUTTON_LABEL_COLOR = {
   /** `Components/Button Outline/text` */
   outline: 'var(--sds-btn-outline-text)',
 } as const
+
+/**
+ * The three Figma link sizes. Font size and line height come from the `Action/Link/*` text styles;
+ * the icon box is taken from the component, where it scales with the label rather than staying fixed
+ * as it does on Button. The 4px gap is the same at every size.
+ *
+ * As with Button, the text styles read 21/18/14 while the `Size/Action/Link/*` number variables say
+ * 20/16/14 and only the small one is actually bound. The component wins.
+ */
+const LINK_SIZES = {
+  sm: { fontSize: 14, lineHeight: 20, icon: 12 },
+  md: { fontSize: 18, lineHeight: 24, icon: 16 },
+  lg: { fontSize: 21, lineHeight: 28, icon: 20 },
+} as const
+
+export type LinkThemeSize = keyof typeof LINK_SIZES
 
 /**
  * Central component configuration for the theme.
@@ -92,6 +108,35 @@ export const componentTheme: MantineThemeComponents = {
 
           '--sds-button-gap': `${spec.gap}px`,
           '--sds-button-lh': `${spec.lineHeight}px`,
+        },
+      }
+    },
+  }),
+
+  Anchor: Anchor.extend({
+    classNames: { root: classes.link },
+
+    defaultProps: {
+      /** Figma's default cell: Style Default, Size Large. */
+      variant: 'default',
+      size: 'lg',
+    },
+
+    /**
+     * Anchor is a single-element component, so the label and icon sizes both resolve here and the
+     * stylesheet reads them back out. `--text-fz` / `--text-lh` are Mantine's own variables; the
+     * `--sds-link-*` pair is what sizes the icon boxes.
+     */
+    vars: (_theme, props) => {
+      const size = (props.size ?? 'lg') as LinkThemeSize
+      const spec = LINK_SIZES[size] ?? LINK_SIZES.lg
+
+      return {
+        root: {
+          '--text-fz': `${spec.fontSize}px`,
+          '--text-lh': `${spec.lineHeight}px`,
+          '--sds-link-icon': `${spec.icon}px`,
+          '--sds-link-gap': '4px',
         },
       }
     },

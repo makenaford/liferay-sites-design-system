@@ -1,12 +1,12 @@
 import type { SVGProps } from 'react'
 
 /**
- * The two icons used by the Button examples, exported from the Figma component set
- * (`system/refresh_2` and `arrow/arrow_right`, both Outline style).
+ * The icons used by the Button and Link examples, exported from the Figma library:
+ * `system/refresh_2` and `arrow/arrow_right` (both Outline style), and `Navigation / arrow forward`.
  *
  * The path data is Figma's; only the wrapper is normalised — re-framed to a 24x24 viewBox and
- * switched to `currentColor` so an icon inherits the colour of the button it sits in. They size to
- * their container, which the button's `section` class fixes at Figma's 20px icon box.
+ * switched to `currentColor` so an icon inherits the colour of whatever it sits in. They size to
+ * their container, which the `section` classes fix at the icon box Figma specifies per size.
  */
 export type IconProps = SVGProps<SVGSVGElement>
 
@@ -36,6 +36,27 @@ export function IconArrowRight(props: IconProps) {
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+        />
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * `Navigation / arrow forward` — the filled arrow the Link component uses.
+ *
+ * Figma exports this one as an alpha mask rather than a stroke, reporting a mask size of
+ * 15.583 x 15.185 at offset (4.209, 4.407) against the glyph's natural 10.3883 x 10.1233 bounds.
+ * That is a uniform 1.5x scale, which places the arrow on the standard 24x24 icon grid — hence the
+ * transform below. The path itself is untouched.
+ */
+export function IconArrowForward(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden {...props}>
+      <g transform="translate(4.209 4.407) scale(1.5)">
+        <path
+          d="M0.666667 5.72832H8.11333L4.86 8.98166C4.6 9.24166 4.6 9.66832 4.86 9.92832C5.12 10.1883 5.54 10.1883 5.8 9.92832L10.1933 5.53499C10.4533 5.27499 10.4533 4.85499 10.1933 4.59499L5.80667 0.19499C5.68211 0.0701553 5.51301 0 5.33667 0C5.16032 0 4.99122 0.0701553 4.86667 0.19499C4.60667 0.45499 4.60667 0.87499 4.86667 1.13499L8.11333 4.39499H0.666667C0.3 4.39499 0 4.69499 0 5.06166C0 5.42832 0.3 5.72832 0.666667 5.72832Z"
+          fill="currentColor"
         />
       </g>
     </svg>

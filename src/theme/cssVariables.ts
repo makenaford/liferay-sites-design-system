@@ -2,40 +2,31 @@ import type { CSSVariablesResolver } from '@mantine/core'
 import { colorDark, colorLight, type ColorToken } from './tokens.generated'
 
 /**
- * Colour tokens that Figma keeps in its `Base Colors` / `Components` collections rather than the
- * `Color Styles` collection exported to `tokens/figma/`. Wherever the Figma value is a reference to
- * a token that *was* exported, it is expressed as that reference here so there is still one source
- * of truth; the remaining handful are literals transcribed from the component.
+ * The `Components/*` colour group is the one part of Figma's `Color Styles` collection still absent
+ * from `tokens/figma/` — its tokens alias a `Surfaces/Page Background/*` group that is also missing,
+ * so it cannot be added without a fuller export. Values are transcribed from the Figma variables and
+ * expressed as references to exported tokens wherever the alias target does exist, so only genuine
+ * literals are spelled out here.
  *
- * When those collections get exported too, delete the literals and read them from
- * `tokens.generated.ts` instead.
+ * Export those two groups and these can move into the token pipeline like `Action/*` did.
  */
 function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'dark') {
   return {
-    /** `Action/Primary/Default` — the base fill of a solid button. */
-    'action-primary-default': color['brand-primary-primary'],
-    /** `Action/Primary/Hover` — the lighter gradient stop. */
-    'action-primary-hover': color['brand-primary-lighten-1'],
-    /** `Action/Primary/Active` — the pressed/focus gradient stop. */
-    'action-primary-active': color['brand-primary-darken-3'],
-    /** `Action/Neutral/Inverted` — label colour on any solid button. White in both modes. */
-    'action-neutral-inverted': '#ffffff',
-
     /** `Components/Button Outline/text` */
     'btn-outline-text':
-      scheme === 'light' ? color['brand-primary-darken-2'] : color['surfaces-text-primary'],
-    /** `Components/Button Outline/line-stp-01` — the resting outline stroke. */
-    'btn-outline-line': scheme === 'light' ? color['brand-primary-primary'] : 'rgba(255, 255, 255, 0.7)',
-    /** `Components/Button Outline/line-stp-02` — the stroke once hovered or pressed. */
-    'btn-outline-line-active':
-      scheme === 'light' ? color['brand-primary-darken-3'] : color['accent-primary-blue-accent'],
+      scheme === 'light' ? color['action-link-default-link'] : color['surfaces-text-primary'],
+    /**
+     * `Components/Button Outline/line-stp-01` — the resting outline stroke, and the hairline that
+     * appears on a hovered or pressed solid button (`Primary Btn Solid/button-stroke` resolves to
+     * the same variable).
+     */
+    'btn-outline-line':
+      scheme === 'light' ? color['accent-primary-blue-accent'] : 'rgba(255, 255, 255, 0.7)',
     /** `Components/Button Outline/bg-step-01` / `-02` — the two stops of the glass sheen. */
     'btn-glass-from': scheme === 'light' ? 'rgba(187, 210, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
     'btn-glass-to': scheme === 'light' ? 'rgba(187, 210, 255, 0)' : 'rgba(255, 255, 255, 0)',
     /** `Components/Glass Card/shadow` — the 6px ambient glow under an outline button. */
     'glass-shadow': scheme === 'light' ? 'rgba(173, 201, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
-    /** `Base Colors/Primary Btn Solid/button-stroke` — 1px hairline on hover and pressed. */
-    'btn-stroke': scheme === 'light' ? color['brand-primary-primary'] : 'rgba(255, 255, 255, 0.7)',
   }
 }
 

@@ -6,8 +6,9 @@
  * assumes are present.
  */
 export { Button, type ButtonProps } from './components/Button'
+export { Link, type LinkProps, type LinkSize, type LinkVariant } from './components/Link'
 
-export { IconArrowRight, IconRefresh, type IconProps } from './icons'
+export { IconArrowForward, IconArrowRight, IconRefresh, type IconProps } from './icons'
 
 export {
   ScratchProvider,
@@ -16,6 +17,7 @@ export {
   cssVariablesResolver,
   componentTheme,
   type ButtonSize,
+  type LinkThemeSize,
   colorLight,
   colorDark,
   radius,
