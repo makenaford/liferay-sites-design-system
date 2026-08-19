@@ -211,15 +211,18 @@
 
 /* ============================================================================== Link
  *
- * Figma models the link on three axes — Style (Default | Secondary), Size (Small | Medium | Large)
- * and Icon — which map onto `variant`, `size` and the `leftSection` / `rightSection` props. It also
- * has a State axis (Default | Hover | Active | Visited | Disabled), and every one of the 30 variants
- * binds its label to a colour token, so all four non-default states below are read from the file
- * rather than derived. Figma names the two styles Primary and Secondary; the prop values follow the
- * variation sheet's Default / Secondary, and the Code Connect mapping bridges the two.
+ * Figma models the link on Style (Primary | Secondary), Size (Small | Medium | Large), Icon, and
+ * State (Default | Hover | Active | Visited | Disabled) — 30 variants, each binding its label to a
+ * colour token. Those map onto `variant`, `size`, the `leftSection` / `rightSection` props, and the
+ * real CSS interaction states.
  *
- * Mantine's Anchor root is a single `<a>` at specificity 0,1,0, so every rule here carries an
- * attribute selector alongside the class and stays ahead of it.
+ * The `default` style uses Figma's colours unchanged. The `secondary` style is restructured, because
+ * as drawn it fails three things a link has to get right. Each deviation below is annotated with the
+ * reason and the token it now uses; every value is still a real Figma token, and the mapping is
+ * summarised in README.md so it can be taken back to the design file.
+ *
+ * Selectors follow the LVHA order that `:visited` and `:hover` require to cascade correctly, and each
+ * carries an attribute selector so it stays ahead of Mantine's single-class Anchor rules.
  */
 
 /*
@@ -238,7 +241,20 @@
   gap: var(--sds-link-gap);
   /* Figma's label style is Source Sans 3 SemiBold at every size. */
   font-weight: 600;
+  /*
+   * Keep the underline clear of descenders and never thinner than a hairline, so the non-colour state
+   * cue stays legible at 14px as well as 21px.
+   */
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: max(1px, 0.0625em);
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/* WCAG 2.3.3 — honour a request for less motion; the colour change itself still happens. */
+@media (prefers-reduced-motion: reduce) {
+  .link[data-variant] {
+    transition: none;
+  }
 }
 
 /* Both icon slots. Figma scales the icon box with the label: 20px, 16px, 12px. */
@@ -254,14 +270,31 @@
   height: 100%;
 }
 
-/* `Styles/focus-ring` — the same 2px ring the button uses, offset so it clears the text. */
+/*
+ * `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1` (#377cff), which clears 3:1 against both page
+ * backgrounds (4.7:1 on dark, 3.6:1 on light) as WCAG 1.4.11 requires of a focus indicator. The
+ * offset keeps it off the glyphs so the label stays readable inside the ring (2.4.11).
+ */
 .link:focus-visible {
   outline: 2px solid var(--sds-action-primary-hover);
   outline-offset: 2px;
   border-radius: var(--mantine-radius-xs);
 }
 
-/* ------------------------------------------------------------- Style = Default (Figma: Primary) */
+/*
+ * WCAG 1.4.1 — a state change signalled by colour alone is not perceivable to everyone. Mantine's
+ * `underline="hover"` covers pointer hover and active; keyboard focus needs saying explicitly.
+ */
+.link[data-variant]:focus-visible {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------- Style = Default (Figma: Primary)
+ *
+ * Figma's ramp is used as drawn. Its light-mode hover is only a slight darkening
+ * (#004ad7 -> #003eb3), but the underline that now accompanies hover carries the state change, so
+ * there is no reason to override the designed colour.
+ */
 
 .link[data-variant='default'] {
   color: var(--sds-action-link-default-link);
@@ -271,7 +304,8 @@
   color: var(--sds-action-link-visited-link);
 }
 
-.link[data-variant='default']:hover {
+.link[data-variant='default']:hover,
+.link[data-variant='default']:focus-visible {
   color: var(--sds-action-link-hover-link);
 }
 
@@ -281,43 +315,77 @@
 
 /* --------------------------------------------------------------------------- Style = Secondary
  *
- * The resting colour is `Action/Neutral/Default`, which is `#ffffff` in both Figma colour modes — so
- * this style only reads on a dark surface. See the note in README.md.
+ * Restructured. Figma draws this style only on the dark canvas, and the three problems that causes
+ * are fixed here rather than reproduced:
  *
- * Its other states move to `Surfaces/Text/Primary`, which is mode-dependent: an almost imperceptible
- * shift on dark (#ffffff -> #f0f1f5), and a jump from invisible to near-black on light. Reproduced as
- * drawn.
+ * 1. Rest was `Action/Neutral/Default`, which is #ffffff in *both* colour modes — 1.03:1 against the
+ *    light page background, i.e. invisible. It now uses `Surfaces/Text/Primary`, the mode-aware
+ *    highest-contrast neutral. On dark that is #f0f1f5, indistinguishable from the white Figma shows;
+ *    on light it is #262c37, which actually appears.
+ * 2. Hover was `Surfaces/Text/Primary` — from #ffffff to #f0f1f5, a change of about 4% that nobody
+ *    can see. It now moves to the link accent, the same `Action/Link/Hover Link` the default style
+ *    uses, which is an unmistakable shift in both modes and reads as "this is a link".
+ * 3. Disabled was also `Surfaces/Text/Primary` — the same colour as its own hover, and at full
+ *    contrast, so a disabled link looked exactly like an interactive one. It now uses
+ *    `Action/Neutral/Disabled`, Figma's own token for the purpose.
  */
 
 .link[data-variant='secondary'] {
-  color: var(--sds-action-neutral-default);
+  color: var(--sds-surfaces-text-primary);
 }
 
 .link[data-variant='secondary']:visited {
+  /* Unchanged from Figma, and mode-aware already. */
   color: var(--sds-action-link-visited-link);
 }
 
 .link[data-variant='secondary']:hover,
+.link[data-variant='secondary']:focus-visible {
+  color: var(--sds-action-link-hover-link);
+}
+
 .link[data-variant='secondary']:active {
-  color: var(--sds-surfaces-text-primary);
+  color: var(--sds-action-link-active-link);
 }
 
 /* ------------------------------------------------------------------------ State = Disabled
  *
- * `aria-disabled` carries the state, since an `<a>` has no `disabled` attribute. Figma gives the two
- * styles different disabled colours — and notably leaves Secondary at full-contrast
- * `Surfaces/Text/Primary`, which does not read as disabled at all.
+ * The component drops the `href` when disabled, so the element is no longer a link: not focusable,
+ * not activatable, and announced as disabled. That is the ARIA guidance for links, which have no
+ * `disabled` attribute of their own — `aria-disabled` on a still-href'd anchor leaves a keyboard trap
+ * where the link announces as disabled but still follows on Enter.
+ *
+ * Contrast minimums do not apply here (WCAG 1.4.3 exempts inactive controls), but the colour still
+ * has to read as unavailable, which is what Figma's Secondary disabled failed to do.
  */
 
-.link[data-variant='default'][aria-disabled='true'] {
+.link[data-variant][data-disabled] {
+  cursor: default;
+  pointer-events: none;
+  /* The underline is an affordance; a disabled link has nothing to afford. */
+  text-decoration: none;
+}
+
+.link[data-variant='default'][data-disabled] {
   color: var(--sds-action-link-disabled-link);
 }
 
-.link[data-variant='secondary'][aria-disabled='true'] {
-  color: var(--sds-surfaces-text-primary);
+.link[data-variant='secondary'][data-disabled] {
+  color: var(--sds-action-neutral-disabled);
 }
 
-.link[aria-disabled='true'] {
-  pointer-events: none;
-  cursor: default;
+/* ------------------------------------------------------------------------- forced colours
+ *
+ * In a forced-colours mode the author palette is replaced wholesale, which would leave the link
+ * indistinguishable from body text. Keeping the underline is the one cue that survives, and the focus
+ * ring is handed back to the system highlight colour.
+ */
+@media (forced-colors: active) {
+  .link[data-variant] {
+    text-decoration: underline;
+  }
+
+  .link:focus-visible {
+    outline-color: Highlight;
+  }
 }

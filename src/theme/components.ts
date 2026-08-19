@@ -117,9 +117,16 @@ export const componentTheme: MantineThemeComponents = {
     classNames: { root: classes.link },
 
     defaultProps: {
-      /** Figma's default cell: Style Default, Size Large. */
+      /** Figma's default cell: Style Primary, Size Large. */
       variant: 'default',
       size: 'lg',
+      /**
+       * Figma's `Underline` boolean defaults to false. This defaults to `hover` instead: a state
+       * change carried by colour alone is not perceivable to everyone (WCAG 1.4.1), and the resting
+       * appearance still matches the design. `underline="always"` is the right choice for a link
+       * inside a paragraph.
+       */
+      underline: 'hover',
     },
 
     /**

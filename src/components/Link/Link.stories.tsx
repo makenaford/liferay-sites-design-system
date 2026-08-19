@@ -35,7 +35,12 @@ const meta = {
     underline: {
       options: ['never', 'hover', 'always'],
       control: 'inline-radio',
-      description: "Figma's Underline boolean defaults to false, so this defaults to `never`.",
+      description:
+        'Defaults to `hover` — the non-colour state cue WCAG 1.4.1 asks for. Use `always` inside a paragraph.',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Drops the href, so the element stops being a focusable, activatable link.',
     },
     leftSection: { control: false },
     rightSection: { control: false },
@@ -46,7 +51,9 @@ const meta = {
         component: [
           'A themed Mantine `Anchor` matching the Figma `Link` component set — an inline row of label and optional icons with a 4px gap.',
           '',
-          'Unlike Button, the icon box scales with the label (20px / 16px / 12px). All 30 Figma variants bind their label to a colour token, so every state below is read from the file rather than derived.',
+          'Unlike Button, the icon box scales with the label (20px / 16px / 12px).',
+          '',
+          "The `default` style uses Figma's colour ramp unchanged. The `secondary` style is restructured against WCAG, because Figma only ever draws it on the dark canvas — see the **States** story and the state table in README.md.",
         ].join('\n'),
       },
     },
@@ -64,8 +71,9 @@ export const Playground: Story = {
 }
 
 /**
- * The two styles. `secondary` is `Action/Neutral/Default` — white in both Figma colour modes — so it
- * only reads on a dark surface. Switch the toolbar to Light to see the problem.
+ * The two styles. `secondary` now uses the mode-aware `Surfaces/Text/Primary` rather than Figma's
+ * hard `#ffffff`, so it reads in both colour modes — switch the toolbar to Light and both still
+ * appear.
  */
 export const Variants: Story = {
   render: (args) => (
@@ -117,12 +125,12 @@ export const Icons: Story = {
 }
 
 /**
- * Hover, active, visited and disabled are all specified in Figma. `default` moves through the
- * `Action/Link/*` ramp; `secondary` shifts to `Surfaces/Text/Primary`, which on a dark surface is a
- * barely perceptible `#ffffff` -> `#f0f1f5` — hence the underline column.
+ * Hover, focus, active, visited and disabled. Hover and click these, and tab to them for the focus
+ * ring — every state carries a non-colour cue as well as a colour change.
  *
- * Note Figma leaves `secondary` disabled at full-contrast `Surfaces/Text/Primary`, so it does not read
- * as disabled. Reproduced as drawn; see README.md.
+ * `default` uses Figma's ramp as drawn. `secondary` is restructured: its resting colour is the
+ * mode-aware neutral, and hover moves to the link accent instead of the 4% shift Figma specifies.
+ * Disabled drops the href entirely, so tabbing skips it.
  */
 export const States: Story = {
   render: (args) => (
@@ -136,13 +144,13 @@ export const States: Story = {
             <Link {...args} variant={variant}>
               Interactive
             </Link>
-            <Link {...args} variant={variant} underline="hover">
-              Underline on hover
+            <Link {...args} variant={variant} underline="always">
+              Always underlined
             </Link>
             <Link {...args} variant={variant} href="https://example.com">
               Visited
             </Link>
-            <Link {...args} variant={variant} aria-disabled="true">
+            <Link {...args} variant={variant} disabled>
               Disabled
             </Link>
           </Group>
@@ -153,6 +161,30 @@ export const States: Story = {
   args: {
     rightSection: <IconArrowForward />,
   },
+}
+
+/**
+ * A link inside a paragraph needs `underline="always"`: at rest it has to be distinguishable from the
+ * text around it, and colour alone does not do that (WCAG 1.4.1). The default `hover` underline is for
+ * standalone links, where being a separate element is itself the cue.
+ */
+export const InProse: Story = {
+  render: (args) => (
+    <Text maw={520} c="var(--sds-surfaces-text-secondary)">
+      Tokens are exported from Figma and committed to the repo, so the theme is generated rather than
+      transcribed. The{' '}
+      <Link {...args} size="md" underline="always">
+        design tokens page
+      </Link>{' '}
+      renders every value straight from that export, and the{' '}
+      <Link {...args} size="md" underline="always" variant="secondary">
+        secondary style
+      </Link>{' '}
+      is shown alongside it for comparison.
+    </Text>
+  ),
+  args: { rightSection: undefined },
+  parameters: { frame: { width: 560 } },
 }
 
 /**

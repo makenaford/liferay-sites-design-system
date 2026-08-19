@@ -137,24 +137,66 @@ Figma names the styles **Primary** and **Secondary**; the prop values follow the
 | `md` | 18/24px | 16px |
 | `sm` | 14/20px | 12px |
 
-Unlike Button, the icon box scales with the label. All 30 Figma variants bind their label to a colour
-token, so every state is read from the file rather than derived:
+Unlike Button, the icon box scales with the label.
 
-| State | `default` (Figma Primary) | `secondary` |
+### States
+
+All 30 Figma variants bind their label to a colour token, so the design intent is fully specified. The
+`default` style is used exactly as drawn. The `secondary` style is **restructured** — Figma only ever
+draws it on the dark canvas, and three of its five states do not survive contact with a light
+background or a screen reader.
+
+| State | `default` (Figma Primary) | `secondary` | |
+| --- | --- | --- | --- |
+| rest | `Action/Link/Default Link` | `Surfaces/Text/Primary` | changed from `Action/Neutral/Default` |
+| visited | `Action/Link/Visited Link` | `Action/Link/Visited Link` | as drawn |
+| hover / focus | `Action/Link/Hover Link` | `Action/Link/Hover Link` | changed from `Surfaces/Text/Primary` |
+| active | `Action/Link/Active Link` | `Action/Link/Active Link` | changed from `Surfaces/Text/Primary` |
+| disabled | `Action/Link/Disabled Link` | `Action/Neutral/Disabled` | changed from `Surfaces/Text/Primary` |
+
+Every replacement is itself a Figma token — nothing is invented — so each change is one edit to take
+back to the design file. What each one fixes:
+
+1. **Rest.** `Action/Neutral/Default` is `#ffffff` in *both* colour modes, which is **1.03:1** against
+   the light page background — the link does not appear at all. `Surfaces/Text/Primary` is the
+   mode-aware equivalent: `#f0f1f5` on dark, indistinguishable from the white Figma shows, and
+   `#262c37` on light. That moves it from 1.03:1 to **13.66:1**.
+2. **Hover.** Figma moves `#ffffff` to `#f0f1f5` — a change of roughly 4%, which nobody can perceive.
+   It now moves to the link accent, the same `Action/Link/Hover Link` the default style uses: an
+   obvious shift in both hue and lightness, and one that reads as "this is a link".
+3. **Disabled.** Figma uses `Surfaces/Text/Primary` — the same colour as that style's own hover, at
+   full contrast, so a disabled link was indistinguishable from an interactive one.
+   `Action/Neutral/Disabled` is Figma's own token for the purpose.
+
+Measured against both page backgrounds, every interactive state now clears WCAG AA's 4.5:1:
+
+| | light | dark |
 | --- | --- | --- |
-| default | `Action/Link/Default Link` | `Action/Neutral/Default` |
-| hover | `Action/Link/Hover Link` | `Surfaces/Text/Primary` |
-| active | `Action/Link/Active Link` | `Surfaces/Text/Primary` |
-| visited | `Action/Link/Visited Link` | `Action/Link/Visited Link` |
-| disabled | `Action/Link/Disabled Link` | `Surfaces/Text/Primary` |
+| `default` rest / visited / hover / active | 6.9 / 6.3 / 8.7 / 13.8 | 8.0 / 11.5 / 12.9 / 9.6 |
+| `secondary` rest / visited / hover / active | 13.7 / 6.3 / 8.7 / 13.8 | 17.5 / 11.5 / 12.9 / 9.6 |
+| focus ring | 3.7 | 5.2 |
 
-Resolved, the `default` ramp is `#004ad7 / #003eb3 / #00256c / #6b46c1 / #7aa8ff` in light mode and
-`#74a4ff / #bbd2ff / #8fb5ff / #c6bfff / #74a4ff` at 60% in dark.
+Disabled sits at 2.3 and 2.7 in light mode, which is intentional and permitted — WCAG 1.4.3 exempts
+inactive controls, and being visibly muted is the point.
 
-Figma's `Underline` boolean defaults to false and no variant sets a text decoration, so `underline`
-defaults to `never`. Mantine's `underline` prop covers the true case — worth passing
-`underline="hover"` for links inside body copy, where a colour shift alone is a weak affordance, and
-especially for `secondary`, whose hover moves only from `#ffffff` to `#f0f1f5` on a dark surface.
+### Underline, and why the default changed
+
+Figma's `Underline` boolean defaults to false. In code `underline` defaults to **`hover`** instead,
+because a state change carried by colour alone is not perceivable to everyone (WCAG 1.4.1) and the
+resting appearance still matches the design. Keyboard focus gets the underline too, which Mantine's
+own `underline="hover"` does not cover.
+
+Pass **`underline="always"`** for a link inside a paragraph: there the link has to be distinguishable
+from the text around it at rest, not just on hover. The `InProse` story shows this.
+
+### Disabled links
+
+`disabled` drops the `href`, so the element stops being a link: not in the tab order, not activatable,
+and announced as disabled. `aria-disabled` on an anchor that still has an `href` is worse than no state
+at all — it announces "disabled" and then navigates anyway on Enter.
+
+Prefer not needing it. A link that goes nowhere is usually better as plain text, and an action that is
+temporarily unavailable is a `Button`.
 
 Renders an `<a>`. For a router link pass `component={NavLink}`; for an action that is not navigation,
 use `Button`.
@@ -202,13 +244,12 @@ used on a component that is only ever drawn on the dark canvas.
 
 - **Button `neutral`** binds to `Neutral/03`–`Neutral/05`, which Figma inverts between modes, with a
   white label. On dark that is 6.6:1 and 8.8:1 — fine. In light mode the steps are pale greys and the
-  white label lands at **1.72:1 and 1.46:1** against a 4.5:1 WCAG AA minimum.
-- **Link `secondary`** uses `Action/Neutral/Default`, which is `#ffffff` in *both* modes. Against the
-  light page background (`#fbfcfe`) that is **1.03:1** — the link simply does not appear.
-
-Both need either a light-mode value specified in Figma, or documenting as dark-surface-only. The
-`default` link style, by contrast, is fine in both modes (6.9:1 light, and its hover/active steps go
-to 8.7:1 and 13.8:1).
+  white label lands at **1.72:1 and 1.46:1** against a 4.5:1 WCAG AA minimum. **Still open** —
+  reproduced as drawn, because unlike the link there is no existing token that obviously replaces it.
+- **Link `secondary`** had the same problem, worse: `Action/Neutral/Default` is `#ffffff` in *both*
+  modes, giving **1.03:1**. **Fixed** — see the Link state table above. The same approach would work
+  for the button (swap the mode-independent token for the mode-aware one), which is the argument for
+  fixing it there too.
 
 ### Two disagreeing sources for the label size
 
@@ -258,13 +299,14 @@ first two are wired up; Mantine has two colour schemes, so a third would need a 
 
 ### Smaller things
 
-- **Link `secondary` barely changes on hover.** Its resting colour is `#ffffff` and its hover is
-  `Surfaces/Text/Primary`, which on a dark surface is `#f0f1f5` — a shift of about 4%. Passing
-  `underline="hover"` is the practical fix.
-- **Link `secondary` disabled is full-contrast.** Figma gives it `Surfaces/Text/Primary`, the same
-  colour as its hover and active states, so a disabled secondary link does not read as disabled.
-  Reproduced as drawn. The `default` style's disabled colour is 2.31:1 in light mode, below AA but
-  permitted — WCAG 1.4.3 exempts inactive controls.
+- **Link `secondary`'s hover and disabled states** were imperceptible and full-contrast respectively.
+  **Fixed** — see the Link state table. Both changes are token swaps to take back to Figma.
+- **No component specifies a focus indicator except via `Styles/focus-ring`.** That style is 2px
+  `Brand/Primary/Lighten/1`, which happens to clear 3:1 on both page backgrounds (3.7:1 and 5.2:1), so
+  it is used for both Button and Link. Worth confirming it is meant to be the global focus treatment.
+- **Small links are below the 24px target size.** A `size="sm"` link is 20px tall. WCAG 2.5.8 exempts
+  links inline in a sentence, but a standalone small CTA link does not qualify. Use `md` or larger for
+  standalone links, or add padding at the call site.
 - **Button outline's Hover and Pressed states are identical** — both use `Action/Primary/Active` and
   are otherwise drawn the same, so pressing gives no feedback. Solid buttons do get a distinct
   pressed treatment.
