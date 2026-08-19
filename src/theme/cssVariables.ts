@@ -27,6 +27,29 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'btn-glass-to': scheme === 'light' ? 'rgba(187, 210, 255, 0)' : 'rgba(255, 255, 255, 0)',
     /** `Components/Glass Card/shadow` — the 6px ambient glow under an outline button. */
     'glass-shadow': scheme === 'light' ? 'rgba(173, 201, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)',
+
+    /** `Components/Label/lab-tonal-bg` — the tonal label's fill. */
+    'label-tonal-bg':
+      scheme === 'light' ? color['brand-primary-lighten-5'] : color['neutral-02'],
+    /** `Components/Label/lab-tonal-text` */
+    'label-tonal-text':
+      scheme === 'light' ? color['brand-primary-darken-5'] : color['action-neutral-inverted'],
+    /**
+     * `Components/Label/lab-grad-bg-step-01` / `-02` — the two stops of the gradient label. Only the
+     * dark values alias exported tokens (`Accent/Primary Blue Accent` and `Accent/Product Accent`);
+     * the light pair are literals in Figma.
+     */
+    'label-grad-from':
+      scheme === 'light' ? '#edf3ff' : color['accent-primary-blue-accent'],
+    'label-grad-to': scheme === 'light' ? '#ede2ff' : color['accent-product-accent'],
+    /**
+     * The gradient label's own text colour. This one is not a variable in Figma at all — the text
+     * layer carries a raw `#1f2531` in every Gradient variant, which is `Neutral/01`'s *dark* value,
+     * held constant across both modes. Reproduced literally rather than bound to `Neutral/01`, which
+     * would flip to `#f0f1f5` in light mode and put white text on the pale gradient. Flagged in
+     * README.md as a value for the design file to tokenise.
+     */
+    'label-grad-text': '#1f2531',
   }
 }
 

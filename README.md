@@ -109,6 +109,59 @@ Measurements, all taken from the component rather than invented:
 
 `rounded` overrides the radius to Figma's `Border Radius/round` pill.
 
+### States
+
+Every variant's label binds to a colour token in Figma and stays constant across states; the fill is a
+two-stop diagonal gradient that Figma re-angles and re-stops per state. `filled`, `outline` and
+`rounded` are used exactly as drawn. `neutral` is **restructured**, for the same reason the Link's
+`secondary` style was: Figma draws it only on the dark canvas and it does not survive contact with a
+light one.
+
+As drawn, `Color=Neutral` binds its fill to the `Neutral/03`–`05` steps under a white
+`Action/Neutral/Inverted` label. Figma inverts that ramp between modes, so in light mode the steps
+become pale greys and the white label lands at **1.72:1 and 1.46:1** against WCAG AA's 4.5:1 minimum.
+The fill now binds to `Action/Neutral/*` instead — the neutral counterpart of the `Action/Primary/*`
+group `filled` already uses, and the group the white label itself comes from:
+
+| State | Figma | Now | |
+| --- | --- | --- | --- |
+| rest | `Neutral/04` → `Neutral/03` | `Action/Neutral/Active` → `Action/Neutral/Hover` | changed |
+| hover | `Neutral/03` → `Neutral/04` | the same pair reversed | changed, structure as drawn |
+| focus / pressed | `Neutral/05` → `Neutral/03` | flat `Action/Neutral/Hover` | changed |
+| disabled | the rest fill at 50% opacity | as drawn | unchanged |
+| label, all states | `Action/Neutral/Inverted` | as drawn | unchanged |
+
+Both replacements are real Figma tokens, so this is one edit to take back to the design file: rebind
+the Neutral fill from the `Neutral/*` ramp to `Action/Neutral/*`. What it fixes:
+
+1. **The ramp is mode-dependent and the label is not.** `Action/Neutral/Hover` (`#34465b`) and
+   `Action/Neutral/Active` (`#3d536b`) hold the same value in both Figma modes, so the white label
+   clears **9.66:1 and 7.93:1 in both**, rather than 6.6:1 / 8.8:1 on dark and 1.72:1 / 1.46:1 on
+   light.
+2. **The state ordering also inverted.** Figma's pressed step, `Neutral/05`, is *lighter* than
+   `03`/`04` in dark mode and *darker* than both in light — pressing a button lightened it in one mode
+   and darkened it in the other. Pressed is now the darker of the two slates in both.
+3. **`Action/Neutral/Default` cannot be the resting stop.** It is `#ffffff` in both modes — the same
+   mode-independent white that made the Link's rest state invisible — so the resting pair is `Active`
+   (the lighter slate) into `Hover`, and the group's Hover/Active naming reads one step off the state
+   it is used for. Worth a rename, or a `Neutral` solid-button entry in `Components/*`, if this goes
+   back to Figma.
+
+Measured in the browser against both page backgrounds, with the white label:
+
+| | light | dark |
+| --- | --- | --- |
+| rest (both stops) | 7.93 / 9.66 | 7.93 / 9.66 |
+| hover (both stops) | 9.66 / 7.93 | 9.66 / 7.93 |
+| focus / pressed | 9.66 | 9.66 |
+| disabled | 2.40 / 2.58 | 3.67 / 4.00 |
+
+Disabled is below 4.5:1 by design — WCAG 1.4.3 exempts inactive controls, and it is Figma's own
+treatment (the rest fill at 50% opacity) rather than a deviation. The one number that gets slightly
+worse is the fill's contrast against the dark page background, 2.99/2.23 as drawn versus 2.48/2.04
+now; both are under the 3:1 of WCAG 1.4.11, which applies to a control's boundary only where the
+boundary is what identifies the control, and a filled button with a visible label is not that case.
+
 ## Link
 
 From the Figma `Link` component set. A themed Mantine `Anchor` — an inline row of label and optional
@@ -203,6 +256,70 @@ temporarily unavailable is a `Button`.
 Renders an `<a>`. For a router link pass `component={NavLink}`; for an action that is not navigation,
 use `Button`.
 
+## Label
+
+From the Figma `Label CTA` component set (node `15121:237267`). A themed Mantine `Badge` — a static
+row of optional icon and text with a 4px gap.
+
+```tsx
+import { IconCheck, Label } from 'scratch'
+
+<Label variant="light" size="lg" leftSection={<IconCheck />}>
+  Available now
+</Label>
+```
+
+Figma's Style axis maps onto Mantine's `variant` names one for one:
+
+| Figma Style | `variant` | What it is |
+| --- | --- | --- |
+| Tonal | `light` (default) | flat `Components/Label/lab-tonal-bg` fill |
+| Gradient | `filled` | two-stop `lab-grad-bg-step-01` → `-02` fill |
+| Outline | `outline` | gradient stroke, no fill |
+
+| Figma axis | Prop |
+| --- | --- |
+| Size — Large / Medium / Small | `size="lg" \| "md" \| "sm"` (default `lg`) |
+| `Show Icon` + its instance swap | `leftSection` |
+| Text | `children` |
+
+Measurements, all taken from the component:
+
+| | Height | Padding X | Gap | Label | Icon | Border | Radius |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `lg` | 40px | 16px | 4px | 16/24px | 20px | 2px | `round` (pill) |
+| `md` | 32px | 8px | 4px | 16/24px | 20px | 1.5px | 8px |
+| `sm` | 22px | 8px | 4px | 14/17.5px | 16px | 1px | 4px |
+
+Large and Medium share one text style (`Paragraph/Base/Heavy`); only Small steps down. The border
+weight only shows on `outline`, and Figma varies it per size.
+
+**Radius comes with the size.** Figma binds it to the Size axis — `Border Radius/round` at Large,
+`/medium` at Medium, `/small` at Small — so `radius` is only for deviating from the design:
+`radius="round"` is the 1000px pill and `radius="sm"` the 4px corner, on any size. The **Radius**
+story shows all three rows.
+
+A label is not a control: the design draws no hover, focus or pressed state, and this renders a plain
+`<div>`. For something clickable use `Button`; for navigation, `Link`. Because the variant carries no
+meaning a screen reader can reach, put anything the label is actually communicating in its text.
+
+Mantine's Badge is uppercase, bold and letter-spaced by default; Figma's label is none of those, so
+the theme resets all three (text case as authored, Source Sans 3 SemiBold, no tracking).
+
+The `outline` stroke is a gradient — `Brand/Primary/Primary` held to the halfway point, then out to
+`Accent/Product Accent`. CSS cannot paint a gradient border directly (`border-image` ignores
+`border-radius`, which would square off the pill), so it is a masked background on a pseudo-element.
+The mask has to live on the pseudo-element rather than the label: a mask applies to everything an
+element renders, so on the root it takes the text and icon with it.
+
+Contrast, measured in the browser against each variant's own background:
+
+| | light | dark |
+| --- | --- | --- |
+| `light` (tonal) | 12.3 | 11.6 |
+| `filled` (both gradient stops) | 13.8 / 12.4 | 6.1 / 6.2 |
+| `outline` (against the page) | 13.7 | 17.5 |
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -281,19 +398,21 @@ These are places where the Figma library is ambiguous, inconsistent, or incomple
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
 
-### Two styles are invisible in light mode
+### Two styles were invisible in light mode
 
-Both are white-on-white, and both stem from the same thing: a token whose value is mode-independent,
-used on a component that is only ever drawn on the dark canvas.
+Both were white-on-white, and both stem from the same thing: a token whose value is mode-independent,
+used on a component that is only ever drawn on the dark canvas. Both are now fixed, by swapping the
+offending token for another real Figma token — one edit each to take back to the design file.
 
-- **Button `neutral`** binds to `Neutral/03`–`Neutral/05`, which Figma inverts between modes, with a
+- **Button `neutral`** bound to `Neutral/03`–`Neutral/05`, which Figma inverts between modes, with a
   white label. On dark that is 6.6:1 and 8.8:1 — fine. In light mode the steps are pale greys and the
-  white label lands at **1.72:1 and 1.46:1** against a 4.5:1 WCAG AA minimum. **Still open** —
-  reproduced as drawn, because unlike the link there is no existing token that obviously replaces it.
+  white label landed at **1.72:1 and 1.46:1** against a 4.5:1 WCAG AA minimum. **Fixed** — the fill
+  binds to the mode-independent `Action/Neutral/*` slates instead, which clear 7.93:1 and 9.66:1 in
+  both modes. See the Button state table above; the same table records that Figma's Hover/Active
+  naming ends up one step off the state each value is used for, because `Action/Neutral/Default` is
+  white and cannot be the resting fill.
 - **Link `secondary`** had the same problem, worse: `Action/Neutral/Default` is `#ffffff` in *both*
-  modes, giving **1.03:1**. **Fixed** — see the Link state table above. The same approach would work
-  for the button (swap the mode-independent token for the mode-aware one), which is the argument for
-  fixing it there too.
+  modes, giving **1.03:1**. **Fixed** — see the Link state table above.
 
 ### Two disagreeing sources for the label size
 
@@ -309,6 +428,30 @@ number variables in the typography collection disagree:
 Only the small size is actually bound to its variable in either component. The components are treated
 as authoritative here; the first two variables in each set look stale. The link's 14px style is also
 named `Action/Link/X-small` rather than `Small`, which does not match the Size axis.
+
+The Label has a version of the same split. Its Small text style is named
+`Paragraph/X-Small/Semi Bold` but is set at **14px/125%**, while the `Size/Paragraph/X-Small` variable
+that name points at reads **11px** in all three typography modes. Nothing is bound, so the style wins
+here too — the 14px in `LABEL_SIZES` is the drawn value. Either the style is on the wrong step of the
+scale or the variable is stale.
+
+### The Label has no size above Large
+
+`Label CTA` draws three sizes — Large 40px, Medium 32px, Small 22px — and the usage sheet on the
+*Migration (clean)* page uses the same three. An `xl` was asked for during implementation and is
+deliberately **not** shipped, because inventing one means inventing a height, a padding step, a text
+style and a border weight that no cell in the file specifies. Adding a fourth cell to the component
+set is the fix; `LABEL_SIZES` in `src/theme/components.ts` is then a four-line change.
+
+### The gradient label's text colour is not a token
+
+Every `Style=Gradient` variant of `Label CTA` carries a raw `#1f2531` on its text layer, bound to no
+variable, while the Tonal and Outline styles both use one (`Components/Label/lab-tonal-text` and
+`Surfaces/Text/Primary`). That value is `Neutral/01`'s *dark* value, held constant across both modes —
+which is what it has to be, since the gradient fill is pale in light mode and mid-tone on dark, so a
+mode-aware neutral would invert to white text on the pale gradient and fail. It is reproduced as a
+literal in `src/theme/cssVariables.ts`. A `Components/Label/lab-grad-text` variable holding the same
+mode-independent value would close this.
 
 ### The Link's icons are inconsistent across variants
 
@@ -331,10 +474,11 @@ Figma's `Color Styles` collection holds **144** colour variables across eight gr
 committed as `color.action.*.tokens.json`, which is what the Link's state colours come from.
 
 Still missing: `Components/*` (49 variables) and `Surfaces/Page Background/*`. They have to be added
-together, because the former aliases the latter. Until then the handful of `Components/Button Outline/*`
-and `Glass Card/shadow` values used by the outline button are transcribed in
-`src/theme/cssVariables.ts`, expressed as references to exported tokens wherever the alias target
-exists. Re-exporting the whole collection from Figma would close this and let those literals go.
+together, because the former aliases the latter. Until then the handful of `Components/*` values the
+components actually use are transcribed in `src/theme/cssVariables.ts`, expressed as references to
+exported tokens wherever the alias target exists: `Button Outline/*` and `Glass Card/shadow` for the
+outline button, and `Label/lab-tonal-bg`, `lab-tonal-text` and `lab-grad-bg-step-01/-02` for the Label.
+Re-exporting the whole collection from Figma would close this and let those literals go.
 
 The collection also has a **third mode, `Learn-Dark`**, alongside `Light` and `LRDC-Dark`. Only the
 first two are wired up; Mantine has two colour schemes, so a third would need a different mechanism.
@@ -368,7 +512,7 @@ first two are wired up; Mantine has two colour schemes, so a third would need a 
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Link)
+src/components/          One directory per component (Button, Label, Link)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the set; generated.tsx is built from @mingcute/svg
 src/docs/                Storybook Overview pages

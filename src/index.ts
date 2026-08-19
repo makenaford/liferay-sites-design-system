@@ -6,6 +6,7 @@
  * assumes are present.
  */
 export { Button, type ButtonProps } from './components/Button'
+export { Label, type LabelProps, type LabelSize, type LabelVariant } from './components/Label'
 export { Link, type LinkProps, type LinkSize, type LinkVariant } from './components/Link'
 
 export * from './icons'
@@ -17,6 +18,7 @@ export {
   cssVariablesResolver,
   componentTheme,
   type ButtonSize,
+  type LabelThemeSize,
   type LinkThemeSize,
   colorLight,
   colorDark,

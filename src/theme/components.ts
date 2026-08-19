@@ -1,4 +1,4 @@
-import { Anchor, Button, type MantineThemeComponents } from '@mantine/core'
+import { Anchor, Badge, Button, type MantineThemeComponents } from '@mantine/core'
 import classes from './components.module.css'
 import { radius } from './tokens.generated'
 
@@ -48,6 +48,38 @@ const LINK_SIZES = {
 } as const
 
 export type LinkThemeSize = keyof typeof LINK_SIZES
+
+/**
+ * The three Figma label sizes, from the `Label CTA` component set. Height, horizontal padding, the
+ * 4px gap, the icon box, the border weight and the corner radius are all taken from the component;
+ * the label size comes from its text style.
+ *
+ * Radius is bound to Size in Figma — `Border Radius/round` at Large, `/medium` at Medium,
+ * `/small` at Small — so it is part of the size spec rather than a separate axis. An explicit
+ * `radius` prop still overrides it.
+ *
+ * Large and Medium share one text style (`Paragraph/Base/Heavy`, 16/24); Small uses
+ * `Paragraph/X-Small/Semi Bold`, which is 14px at 125% line height. Note that style's *name*
+ * disagrees with the `Size/Paragraph/X-Small` variable, which reads 11px — the same
+ * text-style-versus-variable split Button and Link have, and the text style wins here too.
+ */
+const LABEL_SIZES = {
+  sm: { height: 22, paddingX: 8, fontSize: 14, lineHeight: 17.5, icon: 16, border: 1, radius: radius.small },
+  md: { height: 32, paddingX: 8, fontSize: 16, lineHeight: 24, icon: 20, border: 1.5, radius: radius.medium },
+  lg: { height: 40, paddingX: 16, fontSize: 16, lineHeight: 24, icon: 20, border: 2, radius: radius.round },
+} as const
+
+export type LabelThemeSize = keyof typeof LABEL_SIZES
+
+/** The label colour per variant. Constant across sizes in Figma. */
+const LABEL_TEXT_COLOR = {
+  /** Figma `Style=Gradient`. The one label colour Figma leaves untokenised — see `cssVariables.ts`. */
+  filled: 'var(--sds-label-grad-text)',
+  /** Figma `Style=Tonal` — `Components/Label/lab-tonal-text`. */
+  light: 'var(--sds-label-tonal-text)',
+  /** Figma `Style=Outline` — `Surfaces/Text/Primary`. */
+  outline: 'var(--sds-surfaces-text-primary)',
+} as const
 
 /**
  * Central component configuration for the theme.
@@ -108,6 +140,63 @@ export const componentTheme: MantineThemeComponents = {
 
           '--sds-button-gap': `${spec.gap}px`,
           '--sds-button-lh': `${spec.lineHeight}px`,
+        },
+      }
+    },
+  }),
+
+  Badge: Badge.extend({
+    classNames: {
+      root: classes.labelRoot,
+      section: classes.labelSection,
+      label: classes.labelText,
+    },
+
+    defaultProps: {
+      /** Figma's default cell: Style Tonal, Size Large. */
+      variant: 'light',
+      size: 'lg',
+    },
+
+    /**
+     * Resolves the size and style axes onto the CSS variables Mantine's Badge already reads.
+     *
+     * All three of this system's variant names are Mantine built-ins, so — exactly as with Button —
+     * Mantine injects its own `--badge-bg` / `--badge-color` / `--badge-bd` inline for each of them.
+     * Inline styles beat any stylesheet rule, so those variables are claimed here: the fill is
+     * neutralised to `transparent` and painted by `components.module.css`, which is where the tonal
+     * fill, the gradient fill and the gradient border live.
+     */
+    vars: (_theme, props) => {
+      const size = (props.size ?? 'lg') as LabelThemeSize
+      const spec = LABEL_SIZES[size] ?? LABEL_SIZES.lg
+      const variant = (props.variant ?? 'light') as keyof typeof LABEL_TEXT_COLOR
+      const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.light
+
+      return {
+        root: {
+          '--badge-height': `${spec.height}px`,
+          '--badge-padding-x': `${spec.paddingX}px`,
+          '--badge-fz': `${spec.fontSize}px`,
+          /** Mantine derives its own line height from the height; Figma's text style is explicit. */
+          '--badge-lh': `${spec.lineHeight}px`,
+          /**
+           * Figma binds the radius to Size, so the size spec owns it — but only when the call site
+           * has not asked for something else. Returning `undefined` leaves Mantine's own resolved
+           * `radius` prop in place, since the merge drops undefined values.
+           */
+          '--badge-radius': props.radius === undefined ? `${spec.radius}px` : undefined,
+
+          /** Painted by the stylesheet, which has the gradients and the mask the border needs. */
+          '--badge-bg': 'transparent',
+          '--badge-color': color,
+          /** Width and style only — the stylesheet paints the outline variant's gradient border. */
+          '--badge-bd': `${spec.border}px solid transparent`,
+          /** Kept in step with the border above: Mantine sizes the icon slots against it. */
+          '--badge-border-width': `${spec.border}px`,
+
+          '--sds-label-icon': `${spec.icon}px`,
+          '--sds-label-gap': '4px',
         },
       }
     },

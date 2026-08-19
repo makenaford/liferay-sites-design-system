@@ -66,18 +66,37 @@
   --btn-active-to: var(--sds-action-primary-default);
 }
 
-/*
- * `Color=Neutral` binds to the `Neutral/03..05` steps, which Figma inverts between colour modes.
- * The component is drawn on the dark page background, where those steps are mid-slate and the white
- * label reads well; in light mode the same steps are pale greys. See the note in README.md.
+/* --------------------------------------------------------------------------- Color = Neutral
+ *
+ * Restructured, for the same reason the Link's `secondary` style was: Figma draws this style only on
+ * the dark canvas, and it does not survive contact with a light one.
+ *
+ * As drawn, the fill binds to the `Neutral/03..05` steps — Default `04 -> 03`, Hover the same pair
+ * reversed, Focus and Pressed `05 -> 03` — under a white `Action/Neutral/Inverted` label. Figma
+ * inverts the Neutral ramp between modes, so on dark those steps are mid-slate and the white label
+ * reads at 6.6:1 and 8.8:1, while in light mode they become pale greys and the same label lands at
+ * 1.72:1 and 1.46:1 against WCAG AA's 4.5:1 minimum. The pressed step flips direction too: `05` is
+ * lighter than `03`/`04` on dark and darker than both on light.
+ *
+ * The fill now binds to `Action/Neutral/*` instead — the neutral counterpart of the `Action/Primary/*`
+ * group the `filled` variant already uses, and the group `Action/Neutral/Inverted` label itself comes
+ * from. Its `Hover` (#34465b) and `Active` (#3d536b) slates are mode-independent, so the white label
+ * clears 9.6:1 and 7.9:1 in *both* modes and the state ordering no longer depends on which mode is
+ * active. Every value is a real Figma token; the swap is recorded in README.md so it can be taken
+ * back to the design file.
+ *
+ * The two-stop diagonal, the reversal on hover and the darker pressed fill are all kept as drawn.
+ * `Action/Neutral/Default` cannot be the resting stop — it is #ffffff in both modes, the same
+ * mode-independent white that made the Link's rest state invisible — so the resting pair is `Active`
+ * (the lighter slate) into `Hover`, and pressed collapses to a flat `Hover`, the darkest of the two.
  */
 .root[data-variant='neutral'] {
-  --btn-default-from: var(--sds-neutral-04);
-  --btn-default-to: var(--sds-neutral-03);
-  --btn-hover-from: var(--sds-neutral-03);
-  --btn-hover-to: var(--sds-neutral-04);
-  --btn-active-from: var(--sds-neutral-05);
-  --btn-active-to: var(--sds-neutral-03);
+  --btn-default-from: var(--sds-action-neutral-active);
+  --btn-default-to: var(--sds-action-neutral-hover);
+  --btn-hover-from: var(--sds-action-neutral-hover);
+  --btn-hover-to: var(--sds-action-neutral-active);
+  --btn-active-from: var(--sds-action-neutral-hover);
+  --btn-active-to: var(--sds-action-neutral-hover);
 }
 
 .root[data-variant='filled'],
@@ -387,5 +406,145 @@
 
   .link:focus-visible {
     outline-color: Highlight;
+  }
+}
+
+/* ============================================================================= Label
+ *
+ * Figma source: the `Label CTA` component set (node `15121:237267`), modelled on Style
+ * (Gradient | Tonal | Outline), Size (Large | Medium | Small) and a `Show Icon` boolean. Style maps
+ * onto Mantine's `variant` names, which line up one for one:
+ *
+ *   filled  = Style Gradient — the two-stop `Components/Label/lab-grad-bg-step-01/-02` fill
+ *   light   = Style Tonal    — the flat `Components/Label/lab-tonal-bg` fill
+ *   outline = Style Outline  — no fill, a gradient stroke
+ *
+ * Size carries the height, padding, icon box, border weight and corner radius (Figma binds the
+ * radius to Size), all set in `components.ts`. There are no interaction states in the design: a
+ * label is not a control.
+ *
+ * `components.ts` neutralises Mantine's `--badge-bg` / `--badge-bd` inline, so the fills below are
+ * painted with `background-color` / `background-image`. Every selector carries an attribute or
+ * descendant beyond the class itself, which keeps it ahead of Mantine's own single-class Badge rules
+ * regardless of the order the two stylesheets land in.
+ */
+
+.labelRoot[data-variant] {
+  /* Mantine's Badge is uppercase, bold and letter-spaced. Figma's label is none of those: text case
+   * ORIGINAL, Source Sans 3 SemiBold, letter spacing 0. */
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: 0;
+  /* Figma lays the label out as an auto-layout row with a 4px gap and centred children. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* `Style=Tonal` — a flat fill under the tonal text colour. */
+.labelRoot[data-variant='light'] {
+  background-color: var(--sds-label-tonal-bg);
+}
+
+/*
+ * `Style=Gradient` — `lab-grad-bg-step-01` into `-02`. Figma's gradient transform is the identity
+ * matrix, i.e. a plain left-to-right sweep across the label box.
+ */
+.labelRoot[data-variant='filled'] {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to right,
+    var(--sds-label-grad-from) 0%,
+    var(--sds-label-grad-to) 100%
+  );
+}
+
+/*
+ * `Style=Outline` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
+ * held to the halfway point, then out to `Accent/Product Accent`. Its weight comes from the size
+ * (2px / 1.5px / 1px).
+ *
+ * CSS cannot paint a gradient *border* directly — `border-image` ignores `border-radius`, which
+ * would square off the pill. The gradient is painted as a background instead and the interior is
+ * masked out of it, which leaves the middle transparent and follows the radius exactly.
+ *
+ * That mask lives on a pseudo-element rather than on the label itself, because a mask applies to
+ * everything an element renders — put it on the root and it takes the text and icon with it. The
+ * pseudo-element covers the border box (hence the negative inset, and `overflow: visible` so it is
+ * not clipped away), and its own padding is what the mask cuts back to, leaving just the ring.
+ */
+.labelRoot[data-variant='outline'] {
+  position: relative;
+  overflow: visible;
+  background-color: transparent;
+  background-image: none;
+}
+
+.labelRoot[data-variant='outline']::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--badge-border-width));
+  padding: var(--badge-border-width);
+  border-radius: inherit;
+  background-image: linear-gradient(
+    to bottom right,
+    var(--sds-brand-primary-primary) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------------------------- internals */
+
+/*
+ * Both icon slots. Figma scales the icon box with the size — 20px at Large and Medium, 16px at
+ * Small — and keeps a 4px gap, which replaces Mantine's own `spacing-xs / 2` section margin.
+ */
+.labelRoot .labelSection {
+  margin: 0;
+  width: var(--sds-label-icon);
+  height: var(--sds-label-icon);
+  flex-shrink: 0;
+}
+
+.labelRoot .labelSection[data-position='left'] {
+  margin-inline-end: var(--sds-label-gap);
+}
+
+.labelRoot .labelSection[data-position='right'] {
+  margin-inline-start: var(--sds-label-gap);
+}
+
+.labelRoot .labelSection > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Mantine truncates the label with an ellipsis; Figma's label hugs its text, so let it. */
+.labelRoot .labelText {
+  overflow: visible;
+}
+
+/* ------------------------------------------------------------------------- forced colours
+ *
+ * A forced-colours mode replaces the author palette wholesale, which would drop the outline
+ * variant's border — it is painted as a masked background, and backgrounds are what gets replaced.
+ * Handing the border back to the system colour keeps the shape visible.
+ */
+@media (forced-colors: active) {
+  .labelRoot[data-variant='outline'] {
+    border-color: CanvasText;
+  }
+
+  .labelRoot[data-variant='outline']::before {
+    content: none;
   }
 }
