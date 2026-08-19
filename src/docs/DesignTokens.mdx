@@ -1,0 +1,39 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { ColorTokens, RadiusTokens, SpacingTokens, TypographyTokens } from './TokenTable'
+
+<Meta title="Overview/Design Tokens" />
+
+# Design tokens
+
+Everything on this page is read directly from `src/theme/tokens.generated.ts`, which is built from
+the Figma exports in `tokens/figma/`. It cannot drift from the design library — if a value here
+looks wrong, it is wrong in the export.
+
+Each token is published as a CSS variable named after its Figma path:
+`Brand/Primary/Lighten/1` becomes `--sds-brand-primary-lighten-1`.
+
+## Colour
+
+Two swatches per token: the **Light** mode value on the left, **LRDC-Dark** on the right. Where they
+match, the token is mode-independent. Note how the `neutral` ramp inverts between modes — `neutral-00`
+is white in light mode and near-black in dark.
+
+<ColorTokens />
+
+## Border radius
+
+<RadiusTokens />
+
+## Spacing
+
+Figma publishes `padding` and `gap` as two identical 14-step scales, so they are generated once.
+Steps are keyed by their pixel value, so a Figma spec reading `gap/16` translates to `gap="16"`.
+
+<SpacingTokens />
+
+## Typography
+
+Figma ships three modes of the typography collection. All three are emitted as media-queried CSS
+variables, so the type scale responds to the viewport with no work at the component level.
+
+<TypographyTokens />

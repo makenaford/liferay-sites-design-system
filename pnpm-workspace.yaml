@@ -1,0 +1,28 @@
+# pnpm workspace config. This is a single-package repo (no `packages:` globs needed) — this file
+# exists to hold pnpm 11's workspace-level settings, which no longer live in .npmrc.
+
+# Fail fast if the running Node version doesn't satisfy package.json's "engines" field, instead of
+# warning and continuing.
+engineStrict: true
+
+# Supply-chain protection: refuse to install a dependency version (direct or transitive) until
+# it's been published for at least this long, giving the community time to catch and yank
+# malicious or compromised releases. 1 week = 7 * 24 * 60 minutes.
+minimumReleaseAge: 10080
+
+# Only direct dependencies may resolve from a non-registry ("exotic") source, such as a git URL or
+# a tarball URL — a transitive/sub-dependency pinned to one of those can't sneak in unreviewed.
+blockExoticSubdeps: true
+
+# Refuse to install a package whose publisher trust level (e.g. provenance/attestation) has
+# dropped compared to a version already in the lockfile.
+trustPolicy: no-downgrade
+
+# ...but don't enforce that check forever — once a version has been out this long, treat its
+# trust level as settled rather than re-litigating it. A quarter year = 91 days in minutes.
+trustPolicyIgnoreAfter: 131040
+
+# esbuild (a transitive build tool for Vite/Storybook) has a postinstall script that fetches its
+# platform binary — required for the build to work, so it's explicitly allowed to run.
+allowBuilds:
+  esbuild: true

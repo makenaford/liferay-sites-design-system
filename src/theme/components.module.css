@@ -1,0 +1,210 @@
+/*
+ * Central styling for every component this design system themes. Nothing here is imported by a
+ * component directly — `components.ts` attaches these classes through `Component.extend`, so a
+ * treatment is defined once and consumers reach it through a `variant` prop.
+ *
+ * Figma source: Button component set, node 16123:189647.
+ */
+
+/* ============================================================================ Button
+ *
+ * Figma models the button on four axes — Color (Primary | Neutral), Style (Solid | Outline |
+ * Rounded), Size (Small | Medium | Large) and State (Default | Hover | Focus | Pressed | Disabled).
+ * Color and Style are collapsed into Mantine's single `variant` prop, which is how the variations
+ * are enumerated for consumers:
+ *
+ *   filled   = Color Primary, Style Solid
+ *   outline  = Color Primary, Style Outline
+ *   neutral  = Color Neutral, Style Solid
+ *   rounded  = Color Primary, Style Rounded
+ *
+ * Size maps to `size="sm|md|lg"` and the states are the real CSS interaction states.
+ *
+ * `components.ts` neutralises Mantine's `--button-bg` / `--button-bd` inline, so the fills below are
+ * painted with `background-image` and `border-color`. Every selector here carries an attribute or
+ * pseudo-class beyond the class itself, which keeps it ahead of Mantine's own single-class rules
+ * regardless of the order the two stylesheets land in.
+ */
+
+.root {
+  /* Figma's label style is Source Sans 3 SemiBold across all three sizes. */
+  font-weight: 600;
+
+  transition:
+    background-image var(--sds-motion-fast) var(--sds-motion-ease),
+    border-color var(--sds-motion-fast) var(--sds-motion-ease),
+    box-shadow var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * Figma keeps the horizontal padding constant whether or not the button has icons. Mantine shrinks
+ * it to two thirds when a section is present, which these two rules undo.
+ */
+.root[data-with-left-section] {
+  padding-inline-start: var(--button-padding-x);
+}
+
+.root[data-with-right-section] {
+  padding-inline-end: var(--button-padding-x);
+}
+
+/* `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, sitting just outside the button's box. */
+.root:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 0;
+}
+
+/* ---------------------------------------------------------------- the two solid colour families */
+
+.root[data-variant='filled'],
+.root[data-variant='rounded'] {
+  --btn-default-from: var(--sds-action-primary-hover);
+  --btn-default-to: var(--sds-action-primary-default);
+  --btn-hover-from: var(--sds-action-primary-default);
+  --btn-hover-to: var(--sds-action-primary-hover);
+  --btn-active-from: var(--sds-action-primary-active);
+  --btn-active-to: var(--sds-action-primary-default);
+}
+
+/*
+ * `Color=Neutral` binds to the `Neutral/03..05` steps, which Figma inverts between colour modes.
+ * The component is drawn on the dark page background, where those steps are mid-slate and the white
+ * label reads well; in light mode the same steps are pale greys. See the note in README.md.
+ */
+.root[data-variant='neutral'] {
+  --btn-default-from: var(--sds-neutral-04);
+  --btn-default-to: var(--sds-neutral-03);
+  --btn-hover-from: var(--sds-neutral-03);
+  --btn-hover-to: var(--sds-neutral-04);
+  --btn-active-from: var(--sds-neutral-05);
+  --btn-active-to: var(--sds-neutral-03);
+}
+
+.root[data-variant='filled'],
+.root[data-variant='rounded'],
+.root[data-variant='neutral'] {
+  background-color: transparent;
+  background-image: linear-gradient(
+    224.78deg,
+    var(--btn-default-from) 37.232%,
+    var(--btn-default-to) 63.409%
+  );
+}
+
+/* The hover gradient is re-angled and re-stopped in Figma, not merely recoloured. */
+.root[data-variant='filled']:hover:not(:disabled, [data-disabled]),
+.root[data-variant='rounded']:hover:not(:disabled, [data-disabled]),
+.root[data-variant='neutral']:hover:not(:disabled, [data-disabled]) {
+  background-image: linear-gradient(
+    241.9deg,
+    var(--btn-hover-from) 10.383%,
+    var(--btn-hover-to) 104.03%
+  );
+  /* `Base Colors/Primary Btn Solid/button-stroke` */
+  border-color: var(--sds-btn-stroke);
+}
+
+/* Focus adopts the pressed gradient, per the Focus variant, and adds the ring from `.root`. */
+.root[data-variant='filled']:focus-visible,
+.root[data-variant='rounded']:focus-visible,
+.root[data-variant='neutral']:focus-visible {
+  background-image: linear-gradient(
+    224.78deg,
+    var(--btn-active-from) 37.232%,
+    var(--btn-active-to) 63.409%
+  );
+}
+
+.root[data-variant='filled']:active:not(:disabled, [data-disabled]),
+.root[data-variant='rounded']:active:not(:disabled, [data-disabled]),
+.root[data-variant='neutral']:active:not(:disabled, [data-disabled]) {
+  background-image: linear-gradient(
+    224.78deg,
+    var(--btn-active-from) 37.232%,
+    var(--btn-active-to) 63.409%
+  );
+  border-color: var(--sds-btn-stroke);
+  /* `Button/Pressed Inner Shadow` */
+  box-shadow: var(--sds-btn-pressed-shadow);
+}
+
+/* `Style=Rounded` is the solid fill on a pill, lifted by `elevation/tight/4`. */
+.root[data-variant='rounded'] {
+  box-shadow: var(--sds-elevation-tight-4);
+}
+
+.root[data-variant='rounded']:active:not(:disabled, [data-disabled]) {
+  box-shadow: var(--sds-elevation-tight-4), var(--sds-btn-pressed-shadow);
+}
+
+/* ---------------------------------------------------------------------------- the glass outline */
+
+.root[data-variant='outline'] {
+  border-color: var(--sds-btn-outline-line);
+  background-color: transparent;
+  /*
+   * `Components/Button Outline/bg-step-01` -> `-02`, a highlight bleeding in from the top right.
+   * Figma expresses it as a transformed radial gradient; this is the equivalent CSS ellipse,
+   * positioned at the same 86% / 10% of the button box.
+   */
+  background-image: radial-gradient(
+    ellipse 80% 180% at 86% 10%,
+    var(--sds-btn-glass-from) 0%,
+    var(--sds-btn-glass-to) 70%
+  );
+  /* `glass effect card` — a 100-radius Figma background blur is a 50px CSS blur, plus its shadow. */
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+}
+
+/*
+ * Hover and Pressed differ from Default only in the stroke colour
+ * (`Components/Button Outline/line-stp-02`) — Figma draws the two states identically otherwise.
+ */
+.root[data-variant='outline']:hover:not(:disabled, [data-disabled]),
+.root[data-variant='outline']:active:not(:disabled, [data-disabled]),
+.root[data-variant='outline']:focus-visible {
+  border-color: var(--sds-btn-outline-line-active);
+  background-color: transparent;
+}
+
+/* ------------------------------------------------------------------------ the disabled state
+ *
+ * Figma's Disabled state is simply the Default fill at 50% opacity. Mantine instead swaps in a flat
+ * grey and a muted label, so both are undone here. The fill and the stroke come back from each
+ * variant's own rule above, which outranks Mantine's single-class disabled rule — which is why the
+ * outline variant keeps its border rather than having it blanked out.
+ */
+.root:disabled:not([data-loading]),
+.root[data-disabled]:not([data-loading]) {
+  opacity: 0.5;
+  background-color: transparent;
+  color: var(--button-color);
+}
+
+/* ------------------------------------------------------------------------------------- internals */
+
+/*
+ * Figma lays the button out as an auto-layout row with an explicit gap, so the gap is set here and
+ * Mantine's default section margins are removed rather than fought.
+ */
+.root .inner {
+  gap: var(--sds-button-gap);
+}
+
+.root .section {
+  margin: 0;
+  /* Every size uses a 20px icon box in Figma, regardless of label size. */
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.root .section > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.root .label {
+  line-height: var(--sds-button-lh);
+}

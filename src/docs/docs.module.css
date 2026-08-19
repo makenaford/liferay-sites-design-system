@@ -1,0 +1,19 @@
+/*
+ * Styling for the documentation pages only — not part of the published library.
+ *
+ * Storybook's docs stylesheet styles bare `p`, `td`, `th` and `code` elements with the ink of its own
+ * light UI theme. Mantine's `Text` renders a `<p>`, so labels drawn on this design system's dark
+ * surface would otherwise inherit near-black text. Re-asserting the colour once here fixes every
+ * descendant, rather than every `Text` in the docs having to pass its own `c`.
+ *
+ * The class is repeated in the selector deliberately: Storybook's rules are `.sbdocs-content p`
+ * (one class + one type), so a single class plus `:where()` would lose the specificity comparison.
+ * Two classes outrank it without resorting to `!important`.
+ */
+.frame {
+  color: var(--mantine-color-text);
+}
+
+.frame.frame :where(p, td, th, li, span, code, div) {
+  color: inherit;
+}

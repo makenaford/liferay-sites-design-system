@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Overview/Introduction" />
+
+# Scratch
+
+A React component library whose single source of truth is the Figma library
+**Solutions Library- 2026** (file key `KihJKyGA20stc2SSjAlxYU`). Components are
+[Mantine](https://mantine.dev) components dressed in that library's tokens — nothing is styled
+from scratch, and no value is invented.
+
+## How it fits together
+
+1. **Tokens come out of Figma as files.** `tokens/figma/*.tokens.json` are exports of the Figma
+   variable collections — colours (Light and LRDC-Dark), border radii, spacing, and the three
+   typography modes. They are committed, so the repo always shows exactly which snapshot it was
+   built from.
+2. **A script turns them into code.** `pnpm tokens` reads those exports and writes
+   `src/theme/tokens.generated.ts` and `src/theme/typography.generated.css`. It resolves Figma's
+   token aliases and rebuilds translucent colours as `rgba()`. Neither generated file is edited
+   by hand.
+3. **The theme maps them onto Mantine.** `src/theme/theme.ts` turns the tokens into Mantine's
+   theme — colour ramps, spacing scale, radii, type scale. `src/theme/components.ts` configures how
+   each component uses them.
+4. **Components stay thin.** A component is a wrapper that adds no styling of its own. Everything
+   visual lives in the theme, reached through a `variant` prop.
+
+## Changing a value
+
+Change it in Figma, re-export the collection, drop the file into `tokens/figma/`, and run
+`pnpm tokens`. Every component picks the new value up. If you find yourself editing a colour inside
+a component, that is the signal something is missing from the token layer.
+
+## Light and dark
+
+The Figma library defines two colour modes, and both are live here. Every colour token is published
+as a `--sds-*` CSS variable in both modes, so a component never needs to know which one is active.
+Use the **Color scheme** control in the toolbar above to switch — dark is the mode the library is
+drawn in.
+
+## Typography is responsive
+
+Figma ships three typography modes — Mobile (0+), Tablet (576+) and Desktop (1200+). Rather than
+picking one, all three are emitted as media-queried CSS variables, so the type scale changes with
+the viewport on its own.
