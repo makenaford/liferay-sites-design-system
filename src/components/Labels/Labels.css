@@ -1,0 +1,32 @@
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-md);
+  background: var(--chip-bg); border: 1px solid var(--btn-c-default, #0B5FFF); font-size: 14px; font-weight: 600;
+  line-height: 1.25; color: var(--chip-text); cursor: pointer;
+}
+.chip svg { width: 16px; height: 16px; }
+.chip[data-state="selected"] { background: var(--primary); color: var(--text-on-brand); border-color: var(--primary); }
+.chip[data-state="focused"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring-color, #377CFF); }
+.chip[data-state="disabled"] { opacity: 0.5; cursor: not-allowed; }
+.chip[data-state="dragged"] { box-shadow: var(--shadow-2); transform: rotate(-2deg); }
+
+.tag {
+  display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius-xs);
+  font-size: 14px; font-weight: 600; line-height: 1.25; gap: 4px;
+}
+.tag-lg { padding: 2px 8px; font-size: 14px; }
+.tag-tonal { background: var(--tag-tonal-bg); color: var(--tag-tonal-text); }
+.tag-outline { background: transparent; border: 1px solid var(--border-strong); color: var(--text-secondary); }
+
+.badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px;
+  padding: 0 6px; border-radius: var(--radius-pill); background: var(--danger); color: #fff;
+  font-size: 11px; font-weight: 700;
+}
+
+.label-cta { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; cursor: pointer; }
+.label-cta-lg { font-size: 16px; line-height: 24px; padding: 8px 16px; border-radius: var(--radius-pill); border: 2px solid transparent; }
+.label-cta-md { font-size: 16px; line-height: 24px; padding: 4px 8px; border-radius: var(--radius-md); border: 1.5px solid transparent; }
+.label-cta-sm { font-size: 14px; line-height: 1.25; padding: 2px 8px; border-radius: var(--radius-xs); border: 1px solid transparent; }
+.label-cta-tonal { background: var(--label-tonal-bg); color: var(--label-tonal-text); border-color: transparent; }
+.label-cta-outline { background: transparent; border-color: var(--btn-c-default, #0B5FFF); color: var(--text-primary); }
+.label-cta-gradient { background: linear-gradient(90deg, var(--label-grad-1), var(--label-grad-2)); color: var(--label-grad-text); border-color: transparent; }
