@@ -26,6 +26,10 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm build-storybook` | Static Storybook into `storybook-static/` |
 | `pnpm figma:publish` | Publish the Code Connect mappings to Figma |
 
+Pushing to `main` builds Storybook and publishes it to the `gh-pages` branch
+(`.github/workflows/deploy-storybook.yml`). That workflow also fails the build if the generated token
+files have drifted from `tokens/figma/`, so a hand-edited `*.generated.*` file cannot land quietly.
+
 This repo uses **pnpm**, with supply-chain policies in `pnpm-workspace.yaml` — a one-week minimum
 release age, strict engine checks, no exotic sub-dependencies, and a no-downgrade trust policy. If an
 install is refused because a version is too new, pin to the newest version old enough to pass rather

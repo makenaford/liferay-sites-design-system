@@ -1,0 +1,63 @@
+# Builds Storybook and publishes it to the gh-pages branch, which is what GitHub Pages serves.
+#
+# Ported from the workflow that shipped with the previous plain-React library in this repo. Two
+# things changed with the move to Mantine: the package now lives at the repo root rather than in a
+# design-system/ subdirectory, and the toolchain is pnpm rather than npm.
+name: Deploy Storybook
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: the job only needs to write the gh-pages branch.
+permissions:
+  contents: write
+
+# A superseded run has nothing useful to publish, so cancel it rather than racing the newer one.
+concurrency:
+  group: deploy-storybook
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Matches the "engines" field in package.json.
+          node-version: '22'
+          cache: 'pnpm'
+
+      # --frozen-lockfile resolves from pnpm-lock.yaml, so the minimumReleaseAge policy in
+      # pnpm-workspace.yaml cannot fail the build on a version that was fine locally.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fails if src/theme/*.generated.* no longer match tokens/figma/ — i.e. someone edited a
+      # generated file by hand, or replaced a Figma export without running `pnpm tokens`.
+      - name: Check tokens are in sync
+        run: pnpm tokens:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook-static
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
