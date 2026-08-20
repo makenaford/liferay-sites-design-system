@@ -54,6 +54,11 @@ jobs:
       - name: Check icons are in sync
         run: pnpm icons:check
 
+      # And the illustrative set: fails if src/icons/glass.generated.tsx no longer matches
+      # glass-manifest.json, or if an SVG in assets/glass-icons/ changed without regenerating.
+      - name: Check glass icons are in sync
+        run: pnpm glass-icons:check
+
       - name: Typecheck
         run: pnpm typecheck
 

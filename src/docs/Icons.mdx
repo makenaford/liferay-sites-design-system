@@ -1,5 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks'
 import { IconGallery } from './IconGallery'
+import { GlassIconGallery } from './GlassIconGallery'
 
 <Meta title="Overview/Icons" />
 
@@ -39,3 +40,36 @@ Only declared icons are generated, so the bundle carries what the library actual
 1,660. A misspelled name fails the build with suggestions.
 
 <IconGallery />
+
+## The illustrative set
+
+A second, separate set: the **glass icons**, which are what a card puts in its top slot. These are
+64px illustrations with their own gradients and filters — not UI glyphs — so they do **not** inherit
+`currentColor`, and they are not interchangeable with the MingCute set above.
+
+```tsx
+import { Card, IconGlassMail, Label } from 'scratch'
+
+<Card variant="glass" interactive component="a" href="/campaigns">
+  <IconGlassMail />
+  <Label size="sm" variant="outline">Product</Label>
+  <h3>Campaign delivery</h3>
+</Card>
+```
+
+They default to a **48px box**, which is the container Figma's `card-main` draws them in, and take a
+`size` prop for anything else. The art is on a 64px grid, so it stays crisp when scaled up.
+
+### Adding one
+
+1. Find its path in `assets/glass-icons/` — the folder is the category, e.g. `Data/DAM`.
+2. Add that path to `src/icons/glass-manifest.json`.
+3. Run `pnpm glass-icons`.
+
+165 are available and the declared subset is generated, for the same reason as the UI set: the bundle
+carries what the library uses. Set `"icons": "*"` in the manifest to generate all of them. A path that
+does not exist fails the build with suggestions, and two icons whose file names collide — `Dashboard`,
+`Analytics`, `Integration`, `Pricing`, `Global Services` all appear in two categories — fail until one
+is given an `as` name.
+
+<GlassIconGallery />

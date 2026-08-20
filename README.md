@@ -23,6 +23,8 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm tokens:check` | Fail if the generated files are out of date (used by `pnpm build`) |
 | `pnpm icons` | Regenerate the icon set from `src/icons/manifest.json` |
 | `pnpm icons:check` | Fail if the generated icons are out of date (used by `pnpm build`) |
+| `pnpm glass-icons` | Regenerate the illustrative set from `assets/glass-icons/` |
+| `pnpm glass-icons:check` | Fail if the generated glass icons are out of date (used by `pnpm build`) |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm build` | Check tokens, typecheck, build the library bundle |
 | `pnpm build-storybook` | Static Storybook into `storybook-static/` |
@@ -460,6 +462,27 @@ children. That is what lets one component cover all five of its card types, each
 Resource, no-padding image, full width, customer story quote, and icon card. `Card.Section` is
 Mantine's full-bleed slot and reverses the padding, so an image reaches the corner.
 
+### The card's top slot
+
+Two conventions, which the stories all follow:
+
+- **The label is the small gradient outline** — `<Label size="sm" variant="outline">`. `Label`'s own
+  default is Tonal at Large, because that is the default cell of the Figma component set; in a card it
+  is the outline at Small, which is what reads as a category rather than competing with the heading. The
+  card cannot enforce this — its content is children, so there is no label prop to default — so it is a
+  convention here and in every story rather than a mechanism. If it should be the global default
+  instead, that is one change to `Label`'s `defaultProps` and it changes every label everywhere.
+- **The illustration is a glass icon at 48px**, which is the container `card-main` draws. Those are a
+  separate set from the UI glyphs — see [Icons](#icons).
+
+```tsx
+<Card variant="glass" interactive component="a" href="/campaigns">
+  <IconGlassMail />
+  <Label size="sm" variant="outline">Product</Label>
+  <h3>Campaign delivery</h3>
+</Card>
+```
+
 ### Interaction, and only when clickable
 
 The spreadsheet is explicit that Glass is the **clickable** surface and Grey is **non-clickable**, so
@@ -571,6 +594,43 @@ size. They are `aria-hidden` — correct beside a label; an icon used alone as t
 
 Only declared icons are generated, so the bundle carries what the library uses rather than all 1,660. A
 misspelled name fails the build with suggested corrections.
+
+### The illustrative set
+
+A second set, kept deliberately separate: the **glass icons** — 165 of them in `assets/glass-icons/`,
+which is the snapshot of record the way `tokens/figma/` is. These are what a card puts in its top slot.
+
+They are not UI glyphs and are not interchangeable with the MingCute set: they are 64px illustrations
+carrying their own gradients, filters and masks, so they cannot inherit `currentColor`. Hence a second
+pipeline — `scripts/build-glass-icons.mjs`, `src/icons/glass-manifest.json`, `pnpm glass-icons` —
+rather than a second style in the first one.
+
+```tsx
+import { Card, IconGlassMail } from 'scratch'
+
+<Card variant="glass">
+  <IconGlassMail />
+</Card>
+```
+
+They default to a **48px box**, the container Figma's `card-main` draws them in, and take `size` for
+anything else. Add one by putting its path (`Data/DAM` — the folder is the category) in
+`glass-manifest.json` and running `pnpm glass-icons`; set `"icons": "*"` to generate all 165.
+
+Three things the generator does to each file, all for a reason:
+
+1. **Strips Figma's `<foreignObject>` blocks.** Figma exports a background blur as an HTML `<div>` with
+   `backdrop-filter` inside a `foreignObject`. It needs a `style` string JSX will not take, most SVG
+   renderers ignore it, and at icon size it contributes nothing — the artwork is the sibling
+   `<g filter="…">`, which is kept, along with the drop shadows and inner shadows that do the work.
+2. **Namespaces every id per instance**, using `useId()`. The exported ids happen to be unique across
+   these 165 files, but that is not enough: the same icon rendered twice on a page emits its ids twice,
+   which is invalid and leaves `url(#…)` resolving to whichever copy came first.
+3. **Drops the root `width`/`height`** so the `size` prop and the container decide, keeping the viewBox.
+
+A path that does not exist fails the build with suggestions. Five names appear in two categories each —
+`Dashboard`, `Analytics`, `Integration`, `Pricing`, `Global Services` — and declaring both halves of a
+pair fails until one is given an `as` name.
 
 The MCP server is a search tool, not a build dependency — `scripts/build-icons.mjs` reads
 `@mingcute/svg` from `node_modules`, so the build is offline, reproducible, and lockfile-pinned. To
@@ -771,6 +831,23 @@ narrow card stays a row until the whole viewport is narrow. Figma models this as
 `Align=Vertical` cell rather than a breakpoint, so there is no drawn answer for the in-between case. A
 container query on a wrapper would fix it properly if that case turns up.
 
+### The illustrative icons are a Figma export, not a token pipeline
+
+`assets/glass-icons/` is 165 SVGs exported from Figma, so unlike the colours and type it has no
+variable collection behind it and no light/dark modes — each icon carries fixed gradients. That is
+right for an illustration and wrong for anything that has to sit on either page background, so treat
+them as artwork: they read on both canvases because they are mostly mid-tone blues, not because a token
+is switching underneath.
+
+Two smaller things in that export:
+
+- **One icon is off-grid.** 164 are `viewBox="0 0 64 64"`; `Product/DXP` is `0 0 66 65`, so it renders
+  a fraction larger at the same `size`. Worth re-exporting on the 64px grid.
+- **Five names appear in two categories.** `Dashboard`, `Analytics`, `Integration`, `Pricing` and
+  `Global Services` each exist twice, and the `2`/`3`/`4` suffixes elsewhere (`Notifications 2`,
+  `Premium Security 5`, `Out of the box3`) look like iterations that were never pruned. Nothing breaks —
+  the manifest takes an `as` name — but the set would be easier to search with one name per icon.
+
 ### Smaller things
 
 - **Link `secondary`'s hover and disabled states** were imperceptible and full-contrast respectively.
@@ -802,7 +879,8 @@ scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
 src/components/          One directory per component (Button, Card, Label, Link, SegmentedControl, Stat)
 src/figma/               Code Connect mappings
-src/icons/               manifest.json declares the set; generated.tsx is built from @mingcute/svg
+src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
+assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/
 src/docs/                Storybook Overview pages
 .storybook/              Storybook config and the shared story frame
 ```

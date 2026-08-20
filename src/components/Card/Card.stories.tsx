@@ -5,7 +5,13 @@ import { Button } from '../Button'
 import { Label } from '../Label'
 import { Link } from '../Link'
 import { Stat, StatBar } from '../Stat'
-import { IconArrowRight, IconArrowUp, IconInformation } from '../../icons'
+import {
+  IconArrowRight,
+  IconArrowUp,
+  IconGlassComposable,
+  IconGlassDatabase,
+  IconGlassMail,
+} from '../../icons'
 
 const SURFACES = ['glass', 'grey', 'blue', 'gradient-blue', 'gradient-purple', 'none'] as const
 
@@ -124,7 +130,7 @@ export const Interactive: Story = {
   render: (args) => (
     <Group align="stretch" gap="20">
       <Card {...args} interactive component="a" href="#" w={320}>
-        <Label size="sm">Customer story</Label>
+        <Label size="sm" variant="outline">Customer story</Label>
         <Title order={3} fz="var(--sds-size-heading-f4)">
           A bank rebuilt onboarding
         </Title>
@@ -133,7 +139,7 @@ export const Interactive: Story = {
         </Text>
       </Card>
       <Card {...args} variant="grey" w={320}>
-        <Label size="sm" variant="light">
+        <Label size="sm" variant="outline">
           Reference
         </Label>
         <Title order={3} fz="var(--sds-size-heading-f4)">
@@ -154,7 +160,7 @@ export const Interactive: Story = {
 export const ResourceCard: Story = {
   render: (args) => (
     <Card {...args} interactive component="a" href="#" w={320}>
-      <Label size="sm">Whitepaper</Label>
+      <Label size="sm" variant="outline">Whitepaper</Label>
       <Title order={3} fz="var(--sds-size-heading-f4)">
         The composable enterprise
       </Title>
@@ -179,7 +185,7 @@ export const ImageCard: Story = {
         <Cover />
       </Card.Section>
       <Stack gap="8" p="20">
-        <Label size="sm">Customer story</Label>
+        <Label size="sm" variant="outline">Customer story</Label>
         <Title order={3} fz="var(--sds-size-heading-f4)">
           Six weeks to launch
         </Title>
@@ -196,7 +202,7 @@ export const FullWidthCard: Story = {
   render: (args) => (
     <Card {...args} orientation="horizontal" padding="lg">
       <Stack gap="8" style={{ flex: 1 }}>
-        <Label size="sm">Platform</Label>
+        <Label size="sm" variant="outline">Platform</Label>
         <Title order={3} fz="var(--sds-size-heading-f3)">
           One platform, every channel
         </Title>
@@ -241,26 +247,60 @@ export const QuoteCard: Story = {
   ),
 }
 
-/** **Icon card** — left or centre aligned, per the spreadsheet's last type. */
+/**
+ * **Icon card** — left or centre aligned, per the spreadsheet's last type. The illustration is one of
+ * the glass icons, at the 48px container Figma draws them in; they are illustrations rather than UI
+ * glyphs, so they keep their own colours instead of inheriting the text colour.
+ */
 export const IconCard: Story = {
   render: (args) => (
     <Group align="stretch" gap="20">
       <Card {...args} w={260}>
-        <Box c="var(--sds-accent-primary-blue-accent)" fz={48} lh={1}>
-          <IconInformation />
-        </Box>
+        <IconGlassComposable />
         <Text fw={600}>Left aligned</Text>
         <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
           The default flow of the card.
         </Text>
       </Card>
       <Card {...args} w={260} ta="center" style={{ alignItems: 'center' }}>
-        <Box c="var(--sds-accent-primary-blue-accent)" fz={48} lh={1}>
-          <IconInformation />
-        </Box>
+        <IconGlassDatabase />
         <Text fw={600}>Centre aligned</Text>
         <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
           Same card, centred content.
+        </Text>
+      </Card>
+    </Group>
+  ),
+}
+
+/**
+ * The illustrative icon in the card's top slot, which is what Figma's `card-main` puts there — a
+ * `Glass icon` instance at 48px. `size` overrides the box if a layout needs something else; the art is
+ * drawn on a 64px grid, so it stays crisp either way.
+ */
+export const WithIllustrativeIcon: Story = {
+  render: (args) => (
+    <Group align="stretch" gap="20">
+      <Card {...args} interactive component="a" href="#" w={280}>
+        <IconGlassMail />
+        <Label size="sm" variant="outline">
+          Product
+        </Label>
+        <Title order={3} fz="var(--sds-size-heading-f4)">
+          Campaign delivery
+        </Title>
+        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          One icon, one label, one heading — the card's top slot as drawn.
+        </Text>
+      </Card>
+      <Card {...args} w={280}>
+        <Group gap="16">
+          <IconGlassDatabase size={32} />
+          <IconGlassComposable size={32} />
+          <IconGlassMail size={32} />
+        </Group>
+        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          The same icons at <code>size=&#123;32&#125;</code>.
         </Text>
       </Card>
     </Group>

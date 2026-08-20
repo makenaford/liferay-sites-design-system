@@ -1,0 +1,28 @@
+{
+  "$comment": [
+    "The illustrative 'glass' icons this library ships, by their path under assets/glass-icons/.",
+    "These are the 64px illustrations the Figma card puts in a 48px container \u2014 a different set from",
+    "the MingCute UI glyphs in manifest.json, and not interchangeable with them.",
+    "Run `pnpm glass-icons` after editing. Set \"icons\" to \"*\" to generate all 165.",
+    "Two icons whose file names match (Dashboard, Analytics, Integration, Pricing, Global Services)",
+    "need an { \"path\": \"...\", \"as\": \"...\" } entry to tell their components apart."
+  ],
+  "icons": [
+    "Business/Dashboard",
+    "Business/Proof of Value",
+    "Content/Search",
+    "Content/Sites",
+    "Customer/Customer Portals",
+    "Customer Support/Support",
+    "Data/DAM",
+    "Data/Database",
+    "Education/Documentation",
+    "General/Composable",
+    "General/Developer Tools",
+    "General/Mail",
+    "General/Performance",
+    "Platform/Premium Security",
+    "Security/Security & Compliance",
+    "Services/Intranets"
+  ]
+}

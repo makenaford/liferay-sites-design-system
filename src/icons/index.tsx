@@ -10,3 +10,13 @@
  * MingCute MCP server's `search_icons`, or browse mingcute.com.
  */
 export * from './generated'
+
+/**
+ * The illustrative set, generated into `glass.generated.tsx` by `pnpm glass-icons` from the SVGs in
+ * `assets/glass-icons/`. These are 64px illustrations with their own gradients — the ones a card puts
+ * in a 48px container — so they do not inherit `currentColor` and are not interchangeable with the UI
+ * glyphs above.
+ *
+ * To add one: put its path (`Data/DAM`) in `glass-manifest.json` and run `pnpm glass-icons`.
+ */
+export * from './glass.generated'
