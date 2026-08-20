@@ -452,9 +452,12 @@ import { Card, Label, Link } from 'scratch'
 | Orientation — Vertical / Horizontal | `orientation` (Mantine's own) |
 | Surface `State` — Default / Hover / Focus | the real CSS states, when `interactive` |
 
-Measurements from `card-main`: 8px corner (`Border Radius/medium`) on every Surface variant, a 20px
-gap between blocks when vertical and 24px when horizontal, where Figma also centres them against each
-other.
+Measurements from `card-main`: 8px corner (`Border Radius/medium`) on every Surface variant, and 24px
+between the two halves of a horizontal card, where Figma also centres them against each other.
+
+The gap between a vertical card's content blocks is **8px** (`gap/8`), not the 20px Figma draws — see
+the note in the gaps list. The horizontal card keeps its 24px, because there the gap separates the text
+column from the image rather than spacing content inside a block.
 
 **Content is composed, not configured.** The spreadsheet's slots — Top (label, illustrative icon,
 stat, subheading), Content (title, description, list), Bottom (author, link, button, stats) — are
@@ -830,6 +833,17 @@ variable it matches. The same naming drift as the Link's `Action/Link/X-small`.
 narrow card stays a row until the whole viewport is narrow. Figma models this as a separate
 `Align=Vertical` cell rather than a breakpoint, so there is no drawn answer for the in-between case. A
 container query on a wrapper would fix it properly if that case turns up.
+
+### The card's content gap is 8px, not Figma's 20px
+
+`card-main` draws 20px between a vertical card's blocks. The implementation uses `gap/8` instead, which
+is a deliberate deviation rather than a mistake: a card's label, heading, description and link are one
+unit of content, and at 20px they read as four separate sections — particularly once the heading's own
+line height is added on top of the gap. The 24px between the halves of a horizontal card is untouched,
+since that gap is a layout separation between a text column and an image.
+
+This is the one measurement in the library that does not match its Figma source, so it is the one to
+either take back to the design file or push back on.
 
 ### The illustrative icons are a Figma export, not a token pipeline
 

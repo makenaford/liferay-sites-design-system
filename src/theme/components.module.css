@@ -997,9 +997,19 @@
     background-image var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
-/* Figma's vertical card has a 20px gap between its blocks, the horizontal one 24px. */
+/*
+ * The gap between a card's content blocks — icon, label, heading, description, link — is `gap/8`.
+ *
+ * This is a deviation: Figma's `card-main` draws 20px between them. 8px is the requested value and it
+ * reads better, since those blocks are one unit of content rather than separate sections, and the
+ * heading's own line height already carries space around it. Recorded in README.md so it can go back to
+ * the design file.
+ *
+ * The horizontal card keeps Figma's 24px, because there the gap is between the text column and the
+ * image — a layout gap between two halves of the card, not spacing inside a block of content.
+ */
 .cardRoot[data-orientation='vertical'] {
-  gap: 20px;
+  gap: 8px;
 }
 
 .cardRoot[data-orientation='horizontal'] {
