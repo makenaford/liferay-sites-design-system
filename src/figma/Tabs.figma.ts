@@ -2,12 +2,17 @@
 // source=src/index.ts
 // component=Tabs
 //
-// Code Connect mapping for the Figma `Tabs Menu Bottom` set.
+// Code Connect mapping for the Figma `Tabs Menu Logo` set — the underline tab bar, whose rule and active
+// indicator sit on the top edge.
 //
-// Its only axis is `Size`, and that does not reach the snippet: the implementation switches treatment
-// on a media query at 1200px rather than taking a size prop, so both cells are the same code. The tabs
-// themselves are nested `Tab Element` instances rather than a component property, so the labels cannot
-// be read out of the file — the snippet carries the ones Figma draws for a developer to replace.
+// It has two axes and neither reaches the snippet in the same way:
+//
+// - `Size` is responsive here rather than a prop, so Desktop and Mobile are the same code.
+// - `Type` is Text or Logo. **Only Text is implemented.** `Type=Logo` puts customer logos in the tabs
+//   instead of labels, and `Tabs.Tab` has no logo mode; the mapping says so rather than pretending.
+//
+// The tabs themselves are nested instances rather than a component property, so the labels cannot be read
+// out of the file — the snippet carries the ones Figma draws for a developer to replace.
 import figma from 'figma'
 
 const instance = figma.selectedInstance
@@ -16,6 +21,12 @@ const instance = figma.selectedInstance
 instance.getEnum('Size', {
   Desktop: 'responsive',
   Mobile: 'responsive',
+})
+
+/** `Logo` has no implementation; the snippet is the same and the comment above says why. */
+instance.getEnum('Type', {
+  Text: 'text',
+  Logo: 'text',
 })
 
 export default {
