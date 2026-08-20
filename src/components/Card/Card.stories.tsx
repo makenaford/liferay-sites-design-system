@@ -14,7 +14,7 @@ import {
   IconGlassMail,
 } from '../../icons'
 
-const SURFACES = ['glass', 'no-bg', 'grey', 'blue', 'gradient-blue', 'gradient-purple'] as const
+const SURFACES = ['glass', 'no-bg', 'grey', 'gradient-blue', 'gradient-purple'] as const
 
 /** Stands in for a photograph: the stories have to render offline, so no remote images. */
 const PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -356,10 +356,11 @@ export const Surfaces: Story = {
 }
 
 /**
- * **A card that is not clickable uses `grey` or `blue`, never `glass`** — and it gets there on its own,
+ * **A card that is not clickable uses `grey`, never `glass`** — and it gets there on its own,
  * because `surface` defaults from `interactive`. Glass exists to carry the interaction: the hairline that
  * warms, the ring that appears, the lift. On a static card none of those ever fire, so glass promises
- * something the card does not do.
+ * something the card does not do. `grey` is the only static surface — Figma's `Blue` cell was removed for
+ * being indistinguishable from it.
  *
  * Neither card below passes `surface`. The left one is a link and comes out glass; the right one is not and
  * comes out grey.
@@ -394,14 +395,14 @@ export const NonClickableSurfaces: Story = {
       </Stack>
       <Stack gap="8">
         <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
-          static — blue, set explicitly
+          static, set explicitly — same grey
         </Text>
         <Card
           {...args}
-          surface="blue"
+          surface="grey"
           hero={<IconGlassMail width={40} height={40} />}
           title="Not clickable"
-          description="`blue` is the other static surface."
+          description="Grey is the only static surface; setting it changes nothing."
         />
       </Stack>
       <Stack gap="8">

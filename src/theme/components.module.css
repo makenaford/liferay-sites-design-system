@@ -1256,13 +1256,6 @@
   background-color: var(--sds-surfaces-card-bg-grey);
 }
 
-/* `Style=Blue` — `Surfaces/Card BG/Blue`, which is already 25% in the token, with a tighter glow. */
-.cardRoot[data-align][data-surface='blue'] {
-  background-color: var(--sds-surfaces-card-bg-blue);
-  backdrop-filter: blur(var(--sds-glass-blur));
-  box-shadow: 0 0 2px 1px var(--sds-glass-shadow);
-}
-
 /*
  * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all `Surfaces/Card BG/Grey`
  * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
@@ -1299,11 +1292,11 @@
 }
 
 /*
- * The resting hairline, on the surfaces that draw one. A 1px inside stroke with a gradient, which a border
- * cannot be — so it is a masked pseudo-element, the same construction the Label's outline ring uses.
+ * The resting hairline. Only glass draws one — it is the clickable surface, and the hairline is what warms
+ * on hover. A 1px inside stroke with a gradient, which a border cannot be — so it is a masked pseudo-element, the same construction the Label's outline ring uses.
  * 225deg is Figma's transform for this stroke, inverted.
  */
-.cardRoot[data-align]:where([data-surface='glass'], [data-surface='blue'])::before {
+.cardRoot[data-align][data-surface='glass']::before {
   content: '';
   position: absolute;
   inset: 0;

@@ -4,13 +4,7 @@ import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
 /** Figma `Surface` `Style` (node `16953:109831`). `glass` and `no-bg` are the two the card set uses. */
-export type CardSurface =
-  | 'glass'
-  | 'no-bg'
-  | 'grey'
-  | 'blue'
-  | 'gradient-blue'
-  | 'gradient-purple'
+export type CardSurface = 'glass' | 'no-bg' | 'grey' | 'gradient-blue' | 'gradient-purple'
 
 /** Figma `card-main` `Align`. */
 export type CardAlign = 'vertical' | 'horizontal'
@@ -52,6 +46,9 @@ export interface CardProps
    * **Defaults from `interactive`**: `glass` for a card that is a link or a button, `grey` for one that is
    * not. Glass is the clickable surface in this system — it carries the hairline that warms on hover and
    * the ring that appears on focus — so a static card should not wear it, and does not have to ask.
+   *
+   * `grey` is the only static surface. Figma's `Blue` cell was removed: at 5% blue over near-black it was
+   * indistinguishable from grey on the dark canvas, so it was a second option that looked like the first.
    *
    * @default 'glass' when `interactive`, otherwise 'grey'
    */
@@ -133,8 +130,8 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   /*
    * Glass is the clickable surface: it is the one carrying the hairline that warms on hover and the ring
    * that appears on focus. A card that cannot be clicked has nothing to do with either, so it defaults to
-   * `grey` — `blue` is the other static option. Figma draws glass on four of its five card types while
-   * marking only two of them clickable, which is the file disagreeing with itself; see README.md.
+   * `grey`, the only static surface. Figma draws glass on four of its five card types while marking only
+   * two of them clickable, which is the file disagreeing with itself; see README.md.
    */
   const resolvedSurface = surface ?? (interactive ? 'glass' : 'grey')
 
@@ -194,7 +191,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  *
  * | Figma | Prop |
  * | --- | --- |
- * | `Surface` `Style` — no-bg / Glass / Blue / Grey / Gradient Blue / Gradient Purple | `surface` |
+ * | `Surface` `Style` — no-bg / Glass / Grey / Gradient Blue / Gradient Purple | `surface` |
  * | `card-main` `Align` — Vertical / Horizontal | `align` |
  * | `card-main` `Padding` — True / False, and the `no image padding` frame | `padding` |
  * | `Show Image` + `card-image`, `Aspect Ratio` | `image`, `imageRatio` |
@@ -223,8 +220,8 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  *
  * ## Glass is the clickable surface
  *
- * A card that is not a link or a button uses **`grey` or `blue`, never `glass`** — and it gets there on its
- * own, because `surface` defaults from `interactive`. Glass exists to carry the interaction: the hairline
+ * A card that is not a link or a button uses **`grey`, never `glass`** — and it gets there on its own,
+ * because `surface` defaults from `interactive`. Glass exists to carry the interaction: the hairline
  * that warms, the ring that appears, the lift. On a static card none of those ever fire, so the surface is
  * promising something the card does not do.
  *
