@@ -49,7 +49,6 @@ const meta = {
   title: 'Components/Card',
   component: Card,
   args: {
-    surface: 'glass',
     align: 'vertical',
     padding: 'all',
     headerAlign: 'vertical',
@@ -61,7 +60,8 @@ const meta = {
     surface: {
       options: SURFACES,
       control: 'inline-radio',
-      description: "Figma `Surface` `Style`. The card set uses `glass` and `no-bg`.",
+      description:
+        'Figma `Surface` `Style`. Defaults from `interactive`: `glass` when clickable, `grey` when not — glass is the clickable surface and a static card should not wear it.',
     },
     align: { options: ['vertical', 'horizontal'], control: 'inline-radio' },
     padding: {
@@ -327,7 +327,10 @@ export const Padding: Story = {
   ),
 }
 
-/** Figma's `Surface` `Style` axis. `glass` and `no-bg` are the two the card set itself uses. */
+/**
+ * Figma's `Surface` `Style` axis, set explicitly. **`glass` is shown here as a clickable card**, because
+ * that is the only kind that should have it — see `NonClickableSurfaces` for the rule.
+ */
 export const Surfaces: Story = {
   render: (args) => (
     <SimpleGrid cols={3} spacing="24" verticalSpacing="24">
@@ -336,6 +339,9 @@ export const Surfaces: Story = {
           {...args}
           key={surface}
           surface={surface}
+          interactive={surface === 'glass' || surface === 'no-bg'}
+          component={surface === 'glass' || surface === 'no-bg' ? 'a' : 'div'}
+          href={surface === 'glass' || surface === 'no-bg' ? '#' : undefined}
           hero={
             <Label size="sm" variant="outline">
               {surface}
@@ -345,6 +351,71 @@ export const Surfaces: Story = {
           description="One surface, six ways."
         />
       ))}
+    </SimpleGrid>
+  ),
+}
+
+/**
+ * **A card that is not clickable uses `grey` or `blue`, never `glass`** — and it gets there on its own,
+ * because `surface` defaults from `interactive`. Glass exists to carry the interaction: the hairline that
+ * warms, the ring that appears, the lift. On a static card none of those ever fire, so glass promises
+ * something the card does not do.
+ *
+ * Neither card below passes `surface`. The left one is a link and comes out glass; the right one is not and
+ * comes out grey.
+ */
+export const NonClickableSurfaces: Story = {
+  render: (args) => (
+    <SimpleGrid cols={2} spacing="24">
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          interactive — glass
+        </Text>
+        <Card
+          {...args}
+          component="a"
+          href="#"
+          interactive
+          hero={<IconGlassComposable width={40} height={40} />}
+          title="Clickable"
+          description="The whole card is a link, so it wears the interactive surface."
+        />
+      </Stack>
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          static — grey
+        </Text>
+        <Card
+          {...args}
+          hero={<IconGlassDatabase width={40} height={40} />}
+          title="Not clickable"
+          description="Nothing to click, so no hairline to warm and no ring to show."
+        />
+      </Stack>
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          static — blue, set explicitly
+        </Text>
+        <Card
+          {...args}
+          surface="blue"
+          hero={<IconGlassMail width={40} height={40} />}
+          title="Not clickable"
+          description="`blue` is the other static surface."
+        />
+      </Stack>
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          static with its own controls — still grey
+        </Text>
+        <Card
+          {...args}
+          hero={<IconGlassComposable width={40} height={40} />}
+          title="Buttons inside"
+          description="A container with controls is not a clickable card."
+          bottom={<Button size="sm">Book a demo</Button>}
+        />
+      </Stack>
     </SimpleGrid>
   ),
 }

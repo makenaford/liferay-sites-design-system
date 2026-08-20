@@ -507,6 +507,23 @@ The gap difference is worth naming: both icon cards and all three image cards ar
 Align=Vertical`, and the icon ones sit at 20 while the image ones sit at 16. The gap travels with the
 content rather than with a variant, so it keys off whether there is an image.
 
+### Glass is the clickable surface
+
+A card that is not a link or a button uses **`grey` or `blue`, never `glass`**, and it gets there without
+being told: `surface` defaults from `interactive` — `glass` when clickable, `grey` when not.
+
+The reason is that glass is the surface carrying the interaction. The hairline that warms on hover, the ring
+that appears on focus, the lift — all of it hangs off glass. On a static card none of it ever fires, so the
+surface is promising something the card does not do.
+
+**Figma disagrees with itself here, and this follows the rule rather than the file.** Four of the five cards
+in `Card Examples` are `Surface Style=Glass` — `CS- Quote`, `CS- Details`, `Icon-Left` and `Icon-Center` —
+while only two of them are drawn as clickable. Either those cards are meant to be links, or their surface
+should be `Grey`; the set cannot be right as it stands. Worth settling in the file, since it is the kind of
+inconsistency that gets copied.
+
+`no-bg` is unaffected: the Resource card is `no-bg` *and* clickable, and its interaction lives on the image.
+
 ### `padding` has three values, not two
 
 Figma's axis is a boolean, but the file draws a third shape as its own frame — `no image padding`, where
@@ -1589,6 +1606,25 @@ repo and stay valid — they just won't appear in Figma until the plan supports 
 These are places where the Figma library is ambiguous, inconsistent, or incomplete. Each is
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
+
+### A static card barely reads as a card in light mode
+
+This one follows from the rule that non-clickable cards use `grey` or `blue` and never `glass`. Neither of
+those two surfaces carries a hairline, and both are very close to the page:
+
+| | Declared | Against the light page |
+| --- | --- | --- |
+| `Surfaces/Card BG/Grey` | `#f4f6fb` | **1.05:1** |
+| `Surfaces/Card BG/Blue` | `rgba(232, 238, 251, 0.25)` | **1.03:1** |
+
+On the dark canvas grey is better — `#0f131b` against a `#070b13` page — but `blue` there is
+`rgba(99, 153, 255, 0.05)`, five percent of blue over near-black, which is indistinguishable from grey. So
+of the two surfaces a static card is allowed, one is nearly invisible in light mode and both are nearly the
+same colour on dark.
+
+Nothing is changed here: those are the tokens' own values, and glass is what used to supply the edge. Two
+ways out, both a decision for the design file rather than the code — give the static surfaces a hairline of
+their own, or move `Card BG/Blue` far enough from `Card BG/Grey` to be worth having as a second option.
 
 ### The Accordion set is in an error state, from a duplicated variant name
 

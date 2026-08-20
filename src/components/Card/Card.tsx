@@ -46,7 +46,15 @@ export interface CardProps
    */
   Omit<BoxProps, 'top' | 'bottom'>,
     Omit<ElementProps<'div'>, 'title'> {
-  /** Figma `Surface` `Style`. @default 'glass' */
+  /**
+   * Figma `Surface` `Style`.
+   *
+   * **Defaults from `interactive`**: `glass` for a card that is a link or a button, `grey` for one that is
+   * not. Glass is the clickable surface in this system — it carries the hairline that warms on hover and
+   * the ring that appears on focus — so a static card should not wear it, and does not have to ask.
+   *
+   * @default 'glass' when `interactive`, otherwise 'grey'
+   */
   surface?: CardSurface
   /** Figma `card-main` `Align`. @default 'vertical' */
   align?: CardAlign
@@ -99,7 +107,7 @@ export interface CardProps
 
 const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   {
-    surface = 'glass',
+    surface,
     align = 'vertical',
     padding = 'all',
     image,
@@ -122,11 +130,19 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
 ) {
   const hasHeader = Boolean(hero || title || description)
 
+  /*
+   * Glass is the clickable surface: it is the one carrying the hairline that warms on hover and the ring
+   * that appears on focus. A card that cannot be clicked has nothing to do with either, so it defaults to
+   * `grey` — `blue` is the other static option. Figma draws glass on four of its five card types while
+   * marking only two of them clickable, which is the file disagreeing with itself; see README.md.
+   */
+  const resolvedSurface = surface ?? (interactive ? 'glass' : 'grey')
+
   return (
     <Box
       ref={ref}
       className={[classes.cardRoot, className].filter(Boolean).join(' ')}
-      data-surface={surface}
+      data-surface={resolvedSurface}
       data-align={align}
       data-padding={padding}
       data-image={image ? true : undefined}
@@ -204,6 +220,16 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  *   title="Card Title"
  * />
  * ```
+ *
+ * ## Glass is the clickable surface
+ *
+ * A card that is not a link or a button uses **`grey` or `blue`, never `glass`** — and it gets there on its
+ * own, because `surface` defaults from `interactive`. Glass exists to carry the interaction: the hairline
+ * that warms, the ring that appears, the lift. On a static card none of those ever fire, so the surface is
+ * promising something the card does not do.
+ *
+ * Figma disagrees with itself here — four of the five cards in `Card Examples` are `Style=Glass` and only
+ * two are drawn clickable — so this follows the rule rather than the file. Recorded in README.md.
  *
  * ## Where the hover goes
  *
