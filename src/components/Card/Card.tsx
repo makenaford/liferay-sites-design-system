@@ -212,14 +212,17 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  * and it follows one rule taken from the layout rather than from a style:
  *
  * - **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the
- *   image**: it scales up inside its own box and lifts its brightness. The card itself does not move,
- *   because a card whose image is its edge has nothing to lift that would not clip.
+ *   image alone**: it scales up inside its own box and lifts its brightness. Nothing else reacts — no
+ *   lift, no ring, no glow — even though the whole card is still the click target, since the root is the
+ *   anchor. A ring around a `no-bg` card would outline a box that has no edge at rest.
  * - **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the
  *   hairline warms, and a soft glow appears under it. If there is an image inside the padding it scales
  *   too, but the card is what leads.
  *
- * Focus is Figma's own `State=Focus`: the same gradient ring at 2px. It is a real `:focus-visible`, so it
- * appears for the keyboard and not for the mouse. Press settles the movement back towards rest.
+ * Focus is the exception to that split, and Figma's own `State=Focus`: the same gradient ring at 2px, on
+ * the **whole card** whatever the padding — a focus ring has to be where the focus is. It is a real
+ * `:focus-visible`, so it appears for the keyboard and not for the mouse. Press settles the movement back
+ * towards rest.
  *
  * Everything is off under `prefers-reduced-motion`, and the ring survives `forced-colors`.
  *

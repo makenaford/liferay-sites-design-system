@@ -1366,8 +1366,16 @@
 }
 
 @media (hover: hover) {
-  /* Every interactive card takes the ring on hover, whatever its surface. */
-  .cardRoot[data-align][data-interactive]:hover::after {
+  /*
+   * The ring on hover belongs to the **padded** card only. A full-bleed card is clickable across its
+   * whole area — the root is the anchor — but nothing about the card reacts: only the image does. A ring
+   * drawn around a `no-bg` card outlines a box that has no edge at rest, which reads as a border
+   * appearing out of nowhere rather than as the image lighting up.
+   *
+   * Focus is the exception, below: a focus ring has to be visible wherever the focus is, so it stays on
+   * the whole card for every padding.
+   */
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover::after {
     opacity: 1;
   }
 

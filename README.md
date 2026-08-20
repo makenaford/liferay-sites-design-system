@@ -527,16 +527,21 @@ same 1px hairline. `State=Focus` is the only state the file actually distinguish
 thing: the ring goes from 1px to 2px. So the hover is inferred, and it follows one rule taken from the
 layout rather than from a style:
 
-- **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the image**:
-  it scales to 1.06 inside its own box and lifts its brightness. The card does not move, because an image
-  that is the card's edge *is* the thing the eye is locked onto, and there is no inset frame for a lift to
-  read against.
+- **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the image
+  alone**: it scales to 1.06 inside its own box and lifts its brightness. Nothing else reacts: no lift, no
+  ring, no glow. The whole card is still the click target — the root is the anchor, so a click on the
+  label or the title reaches it — but a ring drawn around a `no-bg` card outlines a box that has no edge at
+  rest, which reads as a border appearing from nowhere rather than as the image lighting up.
 - **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the ring warms
   to the brand gradient, and a glow appears beneath it. An image inside the padding scales too, at 1.03,
   because the card is what leads.
 
-Press settles the movement back towards rest rather than pushing further. Focus is Figma's own ring at
-2px, on `:focus-visible` so it belongs to the keyboard and not the mouse.
+Press settles the movement back towards rest rather than pushing further.
+
+**Focus is the exception to that split.** Figma's own ring at 2px, on the **whole card** whatever the
+padding, because a focus ring has to be where the focus is — a keyboard user tabbing onto a full-bleed card
+needs to see the card, not a slightly larger picture. `:focus-visible`, so it belongs to the keyboard and
+not the mouse.
 
 ### The resting hairline is not the ring
 

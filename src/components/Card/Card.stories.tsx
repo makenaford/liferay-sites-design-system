@@ -350,9 +350,11 @@ export const Surfaces: Story = {
 }
 
 /**
- * **The hover rule, side by side.** Both are links. The left one is padded, so the card lifts and its
- * ring warms. The right one has a full-bleed image, so only the image moves — which is what a card whose
- * edge *is* the image should do.
+ * **The hover rule, side by side.** Both cards are links across their whole area. The left one is padded,
+ * so the card lifts and its ring warms. The right one has a full-bleed image, so **only the image
+ * reacts** — no lift, no ring — even though clicking anywhere on it still follows the link.
+ *
+ * Tab to either one to see the focus ring, which is on the whole card in both cases.
  */
 export const Hover: Story = {
   render: (args) => (
@@ -373,7 +375,7 @@ export const Hover: Story = {
       </Stack>
       <Stack gap="8">
         <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
-          padding=&quot;none&quot; — the image leads
+          padding=&quot;none&quot; — the image alone
         </Text>
         <Card
           {...args}
