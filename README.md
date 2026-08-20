@@ -647,6 +647,109 @@ selection with the arrow keys — the semantics for **swapping panels**. `Segmen
 group, for picking one option where the choice itself is the outcome. The two look related in Figma;
 pick by what the control does, not by which mockup it came from.
 
+## Fields — TextInput, Textarea, Select, LanguagePicker
+
+From the Figma `Input` set (node `16166:23969`), laid out in the `input` section `24397:77217`, with the
+menu from `Dropdown` (`16884:46299`), the compact slot from `Country Selector` (`17205:21114`) and the
+pill from `Info Button` (`16032:242555`).
+
+One Figma set covers all of it — 36 variants over four axes — and it lands as **three components and
+two states** rather than one component with a `type` prop:
+
+| Figma axis | Where it goes |
+| --- | --- |
+| `Type` — Text / Text Area / Dropdown | `TextInput` / `Textarea` / `Select` |
+| `Condensed` — True / False | `floating` — the label inside the box, or above it |
+| `State` — Default / Active / Disabled | `:focus-within`, and `disabled` |
+| `Filled` — False / True | whether the field has a value |
+
+A text field, a multi-line field and a select are three different elements with three different
+semantics and three different keyboard behaviours, so they are three components. `State` and `Filled`
+are not props at all — they are what the field is doing.
+
+The booleans become props and slots: `Label` → `label`, `Required` → `required`, `Help Text` →
+`description`, `Info Button` → `info`, `Icon Left` / `Icon Right` → `leftSection` / `rightSection`,
+`Country Selector` → a `LanguagePicker` in the left section.
+
+Measurements, from the component: a 48px box with an 8px corner (`Border Radius/medium`), 12/16
+padding, no fill, and a **1px gradient border** — `Neutral/04` into `Neutral/05` at rest, and
+`Action/Primary/Active` into `Accent/Product Accent` on focus, the same accent gradient the card ring
+and the tab indicator use. The label above is 16/24 SemiBold `Surfaces/Text/Primary`, the required
+asterisk 13/16 `Status/Error/Error`, the help text 13/16 `Surfaces/Text/Secondary`, and the value
+`Neutral/10`.
+
+An `<input>` cannot carry a pseudo-element and no `border-color` can be a gradient, so the border is
+painted on the wrapper — the one element that is exactly the size of the box and can have children.
+
+### The floating label
+
+`Condensed=True` puts the label inside the box at 18px Regular and shrinks it to 14px SemiBold once the
+field has focus or a value. That is a label, not a placeholder: it stays visible after typing, which is
+the whole point — a placeholder-as-label disappears exactly when the user needs to check what they are
+filling in. Do not pair `floating` with a `placeholder` that says the same thing.
+
+Mantine renders the label as a *sibling* of the input's wrapper, so the float is driven from the root
+with `:focus-within` and `:has()` — a sibling selector cannot reach backwards from the input to its
+label.
+
+### The info tooltip
+
+Figma's `Info Button` is a `Status/Info` pill beside the label. Here it is a tooltip **trigger**: a real
+`<button>`, so it is in the tab order, and Mantine's `Tooltip` opens it on focus as well as hover and
+wires up `aria-describedby`. A tooltip hung on something unfocusable does not exist for a keyboard.
+
+Anything the user always needs belongs in `description` instead. A tooltip hides its content behind an
+interaction, which is the wrong place for a format requirement or a legal note.
+
+### Two things Figma leaves out
+
+- **The disabled state is drawn identically to Default** — same border, same text colours — so a
+  disabled field would be indistinguishable from one you can type in. It follows the rest of the
+  library: the resting appearance at half opacity, plus `cursor: not-allowed`.
+- **There is no error state.** `Status/Error/Error` appears only on the required asterisk. The error
+  message reuses that colour at the description's size, and the field's own border takes it too, so the
+  problem is visible on the field and not only in the text beneath it.
+
+### The placeholder is dimmer than Figma draws it
+
+Figma binds the placeholder to `Surfaces/Text/Primary` — the same colour as a real value, which makes
+an empty field look filled. It uses `Surfaces/Text/Tertiary` here: still AA (4.8:1 on light, higher on
+dark) but visibly provisional. One token swap to take back to the design file.
+
+### What the dropdown covers
+
+The `Dropdown` set has five cells. Three are covered, because they are the three a select does:
+
+| Figma `Variant` | How |
+| --- | --- |
+| Simple | `data` as a flat list |
+| Groups | `data` as `{ group, items }` |
+| Search | `searchable` |
+
+`Drilldown` and `Slot` are deliberately out of scope: nested menus and arbitrary content are not select
+behaviours and need `Menu` or a `Popover` underneath. Approximating them with a `Select` would give the
+wrong keyboard model, which is the part of a combobox that matters.
+
+### The language picker has no flags
+
+Figma's `Country Selector` draws a flag beside the code, from a `Flags` component set that belongs to
+neither icon pipeline — not the MingCute glyphs, not the illustrative set. Rather than invent flag
+artwork, each option takes an optional `flag` node and the code stands alone without one. Export that
+set, or pass emoji, and the slot is complete.
+
+`LanguagePicker` is a real combobox rather than a styled button, so it keeps the keyboard behaviour, and
+because it sits inside another field it carries its own `aria-label` — defaulting to "Language" — which
+the host field's label does not provide.
+
+### Input with a contained button
+
+Not in Figma. Composed from the parts that are: the drawn field, and this library's `Button` at
+`size="sm"` — 40px, which leaves 4px of air inside the 48px box — inset against the right border, with
+the field giving up its right padding. Marked as inferred in `components.module.css`.
+
+A single-field form still needs a `<form>` and a real submit button, so `containedButton` takes a
+button rather than drawing one: Enter in the field and a click on the button do the same thing.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -975,8 +1078,8 @@ Two smaller things in that export:
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Label, Link, SegmentedControl,
-                         Stat, Tabs)
+src/components/          One directory per component (Button, Card, Input, Label, Link,
+                         SegmentedControl, Stat, Tabs)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
 assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/

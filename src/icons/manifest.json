@@ -18,7 +18,8 @@
     "search",
     "external_link",
     "information",
-    "alert"
+    "alert",
+    "question"
   ],
   "filled": []
 }

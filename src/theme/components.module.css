@@ -1606,3 +1606,400 @@
     content: none;
   }
 }
+
+/* ============================================================================== Fields
+ *
+ * Figma source: the `Input` set (node `16166:23969`), as laid out in the `input` section
+ * `24397:77217`. One set, four axes, 36 variants:
+ *
+ *   Type        Text | Dropdown | Text Area  -> three Mantine components, since they are three
+ *                                              different elements with three different semantics
+ *   Condensed   True | False                 -> `floating`: the label inside the box, or above it
+ *   State       Default | Active | Disabled  -> the real CSS states
+ *   Filled      False | True                 -> simply whether the field has a value
+ *
+ * plus booleans for the label, the required marker, the help text, both icon slots, the country
+ * selector and the info button — all of which are props or slots here.
+ *
+ * As drawn, every state shares a 48px box with an 8px corner, 12/16 padding, no fill, and a **1px
+ * gradient border**: `Neutral/04` into `Neutral/05` at rest, and `Action/Primary/Active` into
+ * `Accent/Product Accent` when active. A gradient cannot be a border colour, and an `<input>` cannot
+ * carry a pseudo-element, so the ring is painted on the wrapper — the one element that is exactly the
+ * size of the box and can have children.
+ */
+
+.fieldRoot {
+  /* Figma stacks label, box and help text with an 8px gap; the floating layout uses 4px. */
+  --sds-field-gap: 8px;
+}
+
+.fieldRoot .fieldWrapper {
+  position: relative;
+  border-radius: var(--input-radius);
+}
+
+/* The resting border: `Neutral/04` -> `Neutral/05`, 1px, by the same masked ring as everywhere else. */
+.fieldRoot .fieldWrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    to bottom,
+    var(--sds-neutral-04) 0%,
+    var(--sds-neutral-05) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: background-image var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * `State=Active`. Figma keys it on the field being focused, and uses the same accent gradient the card
+ * ring, the label outline and the tab indicator use.
+ */
+.fieldRoot .fieldWrapper:focus-within::after {
+  background-image: linear-gradient(
+    to bottom right,
+    var(--sds-action-primary-active) 0%,
+    var(--sds-accent-product-accent) 100%
+  );
+}
+
+.fieldWrapper .fieldInput {
+  height: var(--input-height);
+  min-height: var(--input-height);
+  /* Vertical only: the inline padding is Mantine's, so it grows to clear an icon slot. */
+  padding-block: 12px;
+  border: none;
+  background-color: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  /* `Neutral/10` — the filled value's colour, mode-aware. */
+  color: var(--sds-neutral-10);
+}
+
+/* A text area grows, so the fixed height becomes a minimum and the padding does the rest. */
+.fieldWrapper .fieldInput:where(textarea) {
+  height: auto;
+  line-height: 24px;
+}
+
+.fieldWrapper .fieldSection {
+  /* Figma's icon slots are 16px, inside the box's own padding. */
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/*
+ * Pinned to the box's padding edge rather than centred in the section, which is what puts the glyph
+ * 16px in and leaves Figma's 8px gap before the text.
+ */
+.fieldWrapper .fieldSection[data-position='left'] {
+  justify-content: flex-start;
+  padding-inline-start: 16px;
+}
+
+.fieldWrapper .fieldSection[data-position='right'] {
+  justify-content: flex-end;
+  padding-inline-end: 16px;
+}
+
+.fieldWrapper .fieldSection > svg {
+  width: 16px;
+  height: 16px;
+}
+
+/*
+ * The label above the box: 16/24 SemiBold `Surfaces/Text/Primary`, with the required asterisk in
+ * `Status/Error/Error` at 13/16.
+ */
+.fieldRoot .fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--sds-field-gap);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.fieldRoot .fieldRequired {
+  color: var(--sds-status-error-error);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* The help text under the box — Figma's "description area", 13/16 `Surfaces/Text/Secondary`. */
+.fieldRoot .fieldDescription {
+  margin-top: var(--sds-field-gap);
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/*
+ * Not drawn: Figma's `Input` set has no error state, only `Status/Error/Error` on the required
+ * asterisk. The error message reuses that colour and the description's size, and the box takes the
+ * same colour so the field itself shows the problem rather than only the text below it.
+ */
+.fieldRoot .fieldError {
+  margin-top: var(--sds-field-gap);
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--sds-status-error-error);
+}
+
+.fieldWrapper:has([data-error])::after,
+.fieldWrapper:has([aria-invalid='true'])::after {
+  background-image: linear-gradient(
+    to bottom,
+    var(--sds-status-error-error) 0%,
+    var(--sds-status-error-error) 100%
+  );
+}
+
+/*
+ * Not drawn either. Figma's `State=Disabled (Read Only)` is visually identical to Default — same
+ * border, same text colours — so a disabled field would be indistinguishable from one you can type in.
+ * This follows every other disabled control in the library: the resting appearance at half opacity,
+ * plus the cursor. Recorded in README.md.
+ */
+.fieldRoot .fieldWrapper:has(:disabled) {
+  opacity: 0.5;
+}
+
+.fieldWrapper .fieldInput:disabled {
+  cursor: not-allowed;
+  color: var(--sds-neutral-10);
+  background-color: transparent;
+}
+
+/* ------------------------------------------------------------------ Condensed: the floating label
+ *
+ * Figma's `Condensed=True` cell puts the label inside the 48px box — 18px Regular when the field is
+ * empty — and shrinks it to 14px SemiBold once there is a value or the field is focused, which is the
+ * float. The box keeps its height either way, so the label and the value share it.
+ *
+ * `:has()` is what makes this work without JavaScript: Mantine renders the label before the input, so a
+ * sibling selector would run the wrong way.
+ */
+.fieldRoot[data-floating] {
+  --sds-field-gap: 4px;
+  /*
+   * The label is taken out of flow to sit inside the box, so the root has to be its containing block —
+   * without this it would position itself against whatever ancestor happens to be positioned.
+   */
+  position: relative;
+}
+
+.fieldRoot[data-floating] .fieldWrapper {
+  /* The box grows to hold the raised label and the value. */
+  --input-height: 48px;
+}
+
+.fieldRoot[data-floating] .fieldLabel {
+  position: absolute;
+  top: 12px;
+  inset-inline-start: 16px;
+  margin: 0;
+  z-index: 1;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 400;
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    font-size var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * Mantine renders the label as a *sibling* of the input's wrapper, not inside it, so the field's state
+ * has to be read from the root — which is what `:has()` is for. A sibling selector cannot reach
+ * backwards from the input to the label.
+ */
+.fieldRoot[data-floating]:focus-within .fieldLabel,
+.fieldRoot[data-floating]:has(.fieldInput:not(:placeholder-shown)) .fieldLabel,
+.fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel {
+  transform: translateY(-10px);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInput,
+.fieldRoot[data-floating] .fieldWrapper:has(.fieldInput:not(:placeholder-shown)) .fieldInput,
+.fieldRoot[data-floating] .fieldWrapper:has(.fieldInput[data-filled]) .fieldInput {
+  padding-top: 22px;
+  padding-bottom: 4px;
+  font-size: 18px;
+}
+
+/* The label owns the empty box, so the placeholder must not compete with it. */
+.fieldRoot[data-floating] .fieldInput::placeholder {
+  color: transparent;
+}
+
+.fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInput::placeholder {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/* -------------------------------------------------------------------------- the info button
+ *
+ * Figma's `Info Button` (`16032:242555`): a 4px-radius pill, 2/6 padding, a 2px gap, filled
+ * `Status/Info/Lighten 2` with 11px SemiBold `Status/Info/Info` text and a 10px question mark. Here it
+ * is the trigger for a tooltip rather than a button that goes somewhere, so it carries the explanation
+ * it labels.
+ */
+.fieldInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--sds-status-info-lighten-2);
+  color: var(--sds-status-info-info);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: help;
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.fieldInfo > svg {
+  width: 10px;
+  height: 10px;
+}
+
+.fieldInfo:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------- the contained button
+ *
+ * Not in Figma. Composed from the parts that are: the drawn field, and a Button inset in its right
+ * edge. The box gives up its right padding so the button can sit against the border with 4px of air.
+ * The button wants `size="sm"` — 40px in this library, which leaves 4px above and below inside the
+ * 48px box. `md` is itself 48px and would fill the field edge to edge.
+ */
+.fieldRoot[data-contained-button] .fieldInput {
+  padding-inline-end: 4px;
+}
+
+.fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
+  inset-inline-end: 4px;
+  width: auto;
+  /* The generic icon inset would push the button 16px off the border. */
+  padding-inline-end: 0;
+}
+
+/* ------------------------------------------------------------------------ the dropdown menu
+ *
+ * Figma's `Dropdown` set (`16884:46299`) — the Simple, Groups and Search cells. The surface is the
+ * glass card treatment the rest of the library uses, so the menu reads as part of the same system.
+ */
+.fieldDropdown[data-position], .fieldDropdown {
+  padding: 8px;
+  border: none;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--sds-surfaces-card-bg-grey);
+  box-shadow: var(--sds-elevation-tight-4);
+}
+
+.fieldOption {
+  border-radius: var(--mantine-radius-sm);
+  padding: 8px 12px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.fieldOption[data-checked] {
+  background-color: var(--sds-action-primary-bg-cta);
+  color: var(--sds-action-link-default-link);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .fieldOption:hover:not([data-checked]) {
+    background-color: var(--sds-action-primary-bg-cta);
+  }
+}
+
+.fieldGroupLabel {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.fieldEmpty {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/* ------------------------------------------------------------------- the country selector
+ *
+ * Figma's `Country Selector` (`17205:21114`) is a 34x24 slot inside the field: a flag and a chevron,
+ * with a 4px corner. The flags come from a `Flags` component set that is not part of either icon
+ * pipeline, so the code renders the language code and takes a flag as an optional node — see README.md.
+ */
+.langPicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sds-neutral-10);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.langPicker > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.langPicker:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fieldWrapper::after,
+  .fieldRoot[data-floating] .fieldLabel {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .fieldWrapper {
+    border: 1px solid CanvasText;
+  }
+
+  .fieldWrapper::after {
+    content: none;
+  }
+
+  .fieldWrapper:focus-within {
+    outline: 2px solid Highlight;
+  }
+}

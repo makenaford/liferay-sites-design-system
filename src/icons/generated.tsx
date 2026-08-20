@@ -183,6 +183,23 @@ export function IconInformation(props: IconProps) {
   )
 }
 
+/** MingCute `question` (regular, system). */
+export function IconQuestion(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 17h.002m-2.627-6.875a2.625 2.625 0 1 1 3.601 2.438c-.512.205-.976.635-.976 1.187V14m9-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>
+    </svg>
+  )
+}
+
 /** MingCute `refresh_2` (regular, system). */
 export function IconRefresh2(props: IconProps) {
   return (

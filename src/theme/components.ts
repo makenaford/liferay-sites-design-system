@@ -4,7 +4,10 @@ import {
   Button,
   Card,
   SegmentedControl,
+  Select,
   Tabs,
+  Textarea,
+  TextInput,
   type MantineThemeComponents,
 } from '@mantine/core'
 import classes from './components.module.css'
@@ -100,6 +103,46 @@ const LABEL_TEXT_COLOR = {
   /** Figma `Style=Outline` — `Surfaces/Text/Primary`. */
   outline: 'var(--sds-surfaces-text-primary)',
 } as const
+
+/**
+ * The variables every field shares, from the Figma `Input` set: a 48px box with `Border Radius/medium`
+ * corners and 16px of horizontal padding. The 1px gradient border is painted by the stylesheet, since
+ * no `border-color` can be a gradient, so Mantine's own border is switched off here.
+ *
+ * The placeholder is `Surfaces/Text/Tertiary` rather than the `Surfaces/Text/Primary` Figma draws —
+ * see README.md: at full contrast a placeholder is indistinguishable from a real value.
+ */
+const INPUT_VARS = {
+  '--input-height': '48px',
+  '--input-fz': '16px',
+  '--input-radius': `${radius.medium}px`,
+  /**
+   * Only the base padding: Mantine swaps `--input-padding-inline-start/end` for the section size when
+   * a field has an icon, and hardcoding those would leave the icon sitting on top of the text.
+   */
+  '--input-padding': '16px',
+  /**
+   * Figma's icon slots: 16px of padding, a 16px glyph, then an 8px gap before the text — so the text
+   * starts at 40px and the stylesheet pins the glyph to the box's own padding edge.
+   */
+  '--input-left-section-size': '40px',
+  '--input-right-section-size': '40px',
+  '--input-color': 'var(--sds-neutral-10)',
+  '--input-placeholder-color': 'var(--sds-surfaces-text-tertiary)',
+  '--input-bd': 'none',
+  '--input-bg': 'transparent',
+} as const
+
+/**
+ * Figma puts the help text *below* the box; Mantine's default order puts the description above it. The
+ * error message follows the description, so a field that has both reads box, help, problem.
+ */
+const INPUT_ORDER: ('label' | 'input' | 'description' | 'error')[] = [
+  'label',
+  'input',
+  'description',
+  'error',
+]
 
 /**
  * Central component configuration for the theme.
@@ -240,6 +283,66 @@ export const componentTheme: MantineThemeComponents = {
       /** Figma's `Style=Glass`, the default cell of the Surface set. */
       variant: 'glass',
     },
+  }),
+
+  /**
+   * The three `Type` cells of the Figma `Input` set (node `16166:23969`) are three Mantine components
+   * rather than a prop, since a text field, a multi-line field and a select are different elements with
+   * different semantics. They share one stylesheet block and one set of variables.
+   *
+   * The set's other axes: `Condensed` is the floating-label layout (`floating` on the component),
+   * `State` is Default | Active | Disabled, and `Filled` is simply whether the field has a value —
+   * all of which are real states in code rather than props.
+   */
+  TextInput: TextInput.extend({
+    classNames: {
+      root: classes.fieldRoot,
+      wrapper: classes.fieldWrapper,
+      input: classes.fieldInput,
+      section: classes.fieldSection,
+      label: classes.fieldLabel,
+      required: classes.fieldRequired,
+      description: classes.fieldDescription,
+      error: classes.fieldError,
+    },
+    defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
+    vars: () => ({ wrapper: INPUT_VARS }),
+  }),
+
+  Textarea: Textarea.extend({
+    classNames: {
+      root: classes.fieldRoot,
+      wrapper: classes.fieldWrapper,
+      input: classes.fieldInput,
+      section: classes.fieldSection,
+      label: classes.fieldLabel,
+      required: classes.fieldRequired,
+      description: classes.fieldDescription,
+      error: classes.fieldError,
+    },
+    defaultProps: { size: 'md', autosize: true, minRows: 3, inputWrapperOrder: INPUT_ORDER },
+    vars: () => ({ wrapper: INPUT_VARS }),
+  }),
+
+  Select: Select.extend({
+    classNames: {
+      root: classes.fieldRoot,
+      wrapper: classes.fieldWrapper,
+      input: classes.fieldInput,
+      section: classes.fieldSection,
+      label: classes.fieldLabel,
+      required: classes.fieldRequired,
+      description: classes.fieldDescription,
+      error: classes.fieldError,
+      dropdown: classes.fieldDropdown,
+      option: classes.fieldOption,
+      options: classes.fieldOptions,
+      group: classes.fieldGroup,
+      groupLabel: classes.fieldGroupLabel,
+      empty: classes.fieldEmpty,
+    },
+    defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
+    vars: () => ({ wrapper: INPUT_VARS }),
   }),
 
   Tabs: Tabs.extend({
