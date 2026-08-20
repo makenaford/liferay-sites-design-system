@@ -7,6 +7,7 @@
  */
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
+export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {
   Header,
   MegaMenu,

@@ -647,6 +647,80 @@ selection with the arrow keys — the semantics for **swapping panels**. `Segmen
 group, for picking one option where the choice itself is the outcome. The two look related in Figma;
 pick by what the control does, not by which mockup it came from.
 
+## Hero
+
+From the Figma `Hero` set (node `19110:9503`) and the accompanying spreadsheet, which lists the content
+slots: image, label, header, description, button(s), link, input-with-button, Gartner logo and tags, and
+video.
+
+```tsx
+import bubble from './assets/bubbles/bubble_corner.webm'
+
+<Hero
+  background="corner"
+  video={bubble}
+  label={<Label size="sm" variant="outline">Platform</Label>}
+  title={<h1>One platform, every channel</h1>}
+  description="Build once and deliver everywhere."
+  actions={<Button rightSection={<IconArrowRight />}>Book a demo</Button>}
+  media={<img src={shot} alt="" />}
+/>
+```
+
+| Source | Prop |
+| --- | --- |
+| `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
+| `Alignnemt` — Left / Center | `align` |
+| `Image` — Yes / No | the `media` slot |
+| `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
+| `Theme` — Dark / Light | the colour scheme, not a prop |
+| Label / Header / Description / Button(s) / Link | `label`, `title`, `description`, `actions` |
+| Input with button | `form` |
+| Gartner logo and tags | `proof` |
+
+Measurements from the component: 80px padding, a 40px gap between rows, 80px between the content and
+the media, and 24px inside the content stack. The content and media columns are 600px each in the drawn
+1440 frame, i.e. equal halves of the 1280 inner width; below 1200px they stop being columns.
+
+`Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
+and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
+
+The heading element is the caller's: `title` takes whatever node you pass and only styles it. A hero
+cannot know whether it holds the page's `h1`.
+
+### The bubble is a gradient with a video on top
+
+That order is the point. The gradient is built from `Brand/Primary/Primary` and `Accent/Product Accent`
+— the colours the animation is made of — so it needs no network, survives a blocked or slow file, and is
+what shows when the video is not playing. The webm then layers over it with `mix-blend-mode: screen`,
+which drops its near-black ground and keeps the light.
+
+Two masks shape it, and neither is decoration: a radial one softens the frame's corners, and a linear one
+dissolves the bottom, where the asset's own gradient ends in a faceted edge that `screen` would otherwise
+reveal as a shape. Without them the light source reads as a rectangle.
+
+**The video is not bundled.** The two files live in `assets/bubbles/` — 2.0MB and 1.7MB — and a component
+library has no business putting that inside anyone's JavaScript, so `video` takes a URL. The stories
+import it through the bundler; an app can equally serve it from a public directory.
+
+**It does not play in three cases**, each for its own reason:
+
+- `prefers-reduced-motion` — the video is not rendered at all, so it is never even fetched. An
+  autoplaying 2MB loop is precisely what that preference is about.
+- `background="none"` — there is no bubble to animate.
+- **Light mode** — see below.
+
+### The bubbles are dark-canvas assets
+
+Figma names the component `Dark Bubble Animation`, and that is what the files are: a bright sphere on a
+near-black ground. Over the light page background `screen` cannot lift them, so they paint a dark blob
+with a visible frame edge instead of a light source — verified in the browser before this was gated. So
+the video plays on the dark canvas only, and light mode gets the gradient, which is built from the same
+tokens and reads correctly there.
+
+A light-theme export of the two animations would close this. Until then the light hero is a gradient, not
+an animation.
+
 ## Header and MegaMenu
 
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
@@ -1145,6 +1219,18 @@ The implementation uses `Status/Info/Darken 2`, which stays dark in both: 13:1 o
 Same shape of problem as `Action/Neutral/Inverted`, from the opposite direction: a surface that does not
 change between modes, paired with text that does.
 
+### The hero's alignment axis is misspelled
+
+The `Hero` set's axis is `Alignnemt`, not `Alignment`. Harmless until someone writes a script against the
+variant names — the Code Connect mapping has to spell it Figma's way, which is worth fixing at the source
+rather than in every consumer.
+
+### The light hero has no animation
+
+The two bubble files are dark-canvas assets and are gated to dark mode, so a light hero shows the
+gradient alone. Not a bug, but a gap in the asset set rather than in the code: a light-theme export of
+`Dark Bubble Animation` (which would presumably stop being called that) is all it needs.
+
 ### Smaller things
 
 - **Link `secondary`'s hover and disabled states** were imperceptible and full-contrast respectively.
@@ -1174,11 +1260,12 @@ change between modes, paired with text that does.
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Header, Input, Label, Link,
-                         SegmentedControl, Stat, Tabs)
+src/components/          One directory per component (Button, Card, Header, Hero, Input, Label,
+                         Link, SegmentedControl, Stat, Tabs)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
 assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/
+assets/bubbles/          The hero bubble animations (webm), not bundled into the library
 src/docs/                Storybook Overview pages
 .storybook/              Storybook config and the shared story frame
 ```

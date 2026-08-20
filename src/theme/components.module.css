@@ -2767,3 +2767,266 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* =============================================================================== Hero
+ *
+ * Figma source: the `Hero` set (node `19110:9503`), with the slots the accompanying spreadsheet lists.
+ * Its axes land as props and states rather than variants:
+ *
+ *   Type        Default | Full Bubble | Corner Bubble | Form | Guide
+ *               -> `background`, and two compositions (Form and Guide are content, not chrome)
+ *   Alignnemt   Left | Center            -> `align`
+ *   Image       Yes | No                 -> the `media` slot
+ *   Size        Desktop | Mobile         -> a media query at 1200px
+ *   Theme       Dark | Light             -> the colour scheme
+ *
+ * Measurements from the component: 80px padding, a 40px gap between the hero's rows, an 80px gap
+ * between the content column and the media, and a 24px gap inside the content block. The content and
+ * media columns are 600px each in the drawn 1440 frame, so they are equal halves of the 1280 inner.
+ */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* ------------------------------------------------------------------------------ the bubble
+ *
+ * A gradient first, the video over it. The gradient needs no network, survives a blocked file, and is
+ * what shows when someone asks for less motion — in which case the component does not render the video
+ * at all, so it is never fetched.
+ *
+ * Both treatments are built from the brand ramp and the product accent, which is what the animation
+ * itself is made of: `Brand/Primary/*` blues bleeding into `Accent/Product Accent` purple.
+ */
+.heroBubble {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* `Type=Full Bubble` — the animation fills the hero, centred and slightly above the middle. */
+.hero[data-background='full'] .heroBubble {
+  background-image:
+    radial-gradient(
+      60% 60% at 50% 34%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 45%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      44% 44% at 24% 12%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 28%, transparent) 0%,
+      transparent 66%
+    );
+}
+
+/* `Type=Corner Bubble` — the same light source pushed into the top right, as the corner file is drawn. */
+.hero[data-background='corner'] .heroBubble {
+  background-image:
+    radial-gradient(
+      58% 62% at 82% 8%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 48%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      40% 40% at 96% 40%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 26%, transparent) 0%,
+      transparent 68%
+    );
+}
+
+/*
+ * The video sits over the gradient and covers the hero. `Full Bubble` is drawn 1440x624 against a
+ * 1440x648 hero, i.e. edge to edge; `Corner Bubble` is 1105 wide against the same frame, anchored to the
+ * top right, so it is not stretched across the whole width.
+ */
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * The file is a bright sphere on a near-black ground, so `screen` drops the ground and keeps the
+   * light. Its blacks are not pure, though, which leaves a faint rectangle where the frame ends — hence
+   * the mask below, which fades the edges the sphere does not reach.
+   */
+  mix-blend-mode: screen;
+  /*
+   * Two mask layers, intersected. The radial one softens the frame's corners; the linear one dissolves
+   * the bottom, where the asset's own gradient ends in a faceted edge that `screen` would otherwise
+   * reveal as a shape. Neither is decoration for its own sake — they hide that the light source is a
+   * rectangle.
+   */
+  -webkit-mask-image:
+    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
+    linear-gradient(to bottom, #000 42%, transparent 88%);
+  mask-image:
+    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
+    linear-gradient(to bottom, #000 42%, transparent 88%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.hero[data-background='corner'] .heroVideo {
+  inset: auto 0 auto auto;
+  width: min(1105px, 100%);
+  height: 100%;
+  object-position: top right;
+  /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
+  -webkit-mask-image:
+    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
+    linear-gradient(to bottom, #000 52%, transparent 94%);
+  mask-image:
+    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
+    linear-gradient(to bottom, #000 52%, transparent 94%);
+}
+
+/* ------------------------------------------------------------------------------- the layout */
+
+.heroInner {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  max-width: 1440px;
+  margin: 0 auto;
+  /* Figma's 80px, easing off on narrow viewports where 80px is most of the screen. */
+  padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 80px);
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  /* The `Content Block` instance's own gap. */
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* `Alignnemt=Center`: the column centres itself and its text, and the media drops below it. */
+.hero[data-align='center'] .heroInner {
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+}
+
+.hero[data-align='center'] .heroContent {
+  align-items: center;
+  text-align: center;
+  max-width: 800px;
+}
+
+.hero[data-align='center'] .heroActions,
+.hero[data-align='center'] .heroProof {
+  justify-content: center;
+}
+
+/*
+ * The media column. Equal halves in the drawn frame, and it never shrinks below half — a hero image
+ * squeezed to a sliver is worse than one that wraps.
+ */
+.heroMedia {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroMedia > img,
+.heroMedia > video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--mantine-radius-md);
+}
+
+/* ------------------------------------------------------------------------------ the content */
+
+.heroLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * The heading. Its element is the caller's — a hero does not get to decide whether it is the page's h1
+ * — so this styles whatever comes in and only sets the type.
+ */
+.heroTitle > :where(h1, h2, h3, p) {
+  margin: 0;
+  font-size: var(--sds-size-display-display-sm);
+  line-height: var(--sds-line-height-display-display-sm);
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.heroDescription {
+  max-width: 60ch;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: var(--sds-size-paragraph-large);
+  line-height: var(--sds-line-height-paragraph-large);
+}
+
+.heroDescription > p {
+  margin: 0;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+/* The `Form` cell: a single field with a contained button, which wants a width of its own. */
+.heroForm {
+  width: min(480px, 100%);
+}
+
+.heroProof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* ------------------------------------------------------------------- Size=Mobile (< 1200px)
+ *
+ * Figma draws a Mobile cell of the hero; the difference that matters is that the two columns stop being
+ * columns. The padding and type already scale with the viewport.
+ */
+@media (max-width: 1199px) {
+  .heroInner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .hero[data-align='center'] .heroInner {
+    align-items: center;
+  }
+
+  .heroMedia {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * The component does not render the video under reduced motion, so there is nothing to pause here.
+   * This only guards against a `video` placed in the media slot by a call site.
+   */
+  .heroMedia video {
+    animation-play-state: paused;
+  }
+}
+
+@media (forced-colors: active) {
+  .heroBubble {
+    display: none;
+  }
+}
