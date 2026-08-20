@@ -13,6 +13,7 @@ export {
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
+export { Divider, type DividerProps, type DividerTone } from './components/Divider'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {
   Image,

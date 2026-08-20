@@ -4654,3 +4654,92 @@
     outline-color: Highlight;
   }
 }
+
+/* =====================================================================================
+ * Divider — Figma `divider` component set (node `16290:53873`)
+ *
+ * Four cells, all 1px, and the neutrals are **not** symmetric between the axes:
+ *
+ *   normal   horizontal  `Neutral/02`
+ *   normal   vertical    `Neutral/03`
+ *   gradient both        `Neutral/06` -> `Brand/Primary/Lighten/3`, left to right
+ *
+ * A horizontal rule and a vertical one using different neutrals looks like drift rather than intent.
+ * Both are reproduced as drawn and it is recorded in README.md.
+ *
+ * The gradient transform is the identity matrix, which inverts to a plain left-to-right ramp — 90deg for
+ * the horizontal cell. The vertical cell reuses the same paint, so it runs top to bottom there.
+ * ===================================================================================== */
+
+/*
+ * Every cell is 1px; Mantine's size scale is not exposed because the file has one width.
+ *
+ * No blanket `border-style` here: Mantine sets the whole border shorthand on the one edge the orientation
+ * needs, and declaring a style for all four sides turns the other three on at their default width. That
+ * measured 720x3 instead of 720x1.
+ */
+.divider[data-tone] {
+  --divider-size: 1px;
+}
+
+.divider[data-tone='normal'][data-orientation='horizontal'] {
+  --divider-color: var(--sds-neutral-02);
+}
+
+.divider[data-tone='normal'][data-orientation='vertical'] {
+  --divider-color: var(--sds-neutral-03);
+}
+
+/*
+ * The gradient cell. A border cannot be a gradient, so the border is switched off and the line is drawn as
+ * a background instead — the same reason the Card's hairline and the Tabs indicator are drawn that way.
+ */
+.divider[data-tone='gradient'] {
+  border: none;
+  background-image: linear-gradient(
+    90deg,
+    var(--sds-neutral-06) 0%,
+    var(--sds-brand-primary-lighten-3) 100%
+  );
+}
+
+.divider[data-tone='gradient'][data-orientation='horizontal'] {
+  height: 1px;
+  width: 100%;
+}
+
+.divider[data-tone='gradient'][data-orientation='vertical'] {
+  width: 1px;
+  align-self: stretch;
+  /* Turned with the axis, so the ramp runs along the line rather than across it. */
+  background-image: linear-gradient(
+    180deg,
+    var(--sds-neutral-06) 0%,
+    var(--sds-brand-primary-lighten-3) 100%
+  );
+}
+
+@media (forced-colors: active) {
+  .divider[data-tone] {
+    --divider-color: CanvasText;
+  }
+
+  /*
+   * A gradient background disappears in forced colours, so the gradient tone falls back to a real border —
+   * on the one edge its orientation uses, not all four.
+   */
+  .divider[data-tone='gradient'] {
+    background-image: none;
+    --divider-color: CanvasText;
+  }
+
+  .divider[data-tone='gradient'][data-orientation='horizontal'] {
+    height: 0;
+    border-top: 1px solid CanvasText;
+  }
+
+  .divider[data-tone='gradient'][data-orientation='vertical'] {
+    width: 0;
+    border-inline-start: 1px solid CanvasText;
+  }
+}

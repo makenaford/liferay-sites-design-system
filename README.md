@@ -1451,6 +1451,37 @@ is horizontal, but once it turns vertical that same `flex-basis: 0` becomes a **
 container with no definite height `aspect-ratio` cannot recover it — the figure measured 801×0. Both
 children go back to `flex: 0 0 auto` when stacked, and the ratio now holds at exactly 1.5 at every width.
 
+## Divider
+
+Figma `divider` component set (node `16290:53873`) on Mantine's `Divider`.
+
+| Figma | Prop |
+| --- | --- |
+| `Property 1` — normal / gradient | `tone` |
+| `Property 2` — horizontal / vertical | `orientation` |
+
+```tsx
+<Divider />
+<Divider tone="gradient" />
+<Divider orientation="vertical" />
+```
+
+All four cells are 1px, verified: 720×1 with a single top border on the horizontal ones, 1×60 with a single
+inline-start border on the vertical ones.
+
+`size`, `color` and Mantine's `dashed` / `dotted` line styles are deliberately not exposed. Every cell in
+the file is 1px solid and the colour is the `tone` axis, so a width scale and three line styles would all be
+inventions.
+
+### What this does not replace
+
+`StatBar` and `Accordion` draw their own rules rather than composing this one, on purpose:
+
+- `StatBar`'s divider is flat `Neutral/03` between stats — the value asked for there, not the `normal`
+  horizontal `Neutral/02`.
+- `Accordion`'s rule **crossfades** between the flat and the gradient tone as a row opens, which needs two
+  stacked layers on one element. A single `Divider` cannot animate between its own tones.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1601,6 +1632,24 @@ grey's 1.05:1. It was a second option that looked like the first, so `grey` is t
 
 Worth having as a distinct surface if the token moves far enough from grey to be seen; until then it is one
 choice presented as two.
+
+### The divider's two axes use different neutrals
+
+`divider`'s four cells are 1px each, and the normal tone is not the same colour on both axes:
+
+| | horizontal | vertical |
+| --- | --- | --- |
+| normal | `Neutral/02` | `Neutral/03` |
+| gradient | `Neutral/06` → `Brand/Primary/Lighten/3` | same |
+
+Nothing about turning a line 90° should change its weight, so this reads as drift rather than intent. Both
+are reproduced as drawn — the `Divider` docs and its `TheAsymmetry` story put the two side by side, where the
+vertical is visibly the stronger of the pair.
+
+It compounds the contrast problem already recorded for the Accordion: `Neutral/02` is **1.24:1 against the
+light page** and `Neutral/03` is 1.42:1, so a normal divider is close to invisible in light mode either way.
+`Neutral/05` is the step that reads in both modes, which is what the Card's static surface hairline settled
+on. One value for both axes, at a step that can be seen, would fix the asymmetry and the visibility together.
 
 ### The Accordion set is in an error state, from a duplicated variant name
 
