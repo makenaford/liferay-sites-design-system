@@ -9,6 +9,14 @@ export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {
+  Image,
+  IMAGE_RATIOS,
+  type ImageProps,
+  type ImageRatio,
+  type ImageOrientation,
+  type ImageFit,
+} from './components/Image'
+export {
   Header,
   MegaMenu,
   type HeaderProps,

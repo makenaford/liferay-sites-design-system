@@ -966,6 +966,47 @@ the field giving up its right padding. Marked as inferred in `components.module.
 A single-field form still needs a `<form>` and a real submit button, so `containedButton` takes a
 button rather than drawing one: Enter in the field and a click on the button do the same thing.
 
+## Image
+
+The ratios from the Figma `Aspect Ratio` set (node `12305:1754909`) on Mantine's `Image`.
+
+```tsx
+<Image src={shot} alt="The dashboard, showing six live campaigns" ratio="3:2" radius="md" />
+<Image src={portrait} alt="" ratio="3:2" orientation="vertical" fit="contain" />
+<Image src={cover} alt="" fill />
+```
+
+| Figma | Prop |
+| --- | --- |
+| `Ratio` — 1:1, 3:2, 4:3, 16:10, 16:9, 2:1, 5:2, 3:1, 40:33 | `ratio` |
+| `Ratio=Adjustable` | `ratio="auto"` — no ratio, the image keeps its own |
+| `Orientation` — Horizontal / Vertical | `orientation`, which inverts the ratio |
+
+Measured in the browser, every ratio lands on its name: 1:1 at 1.000, 3:2 at 1.500, 4:3 at 1.333,
+16:10 at 1.600, 16:9 at 1.778, 2:1 at 2.000, 5:2 at 2.500, 3:1 at 3.000, 40:33 at 1.212.
+
+`fit` is the five `object-fit` values. **`cover`** is the default and crops the overflow, which is right
+for photography and wrong for anything whose edges matter; `contain` fits the whole image and leaves
+space; `fill` stretches it and distorts it, which is almost never wanted but is occasionally what a
+design asks for; `none` and `scale-down` behave as the CSS values do.
+
+**`fill`** is a different thing from `fit="fill"`, and the names are unavoidably close: it makes the
+image cover its nearest positioned ancestor — `position: absolute` on all four edges — for an image
+behind content. `ratio` is ignored in that mode, because the parent already decides the box. The parent
+needs `position: relative` and a size of its own; without a positioned parent the image will fill the
+page.
+
+The ratio is `aspect-ratio` on the image element itself rather than on a wrapper. One element means the
+image takes part in its parent's layout directly, which is what lets `Card.Image` bleed to a card's edge
+and a grid cell size itself from the ratio.
+
+### `alt` is required
+
+It has a type but no default. `alt=""` is a valid and often correct answer — a photograph beside text
+that already says what it shows — but it has to be said out loud. An image component that lets you forget
+the alt text produces a codebase without any, and that is a decision worth making once, in the type,
+rather than in every review.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1323,8 +1364,8 @@ gradient alone. Not a bug, but a gap in the asset set rather than in the code: a
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Header, Hero, Input, Label,
-                         Link, SegmentedControl, Stat, Tabs)
+src/components/          One directory per component (Button, Card, Header, Hero, Image, Input,
+                         Label, Link, SegmentedControl, Stat, Tabs)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
 assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/

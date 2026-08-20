@@ -3145,3 +3145,32 @@
     display: none;
   }
 }
+
+/* ============================================================================== Image
+ *
+ * Figma source: the `Aspect Ratio` set (node `12305:1754909`) — nine ratios plus an `Adjustable` cell,
+ * each with a vertical counterpart that simply inverts the ratio.
+ *
+ * The ratio is `aspect-ratio` on the image itself, set inline from the prop, rather than a wrapping
+ * element. One element means the image takes part in its parent's layout directly, which is what lets
+ * `Card.Image` bleed to a card's edge and a grid cell size itself from the ratio.
+ */
+
+.image {
+  display: block;
+  width: 100%;
+  /* `object-fit` comes from Mantine's `--image-object-fit`, which the `fit` prop sets. */
+  border-radius: var(--image-radius, 0);
+}
+
+/*
+ * `fill`: the image covers its nearest positioned ancestor, for a cover layer behind content. The ratio
+ * is deliberately ignored here — the parent already decides the box, and an aspect ratio fighting
+ * `inset: 0` produces a box that is neither.
+ */
+.image[data-fill] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
