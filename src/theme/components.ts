@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   SegmentedControl,
+  Tabs,
   type MantineThemeComponents,
 } from '@mantine/core'
 import classes from './components.module.css'
@@ -239,6 +240,42 @@ export const componentTheme: MantineThemeComponents = {
       /** Figma's `Style=Glass`, the default cell of the Surface set. */
       variant: 'glass',
     },
+  }),
+
+  Tabs: Tabs.extend({
+    classNames: {
+      root: classes.tabsRoot,
+      list: classes.tabsList,
+      tab: classes.tabsTab,
+      tabLabel: classes.tabsTabLabel,
+      panel: classes.tabsPanel,
+    },
+
+    defaultProps: {
+      /**
+       * Figma's component is `Tabs Menu Bottom`: the rule and the active indicator sit on the *top*
+       * edge, because the bar is designed to close a section rather than open one. Mantine's
+       * `inverted` is exactly that flip, so it is the default here. Pass `inverted={false}` for a
+       * conventional underline beneath the labels.
+       */
+      inverted: true,
+    },
+
+    vars: () => ({
+      root: {
+        /**
+         * Mantine draws both the list's rule and the active indicator with borders, one width for
+         * both. Figma has a 1px `Neutral/03` rule and a 3px gradient indicator, and a gradient cannot
+         * be a border colour — so the tab border is switched off here and `components.module.css`
+         * draws the indicator itself. The list's own hairline is Mantine's, recoloured.
+         */
+        '--tabs-list-border-width': '0',
+        '--tab-border-color': 'var(--sds-neutral-03)',
+        /** Neutralised: the stylesheet owns the indicator, and Figma gives hover no background. */
+        '--tabs-color': 'transparent',
+        '--tab-hover-color': 'transparent',
+      },
+    }),
   }),
 
   SegmentedControl: SegmentedControl.extend({

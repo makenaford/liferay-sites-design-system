@@ -1408,3 +1408,201 @@
     );
   }
 }
+
+/* ============================================================================== Tabs
+ *
+ * Figma source: the `Tabs Menu Bottom` set (node `22570:34600`) as instantiated at `24385:69232`,
+ * built from `Tab Element` (`20517:20939`), `Tab Base` (`20517:19948`) and `Background States`
+ * (`20639:4643`).
+ *
+ * The name is literal: this bar closes a section rather than opening one, so **the rule and the active
+ * indicator sit on the top edge**, not under the labels. Every absolute position in the file agrees —
+ * the divider, the tab bar and the active tab's `Line Up` vector all sit at the same y. Mantine's
+ * `inverted` prop is that flip, and it is on by default in the theme; `inverted={false}` gives a
+ * conventional underline instead.
+ *
+ * As drawn:
+ *
+ *   the rule        1px `Neutral/03`, full width, behind every tab
+ *   active          a 3px gradient over that rule — `Action/Primary/Active` to `Accent/Product Accent`
+ *   hover           the same line at 1px in `Action/Link/Hover Link`
+ *   label default   18/24 SemiBold `Surfaces/Text/Secondary`
+ *   label hover     18/24 SemiBold `Action/Link/Hover Link`
+ *   label active    18/24 Bold — restructured, see below
+ *   tab padding     14px / 18px, so the desktop tab is 52px tall and the mobile one 48px
+ *
+ * Mantine draws both the rule and the indicator with borders, at one shared width. Figma needs 1px for
+ * one and 3px for the other, and the indicator is a *gradient*, which no border-color can be — so the
+ * tab border is switched off in `components.ts` and the indicator is a pseudo-element here. That also
+ * keeps it out of layout: Figma's `Line Up` is an overlay, and every tab stays 52px whatever its state.
+ */
+
+.tabsRoot .tabsList {
+  /* Figma's tab bar has no gap: the cells meet, and the rule runs unbroken behind them. */
+  gap: 0;
+  flex-wrap: nowrap;
+}
+
+.tabsRoot .tabsTab {
+  position: relative;
+  /* `padding/14` is not a step on the scale; Figma sets 14/18 on the component. */
+  padding: 14px 18px;
+  background-color: transparent;
+  border: none;
+  /* Figma's label style is Source Sans 3 SemiBold; only the active tab goes Bold. */
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  /* `Surfaces/Text/Secondary` — the `Tab Content` `State=Default` colour. */
+  color: var(--sds-surfaces-text-secondary);
+  transition:
+    color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    font-weight var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * The indicator. One pseudo-element carries all three states: absent at rest, 1px on hover, 3px and
+ * gradient when active. `border-radius` is Figma's ROUND stroke cap.
+ */
+.tabsRoot .tabsTab::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 0;
+  border-radius: 999px;
+  background-color: var(--sds-action-link-hover-link);
+  transition:
+    height var(--sds-motion-medium) var(--sds-motion-ease-out),
+    opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
+}
+
+/*
+ * `State=Active`. The label is **restructured**: Figma binds it to `Action/Neutral/Inverted`, which is
+ * `#ffffff` in *both* colour modes — the same mode-independent white that made the Link's `secondary`
+ * rest state invisible and the `neutral` button unreadable. `Surfaces/Text/Primary` is the mode-aware
+ * equivalent: `#f0f1f5` on dark, indistinguishable from the white Figma shows, and `#262c37` on light,
+ * where white would be invisible against the page. Recorded in README.md.
+ */
+.tabsRoot .tabsTab[data-active] {
+  color: var(--sds-surfaces-text-primary);
+  font-weight: 700;
+}
+
+.tabsRoot .tabsTab[data-active]::after {
+  height: 3px;
+  background-color: transparent;
+  background-image: linear-gradient(
+    to right,
+    var(--sds-action-primary-active) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+}
+
+/* `State=Hover` — the same line at 1px, and the label takes the link's hover colour. */
+@media (hover: hover) {
+  .tabsRoot .tabsTab:hover:not([data-active], :disabled, [data-disabled]) {
+    color: var(--sds-action-link-hover-link);
+  }
+
+  .tabsRoot .tabsTab:hover:not([data-active], :disabled, [data-disabled])::after {
+    height: 1px;
+  }
+}
+
+/*
+ * Not drawn in Figma, which gives the tabs no focus or disabled state. Focus reuses this system's one
+ * focus treatment — `Styles/focus-ring`, 2px `Brand/Primary/Lighten/1` — inset so the ring is not
+ * clipped by a scrolling list, and disabled follows Mantine's own half-opacity, which matches how
+ * Figma draws every other disabled control here.
+ */
+.tabsRoot .tabsTab:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: -2px;
+  border-radius: var(--mantine-radius-xs);
+}
+
+.tabsRoot .tabsTab:disabled,
+.tabsRoot .tabsTab[data-disabled] {
+  opacity: 0.5;
+  color: var(--sds-surfaces-text-secondary);
+  cursor: not-allowed;
+}
+
+.tabsRoot .tabsTabLabel {
+  /* The label is centred in its cell, as the drawn tab is. */
+  text-align: center;
+}
+
+/*
+ * Figma draws no panel, so nothing is invented beyond separating it from the bar it belongs to. The
+ * bar's rule is on top, so the panel sits below the labels and needs the space.
+ */
+.tabsRoot .tabsPanel {
+  padding-top: 20px;
+}
+
+/* ------------------------------------------------------------------- Size=Mobile (< 1200px)
+ *
+ * Figma's Mobile variant is a 366px container holding a 758px tab bar, i.e. the row is meant to
+ * scroll, with each tab hugging its label. Same treatment and same breakpoint as the segmented
+ * control, so the two bars behave alike.
+ */
+.tabsRoot .tabsList {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.tabsRoot .tabsList::-webkit-scrollbar {
+  display: none;
+}
+
+.tabsRoot .tabsList .tabsTab {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+}
+
+/* -------------------------------------------------------------- Size=Desktop (>= 1200px) */
+
+@media (min-width: 1200px) {
+  .tabsRoot .tabsList {
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  /*
+   * Six equal cells across the bar, as Figma draws it — 213px each in 1280. Done here rather than with
+   * Mantine's `grow` prop, which lives on `Tabs.List` and would have to be passed at every call site.
+   */
+  .tabsRoot .tabsList .tabsTab {
+    flex: 1 1 0;
+  }
+
+  .tabsRoot .tabsTab {
+    font-size: 18px;
+    line-height: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabsRoot .tabsTab,
+  .tabsRoot .tabsTab::after {
+    transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+  }
+}
+
+/*
+ * In a forced-colours mode the indicator is a background and would be dropped, leaving no way to tell
+ * which tab is selected. A real border restores it.
+ */
+@media (forced-colors: active) {
+  .tabsRoot .tabsTab[data-active] {
+    border-top: 3px solid Highlight;
+  }
+
+  .tabsRoot .tabsTab[data-active]::after {
+    content: none;
+  }
+}

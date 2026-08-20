@@ -21,6 +21,7 @@ export {
   type StatSize,
   type StatAlign,
 } from './components/Stat'
+export { Tabs, type TabsProps } from './components/Tabs'
 
 export * from './icons'
 

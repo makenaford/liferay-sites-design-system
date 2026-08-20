@@ -567,6 +567,86 @@ Figma's 16px gap, and stacks below 576px with the rules turning horizontal — t
 `Size=Small, Align=Vertical` cell draws. The rules are `<hr aria-hidden>`, so the bar reads as a list
 of numbers rather than announcing a separator between each one.
 
+## Tabs
+
+From the Figma `Tabs Menu Bottom` set (node `22570:34600`) as instantiated at `24385:69232`, built from
+`Tab Element` (`20517:20939`), `Tab Base` (`20517:19948`) and `Background States` (`20639:4643`). A
+themed Mantine `Tabs`.
+
+```tsx
+import { Tabs } from 'scratch'
+
+<Tabs defaultValue="websites">
+  <Tabs.List>
+    <Tabs.Tab value="websites">Enterprise Websites</Tabs.Tab>
+    <Tabs.Tab value="commerce">Digital Commerce</Tabs.Tab>
+  </Tabs.List>
+
+  <Tabs.Panel value="websites">…</Tabs.Panel>
+  <Tabs.Panel value="commerce">…</Tabs.Panel>
+</Tabs>
+```
+
+**The name is literal: the rule and the active indicator sit on the top edge**, above the labels,
+because this bar closes a section rather than opening one. Every absolute position in the file agrees —
+the divider, the tab bar and the active tab's `Line Up` vector all share the same y. Mantine's
+`inverted` prop is that flip and it is the default here; `inverted={false}` puts the rule and indicator
+underneath, which the **Underline** story shows.
+
+| Figma | Prop |
+| --- | --- |
+| `Size` — Desktop / Mobile | **responsive** — a media query at 1200px, not a prop |
+| `Tab Element` `State` — Default / Hover | the resting tab and the real `:hover` |
+| `State` — Active | `value` / `defaultValue` |
+| Each tab's label | `<Tabs.Tab value="…">` |
+
+| | Tab height | Padding | Label |
+| --- | --- | --- | --- |
+| Desktop (≥1200px) | 52px | 14/18px | 18/24px, cells divide the width equally |
+| Mobile (<1200px) | 48px | 14/18px | 14/20px, cells hug and the row scrolls |
+
+Figma's mobile bar is 758px wide inside a 366px frame, so scrolling is the drawn behaviour. The
+breakpoint and the scroll-snapping match the segmented control, so the two bars behave alike.
+
+### States
+
+| State | Treatment | Source |
+| --- | --- | --- |
+| the rule | 1px `Neutral/03`, full width, behind every tab | as drawn |
+| active | a 3px gradient over it — `Action/Primary/Active` into `Accent/Product Accent`, round caps | as drawn |
+| hover | the same line at 1px in `Action/Link/Hover Link`, and the label takes that colour | as drawn |
+| label default | 18/24 SemiBold `Surfaces/Text/Secondary` | as drawn |
+| label active | Bold, `Surfaces/Text/Primary` | **restructured** |
+| focus | `Styles/focus-ring`, inset so a scrolling row cannot clip it | **inferred** |
+| disabled | half opacity, and the arrow keys skip it | **inferred** |
+
+**The active label is the third white-on-white in this library.** Figma binds it to
+`Action/Neutral/Inverted`, which is `#ffffff` in *both* colour modes — the same token that made the
+Link's `secondary` rest state invisible and the `neutral` button unreadable. It now uses
+`Surfaces/Text/Primary`: `#f0f1f5` on dark, indistinguishable from the white Figma shows, and `#262c37`
+on light, where white would not appear at all. That is **13.66:1** instead of 1.03:1.
+
+Mantine draws both the rule and the indicator with borders at one shared width. Figma needs 1px for one
+and 3px for the other, and the indicator is a *gradient*, which no `border-color` can be — so the tab
+border is switched off and the indicator is a pseudo-element. That also keeps it out of layout, which
+matches the file: `Line Up` is an overlay, and every tab is 52px whatever its state.
+
+Measured in the browser, against both page backgrounds:
+
+| | light | dark |
+| --- | --- | --- |
+| label default | 10.5 | 12.6 |
+| label hover | 8.7 | 12.6 |
+| label active | 13.7 | 15.1 |
+| indicator (both stops) | 8.7 / 6.2 | 5.6 / 6.4 |
+
+### Tabs, or a segmented control?
+
+`Tabs` renders `role="tablist"` with `role="tab"` children and `role="tabpanel"` sections, and moves
+selection with the arrow keys — the semantics for **swapping panels**. `SegmentedControl` is a radio
+group, for picking one option where the choice itself is the outcome. The two look related in Figma;
+pick by what the control does, not by which mockup it came from.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -682,12 +762,16 @@ These are places where the Figma library is ambiguous, inconsistent, or incomple
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
 
-### Two styles were invisible in light mode
+### Three styles were invisible in light mode
 
 Both were white-on-white, and both stem from the same thing: a token whose value is mode-independent,
 used on a component that is only ever drawn on the dark canvas. Both are now fixed, by swapping the
 offending token for another real Figma token — one edit each to take back to the design file.
 
+- **Tabs' active label** binds to the same `Action/Neutral/Inverted` white. **Fixed** the same way, with
+  `Surfaces/Text/Primary` — see the Tabs state table above. Three components have now hit this one
+  token; it is worth a `Surfaces/Text/Inverted` that is actually mode-aware, or a rule that
+  `Action/Neutral/Inverted` is only ever used on a filled surface that is itself dark in both modes.
 - **Button `neutral`** bound to `Neutral/03`–`Neutral/05`, which Figma inverts between modes, with a
   white label. On dark that is 6.6:1 and 8.8:1 — fine. In light mode the steps are pale greys and the
   white label landed at **1.72:1 and 1.46:1** against a 4.5:1 WCAG AA minimum. **Fixed** — the fill
@@ -891,7 +975,8 @@ Two smaller things in that export:
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Label, Link, SegmentedControl, Stat)
+src/components/          One directory per component (Button, Card, Label, Link, SegmentedControl,
+                         Stat, Tabs)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
 assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/
