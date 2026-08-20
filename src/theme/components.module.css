@@ -274,6 +274,14 @@
   .link[data-variant] {
     transition: none;
   }
+
+  .link > [data-section] {
+    transition: none;
+  }
+
+  .link[data-variant]:hover > [data-section='right'] {
+    transform: none;
+  }
 }
 
 /* Both icon slots. Figma scales the icon box with the label: 20px, 16px, 12px. */
@@ -282,6 +290,17 @@
   flex-shrink: 0;
   width: var(--sds-link-icon);
   height: var(--sds-link-icon);
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The trailing icon travels a couple of pixels on hover — the direction the link goes. Only the trailing
+ * one: a leading icon moving away from its label reads as drift rather than intent.
+ */
+@media (hover: hover) {
+  .link[data-variant]:hover > [data-section='right'] {
+    transform: translateX(3px);
+  }
 }
 
 .link > [data-section] > svg {
@@ -660,15 +679,6 @@
   /* A 40-radius Figma background blur is a 20px CSS blur. */
   backdrop-filter: blur(20px);
   box-shadow: -1px 1px 7px 2px var(--sds-tab-shadow);
-  /*
-   * Mantine's floating indicator hardcodes `ease` for its travel; restating the transition is what
-   * lets the emphasised curve through. The duration still comes from the same variable, so the
-   * reduced-motion override below continues to apply.
-   */
-  transition:
-    transform var(--sc-transition-duration) var(--sc-transition-timing-function),
-    width var(--sc-transition-duration) var(--sc-transition-timing-function),
-    height var(--sc-transition-duration) var(--sc-transition-timing-function);
 }
 
 /* The 1.5px gradient stroke, by the same masked-ring construction as the container's hairline. */
@@ -730,46 +740,18 @@
   text-transform: none;
   letter-spacing: 0;
   /*
-   * The colour and the glow cross-fade on the same glide curve as the indicator, so hovering and
-   * selecting feel like one movement rather than three separate switches. `transform` gets the longer
-   * release deliberately: the press below shortens it on the way down only.
+   * Mantine already transitions `color` on the segment at its own duration; the glow and the press are
+   * added on the same timing so the three read as one movement.
    */
   transition:
-    color var(--sds-motion-medium) var(--sds-motion-ease-out),
-    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
-    transform var(--sds-motion-press) var(--sds-motion-ease-out);
+    box-shadow var(--sc-transition-duration) var(--sc-transition-timing-function),
+    transform var(--sc-transition-duration) var(--sc-transition-timing-function);
 }
 
 /* Figma's `Tab Content` `State=Active`: `Action/Neutral/Inverted`, and the weight steps up to Bold. */
 .scRoot .scLabel[data-active] {
   color: var(--sds-action-neutral-inverted);
   font-weight: 700;
-}
-
-/*
- * The gentle slide a segment makes as it becomes the selected one. Keyed on `[data-active]` arriving,
- * so it replays on every selection rather than only the first, and kept to 2px and a hair of opacity —
- * enough to read as the label settling under the indicator that just travelled to it, not as a
- * separate animation competing with it.
- *
- * The offset is a fixed direction rather than the direction of travel: telling those apart needs the
- * previous index in JavaScript, and at 2px the difference is not worth putting state into a component
- * that otherwise has none.
- */
-@keyframes sc-settle {
-  from {
-    transform: translateX(-2px);
-    opacity: 0.85;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.scRoot .scLabel[data-active] .scInnerLabel {
-  animation: sc-settle var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 /*
@@ -939,9 +921,6 @@
     transform: none;
   }
 
-  .scRoot .scLabel[data-active] .scInnerLabel {
-    animation: none;
-  }
 }
 
 /* ------------------------------------------------------------------------- forced colours
@@ -991,10 +970,39 @@
   color: var(--sds-surfaces-text-primary);
   /* Card.Section bleeds to the edge, so the corner has to clip. */
   overflow: hidden;
+  /*
+   * One duration and one curve for everything that moves on hover — the lift, the shadow, the fill and
+   * the image behind it — so the card reads as a single object responding rather than four properties
+   * animating. `will-change` keeps the lift on the compositor.
+   */
   transition:
     transform var(--sds-motion-medium) var(--sds-motion-ease-out),
     box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
     background-image var(--sds-motion-medium) var(--sds-motion-ease-out);
+  will-change: transform;
+}
+
+/*
+ * The card's own type. Its content is children, so these are defaults rather than rules: `:where()`
+ * gives them zero specificity, and any call site that sets a size wins without a fight.
+ *
+ * Figma's `Title- Card` is `Paragraph/Large/Semi Bold` — 21px at 125% — and the description sits a step
+ * below it at 18px. Neither is bound to a typography variable in the file (`Size/Paragraph/Large` reads
+ * 20px), which is the same text-style-versus-variable split Button and Link have.
+ */
+.cardRoot[data-orientation] :where(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: 21px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.cardRoot[data-orientation] :where(p) {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--sds-surfaces-text-secondary);
 }
 
 /*
@@ -1234,6 +1242,18 @@
   .cardRoot[data-orientation][data-interactive]:active {
     transform: none;
   }
+
+  .cardSection > img,
+  .cardSection > picture > img,
+  .cardSection > [data-card-image] {
+    transition: none;
+  }
+
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image] {
+    transform: none;
+  }
 }
 
 /*
@@ -1259,10 +1279,25 @@
 }
 
 .cardSection > img,
-.cardSection > picture > img {
+.cardSection > picture > img,
+.cardSection > [data-card-image] {
   display: block;
   width: 100%;
   height: auto;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * An interactive card's image grows a little on hover — the resource card's treatment. The section
+ * already clips, so the image scales inside its own frame rather than pushing the card around, and
+ * `transform` keeps it off the layout path entirely.
+ */
+@media (hover: hover) {
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image] {
+    transform: scale(1.06);
+  }
 }
 
 /* ================================================================================ Stat
@@ -1380,11 +1415,13 @@
   /* The horizontal rule of the stacked layout. */
   height: 1px;
   width: auto;
-  background-image: linear-gradient(
-    to right,
-    var(--sds-neutral-06) 0%,
-    var(--sds-brand-primary-lighten-3) 100%
-  );
+  /*
+   * A flat `Neutral/03`. Figma's `divider` component offers a gradient variant — `Neutral/06` into
+   * `Brand/Primary/Lighten/3` — and the Stats Bar instantiates it, but a rule between two numbers
+   * should not draw attention to itself, and the gradient made the last stat look highlighted.
+   */
+  background-color: var(--sds-neutral-03);
+  background-image: none;
 }
 
 @media (min-width: 576px) {
@@ -1401,11 +1438,6 @@
     height: auto;
     width: 1px;
     align-self: stretch;
-    background-image: linear-gradient(
-      to bottom,
-      var(--sds-neutral-06) 0%,
-      var(--sds-brand-primary-lighten-3) 100%
-    );
   }
 }
 
@@ -1464,17 +1496,28 @@
  * The indicator. One pseudo-element carries all three states: absent at rest, 1px on hover, 3px and
  * gradient when active. `border-radius` is Figma's ROUND stroke cap.
  */
+/*
+ * The indicator. One pseudo-element carries all three states, and it animates `transform` and `opacity`
+ * rather than `height` — a height transition relayouts every frame and lands unevenly, where a scale
+ * runs on the compositor and wipes out from the centre.
+ *
+ * It is always 3px tall and scaled down to a third for hover, so the two states share one geometry.
+ */
 .tabsRoot .tabsTab::after {
   content: '';
   position: absolute;
   inset-inline: 0;
   top: 0;
-  height: 0;
+  height: 3px;
   border-radius: 999px;
   background-color: var(--sds-action-link-hover-link);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
   transition:
-    height var(--sds-motion-medium) var(--sds-motion-ease-out),
-    opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    opacity var(--sds-motion-fast) var(--sds-motion-ease),
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out);
   pointer-events: none;
 }
 
@@ -1491,7 +1534,8 @@
 }
 
 .tabsRoot .tabsTab[data-active]::after {
-  height: 3px;
+  opacity: 1;
+  transform: scaleX(1);
   background-color: transparent;
   background-image: linear-gradient(
     to right,
@@ -1506,8 +1550,10 @@
     color: var(--sds-action-link-hover-link);
   }
 
+  /* Hover: the same line, a third of its width and a third of its weight. */
   .tabsRoot .tabsTab:hover:not([data-active], :disabled, [data-disabled])::after {
-    height: 1px;
+    opacity: 1;
+    transform: scaleX(0.65) scaleY(0.34);
   }
 }
 
@@ -1786,61 +1832,58 @@
 
 /* ------------------------------------------------------------------ Condensed: the floating label
  *
- * Figma's `Condensed=True` cell puts the label inside the 48px box — 18px Regular when the field is
- * empty — and shrinks it to 14px SemiBold once there is a value or the field is focused, which is the
- * float. The box keeps its height either way, so the label and the value share it.
+ * The label starts inside the 48px box and floats **above** it once the field has focus or a value,
+ * which is Mantine's own floating-label pattern rather than Figma's `Condensed=True` cell — Figma keeps
+ * the label inside the box and only shrinks it, which leaves the value and its label sharing 48px.
+ * Floating clear of the box gives the value the whole field and keeps the label readable at a size that
+ * is not 14px.
  *
- * `:has()` is what makes this work without JavaScript: Mantine renders the label before the input, so a
- * sibling selector would run the wrong way.
+ * The room above the box is reserved by the root's padding, so the floated label has somewhere to go
+ * and nothing above it is overlapped.
  */
 .fieldRoot[data-floating] {
   --sds-field-gap: 4px;
   /*
-   * The label is taken out of flow to sit inside the box, so the root has to be its containing block —
-   * without this it would position itself against whatever ancestor happens to be positioned.
+   * The label is taken out of flow, so the root has to be its containing block — without this it would
+   * position itself against whatever ancestor happens to be positioned. The padding is the space the
+   * label floats into.
    */
   position: relative;
-}
-
-.fieldRoot[data-floating] .fieldWrapper {
-  /* The box grows to hold the raised label and the value. */
-  --input-height: 48px;
+  padding-top: 22px;
 }
 
 .fieldRoot[data-floating] .fieldLabel {
   position: absolute;
-  top: 12px;
+  /* The root's 22px of reserved space, plus the box's own 12px of padding. */
+  top: 34px;
   inset-inline-start: 16px;
   margin: 0;
   z-index: 1;
   font-size: 18px;
   line-height: 24px;
   font-weight: 400;
+  color: var(--sds-surfaces-text-tertiary);
   pointer-events: none;
   transform-origin: left top;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out),
-    font-size var(--sds-motion-medium) var(--sds-motion-ease-out);
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    font-size var(--sds-motion-medium) var(--sds-motion-ease-out),
+    color var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 /*
  * Mantine renders the label as a *sibling* of the input's wrapper, not inside it, so the field's state
- * has to be read from the root — which is what `:has()` is for. A sibling selector cannot reach
- * backwards from the input to the label.
+ * has to be read from the root — which is what `:focus-within` and `:has()` are for. A sibling selector
+ * cannot reach backwards from the input to the label.
  */
 .fieldRoot[data-floating]:focus-within .fieldLabel,
 .fieldRoot[data-floating]:has(.fieldInput:not(:placeholder-shown)) .fieldLabel,
 .fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel {
-  transform: translateY(-10px);
+  /* Clear of the box: 12px of box padding plus the 22px reserved above it. */
+  transform: translateY(-32px);
   font-size: 14px;
   font-weight: 600;
-}
-
-.fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInput,
-.fieldRoot[data-floating] .fieldWrapper:has(.fieldInput:not(:placeholder-shown)) .fieldInput,
-.fieldRoot[data-floating] .fieldWrapper:has(.fieldInput[data-filled]) .fieldInput {
-  padding-top: 22px;
-  padding-bottom: 4px;
-  font-size: 18px;
+  color: var(--sds-surfaces-text-primary);
 }
 
 /* The label owns the empty box, so the placeholder must not compete with it. */

@@ -236,6 +236,13 @@ Measured against both page backgrounds, every interactive state now clears WCAG 
 Disabled sits at 2.3 and 2.7 in light mode, which is intentional and permitted — WCAG 1.4.3 exempts
 inactive controls, and being visibly muted is the point.
 
+### The trailing icon moves on hover
+
+A link with a trailing arrow nudges it 3px on hover — the direction the link goes. Only the trailing one:
+a leading icon sliding away from its label reads as drift rather than intent. It is a `transform`, so it
+costs nothing in layout, and `prefers-reduced-motion` removes it while keeping the colour change and the
+underline.
+
 ### Underline, and why the default changed
 
 Figma's `Underline` boolean defaults to false. In code `underline` defaults to **`hover`** instead,
@@ -291,10 +298,13 @@ Measurements, all taken from the component:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `lg` | 40px | 16px | 4px | 16/24px | 20px | 2px | `round` (pill) |
 | `md` | 32px | 8px | 4px | 16/24px | 20px | 1.5px | 8px |
-| `sm` | 22px | 8px | 4px | 14/17.5px | 16px | 1px | 4px |
+| `sm` | 22px | 8px | 4px | `Paragraph/Small` (13/20) | 16px | 1px | 4px |
 
-Large and Medium share one text style (`Paragraph/Base/Heavy`); only Small steps down. The border
-weight only shows on `outline`, and Figma varies it per size.
+Large and Medium share one text style (`Paragraph/Base/Heavy`); only Small steps down, and it steps down
+to the **`Paragraph/Small` token** (13/20) rather than the 14px its Figma text style is set at — that
+style is named `Paragraph/X-Small/Semi Bold` and matches neither the X-Small variable (11px) nor Small
+(13px), so the token is the one unambiguous value in the set. The border weight only shows on `outline`,
+and Figma varies it per size.
 
 **Radius comes with the size.** Figma binds it to the Size axis — `Border Radius/round` at Large,
 `/medium` at Medium, `/small` at Small — so `radius` is only for deviating from the design:
@@ -378,7 +388,7 @@ the selected stroke is deliberately fully transparent in light, where an opaque 
 | rest | `Surfaces/Text/Secondary`, SemiBold | as drawn |
 | hover | `Action/Link/Hover Link`, plus a `Brand/Primary/Lighten/4` glow at (-1, 1) r4 spread 4 and a 40-radius blur | as drawn |
 | selected | `Action/Neutral/Inverted` at Bold, on the `Glass Tab/bg-gradient` fill with its 1.5px stroke, blur and `tab-focus-shadow` | as drawn |
-| pressed | `scale(0.985)`, faster in than out | **inferred** |
+| pressed | `scale(0.985)` | **inferred** |
 | focus | `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, offset 2px | **inferred** |
 | disabled | the resting appearance at 50% opacity | **inferred** |
 
@@ -388,24 +398,14 @@ system has everywhere else, and disabled copies Button, whose Figma disabled sta
 appearance at half opacity.
 
 The selected segment is **one pill that travels** rather than a fill redrawn per segment — Mantine's
-floating indicator, at 280ms on `cubic-bezier(0.05, 0.7, 0.1, 1)`: it leaves immediately and settles
-slowly with no overshoot, so most of that duration is the last few pixels and the movement reads as
-gliding to a stop. Three smaller pieces are tuned to the same curve so the whole interaction feels
-like one gesture:
+floating indicator, on **Mantine's own animation**: 200ms on `ease`. That is deliberate. This component
+ran on the library's motion tokens for a while, with a longer glide and a small settle on the newly
+selected label; the stock timing is what the design asks for, so the overrides were removed rather than
+tuned. The press and the hover glow share that same 200ms so the three read as one movement.
 
-- **The press** is `scale(0.985)` — under a pixel on a 48px segment — and asymmetric, arriving in half
-  the time it takes to relax, so the control answers the pointer without snapping back at it.
-- **The label colour and the hover glow** cross-fade over the same 280ms rather than the 120ms used for
-  state changes elsewhere, which stops hover from flicking on ahead of the pill.
-- **The newly selected segment settles**: its label slides 2px and lifts from 85% opacity as the
-  indicator arrives. It is keyed on the selected state arriving, so it replays on every selection. The
-  offset is a fixed direction rather than the direction of travel — distinguishing those needs the
-  previous index in JavaScript, and at 2px it is not worth putting state into a component that
-  otherwise has none.
-
-None of this motion is in Figma, which has no prototype here. `prefers-reduced-motion` drops the
-indicator to an instant move and removes the press, the settle and the transform transitions, keeping
-every state change while discarding the movement (WCAG 2.3.3).
+The press itself is `scale(0.985)` — under a pixel on a 48px segment. `prefers-reduced-motion` drops the
+indicator to an instant move and removes the press, keeping every state change while discarding the
+movement (WCAG 2.3.3).
 
 Contrast, measured in the browser with each state composited over what actually sits behind it:
 
@@ -459,11 +459,27 @@ The gap between a vertical card's content blocks is **8px** (`gap/8`), not the 2
 the note in the gaps list. The horizontal card keeps its 24px, because there the gap separates the text
 column from the image rather than spacing content inside a block.
 
+**The card styles its own type.** A heading inside a card is `Paragraph/Large/Semi Bold` — 21px at 26px,
+which is what Figma's `Title- Card` is set to — and a paragraph is 18px/24px in
+`Surfaces/Text/Secondary`. Both are defaults rather than rules: they are declared through `:where()`, so
+they carry zero specificity and any call site that sets a size wins without a fight. Neither size is
+bound to a typography variable in the file (`Size/Paragraph/Large` reads 20px), which is the same
+text-style-versus-variable split Button and Link have.
+
 **Content is composed, not configured.** The spreadsheet's slots — Top (label, illustrative icon,
 stat, subheading), Content (title, description, list), Bottom (author, link, button, stats) — are
 children. That is what lets one component cover all five of its card types, each of which is a story:
-Resource, no-padding image, full width, customer story quote, and icon card. `Card.Section` is
-Mantine's full-bleed slot and reverses the padding, so an image reaches the corner.
+Resource, no-padding image, full width, customer story, and icon card. `Card.Section` is Mantine's
+full-bleed slot and reverses the padding, so an image reaches the corner.
+
+Two of those types are drawn in the file and follow it closely:
+
+- **Resource card** (`24397:75886`) — a 3:2 image at the top of an unpadded `no-bg` card, then the small
+  outline label and the 21px title. Its image grows on hover.
+- **Customer story card** (`24397:75912`) — the customer's image, a `Stat` above the quote, the quote as
+  the **description with no title**, and the author as name and position with no avatar. Figma puts the
+  quote in the title slot; a pull quote is not a heading, and a screen reader jumping by heading should
+  not land in the middle of someone's sentence.
 
 ### The card's top slot
 
@@ -500,7 +516,7 @@ this. A `<div>` with an `onClick` looks identical and is unreachable by keyboard
 | --- | --- | --- |
 | hover | 1px gradient ring, `Brand/Primary/Lighten/1` → `Accent/Product Accent` | `card-Focus Ring` (`16719:45438`), as drawn |
 | hover, glass only | the fill swaps to the radial sheen centred on the top-right corner | as drawn |
-| hover | a 2px lift and a wider shadow | **added** |
+| hover | a 2px lift, a wider shadow, and the image growing 6% | **added** |
 | focus | the same ring at 2px, on `:focus-visible` only | as drawn, narrowed to focus-visible |
 | pressed | settles back to the resting elevation | **added** |
 
@@ -508,6 +524,12 @@ Figma draws the ring as an *outside* stroke at a 9px radius. Here it is a masked
 edge instead: the card has to clip its corner for a full-bleed image, and an outside ring would be
 clipped along with it. At 1–2px the difference is not visible; the alternative is losing the image
 bleed.
+
+Everything that moves on hover — the lift, the shadow, the fill, and the image behind it — shares one
+duration and one curve, so the card reads as a single object responding rather than four properties
+animating. The image is the resource card's treatment: it grows 6% inside `Card.Section`, which already
+clips to the corner, so it scales in its own frame instead of pushing the card around. A real `<img>`
+picks that up automatically; a placeholder element needs `data-card-image`.
 
 Two departures from the file worth naming. The lift and the press are not in Figma at all — a card is a
 big target and needs to acknowledge the pointer somewhere other than a 1px edge. And Figma's `State=Focus`
@@ -562,10 +584,15 @@ It renders as plain text in reading order, so it is announced as "845 Months to 
 decorative and hidden from assistive technology, which means an arrow that carries meaning — up rather
 than down — has to be said in the label too. The **Direction In Words** story shows this.
 
-`StatBar` puts a 1px gradient rule between stats (`Neutral/06` into `Brand/Primary/Lighten/3`) at
-Figma's 16px gap, and stacks below 576px with the rules turning horizontal — the shape Figma's
-`Size=Small, Align=Vertical` cell draws. The rules are `<hr aria-hidden>`, so the bar reads as a list
-of numbers rather than announcing a separator between each one.
+`StatBar` puts a 1px **`Neutral/03`** rule between every pair of stats at Figma's 16px gap, and stacks
+below 576px with the rules turning horizontal — the shape Figma's `Size=Small, Align=Vertical` cell
+draws. The rules are `<hr aria-hidden>`, so the bar reads as a list of numbers rather than announcing a
+separator between each one.
+
+Figma instantiates its *gradient* `divider` here, running `Neutral/06` into `Brand/Primary/Lighten/3`.
+That is deliberately not used: a rule between two numbers should not draw the eye, and the gradient made
+the last stat look picked out. The rules are also not optional — a bar of numbers with nothing between
+them reads as one number.
 
 ## Tabs
 
@@ -614,7 +641,7 @@ breakpoint and the scroll-snapping match the segmented control, so the two bars 
 | --- | --- | --- |
 | the rule | 1px `Neutral/03`, full width, behind every tab | as drawn |
 | active | a 3px gradient over it — `Action/Primary/Active` into `Accent/Product Accent`, round caps | as drawn |
-| hover | the same line at 1px in `Action/Link/Hover Link`, and the label takes that colour | as drawn |
+| hover | the same line at a third of its width and weight, in `Action/Link/Hover Link` | as drawn |
 | label default | 18/24 SemiBold `Surfaces/Text/Secondary` | as drawn |
 | label active | Bold, `Surfaces/Text/Primary` | **restructured** |
 | focus | `Styles/focus-ring`, inset so a scrolling row cannot clip it | **inferred** |
@@ -630,6 +657,10 @@ Mantine draws both the rule and the indicator with borders at one shared width. 
 and 3px for the other, and the indicator is a *gradient*, which no `border-color` can be — so the tab
 border is switched off and the indicator is a pseudo-element. That also keeps it out of layout, which
 matches the file: `Line Up` is an overlay, and every tab is 52px whatever its state.
+
+The indicator is always 3px tall and animates **`transform` and `opacity`**, never `height`: it wipes out
+from the centre on selection and scales down to a third for hover. A height transition relayouts on every
+frame and lands unevenly; a scale runs on the compositor.
 
 Measured in the browser, against both page backgrounds:
 
@@ -836,10 +867,15 @@ painted on the wrapper — the one element that is exactly the size of the box a
 
 ### The floating label
 
-`Condensed=True` puts the label inside the box at 18px Regular and shrinks it to 14px SemiBold once the
-field has focus or a value. That is a label, not a placeholder: it stays visible after typing, which is
-the whole point — a placeholder-as-label disappears exactly when the user needs to check what they are
-filling in. Do not pair `floating` with a `placeholder` that says the same thing.
+The label starts inside the box at 18px Regular and floats **clear of it** — above the field, at 14px
+SemiBold — once the field has focus or a value. That is Mantine's own floating-label pattern rather than
+Figma's `Condensed=True` cell, which keeps the label inside the box and only shrinks it, leaving the value
+and its label sharing 48px. Floating out gives the value the whole field. The room above is reserved by
+the root's padding, so nothing above the field is overlapped and nothing is clipped.
+
+It is a label, not a placeholder: it stays visible after typing, which is the whole point — a
+placeholder-as-label disappears exactly when the user needs to check what they are filling in. Do not
+pair `floating` with a `placeholder` that says the same thing.
 
 Mantine renders the label as a *sibling* of the input's wrapper, so the float is driven from the root
 with `:focus-within` and `:has()` — a sibling selector cannot reach backwards from the input to its

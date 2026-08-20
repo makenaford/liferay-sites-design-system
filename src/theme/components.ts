@@ -75,7 +75,21 @@ export type LinkThemeSize = keyof typeof LINK_SIZES
  * text-style-versus-variable split Button and Link have, and the text style wins here too.
  */
 const LABEL_SIZES = {
-  sm: { height: 22, paddingX: 8, fontSize: 14, lineHeight: 17.5, icon: 16, border: 1, radius: radius.small },
+  /**
+   * Small takes `Paragraph/Small` — 13/20 from the typography collection — rather than the 14px its
+   * Figma text style is set at. The style is named `Paragraph/X-Small/Semi Bold` and reads 14px, which
+   * matches neither the X-Small variable (11px) nor Small (13px); the token is the one thing in that
+   * set that is unambiguous.
+   */
+  sm: {
+    height: 22,
+    paddingX: 8,
+    fontSize: 'var(--sds-size-paragraph-small)',
+    lineHeight: 'var(--sds-line-height-paragraph-small)',
+    icon: 16,
+    border: 1,
+    radius: radius.small,
+  },
   md: { height: 32, paddingX: 8, fontSize: 16, lineHeight: 24, icon: 20, border: 1.5, radius: radius.medium },
   lg: { height: 40, paddingX: 16, fontSize: 16, lineHeight: 24, icon: 20, border: 2, radius: radius.round },
 } as const
@@ -240,9 +254,11 @@ export const componentTheme: MantineThemeComponents = {
         root: {
           '--badge-height': `${spec.height}px`,
           '--badge-padding-x': `${spec.paddingX}px`,
-          '--badge-fz': `${spec.fontSize}px`,
+          /* A number is a literal from the component; a string is a typography token. */
+          '--badge-fz': typeof spec.fontSize === 'number' ? `${spec.fontSize}px` : spec.fontSize,
           /** Mantine derives its own line height from the height; Figma's text style is explicit. */
-          '--badge-lh': `${spec.lineHeight}px`,
+          '--badge-lh':
+            typeof spec.lineHeight === 'number' ? `${spec.lineHeight}px` : spec.lineHeight,
           /**
            * Figma binds the radius to Size, so the size spec owns it — but only when the call site
            * has not asked for something else. Returning `undefined` leaves Mantine's own resolved
@@ -411,12 +427,11 @@ export const componentTheme: MantineThemeComponents = {
       root: {
         '--sc-radius': `${SEGMENTED_CONTROL.radius}px`,
         '--sc-padding': '0',
-        /**
-         * Not a Figma value: the indicator physically travels between segments, so it needs the
-         * longer duration and the emphasised curve rather than the state-change ones.
+        /*
+         * Mantine's own defaults carry the indicator and the hover — 200ms on `ease`. They were
+         * overridden with this library's motion tokens for a while; the stock animation is what the
+         * design calls for, so the overrides are gone rather than tuned.
          */
-        '--sc-transition-duration': 'var(--sds-motion-medium)',
-        '--sc-transition-timing-function': 'var(--sds-motion-ease-out)',
 
         '--sds-sc-padding': `${SEGMENTED_CONTROL.padding}px`,
       },

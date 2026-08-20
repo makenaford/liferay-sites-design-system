@@ -15,10 +15,16 @@ import {
 
 const SURFACES = ['glass', 'grey', 'blue', 'gradient-blue', 'gradient-purple', 'none'] as const
 
-/** Stands in for a photograph: the stories have to render offline, so no remote images. */
+/**
+ * Stands in for a photograph: the stories have to render offline, so no remote images.
+ *
+ * `data-card-image` is what marks it as the card's image. A real `<img>` needs no such marker — the
+ * stylesheet targets `img` directly — but a placeholder div does, or it would miss the hover zoom.
+ */
 function Cover({ ratio = '3 / 2' }: { ratio?: string }) {
   return (
     <Box
+      data-card-image
       style={{ aspectRatio: ratio }}
       bg="linear-gradient(120deg, var(--sds-brand-primary-lighten-4), var(--sds-accent-product-accent))"
     />
@@ -75,10 +81,10 @@ type Story = StoryObj<typeof meta>
 export const Playground: Story = {
   render: (args) => (
     <Card {...args} w={360}>
-      <Title order={3} fz="var(--sds-size-heading-f4)">
+      <Title order={3}>
         Enterprise websites
       </Title>
-      <Text c="var(--sds-surfaces-text-secondary)">
+      <Text component="p">
         A platform teams can ship on without waiting for a release train.
       </Text>
       <Link href="#" rightSection={<IconArrowRight />}>
@@ -95,7 +101,7 @@ export const Surfaces: Story = {
       {SURFACES.map((variant) => (
         <Card key={variant} {...args} variant={variant}>
           <Text fw={600}>{variant}</Text>
-          <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          <Text component="p">
             Surface Style = {variant}
           </Text>
         </Card>
@@ -111,7 +117,7 @@ export const Padding: Story = {
       {(['sm', 'md', 'lg'] as const).map((padding) => (
         <Card key={padding} {...args} padding={padding}>
           <Text fw={600}>padding=&quot;{padding}&quot;</Text>
-          <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          <Text component="p">
             {padding === 'sm' ? '16px' : padding === 'md' ? '20px' : '40px'}
           </Text>
         </Card>
@@ -131,10 +137,10 @@ export const Interactive: Story = {
     <Group align="stretch" gap="20">
       <Card {...args} interactive component="a" href="#" w={320}>
         <Label size="sm" variant="outline">Customer story</Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
+        <Title order={3}>
           A bank rebuilt onboarding
         </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           The whole card is one link — hover, tab, press.
         </Text>
       </Card>
@@ -142,10 +148,10 @@ export const Interactive: Story = {
         <Label size="sm" variant="outline">
           Reference
         </Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
+        <Title order={3}>
           Not interactive
         </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           Content only, so it has no states at all.
         </Text>
       </Card>
@@ -154,8 +160,13 @@ export const Interactive: Story = {
 }
 
 /**
- * **Resource card** — the spreadsheet's first type. Label on top, title and description in the middle,
- * a call to action at the bottom.
+ * **Resource card** — Figma `Special Cards / Type=Resource` (`24397:75886`): a 3:2 image at the top of an
+ * unpadded card, then the outline label and a 21px title. The surface is `no-bg`, so the image and the
+ * text sit on the page rather than on a card fill.
+ *
+ * Hover it: the image grows 6% inside its own frame. The section already clips to the corner, so the
+ * image scales rather than pushing the card around, and it runs on `transform` — off the layout path,
+ * on the same curve as the lift so the two read as one movement.
  *
  * Note what the two cards do differently. The first **is** a link, so its call to action is *text* with
  * the link's colour and arrow — a nested `<a>` inside an `<a>` is invalid HTML, and browsers unnest it
@@ -165,30 +176,30 @@ export const Interactive: Story = {
 export const ResourceCard: Story = {
   render: (args) => (
     <Group align="stretch" gap="20">
-      <Card {...args} interactive component="a" href="#" w={320}>
-        <Label size="sm" variant="outline">
-          Whitepaper
-        </Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
-          The composable enterprise
-        </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
-          What changes when every team ships to the same platform.
-        </Text>
-        <Group gap="4" c="var(--sds-action-link-default-link)" fw={600} fz="var(--sds-size-action-link-medium)">
-          Download
-          <IconArrowRight />
-        </Group>
+      <Card {...args} variant="none" padding="none" interactive component="a" href="#" w={320}>
+        <Card.Section>
+          <Cover />
+        </Card.Section>
+        <Stack gap="8" pt="16">
+          <Label size="sm" variant="outline">
+            Whitepaper
+          </Label>
+          <Title order={3}>The composable enterprise</Title>
+          <Group gap="4" c="var(--sds-action-link-default-link)" fw={600} fz="var(--sds-size-action-link-medium)">
+            Download
+            <IconArrowRight />
+          </Group>
+        </Stack>
       </Card>
       <Card {...args} w={320}>
         <Label size="sm" variant="outline">
           Whitepaper
         </Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
+        <Title order={3}>
           Not itself a link
         </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
-          So the call to action can be a real `Link`.
+        <Text component="p">
+          So the call to action can be a real Link component.
         </Text>
         <Link href="#" size="md" rightSection={<IconArrowRight />}>
           Download
@@ -210,10 +221,10 @@ export const ImageCard: Story = {
       </Card.Section>
       <Stack gap="8" p="20">
         <Label size="sm" variant="outline">Customer story</Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
+        <Title order={3}>
           Six weeks to launch
         </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           The image bleeds to the edge; the text keeps its padding.
         </Text>
       </Stack>
@@ -227,10 +238,10 @@ export const FullWidthCard: Story = {
     <Card {...args} orientation="horizontal" padding="lg">
       <Stack gap="8" style={{ flex: 1 }}>
         <Label size="sm" variant="outline">Platform</Label>
-        <Title order={3} fz="var(--sds-size-heading-f3)">
+        <Title order={3}>
           One platform, every channel
         </Title>
-        <Text c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           Horizontal cards centre their blocks against each other.
         </Text>
         <Group gap="16" mt="8">
@@ -249,24 +260,40 @@ export const FullWidthCard: Story = {
   ),
 }
 
-/** **Customer story quote card** — the quote, then the author block at the bottom. */
-export const QuoteCard: Story = {
+/**
+ * **Customer story card** — Figma `Special Cards / Type=CS- Quote` (`24397:75912`): the customer's image,
+ * a stat above the quote, the quote as the description with **no title**, and the author as name and
+ * position with no avatar.
+ *
+ * The quote is the description rather than a heading. Figma puts it in the title slot, but a pull quote
+ * is not a heading — it is the card's body, and a screen reader jumping by heading should not land in the
+ * middle of someone's sentence.
+ */
+export const CustomerStoryCard: Story = {
   render: (args) => (
-    <Card {...args} padding="lg" w={360}>
-      <Text fz="var(--sds-size-paragraph-large)" fw={600}>
-        “We shipped in six weeks what used to take us three quarters.”
+    <Card {...args} padding="md" w={320}>
+      <Card.Section>
+        <Cover ratio="3 / 2" />
+      </Card.Section>
+      <Stat value="845" label="Months to launch" rightSection={<IconArrowUp />} />
+      <Text component="p">
+        “With Liferay we can scale automatically, or on a schedule, a lot quicker than we could
+        before.”
       </Text>
-      <Group gap="12" mt="8">
-        <Box w={40} h={40} bg="var(--sds-brand-primary-lighten-4)" style={{ borderRadius: 999 }} />
-        <Stack gap={0}>
-          <Text fz="sm" fw={600}>
-            Dana Okafor
-          </Text>
-          <Text fz="sm" c="var(--sds-surfaces-text-tertiary)">
-            VP Engineering, Northwind
-          </Text>
-        </Stack>
-      </Group>
+      <Stack gap={4} pt="8">
+        <Text fz="var(--sds-size-paragraph-small)" fw={600}>
+          Anne Anderson
+        </Text>
+        <Text
+          fz="var(--sds-size-paragraph-small-caps-xs)"
+          fw={600}
+          tt="uppercase"
+          c="var(--sds-surfaces-text-secondary)"
+          style={{ letterSpacing: '0.06em' }}
+        >
+          VP of Experience and Change Management
+        </Text>
+      </Stack>
     </Card>
   ),
 }
@@ -282,14 +309,14 @@ export const IconCard: Story = {
       <Card {...args} w={260}>
         <IconGlassComposable />
         <Text fw={600}>Left aligned</Text>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           The default flow of the card.
         </Text>
       </Card>
       <Card {...args} w={260} ta="center" style={{ alignItems: 'center' }}>
         <IconGlassDatabase />
         <Text fw={600}>Centre aligned</Text>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           Same card, centred content.
         </Text>
       </Card>
@@ -310,10 +337,10 @@ export const WithIllustrativeIcon: Story = {
         <Label size="sm" variant="outline">
           Product
         </Label>
-        <Title order={3} fz="var(--sds-size-heading-f4)">
+        <Title order={3}>
           Campaign delivery
         </Title>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           One icon, one label, one heading — the card's top slot as drawn.
         </Text>
       </Card>
@@ -323,7 +350,7 @@ export const WithIllustrativeIcon: Story = {
           <IconGlassComposable size={32} />
           <IconGlassMail size={32} />
         </Group>
-        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+        <Text component="p">
           The same icons at <code>size=&#123;32&#125;</code>.
         </Text>
       </Card>
@@ -335,7 +362,7 @@ export const WithIllustrativeIcon: Story = {
 export const WithStats: Story = {
   render: (args) => (
     <Card {...args} padding="lg" w={560}>
-      <Title order={3} fz="var(--sds-size-heading-f4)">
+      <Title order={3}>
         Migration in numbers
       </Title>
       <StatBar>

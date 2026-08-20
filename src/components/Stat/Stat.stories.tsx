@@ -93,9 +93,8 @@ export const DirectionInWords: Story = {
 }
 
 /**
- * `StatBar` — Figma's `Stats Bar`, with the 1px gradient rule between stats running `Neutral/06` into
- * `Brand/Primary/Lighten/3`. Below 576px the row stacks and the rules turn horizontal, which is the
- * shape Figma's `Align=Vertical` cell draws — see the **Bar Stacked** story.
+ * `StatBar` — Figma's `Stats Bar`, with a 1px `Neutral/03` rule between every pair. Below 576px the row stacks and the rules turn horizontal,
+ * which is the shape Figma's `Align=Vertical` cell draws — see the **Bar Stacked** story.
  */
 export const Bar: Story = {
   render: () => (
@@ -135,9 +134,9 @@ export const BarVariations: Story = {
       </Stack>
       <Stack gap="8">
         <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" tt="uppercase" fw={600}>
-          without dividers
+          two stats
         </Text>
-        <StatBar dividers={false}>
+        <StatBar>
           <Stat value="845" label="Months to launch" />
           <Stat value="98%" label="Uptime" />
         </StatBar>
