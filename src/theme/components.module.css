@@ -3497,3 +3497,311 @@
     outline-color: Highlight;
   }
 }
+
+/* =====================================================================================
+ * Carousel — the `card carousel` section (node `24465:66866`) and the Figma `Carousel`
+ * control set (node `20440:16714`)
+ *
+ *   List        HORIZONTAL, gap 13, padding-inline 80, clipped, 310px cards filling the height
+ *   Overlay     a left-to-right gradient of `Surfaces/Page BG base/Default`:
+ *               opaque at 0, transparent at 15%, transparent at 85%, opaque at 100%
+ *   Type=arrows two 44x40 `Style=Outline, Size=Small` buttons with a 20px arrow, a 12px dot row
+ *               between them; the section's instance hides the dots and sets the gap to 10
+ *   Type=lines  three 8px-tall bars, radius 1000, 24px inactive and 64px active, gap 4
+ *
+ * The 80px `padding-inline` is the page's gutter rather than the component's, so it is the `gutter`
+ * prop defaulting to 0. The section's 80px `padding-block` is the section's, and is not here at all.
+ * ===================================================================================== */
+
+/*
+ * Registered so the edge fades can *transition*. An unregistered custom property jumps between values,
+ * which would pop the fade in and out at each end of the scroll; registered as a length, it animates.
+ * Browsers without `@property` get the jump, which is the old behaviour rather than a broken one.
+ */
+@property --sds-carousel-fade-start {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --sds-carousel-fade-end {
+  syntax: '<length-percentage>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.carouselRoot {
+  display: flex;
+  flex-direction: column;
+  /* The section's own `gap 24`, between the title, the list and the controls. */
+  gap: 24px;
+}
+
+.carouselHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.carouselTrack {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--sds-carousel-gap);
+  padding-inline: var(--sds-carousel-gutter);
+  /*
+   * A scroll container clips **both** axes — `overflow-y: visible` is not a thing once `overflow-x` is
+   * `auto` — so a card's hover lift would be cut off at the top. The padding buys the room and the
+   * negative margin gives it back to the layout.
+   */
+  padding-block: 12px;
+  margin-block: -12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  /* Figma's list is clipped with no scrollbar; the arrows and indicators are the affordance. */
+  scrollbar-width: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * `Styles/focus-ring`. The track is focusable, so it needs a visible ring of its own — inset, so it is
+ * not clipped by whatever the carousel sits in.
+ */
+.carouselTrack:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: -2px;
+  border-radius: var(--mantine-radius-xs);
+}
+
+/*
+ * Figma's `Overlay`, as a mask rather than an opaque rectangle on top. The rectangle works in Figma
+ * because the page colour is known; a mask fades the cards to *transparent*, so the carousel keeps
+ * working on a card surface, inside a section with its own background, or over the hero's gradient.
+ * It also does not sit above the cards eating their clicks.
+ *
+ * The fade is per edge and only present when that edge has more content — Figma's overlay is opaque at
+ * both ends at all times, which fades the first card before it has been scrolled at all. A deviation,
+ * recorded in README.md.
+ */
+.carouselTrack[data-fade] {
+  --sds-carousel-fade-start: 0px;
+  --sds-carousel-fade-end: 0px;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--sds-carousel-fade-start),
+    #000 calc(100% - var(--sds-carousel-fade-end)),
+    transparent 100%
+  );
+  transition:
+    --sds-carousel-fade-start var(--sds-motion-medium) var(--sds-motion-ease-out),
+    --sds-carousel-fade-end var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.carouselTrack[data-fade-start] {
+  --sds-carousel-fade-start: var(--sds-carousel-fade);
+}
+
+.carouselTrack[data-fade-end] {
+  --sds-carousel-fade-end: var(--sds-carousel-fade);
+}
+
+.carouselSlide {
+  flex: 0 0 var(--sds-carousel-slide);
+  /* Never wider than the track, so a 310px slide does not overflow a 320px phone. */
+  max-width: 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+  /* Figma's cards are `FIXED/FILL`: fixed width, filling the row's height. */
+  display: flex;
+}
+
+.carouselSlide > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.carouselControls {
+  display: flex;
+  align-items: center;
+  /* The section's instance: gap 10, centred under the track. */
+  justify-content: center;
+  gap: 10px;
+}
+
+/*
+ * The 44x40 arrow. Our `sm` button is 40px tall with 12px of horizontal padding, so a 20px icon — the
+ * size Figma's `arrow/arrow_left` instance is — makes it exactly 44 wide.
+ */
+.carouselControls .carouselArrow {
+  /*
+   * Figma's cell is 44x40 with 12px of padding, which puts its 1px stroke inside the 44. A CSS border
+   * sits outside the padding box, so 12 + 20 + 12 + 2 measures 46; 11px of padding lands the outer box
+   * on Figma's 44 exactly. Measured.
+   */
+  padding-inline: 11px;
+}
+
+/*
+ * Nested rather than a bare class, for the reason the rest of this stylesheet is: a single class ties
+ * with Mantine's own single-class rule for the button's padding and loses on stylesheet order.
+ */
+.carouselControls .carouselArrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.carouselIndicators {
+  display: flex;
+  align-items: center;
+}
+
+/* Figma's dot cells are 32x32 with the dot centred, so they meet with no gap: 3 x 32 = 96. */
+.carouselIndicators[data-style='dots'] {
+  gap: 0;
+}
+
+.carouselIndicators[data-style='lines'] {
+  gap: 4px;
+}
+
+.carouselIndicator {
+  display: grid;
+  place-items: center;
+  border-radius: var(--mantine-radius-xs);
+  cursor: pointer;
+}
+
+.carouselIndicators[data-style='dots'] .carouselIndicator {
+  width: 32px;
+  height: 32px;
+}
+
+/*
+ * An 8px bar is not a target. The bar keeps Figma's height and the button around it gets 24, which is
+ * the smallest thing worth aiming at with a thumb.
+ */
+.carouselIndicators[data-style='lines'] .carouselIndicator {
+  height: 24px;
+}
+
+.carouselIndicator:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/*
+ * The inactive mark. **Restructured**: Figma binds it to `Neutral/02`, which measures 1.70:1 on dark and
+ * 1.24:1 in light against the page surface — under the 3:1 that WCAG 1.4.11 asks of a graphic carrying
+ * information, and how many slides there are is information. `Neutral/06` is the lowest step on the same
+ * scale that clears 3:1 in *both* modes (4.96:1 and 4.85:1); `Neutral/05` misses light at 2.90:1.
+ * Recorded in README.md.
+ */
+.carouselIndicatorMark {
+  position: relative;
+  display: block;
+  border-radius: 1000px;
+  background-color: var(--sds-neutral-06);
+  transition:
+    width var(--sds-motion-medium) var(--sds-motion-ease-out),
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The active fill. `Brand/Primary/Lighten/1` from 50% to `Accent/Product Accent` at 100%, on the 135°
+ * diagonal Figma's gradient transform inverts to — the same fill on both the dot and the line.
+ *
+ * It is a separate layer so the change of state crossfades: a solid colour cannot transition to a
+ * gradient.
+ */
+.carouselIndicatorMark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    var(--sds-brand-primary-lighten-1) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.carouselIndicator[data-active] .carouselIndicatorMark::after {
+  opacity: 1;
+}
+
+/* Figma's dot is 12px, in both states — the `Active` cell's radius of 16 is the same pill on a square. */
+.carouselIndicators[data-style='dots'] .carouselIndicatorMark {
+  width: 12px;
+  height: 12px;
+}
+
+.carouselIndicators[data-style='lines'] .carouselIndicatorMark {
+  width: 24px;
+  height: 8px;
+}
+
+/* The line's active state is its width: 64px against 24px. */
+.carouselIndicators[data-style='lines'] .carouselIndicator[data-active] .carouselIndicatorMark {
+  width: 64px;
+}
+
+/* Hover is not drawn. The mark lifts a little rather than changing colour, which the active state owns. */
+@media (hover: hover) {
+  .carouselIndicator:hover:not([data-active]) .carouselIndicatorMark {
+    background-color: var(--sds-neutral-07);
+    transform: scale(1.15);
+  }
+
+  .carouselIndicators[data-style='lines'] .carouselIndicator:hover:not([data-active]) .carouselIndicatorMark {
+    /* A wider bar has nowhere to scale to; it grows towards its active width instead. */
+    transform: none;
+    width: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carouselTrack {
+    scroll-behavior: auto;
+  }
+
+  .carouselTrack[data-fade],
+  .carouselIndicatorMark,
+  .carouselIndicatorMark::after {
+    transition: none;
+  }
+
+  .carouselIndicator:hover:not([data-active]) .carouselIndicatorMark {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* A mask is invisible in forced colours and would only hide content, so the fade goes. */
+  .carouselTrack[data-fade] {
+    mask-image: none;
+  }
+
+  .carouselIndicatorMark {
+    background-color: CanvasText;
+  }
+
+  .carouselIndicatorMark::after {
+    background-image: none;
+    background-color: Highlight;
+  }
+
+  .carouselTrack:focus-visible,
+  .carouselIndicator:focus-visible {
+    outline-color: Highlight;
+  }
+}

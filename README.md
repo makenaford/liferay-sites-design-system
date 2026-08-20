@@ -1123,6 +1123,91 @@ so the failure is the environment, not the CSS. What was verified instead: every
 selector matches its intended element with the pseudo-class stripped, and every colour they set was
 measured for contrast in both modes (the table above). Worth a real pointer before release.
 
+## Carousel
+
+The `card carousel` section (node `24465:66866`) and the Figma `Carousel` control set (node
+`20440:16714`) under it.
+
+| Figma | Prop |
+| --- | --- |
+| `List` — 310px cards, 13px gap, clipped | `slideSize`, `gap` |
+| `Overlay` — the edge fade | `fade`, `fadeWidth` |
+| `Carousel` `Type=arrows` — two 44×40 outline buttons | `arrows` |
+| `Carousel` `Type=arrows` — the 12px dot row between them | `indicators="dots"` |
+| `Carousel` `Type=lines` — 24px bars, 64px when active | `indicators="lines"` |
+| `Section Title` above the list | `header` |
+| `List` `padding-inline` 80 | `gutter`, default 0 |
+
+```tsx
+<Carousel label="Customer stories" indicators="dots">
+  <Card>…</Card>
+  <Card>…</Card>
+</Carousel>
+```
+
+Each child becomes a slide — cards go in directly, with no wrapper component to remember. That is what
+lets the slide carry its own `role="group"`, `aria-roledescription="slide"` and "3 of 7" label without
+anybody having to pass them.
+
+### It scrolls; it does not animate
+
+The track is a **scroll container with CSS scroll snapping**, not a transformed strip. The alternative
+was `@mantine/carousel`, which brings `embla-carousel-react` into a library whose only dependencies are
+`@mantine/core` and `@mantine/hooks`.
+
+Snapping gets touch and trackpad momentum, overscroll, keyboard scrolling, `scroll-behavior` that
+respects `prefers-reduced-motion`, and the browser's own scroll-into-view when something inside a slide
+takes focus — all native, none of it re-implemented. What it does not get is **mouse drag, autoplay or an
+infinite loop**. If any of those three is wanted, this is the component to swap for `@mantine/carousel`;
+nothing else in the library would change. The arrows and indicators are the only JavaScript here, and
+they call `scrollTo`.
+
+Two consequences worth knowing:
+
+- The scrollbar is hidden, as Figma's clipped list has none. The arrows and indicators are the
+  affordance, which is why the controls disappear only when there is genuinely nothing to scroll.
+- A scroll container clips **both** axes — `overflow-y: visible` stops being possible once `overflow-x`
+  is `auto` — so a card's hover lift would be sheared off at the top. The track pays for it with 12px of
+  vertical padding and a matching negative margin.
+
+### The indicators count reachable positions, not slides
+
+Figma draws one dot per slide (`Slides=3`). That is right when one slide fills the track and wrong when
+four are visible: the last three slides can never be scrolled to the left edge, so three of seven dots
+could never light up.
+
+So the indicators count **snap positions that can actually be reached**, measured from the live layout so
+a resize changes it. Verified: seven 310px cards in a 1120px track give **four** dots, and the same seven
+at `slideSize="82%"` give **six** — the last slide is unreachable as a start position because the track is
+wider than one slide. The final position is pinned to the maximum scroll offset, so the last indicator
+lands exactly at the end rather than a few pixels short; at `scrollLeft` 1128 of a 1128 maximum, the
+fourth dot is active and the next arrow is disabled.
+
+### States
+
+| | Treatment |
+| --- | --- |
+| Indicator, inactive | `Neutral/06` — **restructured**, see below |
+| Indicator, active | `Brand/Primary/Lighten/1` 50% → `Accent/Product Accent` 100% on the 135° diagonal, crossfaded in over the inactive colour since a solid cannot transition to a gradient |
+| Indicator, hover | not drawn: the dot scales to 1.15 and the bar grows from 24px towards its active 64px, both moving to `Neutral/07` |
+| Indicator, focus | `Styles/focus-ring`, offset outwards |
+| Arrow, each end | `disabled` — Figma's `State=Disabled` cell, rather than wrapping around |
+| Track, focus | `Styles/focus-ring`, inset |
+
+The arrow is 44×40 with a 20px icon. Figma's cell is 44 wide with 12px of padding, which puts its 1px
+stroke inside the 44; a CSS border sits outside the padding box, so 12 + 20 + 12 + 2 measures 46. 11px of
+padding lands the outer box on Figma's 44 exactly.
+
+### Accessibility
+
+The track is `role="group" aria-roledescription="carousel"` with the required `label`; each slide is a
+group announced as "slide" and numbered. The track is **focusable**, which costs one tab stop and buys
+the only way a keyboard user can scroll a row of quote cards — slides with no links inside them are
+otherwise an unreachable scroll region (WCAG 2.1.1).
+
+`label` is required and has no default, for the reason `Image`'s `alt` is: a region announced as
+"carousel" with no name says nothing about what someone has landed in.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1275,6 +1360,40 @@ light at 1.42:1, so this is a property of the neutral scale rather than of this 
 It is left as drawn. The divider is decoration here, not information: whether a row is open is carried by
 the arrow direction and by the panel itself, so nothing in WCAG 1.4.11 depends on the line being visible.
 Worth knowing that on a light page these rows read as separated mostly by their own spacing.
+
+### The carousel's inactive indicator is a 1.24:1 dot in light mode
+
+Both indicator styles bind their inactive state to `Neutral/02`, which measures **1.70:1 on dark and
+1.24:1 in light** against the page surface. How many slides there are, and which one you are on, is
+information — so this is WCAG 1.4.11's 3:1 for a graphic that conveys it, not decoration.
+
+**Fixed**, the same way the Button's `neutral` variant was: by moving along the same scale to the lowest
+step that clears 3:1 in *both* modes. That is `Neutral/06` — **4.96:1 dark, 4.85:1 light**. `Neutral/05`
+misses in light at 2.90:1, which is why the swap goes one step further than it looks like it needs to.
+
+The active state needs no change: `Brand/Primary/Lighten/1` is 5.15:1 and 3.73:1.
+
+This is the second component to run into the flat end of the neutral scale — the Accordion's divider has
+the same 1.24:1 in light mode, and was **left** as drawn because a divider there is decoration. The two
+together suggest the scale is missing a step between `Neutral/04` (1.67:1 light) and `Neutral/06`
+(4.85:1) that would serve as a visible-but-quiet grey in both modes.
+
+### The carousel's edge fade is always on, in both directions
+
+Figma's `Overlay` is an opaque `Surfaces/Page BG base/Default` gradient at both ends of the list at all
+times, so **the first card is faded before anything has been scrolled** and the last one stays faded at
+the end of the scroll.
+
+Two deviations, both deliberate:
+
+- The fade is **per edge, and only present when that edge has more content**. An edge with nothing beyond
+  it has nothing to hint at, and fading the first card at rest reads as a rendering fault.
+- It is a **mask, not an opaque rectangle on top**. Figma can hardcode the page colour; a component
+  cannot, and this one has to work on a card surface, inside a section with its own background and over
+  the hero's gradient. A mask fades the cards to transparent instead, and does not sit above them eating
+  their clicks.
+
+Figma's 15% width is kept, as `fadeWidth`.
 
 ### Three styles were invisible in light mode
 
