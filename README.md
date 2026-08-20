@@ -1608,20 +1608,31 @@ These are places where the Figma library is ambiguous, inconsistent, or incomple
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
 
-### A static card barely reads as a card in light mode
+### A static card had no edge, and now has one
 
-This follows from the rule that non-clickable cards never use `glass`. Glass is what supplied the edge — its
-hairline — and `grey` has none, so a static card is a fill that sits almost on top of the page:
+`Surfaces/Card BG/Grey` is **1.05:1 against the light page** and 1.06:1 against the dark one. With glass off
+limits for a card that cannot be clicked, the fill was the whole surface — and a fill that close to the page
+does not read as a card at all.
 
-| | Declared | Against the light page |
+**Fixed**, by giving `grey` a flat hairline of its own. `Neutral/05` is the lowest step on the scale that is
+unambiguously visible against both the fill and the page in both modes:
+
+| | vs the card | vs the page |
 | --- | --- | --- |
-| `Surfaces/Card BG/Grey` | `#f4f6fb` | **1.05:1** |
+| Light | **2.75:1** | **2.90:1** |
+| Dark | **3.46:1** | **3.67:1** |
 
-On the dark canvas it is better: `#0f131b` against a `#070b13` page. In light mode a static card is close to
-invisible as a container.
+`Neutral/04` was the alternative and is fine on dark at 2.82/2.99, but only 1.59/1.67 in light — the mode the
+problem was in. `Neutral/06` clears 3:1 everywhere at 4.6+, but on a barely-tinted fill a line that dark
+reads as a table rule rather than a card edge.
 
-Nothing is changed here — that is the token's own value. The fix belongs in the design file: either give the
-static surface a hairline of its own, or lift `Card BG/Grey` further off the page in light mode.
+This is **not a Figma value**: the file draws no edge on `Style=Grey` at all, because in the file every card
+is glass and glass brings its own. Worth adding to `Surface` so the two static and interactive edges are both
+specified, rather than one being inferred here.
+
+The two edges stay distinguishable, which matters now that the surface says whether a card is clickable:
+glass's hairline is the tinted `Glass Line` gradient that warms on hover, grey's is a flat neutral that does
+nothing.
 
 ### `Surfaces/Card BG/Blue` is not a second static surface
 

@@ -1292,26 +1292,49 @@
 }
 
 /*
- * The resting hairline. Only glass draws one — it is the clickable surface, and the hairline is what warms
- * on hover. A 1px inside stroke with a gradient, which a border cannot be — so it is a masked pseudo-element, the same construction the Label's outline ring uses.
- * 225deg is Figma's transform for this stroke, inverted.
+ * The resting hairline, on the two surfaces that need an edge. A 1px inside stroke, drawn as a masked
+ * pseudo-element because glass's is a gradient and a border cannot be one — the same construction the
+ * Label's outline ring uses.
  */
-.cardRoot[data-align][data-surface='glass']::before {
+.cardRoot[data-align]:where([data-surface='glass'], [data-surface='grey'])::before {
   content: '';
   position: absolute;
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-glass-line-from) 1%,
-    var(--sds-glass-line-to) 92%
-  );
   mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
+}
+
+/* Glass: `Components/Glass Line/01` into `02`. 225deg is Figma's transform for this stroke, inverted. */
+.cardRoot[data-align][data-surface='glass']::before {
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+}
+
+/*
+ * Grey: a flat hairline, and the only thing giving a static card an edge.
+ *
+ * `Surfaces/Card BG/Grey` is 1.05:1 against the light page and 1.06:1 against the dark one — the fill alone
+ * does not read as a surface, and glass's hairline is not available to a card that cannot be clicked. So the
+ * edge is `Neutral/05`, the lowest step on the scale that is unambiguously visible against both the fill and
+ * the page in **both** modes:
+ *
+ *   light   2.75:1 against the card, 2.90:1 against the page
+ *   dark    3.46:1 against the card, 3.67:1 against the page
+ *
+ * `Neutral/04` was the alternative: fine on dark at 2.82/2.99, but only 1.59/1.67 in light, which is the mode
+ * the problem was in. `Neutral/06` clears 3:1 everywhere at 4.6+, but on a barely-tinted fill a line that
+ * dark reads as a table rule rather than a card edge. Not a Figma value — the file draws no edge here.
+ */
+.cardRoot[data-align][data-surface='grey']::before {
+  background-color: var(--sds-neutral-05);
 }
 
 /* ---------------------------------------------------------------------- interaction

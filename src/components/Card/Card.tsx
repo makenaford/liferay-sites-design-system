@@ -228,6 +228,10 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  * Figma disagrees with itself here — four of the five cards in `Card Examples` are `Style=Glass` and only
  * two are drawn clickable — so this follows the rule rather than the file. Recorded in README.md.
  *
+ * `grey` gets a **flat `Neutral/05` hairline** of its own, because the fill alone is 1.05:1 against the page
+ * and does not read as a surface without one. The two edges stay distinguishable: glass's is the tinted
+ * `Glass Line` gradient that warms on hover, grey's is a flat neutral that does nothing.
+ *
  * ## Where the hover goes
  *
  * Figma's `Surface` has a `State=Hover` cell, and it is **identical to `State=Default`** — same 1px
