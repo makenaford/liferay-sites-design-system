@@ -5,6 +5,11 @@
  * provider is what installs the theme and the `--sds-*` token variables that every component
  * assumes are present.
  */
+export {
+  Accordion,
+  type AccordionProps,
+  type AccordionSize,
+} from './components/Accordion'
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'

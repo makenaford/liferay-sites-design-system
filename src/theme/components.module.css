@@ -3174,3 +3174,326 @@
   width: 100%;
   height: 100%;
 }
+
+/* =====================================================================================
+ * Accordion — Figma `Accordion` component set (node `17019:127517`)
+ *
+ * Four variants across two axes, `Expand` × `Size`:
+ *
+ *   Size=Default    header padding-block 12, gap 16, `Paragraph/Large/Semi Bold` (21/26 semibold),
+ *                   32px `arrow/down` box  ->  56px row
+ *   Size=Condensed  header padding-block 8,  gap 16, `Paragraph/Default/Semi Bold` (18/23 semibold),
+ *                   24px box               ->  40px row
+ *
+ * The row height comes from the icon, not the text: 32 + 24 = 56 and 24 + 16 = 40.
+ *
+ * Both label styles are text styles with no matching typography variable — `Size/Paragraph/Large` reads
+ * 20/21 and there is no 18px step at all — the same split already recorded for the Card. The text styles
+ * are the source, so the sizes are literal here.
+ *
+ * Figma gives the header no horizontal padding: the rule runs the full width of the container.
+ * ===================================================================================== */
+
+.accRoot[data-size] {
+  /* `divider` `Property 1=normal, Property 2=horizontal` — 1px `Neutral/02`. */
+  --sds-acc-rule: var(--sds-neutral-02);
+  /* `Property 1=gradient` — `Neutral/06` -> `Brand/Primary/Lighten/3`, left to right. */
+  --sds-acc-rule-grad: linear-gradient(
+    90deg,
+    var(--sds-neutral-06) 0%,
+    var(--sds-brand-primary-lighten-3) 100%
+  );
+}
+
+/* Size=Default. */
+.accRoot[data-size='lg'] {
+  --sds-acc-pad: 12px;
+  --sds-acc-chevron: 32px;
+  --sds-acc-fz: 21px;
+  --sds-acc-lh: 26px;
+  --sds-acc-panel-pad: 16px;
+}
+
+/* Size=Condensed. */
+.accRoot[data-size='sm'] {
+  --sds-acc-pad: 8px;
+  --sds-acc-chevron: 24px;
+  --sds-acc-fz: 18px;
+  --sds-acc-lh: 23px;
+  /* Figma only draws a panel on the Default row; the condensed one gets the padding a step down. */
+  --sds-acc-panel-pad: 12px;
+}
+
+.accRoot[data-size] .accItem {
+  position: relative;
+  background-color: transparent;
+  /* Mantine's item draws a border; the rule here is a pseudo-element, because a gradient cannot be a
+   * border colour — the same reason the Tabs indicator and the Label's outline ring are drawn this way. */
+  border: none;
+}
+
+/*
+ * The rule, in two layers on one element so the change of state is a crossfade rather than a repaint:
+ * `::after` is the flat `Neutral/02` line that is always there, `::before` the gradient over it.
+ *
+ * It sits under the header and above the panel, which is where Figma puts it — the divider is inside the
+ * component, between the two halves, not between one row and the next.
+ */
+.accRoot[data-size] .accItem > .accItemTitle::after,
+.accRoot[data-size] .accItem > .accControl::after,
+.accRoot[data-size] .accItem > .accItemTitle::before,
+.accRoot[data-size] .accItem > .accControl::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+}
+
+.accRoot[data-size] .accItem > .accItemTitle::after,
+.accRoot[data-size] .accItem > .accControl::after {
+  background-color: var(--sds-acc-rule);
+}
+
+.accRoot[data-size] .accItem > .accItemTitle::before,
+.accRoot[data-size] .accItem > .accControl::before {
+  background-image: var(--sds-acc-rule-grad);
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  /* Above the flat line. */
+  z-index: 1;
+}
+
+/* `Expand=Expanded` — the gradient divider, at full strength. */
+.accRoot[data-size] .accItem[data-active] > .accItemTitle::before,
+.accRoot[data-size] .accItem[data-active] > .accControl::before {
+  opacity: 1;
+}
+
+/*
+ * The heading wrapper `order` adds. It has to carry the rule as well, since it becomes the control's
+ * parent — hence the pair of selectors above rather than one.
+ */
+.accRoot[data-size] .accItemTitle {
+  position: relative;
+  margin: 0;
+  /* A heading level is semantics, not size: the label's own type is what shows. */
+  font: inherit;
+}
+
+.accRoot[data-size] .accControl {
+  position: relative;
+  padding-block: var(--sds-acc-pad);
+  /* Figma: no horizontal padding, so the rule and the text share an edge. */
+  padding-inline: 0;
+  gap: 16px;
+  background-color: transparent;
+  border-radius: 0;
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.accRoot[data-size] .accLabel {
+  padding-block: 0;
+  font-size: var(--sds-acc-fz);
+  line-height: var(--sds-acc-lh);
+  /* `Paragraph/*​/Semi Bold`. */
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+  text-align: start;
+  /* Figma's header hugs one line; a real question wraps, and wrapping is better than an ellipsis here. */
+  overflow: visible;
+  text-overflow: clip;
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* `Accordion.Control`'s `icon` slot — not in Figma, but it shares the label's colour when used. */
+.accRoot[data-size] .accIcon {
+  display: flex;
+  align-items: center;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * The arrow. Its box is the full 32px (or 24px) Figma draws, which is also the hover disc and a
+ * comfortable target; the glyph fills it.
+ *
+ * Rotation is Mantine's `[data-rotate]` — Figma's `arrow/down` becoming `arrow/up` — retimed from
+ * Mantine's `200ms ease` to this library's medium duration and easing so it settles instead of stopping.
+ */
+.accRoot[data-size] .accChevron {
+  position: relative;
+  width: var(--sds-acc-chevron);
+  min-width: var(--sds-acc-chevron);
+  height: var(--sds-acc-chevron);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sds-surfaces-text-primary);
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.accRoot[data-size] .accChevron > svg {
+  width: 100%;
+  height: 100%;
+  /* Above the disc. */
+  position: relative;
+  z-index: 1;
+}
+
+/* The disc behind the arrow: absent at rest, grown in on hover. Inferred — Figma draws no hover. */
+.accRoot[data-size] .accChevron::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 8%, transparent);
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * Hover, inferred. The gradient rule comes halfway up, so the row shows what opening it will do; the
+ * arrow gets its disc and the label takes the link hover colour.
+ */
+@media (hover: hover) {
+  .accRoot[data-size] .accControl:not(:disabled, [data-disabled]):hover .accLabel {
+    color: var(--sds-action-link-hover-link);
+  }
+
+  .accRoot[data-size] .accControl:not(:disabled, [data-disabled]):hover .accChevron {
+    color: var(--sds-action-link-hover-link);
+  }
+
+  .accRoot[data-size] .accControl:not(:disabled, [data-disabled]):hover .accChevron::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .accRoot[data-size]
+    .accItem:not([data-active])
+    > .accItemTitle:has(.accControl:not(:disabled, [data-disabled]):hover)::before,
+  .accRoot[data-size]
+    .accItem:not([data-active])
+    > .accControl:not(:disabled, [data-disabled]):hover::before {
+    opacity: 0.5;
+  }
+}
+
+/*
+ * Held down: the arrow moves 1px in the direction it is about to travel — down while the row is closed,
+ * back up while it is open. A press that acknowledges itself, without a colour to invent.
+ */
+.accRoot[data-size] .accControl:not(:disabled, [data-disabled]):active .accChevron {
+  transform: translateY(1px);
+}
+
+.accRoot[data-size] .accControl[data-active]:not(:disabled, [data-disabled]):active .accChevron {
+  transform: rotate(180deg) translateY(1px);
+}
+
+/*
+ * `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, inset so a row at the top of a container does not
+ * have its ring clipped. Not drawn in Figma; it is this system's one focus treatment.
+ */
+.accRoot[data-size] .accControl:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: -2px;
+}
+
+.accRoot[data-size] .accControl:disabled,
+.accRoot[data-size] .accControl[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mantine's Collapse writes the height and opacity inline; the panel only needs its box here. */
+.accRoot[data-size] .accPanel {
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/*
+ * Figma's panel: `padding-block 16, gap 10`, no horizontal padding, so the content lines up with the
+ * header above it.
+ *
+ * The 4px rise is inferred, and it is a **keyframe animation, not a transition** — deliberately. Mantine
+ * keeps the panel mounted and hides it with React's `Activity`, which is `display: none`; a transition
+ * out of `display: none` has no starting style to run from, so a `transform` transition here lands on its
+ * end value instantly and animates nothing. This was measured: five samples across 240ms all read
+ * `transform: none`. An animation runs on reveal, so that is what draws the rise.
+ *
+ * The fade is Mantine's — `Collapse` writes an inline `opacity` transition alongside the height — so it
+ * is not duplicated here.
+ */
+.accRoot[data-size] .accContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--sds-acc-panel-pad) 0;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.accRoot[data-size] .accItem[data-active] .accContent {
+  animation: acc-content-in var(--sds-motion-medium) var(--sds-motion-ease-out) 40ms both;
+}
+
+@keyframes acc-content-in {
+  from {
+    transform: translateY(-4px);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+.accRoot[data-size] .accContent :where(p) {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accRoot[data-size] .accControl,
+  .accRoot[data-size] .accLabel,
+  .accRoot[data-size] .accChevron,
+  .accRoot[data-size] .accChevron::before,
+  .accRoot[data-size] .accItem > .accItemTitle::before,
+  .accRoot[data-size] .accItem > .accControl::before {
+    transition: none;
+  }
+
+  /* The rise is motion for its own sake, so it goes. Mantine drops the height and fade to 0ms itself. */
+  .accRoot[data-size] .accItem[data-active] .accContent {
+    animation: none;
+  }
+
+  .accRoot[data-size] .accControl:not(:disabled, [data-disabled]):active .accChevron {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* The gradient and the disc both disappear in forced colours; the rule has to stay visible. */
+  .accRoot[data-size] .accItem > .accItemTitle::after,
+  .accRoot[data-size] .accItem > .accControl::after {
+    background-color: CanvasText;
+  }
+
+  .accRoot[data-size] .accItem > .accItemTitle::before,
+  .accRoot[data-size] .accItem > .accControl::before {
+    display: none;
+  }
+
+  .accRoot[data-size] .accChevron::before {
+    display: none;
+  }
+
+  .accRoot[data-size] .accControl:focus-visible {
+    outline-color: Highlight;
+  }
+}

@@ -1007,6 +1007,122 @@ that already says what it shows — but it has to be said out loud. An image com
 the alt text produces a codebase without any, and that is a decision worth making once, in the type,
 rather than in every review.
 
+## Accordion
+
+Figma `Accordion` component set (node `17019:127517`) — four cells across `Expand` × `Size` — on
+Mantine's `Accordion`. Two sizes, the divider that separates every row, and the arrow that flips when a
+row opens.
+
+| Figma | Prop |
+| --- | --- |
+| `Size=Default` | `size="lg"` |
+| `Size=Condensed` | `size="sm"` |
+| `Expand` — Closed / Expanded | `value` / `defaultValue`, or the user clicking |
+| `Header` text | `<Accordion.Control>` children |
+| `divider` `Property 1=normal` | the closed row's rule — 1px `Neutral/02` |
+| `divider` `Property 1=gradient` | the open row's rule — `Neutral/06` → `Brand/Primary/Lighten/3` |
+| The panel's placeholder frame | `<Accordion.Panel>` children |
+
+```tsx
+<Accordion size="lg" defaultValue="hosting">
+  <Accordion.Item value="hosting">
+    <Accordion.Control>Where is my data hosted?</Accordion.Control>
+    <Accordion.Panel>In the region you choose, on infrastructure we operate.</Accordion.Panel>
+  </Accordion.Item>
+</Accordion>
+```
+
+### The two sizes, measured
+
+Both were read back out of the browser rather than transcribed:
+
+| | `size="lg"` (Default) | `size="sm"` (Condensed) |
+| --- | --- | --- |
+| Row height | **56px** | **40px** |
+| `padding-block` | 12px | 8px |
+| Label | 21px / 26px, semibold | 18px / 23px, semibold |
+| Arrow box | 32px | 24px |
+| Gap | 16px | 16px |
+| Panel `padding-block` | 16px | 12px — inferred, see below |
+
+The row height comes from the **arrow, not the text**: 32 + 24 = 56 and 24 + 16 = 40. Sizing the box
+from the label alone gives 50px and 39px, neither of which is what Figma draws.
+
+Figma gives the header no horizontal padding, so the rule and the text share an edge; that is kept.
+
+### The rule is the state
+
+Figma's only difference between a closed row and an open one — besides the panel — is the divider under
+the header: flat `Neutral/02` when closed, a `Neutral/06` → `Brand/Primary/Lighten/3` gradient when open.
+
+It is drawn as **two stacked pseudo-elements on one line** rather than a border: the flat rule always
+present, the gradient over it at `opacity: 0`. A gradient cannot be a `border-color`, and crossfading one
+layer's opacity runs on the compositor where animating a border repaints. The same reason the Tabs
+indicator and the Label's outline ring are built this way.
+
+Hover brings that gradient **half way up** — a row previewing what clicking it will do. Inferred; Figma
+draws no hover.
+
+The rule has to live on either the control or the heading wrapper `order` adds, since that wrapper
+becomes the control's parent, so both selectors carry it. Verified with `order={3}`: the line moves to
+the `<h3>` and the row is still 56px.
+
+### States
+
+Figma draws two cells, so everything between them is inferred from the same motion tokens the rest of
+the library uses. Contrast measured in the browser against the page surface in both modes:
+
+| State | Treatment | Dark | Light |
+| --- | --- | --- | --- |
+| Rest | label `Surfaces/Text/Primary` | 17.45:1 | 13.66:1 |
+| Hover | label + arrow `Action/Link/Hover Link`; a soft disc grows in behind the arrow; the gradient rule rises to 50% | 12.92:1 | 8.74:1 |
+| Press | the arrow moves 1px in the direction it is about to travel — down while closed, back up while open | — | — |
+| Focus | `Styles/focus-ring`, 2px `Brand/Primary/Lighten/1`, inset | 5.15:1 | 3.73:1 |
+| Disabled | half opacity, `not-allowed`, skipped by the arrow keys | — | — |
+| Open | gradient rule at full strength, arrow rotated 180° | — | — |
+| Panel text | `Surfaces/Text/Secondary` at 18/24 | 13.51:1 | 10.49:1 |
+
+The disc is the full arrow box — 32px or 24px — not a smaller shape inside it, so the affordance and the
+target are the same thing.
+
+### The panel's rise is an animation, not a transition
+
+The content lifts 4px into place 40ms behind the height. That is a **keyframe animation**, deliberately:
+Mantine keeps a closed panel mounted and hides it with React's `Activity`, which is `display: none`, and
+a transition out of `display: none` has no starting value to run from. Written first as a transition and
+measured — five samples across 240ms all read `transform: none`, i.e. it animated nothing — then changed.
+An animation runs on reveal, and the rebuilt version was caught mid-flight at `translateY(-4px)`.
+
+The fade is Mantine's: `Collapse` writes an inline `opacity` transition alongside the height, so it is
+not duplicated.
+
+`transitionDuration` is 240ms rather than Mantine's 200. The row height is the largest thing that moves
+in this library and 200ms reads as a snap. It is a number rather than a token because Mantine hands the
+value to `Collapse` in JavaScript. `respectReducedMotion` is on, so it drops to 0ms for anyone who has
+asked for less motion, and the rise and the press are dropped in CSS alongside it.
+
+### It is a disclosure, and `order` is worth passing
+
+The control is a `<button aria-expanded aria-controls>` and the panel a `role="region"` labelled by it,
+with the arrow keys moving between rows and disabled rows skipped — verified.
+
+`order` wraps each control in a real heading, which is how a screen reader navigates a page of these by
+heading instead of tabbing every row. There is **no default**: only the page knows whether these sit
+under an `h2`. The heading contributes semantics only — `font: inherit` keeps the label's own type, which
+is what Figma draws.
+
+`multiple` lets rows stand open together. Figma shows one at a time and that is the default: it keeps the
+page from growing under someone who is still reading it.
+
+### One thing that could not be verified here
+
+Hover, press and focus were **not exercised in the browser**. The in-app pane's synthetic hover sets the
+`:hover` flag — `element.matches(':hover')` returns true — but does not recalculate style from it: a
+freshly injected `.control:hover .label { color: … }` rule had no effect on the computed colour either,
+so the failure is the environment, not the CSS. What was verified instead: every hover, press and focus
+selector matches its intended element with the pseudo-class stripped, and every colour they set was
+measured for contrast in both modes (the table above). Worth a real pointer before release.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1121,6 +1237,44 @@ repo and stay valid — they just won't appear in Figma until the plan supports 
 These are places where the Figma library is ambiguous, inconsistent, or incomplete. Each is
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
+
+### The Accordion set is in an error state, from a duplicated variant name
+
+Two of the set's four cells are both named `Expand=Closed, Size=Condensed` — `24397:77178` and
+`24397:77204`. Figma therefore refuses to resolve the set's properties at all:
+`componentPropertyDefinitions` and `variantProperties` both throw `Component set has existing errors`.
+
+The consequence reaches the code: **Code Connect cannot read `Size` off an instance**, so
+`src/figma/Accordion.figma.ts` maps neither axis and the snippet carries a comment instead. One rename
+fixes both, and the mapping is then a two-line change.
+
+`24397:77204` is plainly the **expanded** condensed cell — it is the only cell in the set drawing
+`arrow/up` — so the fix is to rename it `Expand=Expanded, Size=Condensed`. Two further things follow from
+the same cell being unfinished:
+
+- Its rule is a **raw `LINE`**, not a `divider` instance, and it is the flat `normal` line rather than the
+  `gradient` one that the expanded Default cell uses. The implementation gives both expanded sizes the
+  gradient, on the assumption that the Default cell is the finished one.
+- It has **no panel frame**, so there is no condensed panel spec at all. Its `padding-block` of 12px is
+  inferred, one step down the scale from the Default cell's 16px. Figma's number would replace it.
+
+### The expanded Accordion cell still shows a down arrow
+
+`Expand=Expanded, Size=Default` (`20534:6600`) has its panel open, its gradient divider in place — and
+`arrow/down` on the header, unchanged from the closed cell. The only cell in the set showing `arrow/up` is
+the mis-named one above. The implementation rotates the arrow 180° on open, which is what that `arrow/up`
+cell draws and what the control needs to signal; the Default expanded cell looks like it was simply
+missed.
+
+### An accordion divider is a 1.24:1 hairline in light mode
+
+Figma's `divider` `Property 1=normal` is `Neutral/02`, which measures **1.7:1 on dark and 1.24:1 in
+light** against the page surface. `Neutral/03` — the step the StatBar was moved to — is barely better in
+light at 1.42:1, so this is a property of the neutral scale rather than of this one choice.
+
+It is left as drawn. The divider is decoration here, not information: whether a row is open is carried by
+the arrow direction and by the panel itself, so nothing in WCAG 1.4.11 depends on the line being visible.
+Worth knowing that on a light page these rows read as separated mostly by their own spacing.
 
 ### Three styles were invisible in light mode
 

@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Anchor,
   Badge,
   Button,
@@ -359,6 +360,51 @@ export const componentTheme: MantineThemeComponents = {
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
     vars: () => ({ wrapper: INPUT_VARS }),
+  }),
+
+  /**
+   * Figma `Accordion` (node `17019:127517`). Two variants — `Expand` × `Size` — so the classes carry
+   * the treatment and `components.module.css` keys the two sizes off `data-size`, which the wrapper
+   * sets from its own `size` prop.
+   */
+  Accordion: Accordion.extend({
+    classNames: {
+      root: classes.accRoot,
+      item: classes.accItem,
+      control: classes.accControl,
+      label: classes.accLabel,
+      chevron: classes.accChevron,
+      icon: classes.accIcon,
+      panel: classes.accPanel,
+      content: classes.accContent,
+      itemTitle: classes.accItemTitle,
+    },
+
+    defaultProps: {
+      /**
+       * 240ms rather than Mantine's 200. The row height is the largest thing that moves in this
+       * library and 200ms reads as a snap; 240 is `--sds-motion-medium` less its overshoot, and it is a
+       * number rather than a token because Mantine hands the value to `Collapse` in JavaScript.
+       *
+       * `respectReducedMotion` is on, so this drops to 0ms for anyone who has asked for less motion.
+       */
+      transitionDuration: 240,
+      /** Figma puts the arrow after the label, on the trailing edge. */
+      chevronPosition: 'right',
+    },
+
+    vars: () => ({
+      root: {
+        /**
+         * Mantine sizes the chevron box from `--accordion-chevron-size`, which its vars resolver writes
+         * inline on the root — so a stylesheet rule on the root cannot win. The stylesheet sizes the
+         * chevron from its own `--sds-acc-chevron` instead, and this switches Mantine's off.
+         */
+        '--accordion-chevron-size': 'auto',
+        /** Figma draws no rounding on an accordion row: the rule is a full-width line. */
+        '--accordion-radius': '0',
+      },
+    }),
   }),
 
   Tabs: Tabs.extend({
