@@ -19,7 +19,9 @@
     "external_link",
     "information",
     "alert",
-    "question"
+    "question",
+    "pause",
+    "play"
   ],
   "filled": []
 }

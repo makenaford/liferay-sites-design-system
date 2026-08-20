@@ -1298,6 +1298,94 @@ Figma's `Main List Item` `Padding=Yes` cell sits on a `Surface` instance, and th
 hover for the row itself. If a row ever becomes a link, `Card` is the component that already has the ring,
 the lift and the focus treatment for that.
 
+## Marquee
+
+The `marque` section (node `24465:67388`) and the Figma `Logos scrolling section` set (`22522:24157`): a
+strip of logos that scrolls forever, faded at both edges.
+
+| Figma | Prop |
+| --- | --- |
+| `Size` — Mobile / Desktop / Size3 | `size="sm" \| "md" \| "lg"` — 24 / 49 / 64px rows |
+| The 109px logo cell | `logoWidth` |
+| The grid's gap of 60 | `gap` |
+| `Overlay` — transparent, opaque 20%–80%, transparent | `fade`, `fadeWidth` |
+| `Theme` — Dark / Light | `monochrome`, and the colour scheme does the rest |
+| The two duplicate strips | the loop, built from one set of children |
+
+```tsx
+<Marquee label="Customers" monochrome>
+  <img src={airbus} alt="Airbus" />
+  <img src={carrefour} alt="Carrefour" />
+</Marquee>
+```
+
+### The loop is Figma's own construction
+
+Figma draws the strip **twice**, side by side — `Frame 1332` and `Frame 1333`, identical — which is exactly
+how a seamless marquee works. So that is what this does: one set of children rendered twice, translated by
+the width of one copy plus one gap, then repeated. The second copy is `aria-hidden`, or every logo would be
+announced twice.
+
+`speed` is **pixels per second, not a duration**. The distance is measured from the live layout and the
+duration falls out of it — `distance / speed` — which is what keeps a five-logo strip and a twenty-logo
+strip moving at the same speed. Verified: a seven-logo row measured 1123px, so the distance came out 1183
+(1123 + one 60px gap) and the duration 19.7s at 60px/s. Re-measured on resize and when the children change.
+
+Figma puts 32px between its two copies and 60px between logos inside them. A loop needs the *same* gap in
+both places or it hitches once per cycle, so the logo gap is used throughout — see the gaps list.
+
+### Logos are fitted by width
+
+Figma's cell is 109 × 49 with the artwork fitted **by width** and centred. That is measured, not assumed:
+across the six logos the set draws, the art is 103×19, 103×33, 98×11, 103×20, 103×35 and 98×19. The widths
+cluster at 98–103 and the heights fall out of each logo's own proportions.
+
+That is how a logo row is actually balanced — a tall roundel and a long wordmark cannot share a height and
+still look level — so the cell height is a **row height and a ceiling**, not a target. Verified at all
+three sizes: 109px cells with logos at 109×27, 109×21, 109×23, and the 24px row clipping the tallest to 24.
+
+`width: 100%` on the logo also gives an inline `<svg>` a size it would not otherwise have: an SVG with a
+`viewBox` and no `width` has a ratio but no intrinsic dimensions, and collapses to zero as a flex item. The
+first version used `max-height` and every logo measured 0×0.
+
+### `Size=Mobile` is a container query, not a viewport one
+
+Figma's Mobile cell becomes a breakpoint, as every other `Size=Mobile` in this library does — but on the
+**container**, not the window. "The window is narrow" and "this strip is narrow" are different questions,
+and a marquee in a 480px card on a wide desktop is the narrow case just as much as a phone is. Verified: the
+same component at a 440px container width drops to the 24px row on a desktop viewport.
+
+### Stopping it is a conformance requirement
+
+**There is a pause button, on by default.** WCAG 2.2.2 asks for a mechanism to pause, stop or hide any
+motion that starts automatically and runs for more than five seconds alongside other content. An endless
+logo strip is the textbook case of that. Figma draws no such control, so this one is inferred — 32px, at the
+trailing edge, `aria-pressed` on the effective state — and `withControl={false}` is only correct if the page
+supplies its own.
+
+Hover-to-pause is on as well, but it is **not** the mechanism: it does nothing for anyone on a keyboard or a
+touch screen. Focus inside the strip pauses it too, so tabbing to a logo does not chase it across the page.
+
+Two things that took a second pass:
+
+- **Pausing is `animation-play-state`, not removing the animation.** The first version dropped the
+  animation, which snapped the strip back to its start — that reads as a fault, not a pause. The animation
+  is now attached as soon as the distance is measured and paused in place.
+- **`prefers-reduced-motion` starts it paused rather than making it unplayable.** A CSS rule forcing
+  `animation: none` under that preference would turn the control into a dead button for exactly the person
+  most likely to reach for it. The preference suppresses autoplay; an explicit press wins.
+
+### `Theme` is not a prop
+
+Figma's `Dark`/`Light` cells exist because a one-colour logo needs a different ink on each canvas.
+`monochrome` inks logos in `Surfaces/Text/Primary`, which inverts with the colour scheme and so covers both
+cells at once — measured at 13.66:1 in light mode and 17.45:1 on dark.
+
+It works exactly on SVG that inherits `currentColor`. A raster logo cannot take a colour from CSS, so it is
+flattened instead — `brightness(0)`, inverted on the dark canvas, held at 85% — which is black and white
+rather than literally the token. Noted in the component docs so nobody expects the two paths to match to
+the pixel.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1484,6 +1572,16 @@ Two deviations, both deliberate:
   their clicks.
 
 Figma's 15% width is kept, as `fadeWidth`.
+
+### The marquee's two strips are 32px apart, and its logos 60px
+
+`Logos scrolling section` draws the strip twice — that is the right construction for a seamless loop — but
+puts **32px between the two copies and 60px between the logos inside them**. A loop needs the same gap in
+both places: with two different values the strip hitches by the difference once per cycle, which at 60px/s
+is a visible stutter every twenty seconds.
+
+The logo gap is used for both, on the assumption that 32 is an artefact of laying two copies out in a file
+rather than an intended value. Making the two copies a single component with one gap would settle it.
 
 ### Three styles were invisible in light mode
 

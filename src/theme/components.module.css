@@ -4038,3 +4038,278 @@
     border: 1px solid CanvasText;
   }
 }
+
+/* =====================================================================================
+ * Marquee — the `marque` section (node `24465:67388`) and the Figma
+ * `Logos scrolling section` set (`22522:24157`)
+ *
+ *   Size=Mobile   414 x 24   logo cells 24 tall
+ *   Size=Desktop  1458 x 89  padding 40/80/0/80, two identical strips of 109x49 cells
+ *   Size=Size3    1458 x 88  a 1280x64 grid of cells
+ *   Logo gap      60 in every cell
+ *   Overlay       a left-to-right gradient: transparent at 0, opaque 20% to 80%, transparent at 100%
+ *
+ * Figma draws the strip **twice** side by side, which is how a seamless marquee is built; the 32px it
+ * puts between those two copies is a file artefact — a loop needs the logo gap in both places — so the
+ * logo gap is used throughout. Recorded in README.md.
+ *
+ * The `Overlay` is a mask here rather than a rectangle in the page colour. Figma's own layer is called
+ * `Mask group` and its stops run from alpha 0 to alpha 1, which is a mask and not a paint; a real mask
+ * also fades to transparent rather than to one hardcoded background, and does not sit over the logos
+ * intercepting clicks.
+ * ===================================================================================== */
+
+.marqueeRoot {
+  --sds-marquee-logo: 64px;
+  /* Figma's cell width, constant across the `Size` axis — only the row height changes. */
+  --sds-marquee-cell: 109px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  /* The section's `padding-block` belongs to the section, not to the strip. */
+  width: 100%;
+  min-width: 0;
+}
+
+/* `Size=Mobile`. */
+.marqueeRoot[data-size='sm'] {
+  --sds-marquee-logo: 24px;
+}
+
+/* `Size=Desktop`. */
+.marqueeRoot[data-size='md'] {
+  --sds-marquee-logo: 49px;
+}
+
+/* `Size=Size3`, the set's default cell. */
+.marqueeRoot[data-size='lg'] {
+  --sds-marquee-logo: 64px;
+}
+
+/*
+ * Figma's Mobile cell as a breakpoint rather than a prop, which is how every other `Size=Mobile` in this
+ * library is handled. A 64px logo row does not belong on a 414px strip.
+ *
+ * A **container** query rather than a viewport one, which is the difference between "the window is
+ * narrow" and "this strip is narrow". A marquee in a 480px card on a wide desktop is the narrow case just
+ * as much as a phone is, and only the container knows that.
+ */
+.marqueeRoot {
+  container-type: inline-size;
+  container-name: sds-marquee;
+}
+
+@container sds-marquee (max-width: 768px) {
+  .marqueeViewport {
+    --sds-marquee-logo: 24px;
+  }
+}
+
+.marqueeViewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* `Overlay` — opaque between 20% and 80%, transparent at both ends. */
+.marqueeViewport[data-fade] {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--sds-marquee-fade),
+    #000 calc(100% - var(--sds-marquee-fade)),
+    transparent 100%
+  );
+}
+
+.marqueeTracks {
+  display: flex;
+  /* The same gap between the two copies as between the logos, or the loop hitches once per cycle. */
+  gap: var(--sds-marquee-gap);
+  /* Wider than the viewport by design: the row must not wrap or shrink. */
+  width: max-content;
+}
+
+/*
+ * The duration is set from JavaScript as `distance / speed`, so `speed` can be pixels per second and stay
+ * the same speed whatever is in the strip. Nothing animates until the distance has been measured, which
+ * is why `data-moving` gates the animation rather than a `playing` flag.
+ *
+ * `data-paused` is separate on purpose: pausing is `animation-play-state`, so the strip stops where it is.
+ * Removing the animation instead would snap it back to the start, which reads as a fault rather than a
+ * pause — the first version did that and it was obvious the moment the button was pressed.
+ */
+.marqueeTracks[data-moving] {
+  animation: marquee-scroll var(--sds-marquee-duration) linear infinite;
+}
+
+.marqueeTracks[data-moving][data-paused] {
+  animation-play-state: paused;
+}
+
+.marqueeTracks[data-moving][data-direction='right'] {
+  animation-direction: reverse;
+}
+
+/* Pausing keeps the strip where it is, rather than snapping it back to the start. */
+.marqueeViewport[data-pause-on-hover]:hover .marqueeTracks[data-moving] {
+  animation-play-state: paused;
+}
+
+/*
+ * Focus inside the strip pauses it too. Tabbing to a logo that is sliding out from under the cursor is
+ * the kind of thing that only shows up when someone actually tries it.
+ */
+.marqueeViewport:focus-within .marqueeTracks[data-moving] {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(var(--sds-marquee-distance) * -1), 0, 0);
+  }
+}
+
+.marqueeTrack {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-marquee-gap);
+  flex: none;
+}
+
+/*
+ * Figma's cell is a fixed box — 109 x 49 on the Desktop cell — with the artwork fitted **by width** and
+ * centred. That is not a guess: across the six logos the set draws, the art measures 103x19, 103x33,
+ * 98x11, 103x20, 103x35 and 98x19. The widths cluster at 98-103 and the heights fall out of each logo's
+ * own proportions, which is how a logo strip is laid out — a row optically balanced on width, not on
+ * height, since a tall roundel and a long wordmark cannot share a height and look level.
+ */
+.marqueeCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sds-marquee-cell);
+  height: var(--sds-marquee-logo);
+  flex: none;
+}
+
+/*
+ * The logo fills the cell's width and takes its height from its own proportions, capped by the cell —
+ * so the cell height is a row height and a ceiling rather than a target. `width: 100%` also gives an
+ * inline `<svg>` a size it would not otherwise have: an SVG with a `viewBox` and no `width` has a ratio
+ * but no intrinsic dimensions, and collapses to zero as a flex item.
+ */
+.marqueeCell > :where(img, svg, picture) {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/*
+ * `Theme=Dark` / `Theme=Light`, via the logos' own `Color=One color` cells: one ink, taken from
+ * `Surfaces/Text/Primary`, which inverts with the colour scheme and so covers both cells at once.
+ *
+ * SVG that inherits `currentColor` takes the colour directly. Anything else — a PNG, an SVG with baked-in
+ * fills — is flattened to a silhouette in the same ink, which is what a one-colour treatment means for a
+ * raster logo.
+ */
+.marqueeRoot[data-monochrome] .marqueeCell {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * A raster logo cannot take `currentColor`, so it is flattened instead: `brightness(0)` crushes it to a
+ * black silhouette, and on the dark canvas `invert(1)` turns that white. Held at 85% so a wall of
+ * silhouettes does not out-shout the copy above it.
+ *
+ * Note this is black and white rather than literally `Surfaces/Text/Primary` — a filter cannot be given a
+ * colour. Only the SVG path above gets the exact token.
+ */
+.marqueeRoot[data-monochrome] .marqueeCell > :where(img, picture) {
+  filter: brightness(0);
+  opacity: 0.85;
+}
+
+:where([data-mantine-color-scheme='dark'])
+  .marqueeRoot[data-monochrome]
+  .marqueeCell
+  > :where(img, picture) {
+  filter: brightness(0) invert(1);
+}
+
+/* ------------------------------------------------------------------- the pause control
+ *
+ * Not in Figma. It is here because WCAG 2.2.2 requires a way to stop motion that starts on its own and
+ * runs for more than five seconds, and hover-to-pause is not that way for anyone on a keyboard or a
+ * touch screen.
+ */
+/*
+ * Nested rather than a bare class: `UnstyledButton`'s own single-class rule sets `color: inherit`, ties
+ * with a bare `.marqueeControl` on specificity and wins on stylesheet order — the same thing the carousel
+ * arrow's padding ran into.
+ */
+.marqueeRoot .marqueeControl {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 1000px;
+  color: var(--sds-surfaces-text-secondary);
+  background-color: transparent;
+  cursor: pointer;
+  transition:
+    color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.marqueeRoot .marqueeControl svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (hover: hover) {
+  .marqueeRoot .marqueeControl:hover {
+    color: var(--sds-surfaces-text-primary);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 8%, transparent);
+  }
+}
+
+.marqueeRoot .marqueeControl:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * The animation is **not** disabled here. The component starts the strip paused under this preference
+   * instead, so that pressing play actually plays — a rule here would make the control a dead button for
+   * exactly the person most likely to look for it.
+   */
+  .marqueeRoot .marqueeControl {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* A mask is invisible in forced colours and would only hide logos. */
+  .marqueeViewport[data-fade] {
+    mask-image: none;
+  }
+
+  .marqueeRoot[data-monochrome] .marqueeCell > :where(img, picture) {
+    filter: none;
+    opacity: 1;
+  }
+
+  .marqueeRoot .marqueeControl:focus-visible {
+    outline-color: Highlight;
+  }
+}

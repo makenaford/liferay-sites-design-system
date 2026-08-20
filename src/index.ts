@@ -43,6 +43,12 @@ export {
   type ListSize,
 } from './components/List'
 export {
+  Marquee,
+  type MarqueeProps,
+  type MarqueeSize,
+  type MarqueeDirection,
+} from './components/Marquee'
+export {
   InfoTooltip,
   LanguagePicker,
   Select,
