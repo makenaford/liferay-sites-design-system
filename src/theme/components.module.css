@@ -4407,3 +4407,307 @@
     outline-color: Highlight;
   }
 }
+
+/* =====================================================================================
+ * Section, SectionTitle, ContentMedia — Figma `Section` (node `17892:146518`) and
+ * `Section Title` (`17892:146487`)
+ *
+ * All fourteen `Type` cells share one skeleton, measured across every variant:
+ *
+ *   Desktop   1440 frame, padding 80, gap 24, content column 1280, centred
+ *   Mobile    390 frame, padding 20, gap 24
+ *   Tight     `Quote` and `Highlight Text` — padding-block 40 desktop, 20-30 mobile
+ *   Bleed     `Integrations Section` and `Carousel` — padding-inline 0, with the title
+ *             carrying its own 80 (20 on mobile) so only the body runs to the edge
+ *   Gap 32    the integrations section
+ *
+ *   Section Title, Desktop   title 37/46 bold `Desktop/Heading/H3/Heavier`
+ *                            description 21/26 `Paragraph/Large/Regular`, row, gap 8
+ *   Section Title, Mobile    title 32/36 bold `Mobile/Heading/H3/Heavy`
+ *                            description 18/23, column, gap 12
+ *
+ *   Content Left/Right Image  `Content` row gap 40, two 620 columns both growing
+ *                             text column gap 24, `card-header` gap 8
+ *
+ * The padding and the type are **fluid rather than stepped**, and they measure against the section's own
+ * width with container query units rather than the viewport's.
+ *
+ * Every fluid value is a straight line through Figma's two cells, so it hits both **exactly**:
+ *
+ *     value = min + (100cqi - 390px) * (max - min) / 1050        clamped to [min, max]
+ *
+ * 1050 is 1440 - 390, the distance between the two drawn widths. A plain `5.56cqi` was the first attempt
+ * and it lands 80 at 1440 but 21.7 at 390 — close to Figma's 20 without being it, because one percentage
+ * cannot pass through two arbitrary points. Measured at 1440 / 390 after the change: 80 / 20 gutter,
+ * 1280 / 350 content, 37 / 32 title, 21 / 18 description.
+ *
+ * `cqi` rather than `vw` for the same reason the marquee uses a container query: "the window is narrow"
+ * and "this section is narrow" are different questions, and a section in an app with a sidebar, a preview
+ * frame or a two-column docs page is the narrow case while the window is not. The section names its
+ * container, so everything inside it — the gutter, the headings, the two-up collapse — measures the same
+ * thing.
+ * ===================================================================================== */
+
+.sectionRoot {
+  --sds-section-gap: 24px;
+  /* 20 -> 80 across 390 -> 1440: (80 - 20) / 1050 = 0.05714 */
+  --sds-section-gutter: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  --sds-section-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  /*
+   * Named, so a nested block queries the section rather than whatever container happens to be closer. The
+   * padding lives on the inner element and not here: a container cannot use its own query units for its
+   * own padding without the size depending on itself.
+   */
+  container: sds-section / inline-size;
+}
+
+/* `Quote` and `Highlight Text` — the same formula halved: 40 at 1440, 20 at 390. */
+.sectionRoot[data-spacing='tight'] {
+  /* 20 -> 40: (40 - 20) / 1050 = 0.019048 */
+  --sds-section-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.019048), 40px);
+}
+
+/* `Page Background` `Style`. */
+.sectionRoot[data-background='page'] {
+  background-color: var(--sds-surfaces-page-bg-base-default);
+}
+
+/*
+ * Figma's `Dark Blue` cell. The name is left over from an earlier palette — the variable it uses is
+ * `Surfaces/Page Background/Grey`, which aliases `Surfaces/Card BG/Grey`. Recorded in README.md.
+ */
+.sectionRoot[data-background='grey'] {
+  background-color: var(--sds-surfaces-card-bg-grey);
+}
+
+/* Figma's `Light Blue` cell — `Surfaces/Page Background/Blue`, aliasing `Surfaces/Card BG/Blue`. */
+.sectionRoot[data-background='blue'] {
+  background-color: var(--sds-surfaces-card-bg-blue);
+}
+
+/*
+ * The content column. `max-width` carries the gutter as well as the 1280, so the *content* tops out at
+ * 1280 while the section itself still fills the page — the standard container pattern, and what Figma's
+ * 1280-in-1440 actually means.
+ */
+.sectionInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-section-gap);
+  padding-block: var(--sds-section-block);
+  padding-inline: var(--sds-section-gutter);
+  max-width: calc(var(--sds-section-max) + 2 * var(--sds-section-gutter));
+  margin-inline: auto;
+}
+
+/*
+ * `Integrations Section` and `Carousel`: the body runs to the section's edges and the heading and footer
+ * keep the gutter. Those Figma cells are built exactly this way, with `padding-inline: 0` on the section
+ * and `0 80` on the title.
+ */
+.sectionRoot[data-bleed] > .sectionInner {
+  padding-inline: 0;
+  max-width: none;
+}
+
+.sectionRoot[data-bleed] > .sectionInner > .sectionHeader,
+.sectionRoot[data-bleed] > .sectionInner > .sectionFooter {
+  padding-inline: var(--sds-section-gutter);
+  max-width: calc(var(--sds-section-max) + 2 * var(--sds-section-gutter));
+  margin-inline: auto;
+  width: 100%;
+}
+
+.sectionBody {
+  min-width: 0;
+}
+
+/* Figma centres the footer in every cell that has one — the CTA and the carousel controls both. */
+.sectionFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* ------------------------------------------------------------------------- SectionTitle */
+
+/*
+ * One wrapping row rather than Figma's two cells. The text column claims `min(100%, 34rem)`, so the action
+ * sits beside it while there is room and drops full-width beneath it when there is not — which lands on
+ * both of Figma's cells with no breakpoint, and does something sensible at the widths between them.
+ *
+ * `align-items: flex-end` is Figma's `MAX` counter-axis alignment: the action sits on the heading block's
+ * baseline edge, not its middle.
+ */
+.sectionTitleRoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  /* Row gap 12 is the mobile cell's; column gap 24 separates the text from the action. */
+  gap: 12px 24px;
+}
+
+.sectionTitleText {
+  display: flex;
+  flex-direction: column;
+  /* `Content Text` gap 8, at both sizes. */
+  gap: 8px;
+  flex: 1 1 min(100%, 34rem);
+  min-width: 0;
+}
+
+.sectionTitleRoot[data-align='center'] {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.sectionTitleRoot[data-align='center'] .sectionTitleText {
+  flex: 0 1 auto;
+  /* A centred paragraph needs a measure, or it runs the full 1280 and stops being readable. */
+  max-width: 46rem;
+}
+
+/*
+ * `Desktop/Heading/H3/Heavier` is 37px and `Mobile/Heading/H3/Heavy` is 32. Neither is bound to a
+ * typography variable — the closest, `Size/Heading/f1`, reads 34 at desktop — so the two drawn sizes are
+ * the source and the clamp runs between them.
+ */
+.sectionTitleHeading {
+  margin: 0;
+  /* 32 -> 37: (37 - 32) / 1050 = 0.004762 */
+  font-size: clamp(32px, calc(32px + (100cqi - 390px) * 0.004762), 37px);
+  line-height: 1.24;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* `Paragraph/Large/Regular` at 21 down to `Paragraph/Default/Regular` at 18. */
+.sectionTitleDescription {
+  margin: 0;
+  /* 18 -> 21: (21 - 18) / 1050 = 0.002857 */
+  font-size: clamp(18px, calc(18px + (100cqi - 390px) * 0.002857), 21px);
+  line-height: 1.24;
+  font-weight: 400;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.sectionTitleActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+/* The mobile cell's action is full width; that happens on its own once the row has wrapped. */
+.sectionTitleRoot[data-align='center'] .sectionTitleActions {
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------------------- ContentMedia */
+
+.contentMediaRoot {
+  display: flex;
+  align-items: center;
+  /* `Content` gap 40. */
+  gap: 40px;
+}
+
+.contentMediaFigure,
+.contentMediaText {
+  /* Figma's two 620 columns inside 1280: both grow, neither is fixed. */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.contentMediaFigure {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.contentMediaFigure[data-ratio='3:2'] {
+  aspect-ratio: 3 / 2;
+}
+
+.contentMediaFigure[data-ratio='16:9'] {
+  aspect-ratio: 16 / 9;
+}
+
+.contentMediaFigure > :where(img, picture, video, svg, div, span) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* `Type=Content- Right Image` — the same DOM, reordered, so the markup keeps the media first. */
+.contentMediaRoot[data-media-side='right'] > .contentMediaFigure {
+  order: 1;
+}
+
+.contentMediaText {
+  display: flex;
+  flex-direction: column;
+  /* `Content Block` gap 24 — between the header and the action row. */
+  gap: 24px;
+}
+
+.contentMediaHeader {
+  display: flex;
+  flex-direction: column;
+  /* `card-header` gap 8. */
+  gap: 8px;
+}
+
+.contentMediaHeading {
+  margin: 0;
+  /* 26 -> 31: (31 - 26) / 1050 = 0.004762 */
+  font-size: clamp(26px, calc(26px + (100cqi - 390px) * 0.004762), 31px);
+  line-height: 1.26;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.contentMediaDescription {
+  margin: 0;
+  /* 18 -> 21: (21 - 18) / 1050 = 0.002857 */
+  font-size: clamp(18px, calc(18px + (100cqi - 390px) * 0.002857), 21px);
+  line-height: 1.4;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.contentMediaActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+/*
+ * Stacked. Each side keeps its own reading order — a left-image block leads with its image, a right-image
+ * block leads with its words — because that ordering is the only thing distinguishing Figma's two types,
+ * and collapsing both the same way throws it away.
+ */
+@container sds-section (max-width: 900px) {
+  .contentMediaRoot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /*
+   * `flex: 1 1 0` sizes the two columns evenly while the axis is horizontal. Once it turns vertical that
+   * same `flex-basis: 0` becomes a **height** of zero, and in a container with no definite height
+   * `aspect-ratio` cannot recover it — the figure measured 801x0. Both children go back to auto sizing
+   * when stacked, so the ratio drives the height again.
+   */
+  .contentMediaRoot > .contentMediaFigure,
+  .contentMediaRoot > .contentMediaText {
+    flex: 0 0 auto;
+  }
+
+  .contentMediaRoot[data-media-side='right'] > .contentMediaFigure {
+    order: 2;
+  }
+}

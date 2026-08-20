@@ -1367,6 +1367,110 @@ flattened instead — `brightness(0)`, inverted on the dark canvas, held at 85% 
 rather than literally the token. Noted in the component docs so nobody expects the two paths to match to
 the pixel.
 
+## Section, SectionTitle and ContentMedia — the page blocks
+
+Figma `Section` (node `17892:146518`) and `Section Title` (`17892:146487`).
+
+`Section`'s set has fourteen `Type` cells, and **`Type` is not a prop**. All fourteen share one skeleton —
+a full-bleed background, a centred 1280 column, a `Section Title`, a body, sometimes a footer — and differ
+only in what goes in the body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section
+holding an `Accordion`; `Integrations Section` is a Section holding a `Marquee`. Fourteen wrappers that
+forward slots would add API surface and no capability, so the fourteen live as **stories** under
+`Blocks/Sections`, each one copy-pasteable.
+
+| Figma | Prop |
+| --- | --- |
+| `Page Background` `Style` | `background` — `page` / `grey` / `blue` / `none` |
+| `padding` 80 at 1440, 20 at 390 | fluid, no prop |
+| The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
+| `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
+| `Section Title` | `title` |
+| `Call to Action`, carousel controls | `footer` |
+| `gap` 24, and 32 in the integrations section | `gap` |
+| The 1280 column in a 1440 frame | `maxWidth` |
+| `Size` — Default / Desktop / Mobile | **fluid**, not a prop |
+
+```tsx
+<Section background="page" title={<SectionTitle title="Customer stories" />}>
+  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">…</SimpleGrid>
+</Section>
+```
+
+### Fluid, and it passes through both of Figma's cells exactly
+
+Figma draws each section twice — 1440 and 390 — and the obvious reading is a breakpoint. Every fluid value
+here is instead a straight line through both drawn numbers:
+
+```
+value = min + (100cqi - 390px) * (max - min) / 1050     clamped to [min, max]
+```
+
+1050 is 1440 − 390. A plain percentage cannot pass through two arbitrary points: `5.56cqi` lands 80 at 1440
+but **21.7** at 390, close to Figma's 20 without being it. The interpolation lands on both.
+
+Measured, by driving the section's width directly:
+
+| Section width | 1440 | 1200 | 900 | 768 | 390 | 320 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Gutter | **80** | 66.3 | 49.1 | 41.6 | **20** | 20 |
+| Content column | **1280** | 1067 | 802 | 685 | **350** | 280 |
+| Title | **37** | 35.9 | 34.4 | 33.8 | **32** | 32 |
+| Description | **21** | 20.3 | 19.5 | 19.1 | **18** | 18 |
+
+The bold columns are Figma's two cells. Everything between them interpolates rather than snapping.
+
+### It measures itself, not the window
+
+The unit is `cqi` — the section's own inline size — and the section names its container, so the gutter, the
+headings and the two-up collapse inside it all measure the same thing. Same argument as the marquee's
+container query: "the window is narrow" and "this section is narrow" are different questions, and a section
+inside an app with a sidebar, a preview frame or a two-column docs page is the narrow case while the window
+is not.
+
+The padding lives on the inner element rather than the section, because a container cannot use its own
+query units for its own padding without the size depending on itself. The inner element's `max-width`
+carries the gutter as well as the 1280 — `calc(1280px + 2 * gutter)` — which is what Figma's 1280-in-1440
+actually means, and what lets the background stay full-bleed.
+
+### `bleed`
+
+`Integrations Section` and `Carousel` set `padding-inline: 0` on the section and put `0 80` on the title
+instead, so a marquee or a card track runs off both edges while the heading stays on the grid. `bleed` does
+exactly that: the body goes full width, and the header and footer keep the gutter and the 1280 cap.
+
+### SectionTitle
+
+| Figma | Prop |
+| --- | --- |
+| `Type` — Left- Description / Centered- Description | `align` |
+| `Device` — Desktop / Mobile | fluid |
+| `Title` / `Description` / `Slot` | `title`, `description`, `actions` |
+
+Figma has two cells: a row with the action on the right, and a column with the action underneath. This is
+**one flex row that wraps** — the text column claims `min(100%, 34rem)`, so the action sits beside it while
+there is room and drops full-width beneath it when there is not. It lands on both cells with no breakpoint.
+`align-items: flex-end` is Figma's `MAX` counter-axis alignment: the action sits on the heading block's
+bottom edge, not its middle.
+
+`order` defaults to **2**, unlike `Hero`'s title which has no default. A section heading under a page's
+`h1` is `h2` almost every time, and making every call site say so produces call sites that say nothing and
+render a `div`.
+
+### ContentMedia
+
+Figma's `Content Left Image` and `Content- Right Image` types: two equal columns 40px apart, a 3:2 media
+box and a text column of heading, description and actions. Verified at 1440 — **620 × 413 each, 40px gap**,
+exactly Figma's `Content` frame.
+
+Below 900px of *section* width it stacks, and **each side keeps its own reading order**: a left-image block
+leads with its image, a right-image block leads with its words. Collapsing both the same way would throw
+away the only thing that distinguishes the two Figma types.
+
+One thing that had to be fixed after measuring: `flex: 1 1 0` sizes the two columns evenly while the axis
+is horizontal, but once it turns vertical that same `flex-basis: 0` becomes a **height** of zero, and in a
+container with no definite height `aspect-ratio` cannot recover it — the figure measured 801×0. Both
+children go back to `flex: 0 0 auto` when stacked, and the ratio now holds at exactly 1.5 at every width.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1563,6 +1667,26 @@ is a visible stutter every twenty seconds.
 
 The logo gap is used for both, on the assumption that 32 is an artefact of laying two copies out in a file
 rather than an intended value. Making the two copies a single component with one gap would settle it.
+
+### The Section Title set is in an error state, from a duplicated variant name
+
+Two of `Section Title`'s four variants are both named `Type=Centered- Description, Device=Desktop` — the
+second is plainly the **Mobile** cell, at 32px against the first's 37px. Figma therefore refuses to resolve
+the set's properties, so `componentPropertyDefinitions` throws and **Code Connect cannot read `Type` or
+`Device`** off an instance; `src/figma/SectionTitle.figma.ts` maps neither. One rename fixes it.
+
+This is the second set in the file with the same defect — the Accordion has it too — and in both cases the
+duplicate is a Mobile cell mislabelled `Device=Desktop`.
+
+### `Page Background`'s `Dark Blue` cell is grey
+
+`Page Background` `Style=Dark Blue` uses `Surfaces/Page Background/Grey`, which aliases
+`Surfaces/Card BG/Grey`. Nothing about it is blue in either mode. The prop is called `grey` after the
+variable rather than the cell, since the variable is what actually paints.
+
+Its fourth cell, `Gradient Blue`, is a four-stop radial built on `Gradient Step 01`–`04` variables that are
+not in this file's collections — they resolve as remote and could not be read. It is **not shipped** rather
+than approximated; four invented stops would be worse than an honest omission.
 
 ### Three styles were invisible in light mode
 

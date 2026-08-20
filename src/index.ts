@@ -43,6 +43,20 @@ export {
   type ListSize,
 } from './components/List'
 export {
+  Section,
+  SectionTitle,
+  ContentMedia,
+  type SectionProps,
+  type SectionBackground,
+  type SectionSpacing,
+  type SectionTitleProps,
+  type SectionTitleAlign,
+  type SectionTitleOrder,
+  type ContentMediaProps,
+  type ContentMediaSide,
+  type ContentMediaRatio,
+} from './components/Section'
+export {
   Marquee,
   type MarqueeProps,
   type MarqueeSize,
