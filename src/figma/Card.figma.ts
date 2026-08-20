@@ -1,39 +1,45 @@
-// url=https://www.figma.com/design/KihJKyGA20stc2SSjAlxYU/Solutions-Library--2026?node-id=24385-65090
+// url=https://www.figma.com/design/KihJKyGA20stc2SSjAlxYU/Solutions-Library--2026?node-id=16728-26513
 // source=src/index.ts
 // component=Card
 //
-// Code Connect mapping for the Figma `card-main` set — the box. Its skin comes from a nested
-// `Surface` instance (`24385:58962`) rather than a property of this component, and a mapping can only
-// read the properties of the instance a designer selects, so `variant` cannot be derived here: the
-// snippet carries the default `glass` and a developer picks the Style from the Surface layer.
+// Code Connect mapping for the Figma `card-main` set — the composable base, not the `Common Cards`
+// presets. `Common Cards` has no axis of its own beyond `Type`, and each of its cells is `card-main` with
+// different slots filled, so mapping the base is what makes every one of them a readable snippet.
 //
-// `interactive` is likewise a judgement rather than a variant. The spreadsheet marks Glass as the
-// clickable surface and Grey as not, so the snippet turns it on for the default and leaves the
-// element to the developer — a card that looks clickable has to be an `<a>` or a `<button>`.
+// The slot booleans (`Show Image`, `Show Top Content`, …) do not need reading: in React a slot that is
+// passed is a slot that shows, so the boolean and the content are the same decision.
 import figma from 'figma'
 
 const instance = figma.selectedInstance
 
-const orientation = instance.getEnum('Align', {
+const align = instance.getEnum('Align', {
   Vertical: 'vertical',
   Horizontal: 'horizontal',
 })
 
 /**
- * Figma's `Padding` is a boolean: on means the drawn padding for that orientation — 20px vertical,
- * 40px horizontal — and off means the image card's zero.
+ * Figma's `Padding` is a boolean; this implementation has a third case, `content`, for the file's
+ * `no image padding` frame — `Padding=True` with the 20px moved down onto the content so the image can
+ * reach the card's edge. That frame is not a variant, so it cannot be read from here.
  */
-const padded = instance.getBoolean('Padding')
-const padding = padded ? (orientation === 'horizontal' ? 'lg' : 'md') : 'none'
+const padding = instance.getEnum('Padding', {
+  True: 'all',
+  False: 'none',
+})
 
 export default {
   example: figma.code`
-    <Card variant="glass" orientation="${orientation}" padding="${padding}">
-      {/* Top: label, icon, stat or subheading. Content: title, description, list.
-          Bottom: author, link, button or stats. */}
-    </Card>
+    <Card
+      align="${align}"
+      padding="${padding}"
+      image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
+      hero={<Label size="sm" variant="outline">Label</Label>}
+      title="Card Title"
+      description="Short description here"
+      bottom={<Link href="#" size="md">Read more</Link>}
+    />
   `,
-  imports: ['import { Card } from "scratch"'],
-  id: 'card',
-  metadata: { nestable: true },
+  imports: ['import { Card, Image, Label, Link } from "scratch"'],
+  id: 'card-main',
+  metadata: { nestable: false },
 }

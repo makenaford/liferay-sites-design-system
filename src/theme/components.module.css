@@ -946,98 +946,302 @@
 
 /* ================================================================================ Card
  *
- * Figma source: the `card-main` set (`24385:65090`) for the box, and the `Surface` set
- * (`24385:58962`) for its skin — Style (Glass | Grey | Blue | Gradient Blue | Gradient Purple |
- * no-bg) x State (Default | Hover | Focus). The accompanying spreadsheet enumerates the same axes
- * plus the padding scale (Small 16 / Medium 20 / Large 40 / Image 0) and the content slots.
+ * Figma `card-main` (node `16728:26513`) with `Surface` (`16953:109831`), `card-image`,
+ * `header-alignment` (`19097:9035`), `Card hero` (`17720:27408`) and `Content Text` (`20354:3820`).
  *
- * Style maps onto Mantine's `variant`; the padding scale onto `padding`; Orientation onto Mantine
- * Card's own `orientation`. The states are the real CSS interaction states, and only on a card that
- * is actually interactive — the spreadsheet is explicit that Glass is the clickable surface and Grey
- * is not, so the affordances are opt-in through `interactive` rather than attached to every card.
+ * `card-main` is a single component with four slots and a boolean per slot; every card in the
+ * `Common Cards` set is that component with different slots filled in. The measurements, all from the
+ * five cards in `Card Examples`:
  *
- * Every selector carries `[data-orientation]`, which Mantine's Card always sets, so these rules
- * outrank both Card's and Paper's single-class declarations regardless of stylesheet order.
- */
+ *   card-main       V, padding 20 (`Padding=True`) or 0 (`False`)
+ *                   gap 16 with an image, 20 without one, 24 horizontal
+ *   Horizontal      padding 24/40, gap 24, radius 16
+ *   card-image      3:2 or 16:9
+ *   Card Content    V gap 16
+ *   card-header     V gap 8, or Center gap 20
+ *   Content Text    Small — title 21/26 SemiBold, description 18 Regular, gap 4
+ *                   Full Card — title 32/40 Bold, description 18 Regular, gap 12
+ *   Bottom Content  padding-top 8
+ *
+ *   Title        `Paragraph/Large/Semi Bold`, `Surfaces/Text/Primary`
+ *   Description  18px regular, `Surfaces/Text/Primary` — *not* Secondary; that is what the file draws
+ *   Surface      radius 9, a 1px OUTSIDE gradient hairline
+ *                `Brand/Primary/Lighten/1` 50% -> `Accent/Product Accent` 100%
+ * ==================================================================================== */
 
-.cardRoot[data-orientation] {
+.cardRoot[data-align] {
   position: relative;
-  /* `Border Radius/medium`, on the Surface rectangle in every variant. */
-  border-radius: var(--paper-radius, 8px);
-  /* Figma's Surface has no border; the hairline is part of the glass fill, painted below. */
-  border: none;
+  display: flex;
+  min-width: 0;
+  /* `Surface`'s radius. Every card instance in the file draws 8; the set itself says 9. */
+  border-radius: 8px;
+  /* Set per surface below; `no-bg` leaves it transparent. */
   background-color: transparent;
   color: var(--sds-surfaces-text-primary);
-  /* Card.Section bleeds to the edge, so the corner has to clip. */
-  overflow: hidden;
-  /*
-   * One duration and one curve for everything that moves on hover — the lift, the shadow, the fill and
-   * the image behind it — so the card reads as a single object responding rather than four properties
-   * animating. `will-change` keeps the lift on the compositor.
-   */
-  transition:
-    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
-    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
-    background-image var(--sds-motion-medium) var(--sds-motion-ease-out);
-  will-change: transform;
+  text-decoration: none;
+  isolation: isolate;
+}
+
+.cardRoot[data-align='vertical'] {
+  flex-direction: column;
 }
 
 /*
- * The card's own type. Its content is children, so these are defaults rather than rules: `:where()`
- * gives them zero specificity, and any call site that sets a size wins without a fight.
- *
- * Figma's `Title- Card` is `Paragraph/Large/Semi Bold` — 21px at 125% — and the description sits a step
- * below it at 18px. Neither is bound to a typography variable in the file (`Size/Paragraph/Large` reads
- * 20px), which is the same text-style-versus-variable split Button and Link have.
+ * `Align=Horizontal`. The wide card in the file is 1280x440 with padding 24/40, gap 24 and a **16px**
+ * radius rather than 8 — a bigger card gets a bigger corner, which is the file's own call and not a scale
+ * step. Its columns share the width evenly and the image is the second one.
  */
-.cardRoot[data-orientation] :where(h1, h2, h3, h4, h5, h6) {
-  margin: 0;
+.cardRoot[data-align='horizontal'] {
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  border-radius: 16px;
+}
+
+.cardRoot[data-align='horizontal'] > .cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardRoot[data-align='horizontal'] > .cardImage {
+  flex: 1;
+  min-width: 0;
+  /* The image is the trailing column in the file's wide card. */
+  order: 1;
+}
+
+/* ---------------------------------------------------------------------- padding
+ *
+ * Three cases, and the middle one is the reason this is not a number: Figma's `no image padding` frame
+ * keeps `card-main` at `Padding=True` but moves the 20px down onto `Card Content`, so the image runs to
+ * the card's edge while the text stays inset. That is a different shape, not a different value.
+ */
+
+.cardRoot[data-align='vertical'][data-padding='all'] {
+  padding: 20px;
+}
+
+.cardRoot[data-align='vertical'][data-padding='content'] > .cardBody {
+  padding: 20px;
+}
+
+.cardRoot[data-align='horizontal'][data-padding='all'],
+.cardRoot[data-align='horizontal'][data-padding='content'] {
+  padding: 24px 40px;
+}
+
+/* `Padding=False` — nothing is inset. The Resource card. */
+.cardRoot[data-align][data-padding='none'] {
+  padding: 0;
+}
+
+/* ---------------------------------------------------------------------- the stack
+ *
+ * `card-main`'s own gap: 16 where there is an image, 20 where there is not. Both are `Padding=True,
+ * Align=Vertical` in the file, so the difference travels with the content rather than with a variant —
+ * the two icon cards are the ones at 20.
+ */
+.cardRoot[data-align='vertical'] {
+  gap: 16px;
+}
+
+.cardRoot[data-align='vertical']:not([data-image]) {
+  gap: 20px;
+}
+
+/* `Card Content` — the column holding everything except the image. */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  /* `Card Content` gap 16 in every card that has more than one block in it. */
+  gap: 16px;
+  min-width: 0;
+  /* Fills the card so `bottom` can sit at the bottom of a fixed-height card. */
+  flex: 1;
+}
+
+/*
+ * With no padding of its own, the body must not add a gap the parent has already accounted for — the
+ * parent's gap is what separates the image from the text there.
+ */
+.cardRoot[data-align='vertical'][data-padding='all'] > .cardBody,
+.cardRoot[data-align='vertical'][data-padding='none'] > .cardBody {
+  gap: 16px;
+}
+
+/* ---------------------------------------------------------------------- the image */
+
+.cardImage {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  /* Matches the card's corner, so a full-bleed image is clipped to it rather than squaring it off. */
+  border-radius: inherit;
+}
+
+/*
+ * `Padding=none` / `content`: the image is the card's top edge, so only its top corners are round and it
+ * has to bleed past the body's padding. There is no negative margin involved — the image is a sibling of
+ * the padded body, not inside it, which is exactly how Figma's `no image padding` frame is built.
+ */
+.cardRoot[data-padding='content'] > .cardImage,
+.cardRoot[data-padding='none'] > .cardImage {
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* A card that is *only* an image keeps all four corners. */
+.cardRoot[data-padding='none'] > .cardImage:only-child {
+  border-radius: inherit;
+}
+
+.cardRoot[data-padding='all'] > .cardImage {
+  /* Inside the padding, the image gets its own smaller corner. */
+  border-radius: 4px;
+}
+
+/* `card-image`'s `Aspect Ratio` axis, applied to the box so any child fills it. */
+.cardImage[data-ratio='3:2'] {
+  aspect-ratio: 3 / 2;
+}
+
+.cardImage[data-ratio='16:9'] {
+  aspect-ratio: 16 / 9;
+}
+
+.cardRoot[data-align='horizontal'] > .cardImage {
+  /* The wide card's image column is 588x392, which is not 3:2 — the column decides, not the ratio. */
+  aspect-ratio: auto;
+  align-self: stretch;
+}
+
+.cardImage > :where(img, picture, video, svg, div, span) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--sds-motion-slow) var(--sds-motion-ease-out);
+}
+
+/* ---------------------------------------------------------------------- top, header, main, bottom */
+
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* `card-header` — `Align=Vertical` at gap 8. */
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* `Align=Center` — the hero and the title both centre, and the gap opens to 20. */
+.cardHeader[data-header-align='center'] {
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.cardHero {
+  display: flex;
+  align-items: center;
+  /* `Card hero`'s own gap, for a hero holding more than one thing. */
+  gap: 24px;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* `Content Text` `Size=Small` — the card set's size. */
+.cardText[data-size='small'] {
+  gap: 4px;
+}
+
+/* `Size=Full Card` — the wide card's size. */
+.cardText[data-size='full'] {
+  gap: 12px;
+}
+
+.cardTitle {
+  /* `Paragraph/Large/Semi Bold`. Neither size is bound to a typography variable in the file. */
   font-size: 21px;
   line-height: 26px;
   font-weight: 600;
   color: var(--sds-surfaces-text-primary);
 }
 
-.cardRoot[data-orientation] :where(p) {
-  margin: 0;
+.cardText[data-size='full'] .cardTitle {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 700;
+}
+
+/*
+ * The description is `Surfaces/Text/Primary` — the same weight of colour as the title, not the Secondary
+ * that a description usually gets. That is what the file draws in all five cards.
+ */
+.cardDescription {
   font-size: 18px;
   line-height: 24px;
-  color: var(--sds-surfaces-text-secondary);
+  font-weight: 400;
+  color: var(--sds-surfaces-text-primary);
 }
 
-/*
- * The gap between a card's content blocks — icon, label, heading, description, link — is `gap/8`.
- *
- * This is a deviation: Figma's `card-main` draws 20px between them. 8px is the requested value and it
- * reads better, since those blocks are one unit of content rather than separate sections, and the
- * heading's own line height already carries space around it. Recorded in README.md so it can go back to
- * the design file.
- *
- * The horizontal card keeps Figma's 24px, because there the gap is between the text column and the
- * image — a layout gap between two halves of the card, not spacing inside a block of content.
- */
-.cardRoot[data-orientation='vertical'] {
-  gap: 8px;
+/* Anything passed as a real heading or paragraph inherits the same treatment. */
+.cardRoot[data-align] :where(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font: inherit;
 }
 
-.cardRoot[data-orientation='horizontal'] {
-  gap: 24px;
+.cardRoot[data-align] :where(p) {
+  margin: 0;
+}
+
+.cardMain {
+  min-width: 0;
+}
+
+/* `Bottom Content` — pushed to the bottom of the card, with the file's 8px above it. */
+.cardBottom {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 8px;
 }
 
-/* ------------------------------------------------------------------------------ the surfaces */
+.cardHeader[data-header-align='center'] ~ .cardBottom {
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------------------- surfaces
+ *
+ * Read from the card instances, not from the `Surface` set: the set's own rectangle carries a
+ * `Brand/Primary -> Accent` stroke as a placeholder, and **every real instance overrides it** with the
+ * glass hairline. So the resting ring is `Components/Glass Line/01` at 20% into `02` at 10%, and the brand
+ * gradient is what hover and focus draw on top. Getting those two the wrong way round paints every card
+ * blue at rest.
+ */
 
 /*
- * `Style=Glass` — `Components/Glass Card/Glass Step 01` into `02` on a 30-degree diagonal, a 1px
- * `Glass Line` hairline, the 100-radius background blur (a 50px CSS blur) and the
- * `Components/Glass Card/shadow` glow. The hairline is a masked ring for the same reason as
- * everywhere else in this file: a gradient cannot be a border without losing the radius.
+ * `Style=Glass` — `Glass Step 01` at 5% into `Glass Step 02` at 3%, the 100-radius background blur (a
+ * 50px CSS blur) and a `#000 @0.08` glow at blur 6 / spread 1.
+ *
+ * Figma expresses the fill as a transformed linear gradient; inverting its matrix gives a direction of
+ * (0.87, -0.50) in the card's box — up and to the right, i.e. 60deg in CSS.
  */
-.cardRoot[data-orientation][data-variant='glass'] {
-  /*
-   * Figma expresses the fill as a transformed linear gradient; inverting its matrix gives a direction
-   * of (0.87, -0.50) in the card's own box — up and to the right, i.e. 60deg in CSS terms.
-   */
+.cardRoot[data-align][data-surface='glass'] {
   background-image: linear-gradient(
     60deg,
     var(--sds-glass-step-01) 0%,
@@ -1047,77 +1251,30 @@
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-orientation][data-variant='glass']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  /* 225deg is Figma's transform for this stroke, inverted — the same hairline the tab bar uses. */
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-glass-line-from) 1%,
-    var(--sds-glass-line-to) 92%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 0;
-}
-
 /* `Style=Grey` — a flat `Surfaces/Card BG/Grey`, no hairline, no shadow. The non-clickable surface. */
-.cardRoot[data-orientation][data-variant='grey'] {
+.cardRoot[data-align][data-surface='grey'] {
   background-color: var(--sds-surfaces-card-bg-grey);
 }
 
-/* `Style=Blue` — `Surfaces/Card BG/Blue` at 25%, with a half-strength hairline and a tighter glow. */
-.cardRoot[data-orientation][data-variant='blue'] {
+/* `Style=Blue` — `Surfaces/Card BG/Blue`, which is already 25% in the token, with a tighter glow. */
+.cardRoot[data-align][data-surface='blue'] {
   background-color: var(--sds-surfaces-card-bg-blue);
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 2px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-orientation][data-variant='blue']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-glass-line-from) 1%,
-    var(--sds-glass-line-to) 92%
-  );
-  opacity: 0.5;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
 /*
- * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all
- * `Surfaces/Card BG/Grey` (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives
- * in the last stop. Figma's transform is a shallow diagonal; reproduced at the same angle.
+ * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all `Surfaces/Card BG/Grey`
+ * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
+ * transform is a shallow diagonal, reproduced at the same angle.
  */
-.cardRoot[data-orientation][data-variant='gradient-blue'],
-.cardRoot[data-orientation][data-variant='gradient-purple'] {
+.cardRoot[data-align][data-surface='gradient-blue'],
+.cardRoot[data-align][data-surface='gradient-purple'] {
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-orientation][data-variant='gradient-blue'] {
+.cardRoot[data-align][data-surface='gradient-blue'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -1126,7 +1283,7 @@
   );
 }
 
-.cardRoot[data-orientation][data-variant='gradient-purple'] {
+.cardRoot[data-align][data-surface='gradient-purple'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -1135,240 +1292,169 @@
   );
 }
 
-/* `Style=no-bg` — the box and its padding with nothing drawn. */
-.cardRoot[data-orientation][data-variant='none'] {
+/* `Style=no-bg` — the box and its content with nothing drawn. The Resource card. */
+.cardRoot[data-align][data-surface='no-bg'] {
   background: none;
   box-shadow: none;
 }
 
-/* ------------------------------------------------------------------- interaction, when clickable
- *
- * Figma draws Hover and Focus for every Style as a `card-Focus Ring`: a gradient stroke from
- * `Brand/Primary/Lighten/1` to `Accent/Product Accent`, 1px on hover and 2px on focus, outside the
- * 8px corner. It is reproduced as a masked ring at the card's own edge rather than outside it, since
- * the card has to clip its corner for full-bleed images and an outside ring would be clipped with it.
- *
- * Two things are added on top, from ordinary practice rather than the file: the card lifts 2px on
- * hover and settles back on press, and the ring only appears on `:focus-visible` rather than on any
- * focus. Figma's Focus variant does not distinguish the two, but showing a focus ring after a mouse
- * click is noise.
+/*
+ * The resting hairline, on the surfaces that draw one. A 1px inside stroke with a gradient, which a border
+ * cannot be — so it is a masked pseudo-element, the same construction the Label's outline ring uses.
+ * 225deg is Figma's transform for this stroke, inverted.
  */
-.cardRoot[data-orientation][data-interactive] {
-  cursor: pointer;
-  /* The whole card is one target, so nothing inside it should catch the text cursor. */
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cardRoot[data-orientation][data-interactive]::after {
+.cardRoot[data-align]:where([data-surface='glass'], [data-surface='blue'])::before {
   content: '';
   position: absolute;
   inset: 0;
+  padding: 1px;
   border-radius: inherit;
-  padding: 0;
   background-image: linear-gradient(
-    to bottom right,
-    var(--sds-brand-primary-lighten-1) 50%,
-    var(--sds-accent-product-accent) 100%
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
   );
-  opacity: 0;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
   mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
   mask-composite: exclude;
-  /*
-   * Only the opacity transitions. The ring's thickness is the difference between hover (1px) and
-   * focus (2px), and padding is a layout property — animating it would relayout the pseudo-element on
-   * every frame for a one-pixel change nobody can follow.
-   */
-  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
   pointer-events: none;
-  z-index: 1;
 }
 
-/* Hover: the 1px ring, and the lift. */
-.cardRoot[data-orientation][data-interactive]:hover::after {
-  padding: 1px;
-  opacity: 1;
-}
+/* ---------------------------------------------------------------------- interaction
+ *
+ * Inferred. Figma's `State=Hover` cell is byte-for-byte its `State=Default` — same fill, same hairline —
+ * so the file specifies no hover at all. `State=Focus` is the only state that differs, and it differs by
+ * one thing: the ring goes from 1px to 2px.
+ *
+ * The rule for *where* the hover goes comes from the layout rather than from a style. An image that runs
+ * to the card's edge **is** the card's edge: lifting the card would move the thing the eye is already
+ * locked onto, and there is no inset frame for the lift to read against. So a full-bleed card hovers on
+ * its image, and a padded card hovers as a card.
+ */
 
-.cardRoot[data-orientation][data-interactive]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 12px 2px var(--sds-glass-shadow);
+.cardRoot[data-align][data-interactive] {
+  cursor: pointer;
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 /*
- * The glass surface also changes fill on hover: Figma swaps the diagonal for a radial sheen that
- * runs `Glass Step 02` -> `01` -> `02`, i.e. a highlight sweeping through the middle.
+ * The hover and focus ring: `card-Focus Ring`'s gradient, from `Brand/Primary/Lighten/1` to
+ * `Accent/Product Accent`. Masked like the hairline, and drawn at the card's own edge rather than outside
+ * it — the card clips its corner for a full-bleed image, and an outside ring would be clipped with it.
  */
-.cardRoot[data-orientation][data-variant='glass'][data-interactive]:hover {
-  /*
-   * Inverting Figma's radial transform puts the centre on the top-right corner with radii of 140% and
-   * 154% — so the sheen arrives from the corner rather than blooming in the middle.
-   */
-  background-image: radial-gradient(
-    ellipse 140% 154% at 100% 2%,
-    var(--sds-glass-step-02) 0%,
-    var(--sds-glass-step-01) 54%,
-    var(--sds-glass-step-02) 100%
+.cardRoot[data-align][data-interactive]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    var(--sds-action-primary-hover) 50%,
+    var(--sds-accent-product-accent) 100%
   );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
 }
 
-/* Focus: the 2px ring, from the same gradient. */
-.cardRoot[data-orientation][data-interactive]:focus-visible {
+@media (hover: hover) {
+  /* Every interactive card takes the ring on hover, whatever its surface. */
+  .cardRoot[data-align][data-interactive]:hover::after {
+    opacity: 1;
+  }
+
+  /* Padded: the card leads — it rises, and the glow under it warms from the glass shadow to brand blue. */
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -12px
+      color-mix(in srgb, var(--sds-action-primary-hover) 55%, transparent);
+  }
+
+  /*
+   * Full-bleed: the image leads and the card stays put. The scale runs on the compositor and is clipped by
+   * the image box, so nothing outside the card moves.
+   */
+  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage > *,
+  .cardRoot[data-align][data-padding='content'][data-interactive]:hover > .cardImage > * {
+    transform: scale(1.06);
+  }
+
+  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage,
+  .cardRoot[data-align][data-padding='content'][data-interactive]:hover > .cardImage {
+    /* A touch of light, so the image reads as active and not only as bigger. */
+    filter: brightness(1.06);
+  }
+
+  /* A padded card with an image inside it scales that too, a little less: the card is what leads. */
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover > .cardImage > * {
+    transform: scale(1.03);
+  }
+}
+
+/* Pressed: the movement settles back towards rest rather than going further. */
+.cardRoot[data-align][data-padding='all'][data-interactive]:active {
+  transform: translateY(0);
+  transition-duration: var(--sds-motion-press);
+}
+
+.cardRoot[data-align][data-padding='none'][data-interactive]:active > .cardImage > *,
+.cardRoot[data-align][data-padding='content'][data-interactive]:active > .cardImage > * {
+  transform: scale(1.02);
+  transition-duration: var(--sds-motion-press);
+}
+
+/*
+ * `State=Focus` — Figma's own, and the only state it actually distinguishes: the same ring at 2px.
+ * `:focus-visible`, so it belongs to the keyboard rather than to the mouse; Figma's Focus cell does not
+ * make that distinction, but a ring after a mouse click is noise.
+ */
+.cardRoot[data-align][data-interactive]:focus-visible {
   outline: none;
 }
 
-.cardRoot[data-orientation][data-interactive]:focus-visible::after {
-  padding: 2px;
+.cardRoot[data-align][data-interactive]:focus-visible::after {
   opacity: 1;
-}
-
-/* Pressed. Not drawn in Figma; the card settles back to the surface it lifted from. */
-.cardRoot[data-orientation][data-interactive]:active {
-  transform: translateY(0);
-  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  padding: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardRoot[data-orientation] {
-    transition: box-shadow var(--sds-motion-fast) var(--sds-motion-ease);
-  }
-
-  .cardRoot[data-orientation][data-interactive]:hover,
-  .cardRoot[data-orientation][data-interactive]:active {
-    transform: none;
-  }
-
-  .cardSection > img,
-  .cardSection > picture > img,
-  .cardSection > [data-card-image] {
+  .cardRoot[data-align][data-interactive],
+  .cardRoot[data-align][data-interactive]::after,
+  .cardImage > :where(img, picture, video, svg, div, span) {
     transition: none;
   }
 
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image],
-  .cardRoot[data-orientation][data-interactive]:hover .cardImage > * {
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover {
     transform: none;
   }
 
-  .cardImage > * {
-    transition: none;
+  .cardRoot[data-align][data-interactive]:hover > .cardImage > * {
+    transform: none;
   }
 }
 
-/*
- * In a forced-colours mode the ring is a background and would be dropped, leaving hover and focus
- * indistinguishable from rest. A real outline is the one thing that survives.
- */
 @media (forced-colors: active) {
-  .cardRoot[data-orientation][data-interactive]:hover,
-  .cardRoot[data-orientation][data-interactive]:focus-visible {
+  /* A masked gradient is invisible in forced colours, so the hairline becomes a real border. */
+  .cardRoot[data-align]:not([data-surface='no-bg']) {
+    border: 1px solid CanvasText;
+  }
+
+  .cardRoot[data-align]::before,
+  .cardRoot[data-align][data-interactive]::after {
+    display: none;
+  }
+
+  .cardRoot[data-align][data-interactive]:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
-  }
-}
-
-/* ------------------------------------------------------------------------------- the slots
- *
- * `Card.Image`, `Card.Top` and `Card.Cta` — the composable pieces. Each is optional and none of them
- * cares what order it appears in: the card is a flex column, so an image under a label works as well as
- * a label under an image.
- *
- * The image reverses the card's padding itself rather than going through Mantine's `Card.Section`.
- * Mantine detects a section by comparing the child's component type, which any wrapper defeats, so the
- * bleed is done here against `--card-padding` — which means it survives being nested, wrapped or
- * conditionally rendered.
- */
-.cardImage {
-  display: block;
-  overflow: hidden;
-  margin-inline: calc(var(--card-padding) * -1);
-}
-
-/* Only the edges it actually touches: an image between two blocks keeps its inline bleed and no more. */
-.cardImage:first-child {
-  margin-top: calc(var(--card-padding) * -1);
-}
-
-.cardImage:last-child {
-  margin-bottom: calc(var(--card-padding) * -1);
-}
-
-.cardImage > img,
-.cardImage > picture,
-.cardImage > video,
-.cardImage > * {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
-}
-
-/*
- * The top slot: a label, a stat, an illustrative icon, a subheading, or several. A wrapping row, so a
- * label and a date sit beside each other and a 48px glass icon sits on its own line if it has to.
- */
-.cardTop {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-/*
- * The bottom slot. `margin-top: auto` is the point of it: in a row of cards with different amounts of
- * copy, the actions still line up along the bottom instead of floating under each card's last line.
- */
-.cardCta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin-top: auto;
-  padding-top: 8px;
-}
-
-.cardRoot[data-orientation='horizontal'] .cardCta {
-  /* Nothing to push against in a row, so it sits where it falls. */
-  margin-top: 0;
-}
-
-/* ------------------------------------------------------------------------------ Card.Section
- *
- * The spreadsheet's "no padding image card": an image that bleeds to the card's edge. Mantine
- * already reverses the padding with negative margins; this only has to stop the image from
- * inheriting the card's gap treatment and keep it clipped to the corner.
- */
-.cardSection {
-  overflow: hidden;
-}
-
-.cardSection > img,
-.cardSection > picture > img,
-.cardSection > [data-card-image] {
-  display: block;
-  width: 100%;
-  height: auto;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
-}
-
-/*
- * An interactive card's image grows a little on hover — the resource card's treatment. The section
- * already clips, so the image scales inside its own frame rather than pushing the card around, and
- * `transform` keeps it off the layout path entirely.
- */
-@media (hover: hover) {
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image],
-  .cardRoot[data-orientation][data-interactive]:hover .cardImage > * {
-    transform: scale(1.06);
   }
 }
 

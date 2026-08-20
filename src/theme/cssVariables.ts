@@ -122,6 +122,8 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
      * longer than it looks: most of it is the final few pixels.
      */
     '--sds-motion-medium': '280ms',
+    /** For something large enough that 280ms reads as a jump — a card's image scaling under the cursor. */
+    '--sds-motion-slow': '420ms',
     '--sds-motion-ease-out': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
     /**
      * The same feel over a short distance: the press of a control, and the small settle a segment

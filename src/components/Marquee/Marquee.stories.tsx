@@ -213,11 +213,14 @@ export const InASection: Story = {
 /** In a card, at the small cell — a logo strip as a footnote rather than a section. */
 export const InACard: Story = {
   render: (args) => (
-    <Card variant="glass" padding="lg" w={520}>
-      <Text component="h3">Trusted by</Text>
-      <Marquee {...args} size="sm" gap={32} speed={30}>
-        {logos()}
-      </Marquee>
-    </Card>
+    <Card
+      w={520}
+      title="Trusted by"
+      main={
+        <Marquee {...args} size="sm" gap={32} speed={30}>
+          {logos()}
+        </Marquee>
+      }
+    />
   ),
 }

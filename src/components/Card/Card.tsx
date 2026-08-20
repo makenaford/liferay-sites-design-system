@@ -1,169 +1,232 @@
-import { forwardRef, type ImgHTMLAttributes, type ReactNode } from 'react'
-import { Card as MantineCard, createPolymorphicComponent } from '@mantine/core'
-import type { CardProps as MantineCardProps, ElementProps } from '@mantine/core'
+import { forwardRef, type ReactNode } from 'react'
+import { Box, createPolymorphicComponent } from '@mantine/core'
+import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
-import { spacing } from '../../theme/tokens.generated'
 
-export type CardSurface = 'glass' | 'grey' | 'blue' | 'gradient-blue' | 'gradient-purple' | 'none'
-export type CardPadding = 'none' | 'sm' | 'md' | 'lg'
+/** Figma `Surface` `Style` (node `16953:109831`). `glass` and `no-bg` are the two the card set uses. */
+export type CardSurface =
+  | 'glass'
+  | 'no-bg'
+  | 'grey'
+  | 'blue'
+  | 'gradient-blue'
+  | 'gradient-purple'
 
-/** The spreadsheet's padding scale: Small 16, Medium 20, Large 40, and 0 for an image card. */
-const PADDING: Record<CardPadding, string | number> = {
-  none: 0,
-  sm: `${spacing['16']}`,
-  md: `${spacing['20']}`,
-  lg: `${spacing['40']}`,
-}
-
-export interface CardProps
-  extends Omit<MantineCardProps, 'variant' | 'padding'>,
-    ElementProps<'div', keyof MantineCardProps> {
-  /**
-   * Figma's Surface `Style` axis. `glass` is the default and the only surface the spreadsheet marks
-   * as clickable; `grey` is its non-clickable counterpart.
-   */
-  variant?: CardSurface
-  /** The padding scale — Small 16, Medium 20 (default), Large 40, or `none` for a full-bleed image. */
-  padding?: CardPadding
-  /**
-   * Turns on the interaction affordances: the gradient ring on hover and focus, the lift, and the
-   * pointer cursor. Set it when the whole card is a link or a button — pass `component="a"` with an
-   * `href`, or `component="button"` — and leave it off for a card that is only content.
-   *
-   * A card that looks clickable has to *be* clickable: this does not make it focusable or activatable
-   * on its own, and a `<div>` with an `onClick` is not reachable by keyboard.
-   *
-   * When the card **is** the link, it must not contain links: `<a>` inside `<a>` is invalid, and the
-   * browser unnests it into markup neither element controls. Either the card is the one destination and
-   * its call to action is plain text, or the card is a container and the links inside it are real.
-   */
-  interactive?: boolean
-}
+/** Figma `card-main` `Align`. */
+export type CardAlign = 'vertical' | 'horizontal'
 
 /**
- * Card — Figma `card-main` (`24385:65090`) dressed in the `Surface` set (`24385:58962`), with the
- * axes the accompanying spreadsheet enumerates.
+ * Figma's `Padding` axis, plus the third case the file draws as a separate example.
  *
- * | Source | Prop |
- * | --- | --- |
- * | Surface `Style` — Glass / Grey / Blue / Gradient Blue / Gradient Purple / no-bg | `variant` |
- * | Padding — Small 16 / Medium 20 / Large 40 / Image 0 | `padding` |
- * | Orientation — Vertical / Horizontal | `orientation` |
- * | Surface `State` — Default / Hover / Focus | real CSS states, when `interactive` |
- *
- * Content is composed rather than configured: the spreadsheet's slots (Top — label, icon, stat,
- * subheading; Content — title, description, list; Bottom — author, link, button, stats) are children,
- * which is what lets one component cover its five card types. `Card.Section` is the full-bleed slot
- * for the "no padding image" card — it reverses the card's padding, so an image reaches the corner.
- *
- * ```tsx
- * <Card variant="glass" padding="md">
- *   <Card.Image src={cover} alt="" />
- *   <Card.Top>
- *     <Label size="sm" variant="outline">Customer story</Label>
- *   </Card.Top>
- *   <h3>How a bank rebuilt onboarding</h3>
- *   <p>Six weeks from kickoff to launch.</p>
- *   <Card.Cta>
- *     <Link href="/story" rightSection={<IconArrowRight />}>Read it</Link>
- *   </Card.Cta>
- * </Card>
- * ```
- *
- * Every slot is optional: `Card.Image` for the picture, `Card.Top` for a label, stat or illustrative
- * icon, `Card.Cta` for the actions. Whatever sits between them is the card's own content.
+ * - `all` — `Padding=True`: 20px around everything, the image included. The four padded card types.
+ * - `content` — the file's `no image padding` frame: the image runs to the card's edge and the 20px moves
+ *   onto the content below it. `card-main` is still `Padding=True` there; the padding has been pushed down
+ *   a level by hand.
+ * - `none` — `Padding=False`: nothing has padding. What the Resource card uses.
  */
-const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
-  { variant = 'glass', padding = 'md', interactive, ...props },
-  ref,
-) {
-  return (
-    <MantineCard
-      ref={ref}
-      variant={variant}
-      padding={PADDING[padding] ?? PADDING.md}
-      data-interactive={interactive || undefined}
-      {...props}
-    />
-  )
-})
+export type CardPadding = 'all' | 'content' | 'none'
 
-export interface CardImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'children'> {
-  /** The aspect ratio the image is held at. Figma's `card-image` is drawn at 3:2. */
-  ratio?: string | false
-  /** Media other than an `<img>` — a `<picture>`, a video, a placeholder. Replaces `src`. */
+/** Figma `header-alignment` `Align`. */
+export type CardHeaderAlign = 'vertical' | 'center'
+
+/**
+ * Figma `Content Text` `Size`. `small` is the card set's own size; `full` is the `Full Card` cell the
+ * wide horizontal card uses.
+ */
+export type CardTitleSize = 'small' | 'full'
+
+/** Figma `card-image` `Aspect Ratio`. */
+export type CardImageRatio = '3:2' | '16:9'
+
+export interface CardProps
+  extends /*
+   * `top` and `bottom` are Mantine style props on `Box`. They are slot names here — Figma's
+   * `Top Content` and `Bottom Content` — so the style props give way; a card does not need to be
+   * positioned through its own props.
+   */
+  Omit<BoxProps, 'top' | 'bottom'>,
+    Omit<ElementProps<'div'>, 'title'> {
+  /** Figma `Surface` `Style`. @default 'glass' */
+  surface?: CardSurface
+  /** Figma `card-main` `Align`. @default 'vertical' */
+  align?: CardAlign
+  /** Where the 20px goes. @default 'all' */
+  padding?: CardPadding
+
+  /**
+   * `Show Image` — the `card-image` slot. Pass an `Image`, an `img`, a logo panel, anything. Present is
+   * shown and absent is hidden, which is what Figma's `Show Image` boolean does.
+   */
+  image?: ReactNode
+  /** Figma's `Aspect Ratio` axis on `card-image`. @default '3:2' */
+  imageRatio?: CardImageRatio
+
+  /** `Show Top Content` — above the header. A `Stat` in the quote card. */
+  top?: ReactNode
+
+  /**
+   * `Card hero` — the thing above the title: a `Label`, a glass icon, a `Stat`, a date. Figma's `Show`
+   * axis lists Label, Icon, Blog, Tag, Events and Stat; all six are just different content here.
+   */
+  hero?: ReactNode
+  /** Figma `header-alignment` `Align`. `center` centres the hero and the title. @default 'vertical' */
+  headerAlign?: CardHeaderAlign
+  /** `Show title` + the `Title Card` text. Named for the slot, not the HTML attribute. */
+  title?: ReactNode
+  /** Figma `Content Text` `Size`. @default 'small' */
+  titleSize?: CardTitleSize
+  /** `Show description`. */
+  description?: ReactNode
+
+  /** `Show Main Content 1` — under the header. A `StatBar` in the wide card. */
+  main?: ReactNode
+  /** `Show Main Content 2` — a second block under the first. */
+  secondary?: ReactNode
+  /** `Show Bottom Content` — the last block, pushed to the bottom. Links, buttons, an attribution. */
+  bottom?: ReactNode
+
+  /**
+   * Turns on the hover and focus treatment. Only for a card that really is a link or a button — pass
+   * `component="a" href="…"` or an `onClick` with it.
+   *
+   * Where the hover lands depends on `padding`: see the component docs.
+   */
+  interactive?: boolean
+
+  /** Anything else, rendered where `main` sits. */
   children?: ReactNode
 }
 
-/**
- * The card's image. Bleeds to the card's edges whatever its padding, clips to the corner, and grows on
- * hover when the card is `interactive`.
- *
- * It reverses the padding itself rather than going through Mantine's `Card.Section`: Mantine detects a
- * section by comparing the child's component type, which a wrapper defeats, so the bleed is done in CSS
- * against `--card-padding` and works at any nesting.
- */
-function Image({ ratio = '3 / 2', children, style, alt = '', ...props }: CardImageProps) {
-  return (
-    <div
-      className={classes.cardImage}
-      data-card-image
-      style={ratio ? { aspectRatio: ratio, ...style } : style}
-    >
-      {children ?? <img alt={alt} {...props} />}
-    </div>
-  )
-}
-
-export interface CardSlotProps extends ElementProps<'div'> {
-  children: ReactNode
-}
-
-/**
- * The card's top slot — the spreadsheet's Top row: a `Label`, a `Stat`, an illustrative icon, a
- * subheading, or a combination. A wrapping row, so a label and a date sit side by side.
- */
-function Top({ children, className, ...props }: CardSlotProps) {
-  return (
-    <div className={[classes.cardTop, className].filter(Boolean).join(' ')} {...props}>
-      {children}
-    </div>
-  )
-}
-
-/**
- * The card's bottom slot — a `Link`, a `Button`, or several. It pins itself to the bottom of the card,
- * so a row of cards of different text lengths still lines its actions up.
- *
- * If the card itself is a link (`interactive` with `component="a"`), this must not contain one: `<a>`
- * inside `<a>` is invalid. Put the call to action here as text, or make the card a plain container.
- */
-function Cta({ children, className, ...props }: CardSlotProps) {
-  return (
-    <div className={[classes.cardCta, className].filter(Boolean).join(' ')} {...props}>
-      {children}
-    </div>
-  )
-}
-
-/**
- * Polymorphic, because an interactive card has to be able to *be* the link or the button rather than
- * wrap one: `component="a"` with an `href`, or `component="button"`.
- *
- * The slots are what make a card composable: `Card.Image`, `Card.Top` and `Card.Cta` around whatever
- * heading and copy belong in the middle. All three are optional and order is yours — the card is a
- * flex column, so a top slot under the image, or an image with nothing else, both work.
- *
- * `Card.Section` is Mantine's own full-bleed slot, re-exported for anything the image slot does not
- * cover.
- */
-export const Card = createPolymorphicComponent<
-  'div',
-  CardProps,
+const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   {
-    Image: typeof Image
-    Top: typeof Top
-    Cta: typeof Cta
-    Section: typeof MantineCard.Section
-  }
->(Object.assign(CardBase, { Image, Top, Cta, Section: MantineCard.Section }))
+    surface = 'glass',
+    align = 'vertical',
+    padding = 'all',
+    image,
+    imageRatio = '3:2',
+    top,
+    hero,
+    headerAlign = 'vertical',
+    title,
+    titleSize = 'small',
+    description,
+    main,
+    secondary,
+    bottom,
+    interactive,
+    children,
+    className,
+    ...props
+  },
+  ref,
+) {
+  const hasHeader = Boolean(hero || title || description)
+
+  return (
+    <Box
+      ref={ref}
+      className={[classes.cardRoot, className].filter(Boolean).join(' ')}
+      data-surface={surface}
+      data-align={align}
+      data-padding={padding}
+      data-image={image ? true : undefined}
+      data-interactive={interactive || undefined}
+      {...props}
+    >
+      {image ? (
+        <div className={classes.cardImage} data-ratio={imageRatio}>
+          {image}
+        </div>
+      ) : null}
+
+      {/*
+       * `Padding=content` pads the content and not the image, which Figma draws by moving the 20px onto
+       * its `Card Content` frame. Same here: one wrapper around everything below the image.
+       */}
+      <div className={classes.cardBody}>
+        {top ? <div className={classes.cardTop}>{top}</div> : null}
+
+        {hasHeader ? (
+          <div className={classes.cardHeader} data-header-align={headerAlign}>
+            {hero ? <div className={classes.cardHero}>{hero}</div> : null}
+            {title || description ? (
+              <div className={classes.cardText} data-size={titleSize}>
+                {title ? <div className={classes.cardTitle}>{title}</div> : null}
+                {description ? <div className={classes.cardDescription}>{description}</div> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {main ? <div className={classes.cardMain}>{main}</div> : null}
+        {children}
+        {secondary ? <div className={classes.cardMain}>{secondary}</div> : null}
+        {bottom ? <div className={classes.cardBottom}>{bottom}</div> : null}
+      </div>
+    </Box>
+  )
+})
+
+/**
+ * Card — Figma `card-main` (node `16728:26513`), with `Surface` (`16953:109831`), `card-image`,
+ * `header-alignment` (`19097:9035`), `Card hero` (`17720:27408`) and `Content Text` (`20354:3820`).
+ *
+ * `card-main` is one component with slots and a boolean per slot, and every card in the `Common Cards`
+ * set is that component with different slots filled. This mirrors it exactly: **a slot is a prop, and
+ * passing it is the toggle.** There is no `type` prop, because Figma does not have one either — the five
+ * cards in `Card Examples` are five arrangements of the same thing, and each one is five or six lines.
+ *
+ * | Figma | Prop |
+ * | --- | --- |
+ * | `Surface` `Style` — no-bg / Glass / Blue / Grey / Gradient Blue / Gradient Purple | `surface` |
+ * | `card-main` `Align` — Vertical / Horizontal | `align` |
+ * | `card-main` `Padding` — True / False, and the `no image padding` frame | `padding` |
+ * | `Show Image` + `card-image`, `Aspect Ratio` | `image`, `imageRatio` |
+ * | `Show Top Content` + `Top Content` | `top` |
+ * | `Card hero` `Show` — Label / Icon / Blog / Tag / Events / Stat | `hero` |
+ * | `header-alignment` `Align` — Vertical / Center | `headerAlign` |
+ * | `Show title` + `Title Card`, `Content Text` `Size` | `title`, `titleSize` |
+ * | `Show description` | `description` |
+ * | `Show Main Content 1` / `2` | `main`, `secondary` |
+ * | `Show Bottom Content` | `bottom` |
+ * | `Surface` `State` — Default / Hover / Focus | real CSS states, with `interactive` |
+ *
+ * ```tsx
+ * // Resource — Figma `Type=Resource`
+ * <Card
+ *   component="a"
+ *   href="/guide"
+ *   interactive
+ *   surface="no-bg"
+ *   padding="none"
+ *   image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
+ *   hero={<Label size="sm" variant="outline">Guide</Label>}
+ *   title="Card Title"
+ * />
+ * ```
+ *
+ * ## Where the hover goes
+ *
+ * Figma's `Surface` has a `State=Hover` cell, and it is **identical to `State=Default`** — same 1px
+ * gradient hairline, same fill. Only `State=Focus` differs, at 2px. So the hover treatment is inferred,
+ * and it follows one rule taken from the layout rather than from a style:
+ *
+ * - **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the
+ *   image**: it scales up inside its own box and lifts its brightness. The card itself does not move,
+ *   because a card whose image is its edge has nothing to lift that would not clip.
+ * - **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the
+ *   hairline warms, and a soft glow appears under it. If there is an image inside the padding it scales
+ *   too, but the card is what leads.
+ *
+ * Focus is Figma's own `State=Focus`: the same gradient ring at 2px. It is a real `:focus-visible`, so it
+ * appears for the keyboard and not for the mouse. Press settles the movement back towards rest.
+ *
+ * Everything is off under `prefers-reduced-motion`, and the ring survives `forced-colors`.
+ *
+ * ## One anchor per card
+ *
+ * `interactive` with `component="a"` makes the whole card a link, so it must not contain another one —
+ * nested anchors are invalid and React will say so. A card with links inside it wants
+ * `interactive={false}` and the links doing the work.
+ */
+export const Card = createPolymorphicComponent<'div', CardProps>(CardBase)

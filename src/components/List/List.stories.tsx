@@ -187,14 +187,17 @@ export const NoMarker: Story = {
 /** In a card, which is where a key-point list usually ends up. */
 export const InACard: Story = {
   render: (args) => (
-    <Card variant="glass" padding="lg" w={480}>
-      <Text component="h3">What you get</Text>
-      <List {...args} size="sm" spacing={12}>
-        <List.Item>One deployment pipeline for every channel.</List.Item>
-        <List.Item>A component library your teams already know.</List.Item>
-        <List.Item>Search that spans the whole estate.</List.Item>
-      </List>
-    </Card>
+    <Card
+      w={480}
+      title="What you get"
+      main={
+        <List {...args} size="sm" spacing={12}>
+          <List.Item>One deployment pipeline for every channel.</List.Item>
+          <List.Item>A component library your teams already know.</List.Item>
+          <List.Item>Search that spans the whole estate.</List.Item>
+        </List>
+      }
+    />
   ),
 }
 

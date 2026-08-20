@@ -157,28 +157,32 @@ export const Fill: Story = {
 export const InACard: Story = {
   render: (args) => (
     <SimpleGrid cols={2} spacing="20">
-      <Card interactive component="a" href="#">
-        <Card.Image ratio={false}>
-          <Image {...args} ratio="3:2" radius={0} alt="" />
-        </Card.Image>
-        <Card.Top>
+      <Card
+        interactive
+        component="a"
+        href="#"
+        padding="content"
+        image={<Image {...args} ratio="3:2" radius={0} alt="" />}
+        hero={
           <Label size="sm" variant="outline">
             3:2
           </Label>
-        </Card.Top>
-        <Text component="p">The ratio comes from the image, not the card.</Text>
-      </Card>
-      <Card interactive component="a" href="#">
-        <Card.Image ratio={false}>
-          <Image {...args} ratio="16:9" radius={0} alt="" />
-        </Card.Image>
-        <Card.Top>
+        }
+        description="The ratio comes from the image, not the card."
+      />
+      <Card
+        interactive
+        component="a"
+        href="#"
+        padding="content"
+        image={<Image {...args} ratio="16:9" radius={0} alt="" />}
+        hero={
           <Label size="sm" variant="outline">
             16:9
           </Label>
-        </Card.Top>
-        <Text component="p">Same card, a wider crop.</Text>
-      </Card>
+        }
+        description="Same card, a wider crop."
+      />
     </SimpleGrid>
   ),
 }

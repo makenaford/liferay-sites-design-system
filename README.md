@@ -429,150 +429,126 @@ Long labels ellipsize rather than being cut: five segments of Figma's 18px label
 
 ## Card
 
-From the Figma `card-main` set (node `24385:65090`) for the box and the `Surface` set (`24385:58962`)
-for its skin, with the axes enumerated in the accompanying spreadsheet. A themed Mantine `Card`.
+Figma `card-main` (node `16728:26513`) with `Surface` (`16953:109831`), `card-image`,
+`header-alignment` (`19097:9035`), `Card hero` (`17720:27408`) and `Content Text` (`20354:3820`).
+
+`card-main` is **one** component with four slots and a boolean per slot, and every card in the
+`Common Cards` set is that component with different slots filled. This mirrors it: **a slot is a prop,
+and passing it is the toggle.** There is no `type` prop, because Figma has not got one either — the five
+cards in `Card Examples` are five arrangements of the same thing, and each is five or six lines.
+
+| Figma | Prop |
+| --- | --- |
+| `Surface` `Style` — no-bg / Glass / Blue / Grey / Gradient Blue / Gradient Purple | `surface` |
+| `card-main` `Align` — Vertical / Horizontal | `align` |
+| `card-main` `Padding` — True / False, plus the `no image padding` frame | `padding` |
+| `Show Image` + `card-image`, `Aspect Ratio` 3:2 / 16:9 | `image`, `imageRatio` |
+| `Show Top Content` + `Top Content` | `top` |
+| `Card hero` `Show` — Label / Icon / Blog / Tag / Events / Stat | `hero` |
+| `header-alignment` `Align` — Vertical / Center | `headerAlign` |
+| `Show title` + `Title Card`, `Content Text` `Size` | `title`, `titleSize` |
+| `Show description` | `description` |
+| `Show Main Content 1` / `2` | `main`, `secondary` |
+| `Show Bottom Content` | `bottom` |
+| `Surface` `State` — Default / Hover / Focus | real CSS states, with `interactive` |
 
 ```tsx
-import { Card, Label, Link } from 'scratch'
-
-<Card variant="glass" padding="md">
-  <Card.Image src={cover} alt="" />
-  <Card.Top>
-    <Label size="sm" variant="outline">Customer story</Label>
-  </Card.Top>
-  <h3>Six weeks to launch</h3>
-  <p>How a bank rebuilt onboarding.</p>
-  <Card.Cta>
-    <Link href="/story" rightSection={<IconArrowRight />}>Read it</Link>
-  </Card.Cta>
-</Card>
+// Figma `Type=Resource`
+<Card
+  component="a"
+  href="/guide"
+  interactive
+  surface="no-bg"
+  padding="none"
+  image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
+  hero={<Label size="sm" variant="outline">Guide</Label>}
+  title="Card Title"
+/>
 ```
 
-| Source | Prop |
+### The five cards in `Card Examples`
+
+Each is the same component. This is the whole difference between them:
+
+| Figma `Type` | Props |
 | --- | --- |
-| Surface `Style` — Glass / Grey / Blue / Gradient Blue / Gradient Purple / no-bg | `variant` (default `glass`) |
-| Padding — Small 16 / Medium 20 / Large 40 / Image 0 | `padding="sm" \| "md" \| "lg" \| "none"` |
-| Orientation — Vertical / Horizontal | `orientation` (Mantine's own) |
-| Surface `State` — Default / Hover / Focus | the real CSS states, when `interactive` |
+| `Resource` | `surface="no-bg" padding="none"` + `image`, `hero`, `title` |
+| `CS- Quote` | `image`, `top` (a `Stat`), `description`, `bottom` (the quotee) |
+| `CS- Details` | `image`, `title`, `description` |
+| `Icon-Left` | `hero` (a 40px glass icon), `title`, `description` |
+| `Icon-Center` | `headerAlign="center"` + `hero`, `title` |
 
-Measurements from `card-main`: 8px corner (`Border Radius/medium`) on every Surface variant, and 24px
-between the two halves of a horizontal card, where Figma also centres them against each other.
+The set has three more cells — `CS-Stat`, `Quick Link` and `Stat Highlight` — which `Card Examples` does
+not use. They are not shipped as anything special, because there is nothing to ship: each is another
+arrangement of these slots.
 
-The gap between a vertical card's content blocks is **8px** (`gap/8`), not the 20px Figma draws — see
-the note in the gaps list. The horizontal card keeps its 24px, because there the gap separates the text
-column from the image rather than spacing content inside a block.
+### Measured
 
-**The card styles its own type.** A heading inside a card is `Paragraph/Large/Semi Bold` — 21px at 26px,
-which is what Figma's `Title- Card` is set to — and a paragraph is 18px/24px in
-`Surfaces/Text/Secondary`. Both are defaults rather than rules: they are declared through `:where()`, so
-they carry zero specificity and any call site that sets a size wins without a fight. Neither size is
-bound to a typography variable in the file (`Size/Paragraph/Large` reads 20px), which is the same
-text-style-versus-variable split Button and Link have.
-
-### The slots
-
-The spreadsheet's rows are three optional slots, and everything between them is the card's own content:
-
-| Slot | What goes in it |
-| --- | --- |
-| `Card.Image` | the picture — bleeds to the card's edges at any padding, held at 3:2 by default, and grows 6% on hover when the card is `interactive` |
-| `Card.Top` | a `Label`, a `Stat`, an illustrative icon, a subheading — a wrapping row, so a label and a date sit side by side |
-| `Card.Cta` | a `Link`, a `Button`, or several |
-
-Order is yours: the card is a flex column, so a label above an image works as well as below it, and a
-card with only an image is fine. `Card.Section` is still there for anything the image slot does not
-cover.
-
-**`Card.Cta` pins itself to the bottom.** In a row of cards carrying different amounts of copy, the
-actions still line up — measured: three cards of equal height with a 32px link, a 48px button and a 32px
-link all sit exactly 20px above their card's edge. Without it, each action floats under its own last
-line of text.
-
-`Card.Image` reverses the padding itself rather than going through Mantine's `Card.Section`. Mantine
-detects a section by comparing the child's component type, which any wrapper defeats; doing the bleed in
-CSS against `--card-padding` means it survives being wrapped, nested or conditionally rendered.
-
-**Content is composed, not configured.** The spreadsheet's slots — Top (label, illustrative icon,
-stat, subheading), Content (title, description, list), Bottom (author, link, button, stats) — are
-children. That is what lets one component cover all five of its card types, each of which is a story:
-Resource, no-padding image, full width, customer story, and icon card. `Card.Section` is Mantine's
-full-bleed slot and reverses the padding, so an image reaches the corner.
-
-Two of those types are drawn in the file and follow it closely:
-
-- **Resource card** (`24397:75886`) — a 3:2 image at the top of an unpadded `no-bg` card, then the small
-  outline label and the 21px title. Its image grows on hover.
-- **Customer story card** (`24397:75912`) — the customer's image, a `Stat` above the quote, the quote as
-  the **description with no title**, and the author as name and position with no avatar. Figma puts the
-  quote in the title slot; a pull quote is not a heading, and a screen reader jumping by heading should
-  not land in the middle of someone's sentence.
-
-### The card's top slot
-
-Two conventions, which the stories all follow:
-
-- **The label is the small gradient outline** — `<Label size="sm" variant="outline">`. `Label`'s own
-  default is Tonal at Large, because that is the default cell of the Figma component set; in a card it
-  is the outline at Small, which is what reads as a category rather than competing with the heading. The
-  card cannot enforce this — its content is children, so there is no label prop to default — so it is a
-  convention here and in every story rather than a mechanism. If it should be the global default
-  instead, that is one change to `Label`'s `defaultProps` and it changes every label everywhere.
-- **The illustration is a glass icon at 48px**, which is the container `card-main` draws. Those are a
-  separate set from the UI glyphs — see [Icons](#icons).
-
-```tsx
-<Card variant="glass" interactive component="a" href="/campaigns">
-  <IconGlassMail />
-  <Label size="sm" variant="outline">Product</Label>
-  <h3>Campaign delivery</h3>
-</Card>
-```
-
-### Interaction, and only when clickable
-
-The spreadsheet is explicit that Glass is the **clickable** surface and Grey is **non-clickable**, so
-the affordances are opt-in through `interactive` rather than attached to every card. Nothing about a
-card is interactive by default.
-
-`interactive` styles the card; it does not make it operable. Pass `component="a"` with an `href` (or
-`component="button"`) so the whole card is one real target — the component is polymorphic for exactly
-this. A `<div>` with an `onClick` looks identical and is unreachable by keyboard.
-
-| State | Treatment | Source |
+| | Figma | Verified |
 | --- | --- | --- |
-| hover | 1px gradient ring, `Brand/Primary/Lighten/1` → `Accent/Product Accent` | `card-Focus Ring` (`16719:45438`), as drawn |
-| hover, glass only | the fill swaps to the radial sheen centred on the top-right corner | as drawn |
-| hover | a 2px lift, a wider shadow, and the image growing 6% | **added** |
-| focus | the same ring at 2px, on `:focus-visible` only | as drawn, narrowed to focus-visible |
-| pressed | settles back to the resting elevation | **added** |
+| Padding, `Padding=True` | 20px | 20px |
+| Stack gap, with an image | 16px | 16px |
+| Stack gap, without one | 20px | 20px |
+| `Card Content` gap | 16px | 16px |
+| `card-header` gap, Vertical / Center | 8 / 20 | 8 / 20 |
+| Title, `Content Text Size=Small` | 21px semibold | 21/26 w600 |
+| Title, `Size=Full Card` | 32px bold | 32/40 w700 |
+| Title–description gap, Small / Full Card | 4 / 12 | 4 / 12 |
+| Description | 18px regular | 18/24 w400 |
+| `Bottom Content` padding-top | 8px | 8px |
+| Radius | 8px | 8px |
+| Horizontal: padding, gap, radius, columns | 24/40, 24, 16, 588+588 in 1280 | all four |
 
-Figma draws the ring as an *outside* stroke at a 9px radius. Here it is a masked ring at the card's own
-edge instead: the card has to clip its corner for a full-bleed image, and an outside ring would be
-clipped along with it. At 1–2px the difference is not visible; the alternative is losing the image
-bleed.
+The **description is `Surfaces/Text/Primary`** — the same colour as the title, not the Secondary a
+description usually gets in this library. That is what all five cards draw, and the previous
+implementation had it wrong.
 
-Everything that moves on hover — the lift, the shadow, the fill, and the image behind it — shares one
-duration and one curve, so the card reads as a single object responding rather than four properties
-animating. The image is the resource card's treatment: it grows 6% inside `Card.Section`, which already
-clips to the corner, so it scales in its own frame instead of pushing the card around. `Card.Image`
-carries that automatically, as does a real `<img>` in a `Card.Section`; a bare placeholder element in a
-section needs `data-card-image`.
+The gap difference is worth naming: both icon cards and all three image cards are `Padding=True,
+Align=Vertical`, and the icon ones sit at 20 while the image ones sit at 16. The gap travels with the
+content rather than with a variant, so it keys off whether there is an image.
 
-Two departures from the file worth naming. The lift and the press are not in Figma at all — a card is a
-big target and needs to acknowledge the pointer somewhere other than a 1px edge. And Figma's `State=Focus`
-does not distinguish focus from focus-visible, so the ring would also appear after a mouse click; here
-it is `:focus-visible`, which is the behaviour every other component in this library already has.
-`prefers-reduced-motion` drops the lift and the press, keeping the rings.
+### `padding` has three values, not two
 
-### Surfaces in both colour modes
+Figma's axis is a boolean, but the file draws a third shape as its own frame — `no image padding`, where
+`card-main` is still `Padding=True` and the 20px has been **moved down onto `Card Content`** so the image
+can run to the card's edge. That is a different shape, not a different number, which is why this is not a
+padding scale:
 
-Every value comes from the `Components/Glass Card/*`, `Components/Glass Line/*`,
-`Components/Gradient Card/*` and `Surfaces/Card BG/*` groups, all of which are mode-aware, so — as with
-the segmented control — nothing had to be restructured for light mode.
+- `all` — `Padding=True`. 20px around everything, the image included, which gets a 4px corner of its own.
+- `content` — the image bleeds to the card's edge and the text stays inset. The image is a sibling of the
+  padded body rather than a child of it, which is exactly how the Figma frame is built — no negative
+  margins involved.
+- `none` — `Padding=False`. The Resource card.
 
-The gradients are reproduced from Figma's transform matrices rather than by eye: inverting them gives
-60° for the glass fill, 225° for both hairlines, 134° for the two gradient cards, and for the glass
-hover sheen a centre at the top-right corner with 140% × 154% radii. The stop positions are Figma's.
+### Where the hover goes
+
+Figma's `Surface` has a `State=Hover` cell and it is **byte-for-byte its `State=Default`** — same fill,
+same 1px hairline. `State=Focus` is the only state the file actually distinguishes, and it differs by one
+thing: the ring goes from 1px to 2px. So the hover is inferred, and it follows one rule taken from the
+layout rather than from a style:
+
+- **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the image**:
+  it scales to 1.06 inside its own box and lifts its brightness. The card does not move, because an image
+  that is the card's edge *is* the thing the eye is locked onto, and there is no inset frame for a lift to
+  read against.
+- **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the ring warms
+  to the brand gradient, and a glow appears beneath it. An image inside the padding scales too, at 1.03,
+  because the card is what leads.
+
+Press settles the movement back towards rest rather than pushing further. Focus is Figma's own ring at
+2px, on `:focus-visible` so it belongs to the keyboard and not the mouse.
+
+### The resting hairline is not the ring
+
+Worth recording because it is easy to get backwards. The `Surface` **set's** rectangle carries a
+`Brand/Primary/Lighten/1 → Accent/Product Accent` stroke on every variant, Default included — but **every
+real instance overrides it** with `Components/Glass Line/01` at 20% into `02` at 10%. So:
+
+- resting hairline: the glass line, 1px, at 225°
+- hover and focus ring: the brand gradient
+
+Reading the set instead of the instances paints every card blue at rest.
+
 
 ## Stat
 

@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Box, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { Box, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Card } from './Card'
 import { Button } from '../Button'
+import { Image } from '../Image'
 import { Label } from '../Label'
 import { Link } from '../Link'
 import { Stat, StatBar } from '../Stat'
@@ -13,21 +14,34 @@ import {
   IconGlassMail,
 } from '../../icons'
 
-const SURFACES = ['glass', 'grey', 'blue', 'gradient-blue', 'gradient-purple', 'none'] as const
+const SURFACES = ['glass', 'no-bg', 'grey', 'blue', 'gradient-blue', 'gradient-purple'] as const
 
-/**
- * Stands in for a photograph: the stories have to render offline, so no remote images.
- *
- * `data-card-image` is what marks it as the card's image. A real `<img>` needs no such marker — the
- * stylesheet targets `img` directly — but a placeholder div does, or it would miss the hover zoom.
- */
-function Cover({ ratio = '3 / 2' }: { ratio?: string }) {
+/** Stands in for a photograph: the stories have to render offline, so no remote images. */
+const PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#adc9ff"/><stop offset="0.55" stop-color="#7414ff"/><stop offset="1" stop-color="#0b5fff"/>
+  </linearGradient></defs>
+  <rect width="600" height="400" fill="url(#g)"/>
+  <circle cx="150" cy="120" r="62" fill="#fff" opacity="0.8"/>
+</svg>`)}`
+
+function Cover({ ratio = '3:2' as const }) {
+  return <Image src={PHOTO} alt="" ratio={ratio} radius={0} />
+}
+
+/** Figma's `card-image` `Property 1=Customer Story`: a customer logo centred on a flat panel. */
+function CustomerThumb({ name }: { name: string }) {
   return (
     <Box
-      data-card-image
-      style={{ aspectRatio: ratio }}
-      bg="linear-gradient(120deg, var(--sds-brand-primary-lighten-4), var(--sds-accent-product-accent))"
-    />
+      bg="var(--sds-surfaces-card-bg-grey)"
+      c="var(--sds-surfaces-text-primary)"
+      fw={700}
+      fz="21"
+      style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}
+    >
+      {name}
+    </Box>
   )
 }
 
@@ -35,39 +49,52 @@ const meta = {
   title: 'Components/Card',
   component: Card,
   args: {
-    variant: 'glass',
-    padding: 'md',
-    orientation: 'vertical',
+    surface: 'glass',
+    align: 'vertical',
+    padding: 'all',
+    headerAlign: 'vertical',
+    titleSize: 'small',
+    imageRatio: '3:2',
     interactive: false,
   },
   argTypes: {
-    variant: {
+    surface: {
       options: SURFACES,
       control: 'inline-radio',
-      description: "Figma's Surface Style axis. `glass` is the clickable surface, `grey` is not.",
+      description: "Figma `Surface` `Style`. The card set uses `glass` and `no-bg`.",
     },
+    align: { options: ['vertical', 'horizontal'], control: 'inline-radio' },
     padding: {
-      options: ['none', 'sm', 'md', 'lg'],
+      options: ['all', 'content', 'none'],
       control: 'inline-radio',
-      description: 'Small 16, Medium 20, Large 40, or none for a full-bleed image card.',
+      description:
+        '`all` is Figma’s `Padding=True`; `content` is its `no image padding` frame, where the image bleeds and the text stays inset; `none` is `Padding=False`.',
     },
-    orientation: { options: ['vertical', 'horizontal'], control: 'inline-radio' },
+    headerAlign: { options: ['vertical', 'center'], control: 'inline-radio' },
+    titleSize: { options: ['small', 'full'], control: 'inline-radio' },
+    imageRatio: { options: ['3:2', '16:9'], control: 'inline-radio' },
     interactive: {
       control: 'boolean',
-      description:
-        'Turns on the hover ring, the focus ring and the lift. Only for a card that really is a link or a button.',
+      description: 'Hover and focus. Only for a card that really is a link or a button.',
     },
+    image: { control: false },
+    top: { control: false },
+    hero: { control: false },
+    main: { control: false },
+    secondary: { control: false },
+    bottom: { control: false },
+    children: { control: false },
   },
   parameters: {
-    frame: { width: 880 },
+    frame: { width: 1040 },
     docs: {
       description: {
         component: [
-          "Mantine `Card` dressed in the Figma `Surface` set (`24385:58962`) with `card-main`'s geometry (`24385:65090`), and the axes the accompanying spreadsheet enumerates.",
+          'Figma `card-main` (node `16728:26513`) with `Surface`, `card-image`, `header-alignment`, `Card hero` and `Content Text`.',
           '',
-          'Content is composed rather than configured — the spreadsheet\'s Top / Content / Bottom slots are just children, which is what lets one component cover all five of its card types. `Card.Section` reverses the padding for a full-bleed image.',
+          '`card-main` is **one** component with four slots and a boolean per slot, and every card in the `Common Cards` set is that component with different slots filled. This mirrors it: a slot is a prop, and passing it is the toggle. There is no `type` prop, because Figma has not got one either — the five cards in `Card Examples` are five arrangements of the same thing, and each is five or six lines.',
           '',
-          'The interaction states are opt-in through `interactive`, because the spreadsheet is explicit that Glass is the clickable surface and Grey is not.',
+          '**Where the hover goes depends on the layout, not on a style.** Figma’s `Surface` `State=Hover` cell is byte-for-byte its `State=Default`, so hover is inferred; `State=Focus` is the only state the file distinguishes, and it differs by one thing — the ring goes 1px to 2px. An image that runs to the card’s edge *is* the card’s edge, so a full-bleed card hovers on its **image** and a padded card hovers as a **card**.',
         ].join('\n'),
       },
     },
@@ -77,362 +104,406 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Every prop wired to a control. Turn on `interactive` and hover or tab to it. */
+/** Every prop wired to a control, with every slot filled so the arrangement is visible. */
 export const Playground: Story = {
-  render: (args) => (
-    <Card {...args} w={360}>
-      <Title order={3}>
-        Enterprise websites
-      </Title>
-      <Text component="p">
-        A platform teams can ship on without waiting for a release train.
-      </Text>
-      <Link href="#" rightSection={<IconArrowRight />}>
+  args: {
+    image: <Cover />,
+    hero: (
+      <Label size="sm" variant="outline">
+        Label
+      </Label>
+    ),
+    title: 'Card Title',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.',
+    bottom: (
+      <Link href="#" size="md" rightSection={<IconArrowRight />}>
         Read more
       </Link>
-    </Card>
+    ),
+  },
+  render: (args) => (
+    <Box w={320}>
+      <Card {...args} />
+    </Box>
   ),
 }
 
-/** The six Surface styles. Only `glass` and `grey` appear in the spreadsheet's clickable column. */
-export const Surfaces: Story = {
+/* ------------------------------------------------------------------ the five types in Card Examples */
+
+/**
+ * **`Type=Resource`** — `Surface Style=no-bg`, `Padding=False`, a 3:2 image, a Label hero and a title.
+ * Nothing behind it: an image and two lines of text.
+ *
+ * This is the card the hover rule was written for. With no padding, the image is the card's edge, so the
+ * hover is on the image alone — it scales inside its own box and lifts its brightness while the card
+ * stays exactly where it is.
+ */
+export const Resource: Story = {
   render: (args) => (
-    <SimpleGrid cols={3} spacing="20">
-      {SURFACES.map((variant) => (
-        <Card key={variant} {...args} variant={variant}>
-          <Text fw={600}>{variant}</Text>
-          <Text component="p">
-            Surface Style = {variant}
+    <Box w={320}>
+      <Card
+        {...args}
+        component="a"
+        href="#"
+        interactive
+        surface="no-bg"
+        padding="none"
+        image={<Cover />}
+        hero={
+          <Label size="sm" variant="outline">
+            Guide
+          </Label>
+        }
+        title="The composable enterprise, in twelve decisions"
+      />
+    </Box>
+  ),
+}
+
+/**
+ * **`Type=CS- Quote`** — `Padding=True`, a Customer Story image, a `Stat` in the **Top Content** slot,
+ * a description with no title, and the quotee in **Bottom Content**.
+ */
+export const CustomerQuote: Story = {
+  render: (args) => (
+    <Box w={320}>
+      <Card
+        {...args}
+        image={<CustomerThumb name="Advanced Energy" />}
+        top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
+        description="Liferay’s out-of-the-box features let us stand up eleven regional sites in a single quarter, on one codebase."
+        bottom={
+          <Stack gap="4">
+            <Text fz="16" fw={600} c="var(--sds-surfaces-text-primary)">
+              Anne Anderson
+            </Text>
+            <Text
+              fz="12"
+              fw={600}
+              c="var(--sds-surfaces-text-secondary)"
+              tt="uppercase"
+              style={{ letterSpacing: '0.04em' }}
+            >
+              VP of Experience and Change Management
+            </Text>
+          </Stack>
+        }
+      />
+    </Box>
+  ),
+}
+
+/** **`Type=CS- Details`** — the same padded shape with a title and a description, and no slots. */
+export const CustomerStory: Story = {
+  render: (args) => (
+    <Box w={320}>
+      <Card
+        {...args}
+        component="a"
+        href="#"
+        interactive
+        image={<CustomerThumb name="Advanced Energy" />}
+        title="NGO Empowers Educators and Families Across Twelve Countries"
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      />
+    </Box>
+  ),
+}
+
+/**
+ * **`Type=Icon-Left`** — no image, so `card-main`'s gap opens from 16 to 20. A 40px glass icon as the
+ * hero, a title and a description.
+ */
+export const IconLeft: Story = {
+  render: (args) => (
+    <Box w={320}>
+      <Card
+        {...args}
+        hero={<IconGlassComposable width={40} height={40} />}
+        title="Card Title"
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do."
+      />
+    </Box>
+  ),
+}
+
+/** **`Type=Icon-Center`** — the same card with `header-alignment Align=Center`: centred, gap 20, no description. */
+export const IconCenter: Story = {
+  render: (args) => (
+    <Box w={320}>
+      <Card
+        {...args}
+        headerAlign="center"
+        hero={<IconGlassDatabase width={40} height={40} />}
+        title="Card Title"
+      />
+    </Box>
+  ),
+}
+
+/** The five cards from `Card Examples`, side by side. */
+export const CardExamples: Story = {
+  render: (args) => (
+    <SimpleGrid cols={3} spacing="24" verticalSpacing="40">
+      <Card
+        {...args}
+        component="a"
+        href="#"
+        interactive
+        surface="no-bg"
+        padding="none"
+        image={<Cover />}
+        hero={
+          <Label size="sm" variant="outline">
+            Guide
+          </Label>
+        }
+        title="Resource"
+      />
+      <Card
+        {...args}
+        image={<CustomerThumb name="Advanced Energy" />}
+        top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
+        description="CS- Quote: a stat on top, a quote, and the quotee underneath."
+        bottom={
+          <Text fz="16" fw={600}>
+            Anne Anderson
           </Text>
-        </Card>
-      ))}
+        }
+      />
+      <Card
+        {...args}
+        component="a"
+        href="#"
+        interactive
+        image={<CustomerThumb name="Advanced Energy" />}
+        title="CS- Details"
+        description="A title and a description over a customer thumbnail."
+      />
+      <Card
+        {...args}
+        hero={<IconGlassComposable width={40} height={40} />}
+        title="Icon-Left"
+        description="No image, so the stack opens to 20px."
+      />
+      <Card
+        {...args}
+        headerAlign="center"
+        hero={<IconGlassMail width={40} height={40} />}
+        title="Icon-Center"
+      />
     </SimpleGrid>
   ),
 }
 
-/** The padding scale from the spreadsheet: 16, 20, 40 — and 0, which only makes sense with a section. */
+/* ------------------------------------------------------------------------------ the axes */
+
+/**
+ * The three padding shapes. The middle one is Figma's `no image padding` frame: `card-main` is still
+ * `Padding=True`, but the 20px has been moved down onto the content so the image can reach the edge.
+ */
 export const Padding: Story = {
   render: (args) => (
-    <SimpleGrid cols={3} spacing="20">
-      {(['sm', 'md', 'lg'] as const).map((padding) => (
-        <Card key={padding} {...args} padding={padding}>
-          <Text fw={600}>padding=&quot;{padding}&quot;</Text>
-          <Text component="p">
-            {padding === 'sm' ? '16px' : padding === 'md' ? '20px' : '40px'}
+    <SimpleGrid cols={3} spacing="24">
+      {(['all', 'content', 'none'] as const).map((padding) => (
+        <Stack key={padding} gap="8">
+          <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+            padding=&quot;{padding}&quot;
           </Text>
-        </Card>
+          <Card
+            {...args}
+            padding={padding}
+            surface={padding === 'none' ? 'no-bg' : 'glass'}
+            interactive
+            component="a"
+            href="#"
+            image={<Cover />}
+            title="Card Title"
+            description="Where the twenty pixels go."
+          />
+        </Stack>
+      ))}
+    </SimpleGrid>
+  ),
+}
+
+/** Figma's `Surface` `Style` axis. `glass` and `no-bg` are the two the card set itself uses. */
+export const Surfaces: Story = {
+  render: (args) => (
+    <SimpleGrid cols={3} spacing="24" verticalSpacing="24">
+      {SURFACES.map((surface) => (
+        <Card
+          {...args}
+          key={surface}
+          surface={surface}
+          hero={
+            <Label size="sm" variant="outline">
+              {surface}
+            </Label>
+          }
+          title="Card Title"
+          description="One surface, six ways."
+        />
       ))}
     </SimpleGrid>
   ),
 }
 
 /**
- * The interaction states, which only apply when `interactive` is set. Hover for the 1px gradient ring
- * and the lift, tab to it for the 2px ring, press for the settle. The glass surface also swaps its
- * diagonal fill for a radial sheen on hover, as Figma draws it. The second card is the same content
- * without `interactive` — nothing responds, which is the point.
+ * **The hover rule, side by side.** Both are links. The left one is padded, so the card lifts and its
+ * ring warms. The right one has a full-bleed image, so only the image moves — which is what a card whose
+ * edge *is* the image should do.
  */
-export const Interactive: Story = {
+export const Hover: Story = {
   render: (args) => (
-    <Group align="stretch" gap="20">
-      <Card {...args} interactive component="a" href="#" w={320}>
-        <Label size="sm" variant="outline">Customer story</Label>
-        <Title order={3}>
-          A bank rebuilt onboarding
-        </Title>
-        <Text component="p">
-          The whole card is one link — hover, tab, press.
+    <SimpleGrid cols={2} spacing="24">
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          padding=&quot;all&quot; — the card leads
         </Text>
-      </Card>
-      <Card {...args} variant="grey" w={320}>
-        <Label size="sm" variant="outline">
-          Reference
-        </Label>
-        <Title order={3}>
-          Not interactive
-        </Title>
-        <Text component="p">
-          Content only, so it has no states at all.
-        </Text>
-      </Card>
-    </Group>
-  ),
-}
-
-/**
- * **Resource card** — Figma `Special Cards / Type=Resource` (`24397:75886`): a 3:2 image at the top of an
- * unpadded card, then the outline label and a 21px title. The surface is `no-bg`, so the image and the
- * text sit on the page rather than on a card fill.
- *
- * Hover it: the image grows 6% inside its own frame. The section already clips to the corner, so the
- * image scales rather than pushing the card around, and it runs on `transform` — off the layout path,
- * on the same curve as the lift so the two read as one movement.
- *
- * Note what the two cards do differently. The first **is** a link, so its call to action is *text* with
- * the link's colour and arrow — a nested `<a>` inside an `<a>` is invalid HTML, and browsers unnest it
- * into something neither element controls. The second is a plain container with a real `Link` inside,
- * which is the right choice when the card holds more than one destination.
- */
-export const ResourceCard: Story = {
-  render: (args) => (
-    <Group align="stretch" gap="20">
-      <Card {...args} variant="none" padding="none" interactive component="a" href="#" w={320}>
-        <Card.Image>
-          <Cover />
-        </Card.Image>
-        <Card.Top>
-          <Label size="sm" variant="outline">
-            Whitepaper
-          </Label>
-        </Card.Top>
-        <Title order={3}>The composable enterprise</Title>
-        <Card.Cta>
-          <Group gap="4" c="var(--sds-action-link-default-link)" fw={600} fz="var(--sds-size-action-link-medium)">
-            Download
-            <IconArrowRight />
-          </Group>
-        </Card.Cta>
-      </Card>
-      <Card {...args} w={320}>
-        <Card.Top>
-          <Label size="sm" variant="outline">
-            Whitepaper
-          </Label>
-        </Card.Top>
-        <Title order={3}>Not itself a link</Title>
-        <Text component="p">So the call to action can be a real Link component.</Text>
-        <Card.Cta>
-          <Link href="#" size="md" rightSection={<IconArrowRight />}>
-            Download
-          </Link>
-        </Card.Cta>
-      </Card>
-    </Group>
-  ),
-}
-
-/**
- * **No padding image card** — `padding="none"` with the image in a `Card.Section`, so it reaches the
- * corner, and the text in its own padded block.
- */
-export const ImageCard: Story = {
-  render: (args) => (
-    <Card {...args} interactive component="a" href="#" w={320}>
-      <Card.Image>
-        <Cover />
-      </Card.Image>
-      <Card.Top>
-        <Label size="sm" variant="outline">
-          Customer story
-        </Label>
-      </Card.Top>
-      <Title order={3}>Six weeks to launch</Title>
-      <Text component="p">
-        The image reverses the card&apos;s padding to reach the corner; everything else keeps it.
-      </Text>
-    </Card>
-  ),
-}
-
-/** **Full width card** — the horizontal orientation, which Figma draws at 40px padding and a 24px gap. */
-export const FullWidthCard: Story = {
-  render: (args) => (
-    <Card {...args} orientation="horizontal" padding="lg">
-      <Stack gap="8" style={{ flex: 1 }}>
-        <Label size="sm" variant="outline">Platform</Label>
-        <Title order={3}>
-          One platform, every channel
-        </Title>
-        <Text component="p">
-          Horizontal cards centre their blocks against each other.
-        </Text>
-        <Card.Cta>
-          <Button size="md" rightSection={<IconArrowRight />}>
-            Book a demo
-          </Button>
-          <Link href="#" size="md">
-            Read the docs
-          </Link>
-        </Card.Cta>
+        <Card
+          {...args}
+          component="a"
+          href="#"
+          interactive
+          image={<Cover />}
+          title="Card Title"
+          description="Rises 2px, ring warms, glow appears."
+        />
       </Stack>
-      <Box w={280} style={{ borderRadius: 8, overflow: 'hidden' }}>
-        <Cover ratio="4 / 3" />
-      </Box>
-    </Card>
-  ),
-}
-
-/**
- * **Customer story card** — Figma `Special Cards / Type=CS- Quote` (`24397:75912`): the customer's image,
- * a stat above the quote, the quote as the description with **no title**, and the author as name and
- * position with no avatar.
- *
- * The quote is the description rather than a heading. Figma puts it in the title slot, but a pull quote
- * is not a heading — it is the card's body, and a screen reader jumping by heading should not land in the
- * middle of someone's sentence.
- */
-export const CustomerStoryCard: Story = {
-  render: (args) => (
-    <Card {...args} padding="md" w={320}>
-      <Card.Image>
-        <Cover ratio="3 / 2" />
-      </Card.Image>
-      <Card.Top>
-        <Stat value="845" label="Months to launch" rightSection={<IconArrowUp />} />
-      </Card.Top>
-      <Text component="p">
-        “With Liferay we can scale automatically, or on a schedule, a lot quicker than we could
-        before.”
-      </Text>
-      <Stack gap={4} pt="8">
-        <Text fz="var(--sds-size-paragraph-small)" fw={600}>
-          Anne Anderson
+      <Stack gap="8">
+        <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
+          padding=&quot;none&quot; — the image leads
         </Text>
-        <Text
-          fz="var(--sds-size-paragraph-small-caps-xs)"
-          fw={600}
-          tt="uppercase"
-          c="var(--sds-surfaces-text-secondary)"
-          style={{ letterSpacing: '0.06em' }}
-        >
-          VP of Experience and Change Management
-        </Text>
+        <Card
+          {...args}
+          component="a"
+          href="#"
+          interactive
+          surface="no-bg"
+          padding="none"
+          image={<Cover />}
+          hero={
+            <Label size="sm" variant="outline">
+              Guide
+            </Label>
+          }
+          title="Card Title"
+        />
       </Stack>
-    </Card>
-  ),
-}
-
-/**
- * **Icon card** — left or centre aligned, per the spreadsheet's last type. The illustration is one of
- * the glass icons, at the 48px container Figma draws them in; they are illustrations rather than UI
- * glyphs, so they keep their own colours instead of inheriting the text colour.
- */
-export const IconCard: Story = {
-  render: (args) => (
-    <Group align="stretch" gap="20">
-      <Card {...args} w={260}>
-        <Card.Top>
-          <IconGlassComposable />
-        </Card.Top>
-        <Text fw={600}>Left aligned</Text>
-        <Text component="p">
-          The default flow of the card.
-        </Text>
-      </Card>
-      <Card {...args} w={260} ta="center" style={{ alignItems: 'center' }}>
-        <Card.Top>
-          <IconGlassDatabase />
-        </Card.Top>
-        <Text fw={600}>Centre aligned</Text>
-        <Text component="p">
-          Same card, centred content.
-        </Text>
-      </Card>
-    </Group>
-  ),
-}
-
-/**
- * The illustrative icon in the card's top slot, which is what Figma's `card-main` puts there — a
- * `Glass icon` instance at 48px. `size` overrides the box if a layout needs something else; the art is
- * drawn on a 64px grid, so it stays crisp either way.
- */
-export const WithIllustrativeIcon: Story = {
-  render: (args) => (
-    <Group align="stretch" gap="20">
-      <Card {...args} interactive component="a" href="#" w={280}>
-        <IconGlassMail />
-        <Label size="sm" variant="outline">
-          Product
-        </Label>
-        <Title order={3}>
-          Campaign delivery
-        </Title>
-        <Text component="p">
-          One icon, one label, one heading — the card's top slot as drawn.
-        </Text>
-      </Card>
-      <Card {...args} w={280}>
-        <Group gap="16">
-          <IconGlassDatabase size={32} />
-          <IconGlassComposable size={32} />
-          <IconGlassMail size={32} />
-        </Group>
-        <Text component="p">
-          The same icons at <code>size=&#123;32&#125;</code>.
-        </Text>
-      </Card>
-    </Group>
-  ),
-}
-
-/**
- * **The slots.** `Card.Image`, `Card.Top` and `Card.Cta` around whatever content belongs in the middle.
- * All three are optional and the order is yours — the card is a flex column.
- *
- * Look at the bottom row: these cards carry different amounts of copy and their actions still line up,
- * because `Card.Cta` pins itself to the bottom.
- */
-export const Slots: Story = {
-  render: (args) => (
-    <SimpleGrid cols={3} spacing="20">
-      <Card {...args}>
-        <Card.Image>
-          <Cover />
-        </Card.Image>
-        <Card.Top>
-          <Label size="sm" variant="outline">
-            Image and label
-          </Label>
-        </Card.Top>
-        <Title order={3}>All three slots</Title>
-        <Text component="p">Image, top and cta.</Text>
-        <Card.Cta>
-          <Link href="#" size="md" rightSection={<IconArrowRight />}>
-            Read more
-          </Link>
-        </Card.Cta>
-      </Card>
-      <Card {...args}>
-        <Card.Top>
-          <Stat size="sm" value="98%" label="Uptime" />
-        </Card.Top>
-        <Title order={3}>A stat on top</Title>
-        <Text component="p">
-          No image, and a longer description — so the cards do not agree on height, which is what makes
-          the bottom row worth looking at.
-        </Text>
-        <Card.Cta>
-          <Button size="sm">Book a demo</Button>
-        </Card.Cta>
-      </Card>
-      <Card {...args}>
-        <Card.Top>
-          <IconGlassComposable />
-        </Card.Top>
-        <Title order={3}>An icon on top</Title>
-        <Card.Cta>
-          <Link href="#" size="md" rightSection={<IconArrowRight />}>
-            Read more
-          </Link>
-        </Card.Cta>
-      </Card>
     </SimpleGrid>
   ),
 }
 
-/** A card with stats in it — the spreadsheet lists Stat on top and Stats at the bottom. */
-export const WithStats: Story = {
+/**
+ * **`Align=Horizontal`** — Figma's wide card: 24/40 padding, gap 24, a 16px corner, `Content Text
+ * Size=Full Card` at 32px, a `StatBar` in **Main Content 1** and links in **Bottom Content**.
+ */
+export const Horizontal: Story = {
+  parameters: { frame: { width: 1280 } },
   render: (args) => (
-    <Card {...args} padding="lg" w={560}>
-      <Title order={3}>
-        Migration in numbers
-      </Title>
-      <StatBar>
-        <Stat value="845" label="Months to launch" leftSection={<IconArrowUp />} />
-        <Stat value="98%" label="Uptime" />
-        <Stat value="3x" label="Faster releases" />
-      </StatBar>
-    </Card>
+    <Card
+      {...args}
+      align="horizontal"
+      titleSize="full"
+      hero={<IconGlassComposable width={48} height={48} />}
+      title="Financial Services"
+      description="Unify client and advisor data, and ship the same experience to every channel."
+      main={
+        <StatBar>
+          <Stat value="845" label="Months to launch" rightSection={<IconArrowUp />} />
+          <Stat value="98%" label="Uptime" rightSection={<IconArrowUp />} />
+          <Stat value="3x" label="Faster releases" rightSection={<IconArrowUp />} />
+        </StatBar>
+      }
+      bottom={
+        <>
+          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+            Read the customer story
+          </Link>
+          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+            See the platform
+          </Link>
+        </>
+      }
+      image={<Cover />}
+    />
+  ),
+}
+
+/** Every slot at once, labelled, so the order is legible. */
+export const Slots: Story = {
+  render: (args) => (
+    <Box w={360}>
+      <Card
+        {...args}
+        image={<Cover />}
+        top={<Label size="sm" variant="filled">top</Label>}
+        hero={
+          <Label size="sm" variant="outline">
+            hero
+          </Label>
+        }
+        title="title"
+        description="description"
+        main={<Text fz="sm" c="var(--sds-surfaces-text-secondary)">main</Text>}
+        secondary={<Text fz="sm" c="var(--sds-surfaces-text-secondary)">secondary</Text>}
+        bottom={
+          <Button size="sm" rightSection={<IconArrowRight />}>
+            bottom
+          </Button>
+        }
+      />
+    </Box>
+  ),
+}
+
+/** Buttons rather than a link in the bottom slot, in a card that is not itself clickable. */
+export const WithButtons: Story = {
+  render: (args) => (
+    <Box w={360}>
+      <Card
+        {...args}
+        hero={<IconGlassMail width={40} height={40} />}
+        title="Talk to us"
+        description="A card with its own controls is not a link: the buttons do the work."
+        bottom={
+          <>
+            <Button size="sm">Book a demo</Button>
+            <Link href="#" size="md">
+              Contact sales
+            </Link>
+          </>
+        }
+      />
+    </Box>
+  ),
+}
+
+/** A row of cards of different lengths: `bottom` stays at the bottom of each. */
+export const EqualHeights: Story = {
+  render: (args) => (
+    <SimpleGrid cols={3} spacing="24" style={{ alignItems: 'stretch' }}>
+      {[
+        ['One line.', 'Short'],
+        ['Two lines, which is what most of these end up being in practice.', 'Medium'],
+        [
+          'Four or five lines, because somebody wrote the copy before the card existed and nobody wanted to cut it down afterwards.',
+          'Long',
+        ],
+      ].map(([description, title]) => (
+        <Card
+          {...args}
+          key={title}
+          title={title}
+          description={description}
+          bottom={
+            <Link href="#" size="md" rightSection={<IconArrowRight />}>
+              Read more
+            </Link>
+          }
+        />
+      ))}
+    </SimpleGrid>
   ),
 }

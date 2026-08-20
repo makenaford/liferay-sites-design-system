@@ -31,17 +31,16 @@ const QUOTES = [
 /** Seven quote cards, the way the Figma section fills its `List` with `CS- Quote` cards. */
 function quoteCards() {
   return QUOTES.map(([customer, quote, stat]) => (
-    <Card key={customer} variant="glass" padding="md">
-      <Card.Top>
-        <Stat size="sm" value={stat} label={customer} />
-      </Card.Top>
-      <Text component="p">{quote}</Text>
-      <Card.Cta>
+    <Card
+      key={customer}
+      top={<Stat size="sm" value={stat} label={customer} />}
+      description={quote}
+      bottom={
         <Link href="#" size="md" rightSection={<IconArrowRight />}>
           Read the story
         </Link>
-      </Card.Cta>
-    </Card>
+      }
+    />
   ))
 }
 
@@ -140,20 +139,21 @@ export const ImageCards: Story = {
   render: (args) => (
     <Carousel {...args}>
       {QUOTES.map(([customer, quote]) => (
-        <Card key={customer} interactive component="a" href="#" padding="none">
-          <Card.Image ratio={false}>
-            <Cover />
-          </Card.Image>
-          <Box p="20">
-            <Card.Top>
-              <Label size="sm" variant="outline">
-                Story
-              </Label>
-            </Card.Top>
-            <Title order={3}>{customer}</Title>
-            <Text component="p">{quote}</Text>
-          </Box>
-        </Card>
+        <Card
+          key={customer}
+          interactive
+          component="a"
+          href="#"
+          padding="content"
+          image={<Cover />}
+          hero={
+            <Label size="sm" variant="outline">
+              Story
+            </Label>
+          }
+          title={customer}
+          description={quote}
+        />
       ))}
     </Carousel>
   ),
@@ -187,9 +187,7 @@ export const StatSlides: Story = {
         ['4d', 'To first launch'],
         ['1', 'Codebase'],
       ].map(([value, labelText]) => (
-        <Card key={labelText} variant="grey" padding="md">
-          <Stat value={value} label={labelText} leftSection={<IconArrowUp />} />
-        </Card>
+        <Card key={labelText} surface="grey" main={<Stat value={value} label={labelText} leftSection={<IconArrowUp />} />} />
       ))}
     </Carousel>
   ),
