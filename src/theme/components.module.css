@@ -3805,3 +3805,236 @@
     outline-color: Highlight;
   }
 }
+
+/* =====================================================================================
+ * List — Figma `List` (node `19130:63824`), `Main List Item` (`19660:37508`),
+ * `Sub List Item` (`19660:53930`) and the `Sub Item List` marker set (`19129:50376`)
+ *
+ *   List              VERTICAL, gap 20, `Type` = Icon | Number | Bullet
+ *   Main List Item    HORIZONTAL, gap 8, marker column 24 (`Size=Default`) or 32 (`Size=Medium`)
+ *                     content column VERTICAL gap 12
+ *                       Main Item   VERTICAL gap 4 — Title, Description
+ *                       Sub List    VERTICAL gap 8
+ *   Sub List Item     HORIZONTAL, gap 2, bullet marker, title Semi Bold, no gap to the description
+ *
+ *   Title         `Paragraph/Default/Heavier`  18/125 bold,       `Surfaces/Text/Primary`
+ *   Description   `Paragraph/Default/Regular`  18/125 regular,    `Surfaces/Text/Primary`
+ *   Sub title     `Paragraph/Default/Semi Bold` 18/125 semibold,  `Surfaces/Text/Primary`
+ *
+ *   Markers, all `Accent/Product Accent`:
+ *     Check    `system/check` outline, filling the box
+ *     Number   the item's index, `Paragraph/Default/Heavier` bold
+ *     Bullet   an 8px round dot, centred in the box
+ *
+ *   Padding=Yes   20/16 of padding with `Surfaces/Card BG/Grey` behind the item
+ *
+ * Note the description is `Surfaces/Text/Primary`, not Secondary — the same weight of colour as the
+ * title. That is what the file draws.
+ * ===================================================================================== */
+
+.listRoot[data-size] {
+  /* `Sub Item List` `Size`: Small 16, Default 24, and the 32px box `Size=Medium` uses. */
+  --sds-list-marker: 24px;
+  /* `Main List Item` gap 8; `Sub List Item` gap 2. */
+  --sds-list-gap: 8px;
+  padding-inline-start: 0;
+  /* Figma's markers are inside the row, so the list has no hanging indent. */
+  list-style-position: inside;
+}
+
+.listRoot[data-size='sm'] {
+  --sds-list-marker: 16px;
+}
+
+.listRoot[data-size='lg'] {
+  --sds-list-marker: 32px;
+}
+
+.listRoot[data-nested] {
+  --sds-list-gap: 2px;
+}
+
+.listRoot[data-size] .listItem {
+  /* The marker is drawn in the row, so the native one goes. `role="list"` keeps the semantics. */
+  list-style: none;
+}
+
+/*
+ * The gap between items — `List` gap 20, `Sub List` gap 8. Mantine hangs this off its own item class,
+ * which these items do not carry: `List.Item` renders its own `<li>` so a sublist can be a child of it.
+ * Adjacent siblings rather than `:not(:first-of-type)`, so a sublist inside an item cannot be counted.
+ */
+.listRoot[data-size] .listItem + .listItem {
+  margin-top: var(--list-spacing, 0);
+}
+
+/*
+ * Figma's row: the marker column, an 8px gap, then the content. Mantine's own wrapper is an
+ * `inline-flex` column with the icon as an `inline-block` and a margin, so all three are replaced.
+ */
+.listRoot[data-size] .listItemRow {
+  display: flex;
+  flex-direction: row;
+  /* The marker sits against the first line, not the middle of a three-line item. */
+  align-items: flex-start;
+  gap: var(--sds-list-gap);
+  width: 100%;
+}
+
+/*
+ * The marker column. Its **box is one line tall** and the glyph is centred in it, overflowing above and
+ * below when the marker is bigger than the line — which puts the glyph's centre on the centre of the
+ * first line of text at every size, and keeps it there when the title wraps to three lines.
+ *
+ * Figma reaches the same place from the other side: its `Size=Medium` cell grows the `Header list` row
+ * from 23 to 32 so the taller marker still sits level with the title. Growing the text's row only works
+ * while the title is one line, so the marker is what gives here. Measured at all three sizes: the marker's
+ * centre and the title's centre are the same pixel.
+ */
+.listRoot[data-size] .listItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--sds-list-marker);
+  width: var(--sds-list-marker);
+  height: 24px;
+  margin-inline-end: 0;
+  /* Every marker in the set is `Accent/Product Accent`. */
+  color: var(--sds-accent-product-accent);
+}
+
+.listRoot[data-size] .listItemLabel {
+  display: flex;
+  flex-direction: column;
+  /* `Main Item` gap 4, between the title and the description. */
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.listRoot[data-size] .listTitle {
+  /* `Paragraph/Default/Heavier`. */
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.listRoot[data-size] .listDescription {
+  font-weight: 400;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* ------------------------------------------------------------------------------- the markers */
+
+.listMarker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Square at the marker's own size, inside the one-line-tall column above. */
+  width: var(--sds-list-marker);
+  height: var(--sds-list-marker);
+  flex: none;
+}
+
+.listMarker > svg {
+  /* `system/check` fills its box: 24px in a 24px cell, as the set draws it. */
+  width: 100%;
+  height: 100%;
+}
+
+/* An 8px dot, whatever the box around it. */
+.listMarker[data-marker='bullet']::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 1000px;
+  background-color: currentColor;
+}
+
+/*
+ * The number is a **CSS counter**, not a string: it cannot disagree with the item's position, and
+ * `start`, `reversed` and a mid-list insertion all keep working. `list-item` is the counter every
+ * `<li>` already increments, so nothing has to be reset.
+ */
+.listMarker[data-marker='number']::before {
+  content: counter(list-item) '.';
+  font-weight: 700;
+  /* The number keeps the text's own size, as `Paragraph/Default/Heavier` does in the set. */
+  font-size: 18px;
+  line-height: 24px;
+}
+
+/* ------------------------------------------------------------------------- Padding=Yes */
+
+/*
+ * Figma couples the padding with a surface — the `Padding=Yes` cell puts a `Surface`
+ * `State=Default, Style=Grey` behind the row — so `padded` brings both.
+ *
+ * The radius is this system's `radius/medium` (8px). Figma's `Surface` draws 9, which is not a step on
+ * the radius scale; the same 9-against-8 is already recorded for the Card's focus ring.
+ */
+.listRoot[data-size][data-padded] .listItem {
+  padding: 20px 16px;
+  background-color: var(--sds-surfaces-card-bg-grey);
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------------------- the sublist */
+
+/*
+ * `Content Main List` gap 12 — between the item's own text and the sublist under it. The sublist is a
+ * child of the `<li>`, so it has to be indented to line up with the content it belongs to: the marker
+ * column plus the row gap, which is 24 + 8 = 32 at the default size, exactly where Figma puts it.
+ *
+ * The indent is declared on the **item**, not on either list, and as a literal rather than a `calc` of
+ * the marker and gap variables. A `calc` would be inherited by the sublist as an unresolved expression
+ * and then re-resolved against the sublist's *own* marker and gap — which are different, since a
+ * sublist's gap is 2px — and the indent would come out 6px short.
+ */
+.listRoot[data-size='sm'] > .listItem {
+  --sds-list-indent: 24px;
+}
+
+.listRoot[data-size='md'] > .listItem {
+  --sds-list-indent: 32px;
+}
+
+.listRoot[data-size='lg'] > .listItem {
+  --sds-list-indent: 40px;
+}
+
+.listRoot[data-nested][data-size='sm'] > .listItem {
+  --sds-list-indent: 18px;
+}
+
+.listRoot[data-nested][data-size='md'] > .listItem {
+  --sds-list-indent: 26px;
+}
+
+.listRoot[data-nested][data-size='lg'] > .listItem {
+  --sds-list-indent: 34px;
+}
+
+.listRoot[data-size] .listItem > .listRoot {
+  margin-top: 12px;
+  padding-inline-start: var(--sds-list-indent);
+}
+
+/* `Sub List Item`'s title is Semi Bold where the main item's is Bold. */
+.listRoot[data-nested] .listTitle {
+  font-weight: 600;
+}
+
+/* And its title and description sit flush: the `Text` frame inside it has no gap. */
+.listRoot[data-nested] .listItemLabel {
+  gap: 0;
+}
+
+@media (forced-colors: active) {
+  .listRoot[data-size] .listItemIcon {
+    color: CanvasText;
+  }
+
+  .listRoot[data-size][data-padded] .listItem {
+    border: 1px solid CanvasText;
+  }
+}

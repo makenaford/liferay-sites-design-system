@@ -2,6 +2,7 @@ import {
   Accordion,
   Anchor,
   Badge,
+  List,
   Button,
   Card,
   SegmentedControl,
@@ -403,6 +404,34 @@ export const componentTheme: MantineThemeComponents = {
         '--accordion-chevron-size': 'auto',
         /** Figma draws no rounding on an accordion row: the rule is a full-width line. */
         '--accordion-radius': '0',
+      },
+    }),
+  }),
+
+  /**
+   * Figma `List` (node `19130:63824`) with `Main List Item`, `Sub List Item` and the `Sub Item List`
+   * marker set. Every cell keeps its text at 18px — the `Size` axis moves the marker, not the type — so
+   * the font is set here once and the sizes live on `data-size` in `components.module.css`.
+   */
+  List: List.extend({
+    /*
+     * Only the root. `List.Item` renders its own `<li>` rather than Mantine's, so that a nested list can
+     * be a child of the `<li>` instead of landing inside the label's `<span>` — Mantine's item puts every
+     * child in that span, and a `<ul>` inside a `<span>` is not a list in a document, only on screen.
+     */
+    classNames: { root: classes.listRoot },
+
+    vars: () => ({
+      root: {
+        /** `Paragraph/Default/Regular` — 18px at 125%, the size every cell in the set uses. */
+        '--list-fz': '18px',
+        '--list-lh': '24px',
+        /**
+         * Mantine indents the list by a marker gap and then positions the icon with a margin. Figma has
+         * a fixed marker column and an 8px gap, drawn flush to the container, so both are switched off
+         * here and the stylesheet lays the row out.
+         */
+        '--list-marker-gap': '0',
       },
     }),
   }),

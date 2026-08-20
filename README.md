@@ -1208,6 +1208,96 @@ otherwise an unreachable scroll region (WCAG 2.1.1).
 `label` is required and has no default, for the reason `Image`'s `alt` is: a region announced as
 "carousel" with no name says nothing about what someone has landed in.
 
+## List
+
+Figma `List` (node `19130:63824`), `Main List Item` (`19660:37508`), `Sub List Item` (`19660:53930`) and
+the `Sub Item List` marker set (`19129:50376`), on Mantine's `List`.
+
+| Figma | Prop |
+| --- | --- |
+| `List` `Type` — Icon / Number / Bullet | `marker="check" \| "number" \| "bullet"` |
+| `Sub Item List` `Icon Type` (instance swap) | `icon`, on the list or on one item |
+| `Main List Item` `Size` — Default / Medium | `size="md"` / `size="lg"` |
+| `Sub Item List` `Size=Small` | `size="sm"` |
+| `Main List Item` `Padding` — No / Yes | `padded` |
+| `Show Header` + `Header list` | `<List.Item title="…">` |
+| `Show description` + `Description` | the item's children |
+| `Show Sublist` + `Sub List` | a `List` inside a `List.Item` |
+| `List` gap 20, `Sub List` gap 8 | `spacing`, defaulted per level |
+
+```tsx
+<List marker="check">
+  <List.Item title="Key point">Short description here</List.Item>
+</List>
+```
+
+Figma's `Type=Icon` cell renders `system/check`, so `marker="check"` is that cell rather than a fourth
+one; `icon` is its instance swap.
+
+### Measured
+
+| | `sm` | `md` (Figma `Size=Default`) | `lg` (`Size=Medium`) |
+| --- | --- | --- | --- |
+| Marker | 16px | 24px | 32px |
+| Text starts at | 24px | 32px | 40px |
+| Title | 18px / 24px, bold | same | same |
+
+`size` moves **the marker only**. Every cell in Figma keeps its text at 18px, and the marker column plus
+the 8px gap is what the content indent comes from. Item spacing 20px, title-to-description 4px, both from
+the file.
+
+The description is `Surfaces/Text/Primary` — the same colour as the title, not the Secondary a
+description usually gets here. That is what the file draws, and it is left alone.
+
+### The marker sits on the first line, whatever is around it
+
+The marker column is **one line tall** with the glyph centred in it, overflowing above and below when the
+marker is bigger than the line. Measured at all three sizes: the marker's centre and the title's centre
+land on the same pixel.
+
+Figma gets there from the other side — its `Size=Medium` cell grows the `Header list` row from 23 to 32,
+so a taller marker still reads level with the title. That only holds while the title is one line, and real
+titles wrap, so the marker is what gives here instead of the text's row.
+
+### A sublist knows it is one
+
+Figma's `Sub List` differs from the list around it in five values at once: bullets rather than checks, 8px
+between items rather than 20, 2px from the marker rather than 8, a semibold title rather than bold, and no
+gap between title and description. Every one of those is a value rather than a component, so a `List`
+inside a `List.Item` **picks all five up on its own** — there is no `nested` prop, and passing `marker` or
+`spacing` still overrides.
+
+Two structural notes:
+
+- The nested list is lifted out of the description and rendered as **a child of the `<li>`**, which is
+  where a nested list belongs. `List.Item` therefore renders its own `<li>` rather than Mantine's, whose
+  item puts every child inside a `<span>` — a `<ul>` in a `<span>` renders but is not a list in a document.
+- It is then indented by the marker column plus the row gap, so it lines up with the content above it —
+  verified at 32px against a content edge of 32px. That indent is a **literal per size**, not a `calc` of
+  the marker and gap variables: a `calc` is inherited as an unresolved expression and would be re-resolved
+  against the sublist's own gap of 2px, coming out 6px short.
+
+### Semantics
+
+A real `<ul>`, or `<ol>` when `marker="number"`, so a screen reader announces the count and the numbering
+comes from the document. The visible number is a **CSS counter** (`counter(list-item)`) for the same
+reason: it cannot disagree with the item's position, and inserting a row in the middle needs no edits.
+
+`role="list"` is set explicitly, because Safari drops list semantics from a list styled `list-style: none`
+— which is what any custom marker requires.
+
+Every marker is `aria-hidden`, the check included. The list role already says "list" and the `<ol>` says
+what number a row is; a dot announced before each line is noise. That does mean a tick carries no announced
+meaning, so if it stands for something the copy does not say — "included in this plan" — the copy is the
+place to say it, or pass an `icon` with a label of its own.
+
+### No interaction states
+
+Figma's `Main List Item` `Padding=Yes` cell sits on a `Surface` instance, and that component has
+`State=Hover` cells. Nothing is wired to them: a list of key points is not a control, and the set draws no
+hover for the row itself. If a row ever becomes a link, `Card` is the component that already has the ring,
+the lift and the focus treatment for that.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px

@@ -36,6 +36,13 @@ export {
   type MegaCtaProps,
 } from './components/Header'
 export {
+  List,
+  type ListProps,
+  type ListItemProps,
+  type ListMarker,
+  type ListSize,
+} from './components/List'
+export {
   InfoTooltip,
   LanguagePicker,
   Select,
