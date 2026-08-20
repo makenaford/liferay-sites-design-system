@@ -155,22 +155,46 @@ export const Interactive: Story = {
 
 /**
  * **Resource card** — the spreadsheet's first type. Label on top, title and description in the middle,
- * a link at the bottom.
+ * a call to action at the bottom.
+ *
+ * Note what the two cards do differently. The first **is** a link, so its call to action is *text* with
+ * the link's colour and arrow — a nested `<a>` inside an `<a>` is invalid HTML, and browsers unnest it
+ * into something neither element controls. The second is a plain container with a real `Link` inside,
+ * which is the right choice when the card holds more than one destination.
  */
 export const ResourceCard: Story = {
   render: (args) => (
-    <Card {...args} interactive component="a" href="#" w={320}>
-      <Label size="sm" variant="outline">Whitepaper</Label>
-      <Title order={3} fz="var(--sds-size-heading-f4)">
-        The composable enterprise
-      </Title>
-      <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
-        What changes when every team ships to the same platform.
-      </Text>
-      <Link href="#" size="md" rightSection={<IconArrowRight />}>
-        Download
-      </Link>
-    </Card>
+    <Group align="stretch" gap="20">
+      <Card {...args} interactive component="a" href="#" w={320}>
+        <Label size="sm" variant="outline">
+          Whitepaper
+        </Label>
+        <Title order={3} fz="var(--sds-size-heading-f4)">
+          The composable enterprise
+        </Title>
+        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          What changes when every team ships to the same platform.
+        </Text>
+        <Group gap="4" c="var(--sds-action-link-default-link)" fw={600} fz="var(--sds-size-action-link-medium)">
+          Download
+          <IconArrowRight />
+        </Group>
+      </Card>
+      <Card {...args} w={320}>
+        <Label size="sm" variant="outline">
+          Whitepaper
+        </Label>
+        <Title order={3} fz="var(--sds-size-heading-f4)">
+          Not itself a link
+        </Title>
+        <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
+          So the call to action can be a real `Link`.
+        </Text>
+        <Link href="#" size="md" rightSection={<IconArrowRight />}>
+          Download
+        </Link>
+      </Card>
+    </Group>
   ),
 }
 

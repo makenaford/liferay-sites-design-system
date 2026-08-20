@@ -31,6 +31,10 @@ export interface CardProps
    *
    * A card that looks clickable has to *be* clickable: this does not make it focusable or activatable
    * on its own, and a `<div>` with an `onClick` is not reachable by keyboard.
+   *
+   * When the card **is** the link, it must not contain links: `<a>` inside `<a>` is invalid, and the
+   * browser unnests it into markup neither element controls. Either the card is the one destination and
+   * its call to action is plain text, or the card is a container and the links inside it are real.
    */
   interactive?: boolean
 }

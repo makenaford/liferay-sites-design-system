@@ -1844,6 +1844,14 @@
 }
 
 /* The label owns the empty box, so the placeholder must not compete with it. */
+/*
+ * The floating label ignores the pointer so a click lands in the field beneath it — but the info pill
+ * inside it is a button, and a tooltip trigger nobody can reach is not a tooltip.
+ */
+.fieldRoot[data-floating] .fieldLabel .fieldInfo {
+  pointer-events: auto;
+}
+
 .fieldRoot[data-floating] .fieldInput::placeholder {
   color: transparent;
 }
@@ -1859,7 +1867,7 @@
  * is the trigger for a tooltip rather than a button that goes somewhere, so it carries the explanation
  * it labels.
  */
-.fieldInfo {
+.fieldRoot .fieldInfo {
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -1867,7 +1875,12 @@
   border: none;
   border-radius: 4px;
   background-color: var(--sds-status-info-lighten-2);
-  color: var(--sds-status-info-info);
+  /*
+   * `Status/Info/Darken 2`, not `Status/Info/Info` as Figma binds it. `Lighten 2` is pale in *both*
+   * colour modes, while `Info` lightens on dark — pairing them there gives #579dff on #e9f2ff, which is
+   * 2.4:1. `Darken 2` stays dark in both, so the chip reads at 13:1 on light and 5.3:1 on dark.
+   */
+  color: var(--sds-status-info-darken-2);
   font-size: 11px;
   font-weight: 600;
   line-height: 20px;
@@ -1875,12 +1888,12 @@
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.fieldInfo > svg {
+.fieldRoot .fieldInfo > svg {
   width: 10px;
   height: 10px;
 }
 
-.fieldInfo:focus-visible {
+.fieldRoot .fieldInfo:focus-visible {
   outline: 2px solid var(--sds-action-primary-hover);
   outline-offset: 2px;
 }
@@ -2002,4 +2015,755 @@
   .fieldWrapper:focus-within {
     outline: 2px solid Highlight;
   }
+}
+
+/* ============================================================================== Header
+ *
+ * Source: the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma
+ * component set. Every colour and measurement in that stylesheet is already one of this library's
+ * tokens, so they are bound here rather than copied as literals:
+ *
+ *   --bg-base        Surfaces/Page BG base/Default      --neutral-03    Neutral/03
+ *   --text-primary   Surfaces/Text/Primary              --neutral-10    Neutral/10
+ *   --text-secondary Surfaces/Text/Secondary            --link-active   Action/Link/Active Link
+ *   --glass-border   Components/Glass Line/02           --btn-grad-*    Brand/Primary/*
+ *
+ * The one thing the prototype leaves as literals is the glass itself — `rgba(7,11,19,.6)` and
+ * `rgba(7,11,19,.72)`, the page background at 60% and 72%. Those are `Surfaces/Page BG base/Default`
+ * with an alpha, which no token expresses, so they are composed with `color-mix()` from the token.
+ *
+ * Its hover and pressed fills are literals too — `rgba(255,255,255,.06)` and friends — and those could
+ * not be copied: white at 6% over the light page background is invisible, the same failure mode as the
+ * `neutral` button and the Link's `secondary` style. They are mixed from `Surfaces/Text/Primary`
+ * instead, which is dark on light and light on dark, so one declaration works in both modes.
+ */
+
+.headerShell {
+  z-index: 200;
+  width: 100%;
+}
+
+.headerShell[data-position='fixed'] {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+/*
+ * The band. 20px of blur with the saturation lifted is what makes the page underneath read as glass
+ * rather than as a flat scrim, and the hairline plus the drop shadow are what separate it from content
+ * scrolling past.
+ */
+.headerBand {
+  position: relative;
+  z-index: 2;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--sds-glass-line-to);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.headerInner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 64px;
+  padding-inline: clamp(20px, 4vw, 48px);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.headerNav {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * A section in the bar. The underline is a scaled pseudo-element rather than a border so it wipes out
+ * from the centre instead of appearing all at once, and the caret turns over when the panel opens.
+ */
+.headerNav .headerItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 6px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--sds-motion-fast) var(--sds-motion-ease),
+    background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.headerNav .headerItem::after {
+  content: '';
+  position: absolute;
+  inset-inline: 8px;
+  bottom: -1px;
+  height: 2px;
+  background-color: var(--sds-action-link-active-link);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerNav .headerItem[data-open] {
+  color: var(--sds-action-link-active-link);
+}
+
+.headerNav .headerItem[data-open]::after {
+  transform: scaleX(1);
+}
+
+.headerCaret {
+  display: flex;
+  opacity: 0.7;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerCaret > svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerNav .headerItem[data-open] .headerCaret {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+@media (hover: hover) {
+  .headerNav .headerItem:hover:not([data-open]) {
+    color: var(--sds-neutral-10);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+}
+
+.headerNav .headerItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------------------------------ the mega panel
+ *
+ * An inset floating box that drops out of the band: the same glass, one step more opaque, with the
+ * bottom corners rounded and no top edge of its own — the band's hairline is the panel's top.
+ */
+
+.headerMegaWrap {
+  position: relative;
+  z-index: 1;
+  padding-inline: clamp(12px, 3vw, 32px);
+}
+
+.headerMega {
+  display: flex;
+  flex-direction: column;
+  max-width: 1280px;
+  margin: 0 auto;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--sds-glass-line-to);
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  /*
+   * Closed: collapsed and inert. `max-height` is what can be animated here — the panel's height depends
+   * on its content, and `height: auto` does not transition.
+   */
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    max-height var(--sds-motion-medium) var(--sds-motion-ease-out),
+    opacity var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.headerMega[data-open] {
+  /* Never taller than the viewport under the band, and scrollable when the content is longer. */
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/*
+ * The columns arrive a beat after the panel, each one slightly behind the last, which reads as the
+ * panel filling rather than everything appearing at once. Six is as far as the stagger goes; a
+ * seventh column simply arrives with the sixth.
+ */
+@keyframes header-column-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.headerMega[data-open] .megaColumn,
+.headerMega[data-open] .megaFeatured {
+  animation: header-column-in var(--sds-motion-medium) var(--sds-motion-ease-out) both;
+}
+
+.headerMega[data-open] .megaColumn:nth-child(1) {
+  animation-delay: 20ms;
+}
+
+.headerMega[data-open] .megaColumn:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.headerMega[data-open] .megaColumn:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.headerMega[data-open] .megaColumn:nth-child(4) {
+  animation-delay: 140ms;
+}
+
+.headerMega[data-open] .megaColumn:nth-child(n + 5) {
+  animation-delay: 180ms;
+}
+
+.headerMega[data-open] .megaFeatured {
+  animation-delay: 160ms;
+}
+
+/* ------------------------------------------------------------------------- panel contents */
+
+.megaBody {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.megaColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  flex: 1;
+  min-width: 280px;
+  align-items: start;
+  gap: clamp(20px, 2.5vw, 32px);
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(40px, 6vw, 64px) clamp(20px, 4vw, 48px);
+}
+
+.megaColumn {
+  min-width: 0;
+}
+
+.megaColumnHeading {
+  margin: 0 0 16px;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.megaColumnItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* A link row. The negative margin lets the hover fill bleed past the text without shifting the grid. */
+.megaItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 8px;
+  margin-inline: -8px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--sds-surfaces-text-primary);
+  opacity: 0.9;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaItemIcon > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.megaItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.megaItemTitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaItemTitle > svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+.megaItemDescription {
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+@media (hover: hover) {
+  .megaItem:hover {
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+
+  .megaItem:hover .megaItemIcon,
+  .megaItem:hover .megaItemTitle {
+    color: var(--sds-action-link-active-link);
+    opacity: 1;
+  }
+}
+
+.megaItem:active {
+  background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 12%, transparent);
+}
+
+.megaItem:focus-visible,
+.megaTile:focus-visible,
+.megaFeaturedCard:focus-visible,
+.megaMore:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+}
+
+/*
+ * The Solutions layout's tile heading: the same glass treatment as the segmented control's selected
+ * pill, at the card's radius, standing in for a column label that is also a destination.
+ */
+.megaTile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  /*
+   * `Components/Glass Card/Glass Step 01` -> `02`, not the segmented control's `Glass Tab` pair: those
+   * are translucent white on dark but *opaque brand blue* in light mode, where they are the selected
+   * pill. The glass card steps are translucent in both, which is what a tile behind dark text needs.
+   */
+  background-image: radial-gradient(
+    120% 260% at 88% 0%,
+    var(--sds-glass-step-01) 0%,
+    var(--sds-glass-step-02) 100%
+  );
+  color: var(--sds-surfaces-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color var(--sds-motion-fast) var(--sds-motion-ease),
+    background-image var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaTileIcon {
+  display: flex;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaTileIcon > svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (hover: hover) {
+  .megaTile:hover {
+    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
+    background-image: radial-gradient(
+      120% 260% at 88% 0%,
+      color-mix(in srgb, var(--sds-surfaces-text-primary) 10%, transparent) 0%,
+      var(--sds-glass-step-02) 100%
+    );
+  }
+
+  .megaTile:hover .megaTileIcon {
+    color: var(--sds-action-link-active-link);
+  }
+}
+
+/* The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule. */
+.megaFeatured {
+  width: clamp(260px, 24vw, 320px);
+  flex-shrink: 0;
+  border-inline-start: 1px solid var(--sds-neutral-03);
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 64px) clamp(20px, 3vw, 40px);
+  background-image: linear-gradient(
+    178deg,
+    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 50%, transparent) 64%,
+    color-mix(in srgb, var(--sds-gradient-card-blue) 28%, transparent) 100%
+  );
+}
+
+.megaFeatured[data-wide] {
+  width: clamp(300px, 32vw, 480px);
+}
+
+.megaFeaturedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.megaFeaturedCard {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  margin-inline: -8px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaFeaturedCard[data-stacked] {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.megaFeaturedThumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 96px;
+  height: 64px;
+  overflow: hidden;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  color: var(--sds-action-neutral-inverted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: center;
+  transition: border-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaFeaturedCard[data-stacked] .megaFeaturedThumb {
+  width: 100%;
+  height: 133px;
+}
+
+.megaFeaturedThumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.megaFeaturedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.megaFeaturedTitle {
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.25;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+@media (hover: hover) {
+  .megaFeaturedCard:hover {
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+
+  .megaFeaturedCard:hover .megaFeaturedThumb {
+    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
+  }
+
+  .megaFeaturedCard:hover .megaFeaturedTitle {
+    color: var(--sds-action-link-active-link);
+  }
+}
+
+.megaMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 23px;
+  margin-inline-start: -8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--sds-motion-fast) var(--sds-motion-ease),
+    color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.megaMore > svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (hover: hover) {
+  .megaMore:hover {
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+    color: var(--sds-action-link-active-link);
+  }
+}
+
+/* The strip that closes the Platform menu: a prompt, and the action it prompts. */
+.megaCta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px clamp(20px, 4vw, 48px);
+  border-top: 1px solid var(--sds-glass-line-to);
+  background-color: color-mix(in srgb, var(--sds-brand-primary-darken-5) 22%, transparent);
+}
+
+.megaCtaLabel {
+  color: var(--sds-neutral-10);
+  font-size: 15px;
+}
+
+/* ---------------------------------------------------------------------------- the scrim
+ *
+ * Not in the prototype, which listens for a click on the document. A transparent layer under the panel
+ * does the same job without a global listener racing other handlers, and it stops a click meant for the
+ * menu landing on the page behind it.
+ */
+.headerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+/* -------------------------------------------------------------- below 1200px: bar becomes drawer
+ *
+ * The prototype is desktop-only and says so. The same `items` drive a burger and a drawer here, with
+ * each section an accordion over the menu it would otherwise drop down — the panel's grid and rail
+ * collapse to a single column, so the content itself needs no second version.
+ */
+
+.headerBurger {
+  display: block;
+}
+
+.headerNav,
+.headerMegaWrap {
+  display: none;
+}
+
+.headerActions {
+  display: none;
+}
+
+/*
+ * The narrow-viewport panel: the same glass as the mega panel, full width under the band, with each
+ * section a row that expands its own menu in place.
+ */
+.headerMobile {
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: 8px clamp(16px, 4vw, 24px) 24px;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid var(--sds-glass-line-to);
+}
+
+.headerMobileSection {
+  border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+.headerMobileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 4px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.headerMobileItem[data-open] {
+  color: var(--sds-action-link-active-link);
+}
+
+.headerMobileItem[data-open] .headerCaret {
+  transform: rotate(180deg);
+}
+
+.headerMobileItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.headerMobileActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 20px;
+}
+
+/* Inside the stacked panel the menu is one column and the rail loses its divider and gradient. */
+.headerMobile .megaColumns {
+  grid-template-columns: 1fr;
+  padding: 0 0 16px;
+  min-width: 0;
+}
+
+.headerMobile .megaFeatured {
+  width: 100%;
+  border-inline-start: none;
+  padding: 8px 0 16px;
+  background-image: none;
+}
+
+.headerMobile .megaCta {
+  justify-content: flex-start;
+  padding-inline: 0;
+  background-color: transparent;
+}
+
+.headerMobile .megaBody {
+  flex-direction: column;
+}
+
+@media (min-width: 1200px) {
+  .headerBurger,
+  .headerMobile {
+    display: none;
+  }
+
+  .headerNav {
+    display: flex;
+  }
+
+  .headerActions {
+    display: flex;
+  }
+
+  .headerMegaWrap {
+    display: block;
+  }
+}
+
+/* ------------------------------------------------------------------------- reduced motion
+ *
+ * The panel still opens and closes — that is the state — but it stops sliding, and the columns stop
+ * arriving one after another.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .headerMega {
+    transition: opacity var(--sds-motion-fast) var(--sds-motion-ease);
+    transform: none;
+  }
+
+  .headerMega[data-open] {
+    transform: none;
+  }
+
+  .headerMega[data-open] .megaColumn,
+  .headerMega[data-open] .megaFeatured {
+    animation: none;
+  }
+
+  .headerNav .headerItem::after {
+    transition: none;
+  }
+
+  .headerCaret {
+    transition: none;
+  }
+}
+
+/* Screen-reader-only text, for the "opens in a new tab" note on an external link. */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

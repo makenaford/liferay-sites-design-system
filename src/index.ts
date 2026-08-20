@@ -8,6 +8,19 @@
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export {
+  Header,
+  MegaMenu,
+  type HeaderProps,
+  type HeaderNavItem,
+  type MegaMenuProps,
+  type MegaColumnProps,
+  type MegaItemProps,
+  type MegaTileProps,
+  type MegaFeaturedProps,
+  type MegaFeaturedCardProps,
+  type MegaCtaProps,
+} from './components/Header'
+export {
   InfoTooltip,
   LanguagePicker,
   Select,

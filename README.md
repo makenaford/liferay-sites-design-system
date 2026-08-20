@@ -647,6 +647,85 @@ selection with the arrow keys — the semantics for **swapping panels**. `Segmen
 group, for picking one option where the choice itself is the outcome. The two look related in Figma;
 pick by what the control does, not by which mockup it came from.
 
+## Header and MegaMenu
+
+From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
+set: a fixed glass band over the page, an inset panel that drops out of it, and a staggered reveal of
+the columns inside.
+
+```tsx
+import { Button, Header, MegaMenu } from 'scratch'
+
+<Header
+  logo={<Logo />}
+  actions={<Button size="sm">Contact Sales</Button>}
+  items={[
+    {
+      value: 'platform',
+      label: 'Platform',
+      menu: (
+        <MegaMenu>
+          <MegaMenu.Body>
+            <MegaMenu.Columns>
+              <MegaMenu.Column heading="Digital Experience">
+                <MegaMenu.Item href="/platform" icon={<IconGlassComposable size={20} />}
+                  title="Platform Overview" description="Explore the complete platform." />
+              </MegaMenu.Column>
+            </MegaMenu.Columns>
+            <MegaMenu.Featured heading="Featured">…</MegaMenu.Featured>
+          </MegaMenu.Body>
+          <MegaMenu.Cta label="Ready to Evaluate?">…</MegaMenu.Cta>
+        </MegaMenu>
+      ),
+    },
+  ]}
+/>
+```
+
+Every colour and measurement in the prototype's stylesheet is one of this library's tokens, so they are
+bound rather than copied: `Surfaces/Text/Primary` for the labels, `Action/Link/Active Link` for the open
+section and its underline, `Components/Glass Line/*` for the hairlines, `Neutral/03` for the rail
+divider, `Brand/Primary` for the button. The band is 64px with the inner content capped at 1280px, the
+panel has 20px bottom corners and a 1px hairline with no top edge, and the columns auto-fit at 190px.
+
+`MegaMenu` is composed, not configured — `Body`, `Columns`, `Column`, `Tile`, `Item`, `Featured`,
+`FeaturedCard`, `More` and `Cta`. The prototype has three layouts (columns with headings, columns under
+tiles, columns beside a featured rail) and they are compositions of that same handful of parts, so one
+component covers all of them and a fourth layout needs no code.
+
+### How it behaves, and why
+
+- **Click to open, not hover.** The prototype is click-driven and this keeps it: a hover menu is
+  unusable on touch, punishing for anyone with a tremor, and meaningless to a screen reader with no
+  pointer. Clicking the open section closes it.
+- **It is a disclosure, not a menubar.** Each section is a `<button aria-expanded aria-controls>` over a
+  labelled region of ordinary links. `role="menu"` is for application menus and would seize the arrow
+  keys; in a panel of links Tab is what people expect. Escape closes and returns focus to the trigger,
+  and a pointer-down outside the header closes it.
+- **The rows are real links.** The prototype uses `div role="link"` with `tabindex`, which cannot be
+  opened in a new tab, activated with Enter, or copied as a URL. `MegaMenu.Item` is an `<a>`.
+- **Closed panels stay mounted but `hidden`**, so their height can animate and nothing lands in the tab
+  order while closed.
+- **Below 1200px the bar becomes a stacked panel.** The prototype is desktop-only and says so; the same
+  `items` feed a burger and a full-width panel where each section expands in place. It runs on the same
+  open state as the desktop menus, so there is one state machine rather than two, and the menu content
+  needs no mobile variant — the column grid and the featured rail collapse on their own.
+
+Motion follows the prototype: the panel animates `max-height` over 280ms, then the columns arrive at
+20ms intervals behind it. `prefers-reduced-motion` keeps the open and close but drops the slide and the
+stagger.
+
+### Two things the prototype could not be copied on
+
+- **Its hover fills are white literals** — `rgba(255,255,255,.06)` and friends. White at 6% over the
+  light page background is invisible, the same failure the `neutral` button and the Link's `secondary`
+  style had. They are mixed from `Surfaces/Text/Primary` instead, which is dark on light and light on
+  dark, so one declaration covers both modes.
+- **Its glass is a literal too** — `rgba(7,11,19,.6)`, the page background at 60%. No token expresses a
+  token-with-alpha, so the band and the panel are composed with `color-mix()` from
+  `Surfaces/Page BG base/Default`. If the design file ever publishes the glass surfaces as their own
+  variables, these become plain token references.
+
 ## Fields — TextInput, Textarea, Select, LanguagePicker
 
 From the Figma `Input` set (node `16166:23969`), laid out in the `input` section `24397:77217`, with the
@@ -1049,6 +1128,23 @@ Two smaller things in that export:
   `Premium Security 5`, `Out of the box3`) look like iterations that were never pruned. Nothing breaks —
   the manifest takes an `as` name — but the set would be easier to search with one name per icon.
 
+### A card that is a link cannot contain links
+
+`<a>` inside `<a>` is invalid, and browsers unnest it into markup neither element controls. So an
+`interactive` Card rendered as `component="a"` must be the single destination, with its call to action as
+plain text carrying the link colour; a card that holds more than one link has to be a plain container
+with real `Link`s inside. Both shapes are in the **Resource card** story. This was a live bug in the
+first version of those stories, caught in the browser console rather than by typecheck.
+
+### The info pill's Figma colours fail in dark mode
+
+`Info Button` binds its text to `Status/Info/Info` on a `Status/Info/Lighten 2` chip. `Lighten 2` is pale
+in *both* colour modes while `Info` lightens on dark, so that pairing gives #579dff on #e9f2ff — **2.4:1**.
+The implementation uses `Status/Info/Darken 2`, which stays dark in both: 13:1 on light, 4.6:1 on dark.
+
+Same shape of problem as `Action/Neutral/Inverted`, from the opposite direction: a surface that does not
+change between modes, paired with text that does.
+
 ### Smaller things
 
 - **Link `secondary`'s hover and disabled states** were imperceptible and full-contrast respectively.
@@ -1078,7 +1174,7 @@ Two smaller things in that export:
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Input, Label, Link,
+src/components/          One directory per component (Button, Card, Header, Input, Label, Link,
                          SegmentedControl, Stat, Tabs)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
