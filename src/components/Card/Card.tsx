@@ -1,6 +1,7 @@
-import { forwardRef } from 'react'
+import { forwardRef, type ImgHTMLAttributes, type ReactNode } from 'react'
 import { Card as MantineCard, createPolymorphicComponent } from '@mantine/core'
 import type { CardProps as MantineCardProps, ElementProps } from '@mantine/core'
+import classes from '../../theme/components.module.css'
 import { spacing } from '../../theme/tokens.generated'
 
 export type CardSurface = 'glass' | 'grey' | 'blue' | 'gradient-blue' | 'gradient-purple' | 'none'
@@ -56,14 +57,21 @@ export interface CardProps
  * for the "no padding image" card — it reverses the card's padding, so an image reaches the corner.
  *
  * ```tsx
- * <Card variant="glass" padding="md" interactive component="a" href="/story">
- *   <Card.Section>
- *     <img src={cover} alt="" />
- *   </Card.Section>
- *   <Title order={3}>Customer story</Title>
- *   <Text>How a bank rebuilt onboarding.</Text>
+ * <Card variant="glass" padding="md">
+ *   <Card.Image src={cover} alt="" />
+ *   <Card.Top>
+ *     <Label size="sm" variant="outline">Customer story</Label>
+ *   </Card.Top>
+ *   <h3>How a bank rebuilt onboarding</h3>
+ *   <p>Six weeks from kickoff to launch.</p>
+ *   <Card.Cta>
+ *     <Link href="/story" rightSection={<IconArrowRight />}>Read it</Link>
+ *   </Card.Cta>
  * </Card>
  * ```
+ *
+ * Every slot is optional: `Card.Image` for the picture, `Card.Top` for a label, stat or illustrative
+ * icon, `Card.Cta` for the actions. Whatever sits between them is the card's own content.
  */
 const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   { variant = 'glass', padding = 'md', interactive, ...props },
@@ -80,11 +88,82 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   )
 })
 
+export interface CardImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'children'> {
+  /** The aspect ratio the image is held at. Figma's `card-image` is drawn at 3:2. */
+  ratio?: string | false
+  /** Media other than an `<img>` — a `<picture>`, a video, a placeholder. Replaces `src`. */
+  children?: ReactNode
+}
+
+/**
+ * The card's image. Bleeds to the card's edges whatever its padding, clips to the corner, and grows on
+ * hover when the card is `interactive`.
+ *
+ * It reverses the padding itself rather than going through Mantine's `Card.Section`: Mantine detects a
+ * section by comparing the child's component type, which a wrapper defeats, so the bleed is done in CSS
+ * against `--card-padding` and works at any nesting.
+ */
+function Image({ ratio = '3 / 2', children, style, alt = '', ...props }: CardImageProps) {
+  return (
+    <div
+      className={classes.cardImage}
+      data-card-image
+      style={ratio ? { aspectRatio: ratio, ...style } : style}
+    >
+      {children ?? <img alt={alt} {...props} />}
+    </div>
+  )
+}
+
+export interface CardSlotProps extends ElementProps<'div'> {
+  children: ReactNode
+}
+
+/**
+ * The card's top slot — the spreadsheet's Top row: a `Label`, a `Stat`, an illustrative icon, a
+ * subheading, or a combination. A wrapping row, so a label and a date sit side by side.
+ */
+function Top({ children, className, ...props }: CardSlotProps) {
+  return (
+    <div className={[classes.cardTop, className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * The card's bottom slot — a `Link`, a `Button`, or several. It pins itself to the bottom of the card,
+ * so a row of cards of different text lengths still lines its actions up.
+ *
+ * If the card itself is a link (`interactive` with `component="a"`), this must not contain one: `<a>`
+ * inside `<a>` is invalid. Put the call to action here as text, or make the card a plain container.
+ */
+function Cta({ children, className, ...props }: CardSlotProps) {
+  return (
+    <div className={[classes.cardCta, className].filter(Boolean).join(' ')} {...props}>
+      {children}
+    </div>
+  )
+}
+
 /**
  * Polymorphic, because an interactive card has to be able to *be* the link or the button rather than
- * wrap one: `component="a"` with an `href`, or `component="button"`. `Card.Section` is re-exported
- * unchanged — the section is Mantine's, and the theme styles it.
+ * wrap one: `component="a"` with an `href`, or `component="button"`.
+ *
+ * The slots are what make a card composable: `Card.Image`, `Card.Top` and `Card.Cta` around whatever
+ * heading and copy belong in the middle. All three are optional and order is yours — the card is a
+ * flex column, so a top slot under the image, or an image with nothing else, both work.
+ *
+ * `Card.Section` is Mantine's own full-bleed slot, re-exported for anything the image slot does not
+ * cover.
  */
-export const Card = createPolymorphicComponent<'div', CardProps, { Section: typeof MantineCard.Section }>(
-  Object.assign(CardBase, { Section: MantineCard.Section }),
-)
+export const Card = createPolymorphicComponent<
+  'div',
+  CardProps,
+  {
+    Image: typeof Image
+    Top: typeof Top
+    Cta: typeof Cta
+    Section: typeof MantineCard.Section
+  }
+>(Object.assign(CardBase, { Image, Top, Cta, Section: MantineCard.Section }))

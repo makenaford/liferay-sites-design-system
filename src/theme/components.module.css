@@ -1251,8 +1251,13 @@
 
   .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
   .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image] {
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image],
+  .cardRoot[data-orientation][data-interactive]:hover .cardImage > * {
     transform: none;
+  }
+
+  .cardImage > * {
+    transition: none;
   }
 }
 
@@ -1266,6 +1271,72 @@
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
+}
+
+/* ------------------------------------------------------------------------------- the slots
+ *
+ * `Card.Image`, `Card.Top` and `Card.Cta` — the composable pieces. Each is optional and none of them
+ * cares what order it appears in: the card is a flex column, so an image under a label works as well as
+ * a label under an image.
+ *
+ * The image reverses the card's padding itself rather than going through Mantine's `Card.Section`.
+ * Mantine detects a section by comparing the child's component type, which any wrapper defeats, so the
+ * bleed is done here against `--card-padding` — which means it survives being nested, wrapped or
+ * conditionally rendered.
+ */
+.cardImage {
+  display: block;
+  overflow: hidden;
+  margin-inline: calc(var(--card-padding) * -1);
+}
+
+/* Only the edges it actually touches: an image between two blocks keeps its inline bleed and no more. */
+.cardImage:first-child {
+  margin-top: calc(var(--card-padding) * -1);
+}
+
+.cardImage:last-child {
+  margin-bottom: calc(var(--card-padding) * -1);
+}
+
+.cardImage > img,
+.cardImage > picture,
+.cardImage > video,
+.cardImage > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The top slot: a label, a stat, an illustrative icon, a subheading, or several. A wrapping row, so a
+ * label and a date sit beside each other and a 48px glass icon sits on its own line if it has to.
+ */
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * The bottom slot. `margin-top: auto` is the point of it: in a row of cards with different amounts of
+ * copy, the actions still line up along the bottom instead of floating under each card's last line.
+ */
+.cardCta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.cardRoot[data-orientation='horizontal'] .cardCta {
+  /* Nothing to push against in a row, so it sits where it falls. */
+  margin-top: 0;
 }
 
 /* ------------------------------------------------------------------------------ Card.Section
@@ -1295,7 +1366,8 @@
 @media (hover: hover) {
   .cardRoot[data-orientation][data-interactive]:hover .cardSection > img,
   .cardRoot[data-orientation][data-interactive]:hover .cardSection > picture > img,
-  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image] {
+  .cardRoot[data-orientation][data-interactive]:hover .cardSection > [data-card-image],
+  .cardRoot[data-orientation][data-interactive]:hover .cardImage > * {
     transform: scale(1.06);
   }
 }

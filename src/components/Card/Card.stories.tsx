@@ -177,33 +177,35 @@ export const ResourceCard: Story = {
   render: (args) => (
     <Group align="stretch" gap="20">
       <Card {...args} variant="none" padding="none" interactive component="a" href="#" w={320}>
-        <Card.Section>
+        <Card.Image>
           <Cover />
-        </Card.Section>
-        <Stack gap="8" pt="16">
+        </Card.Image>
+        <Card.Top>
           <Label size="sm" variant="outline">
             Whitepaper
           </Label>
-          <Title order={3}>The composable enterprise</Title>
+        </Card.Top>
+        <Title order={3}>The composable enterprise</Title>
+        <Card.Cta>
           <Group gap="4" c="var(--sds-action-link-default-link)" fw={600} fz="var(--sds-size-action-link-medium)">
             Download
             <IconArrowRight />
           </Group>
-        </Stack>
+        </Card.Cta>
       </Card>
       <Card {...args} w={320}>
-        <Label size="sm" variant="outline">
-          Whitepaper
-        </Label>
-        <Title order={3}>
-          Not itself a link
-        </Title>
-        <Text component="p">
-          So the call to action can be a real Link component.
-        </Text>
-        <Link href="#" size="md" rightSection={<IconArrowRight />}>
-          Download
-        </Link>
+        <Card.Top>
+          <Label size="sm" variant="outline">
+            Whitepaper
+          </Label>
+        </Card.Top>
+        <Title order={3}>Not itself a link</Title>
+        <Text component="p">So the call to action can be a real Link component.</Text>
+        <Card.Cta>
+          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+            Download
+          </Link>
+        </Card.Cta>
       </Card>
     </Group>
   ),
@@ -215,19 +217,19 @@ export const ResourceCard: Story = {
  */
 export const ImageCard: Story = {
   render: (args) => (
-    <Card {...args} padding="none" interactive component="a" href="#" w={320}>
-      <Card.Section>
+    <Card {...args} interactive component="a" href="#" w={320}>
+      <Card.Image>
         <Cover />
-      </Card.Section>
-      <Stack gap="8" p="20">
-        <Label size="sm" variant="outline">Customer story</Label>
-        <Title order={3}>
-          Six weeks to launch
-        </Title>
-        <Text component="p">
-          The image bleeds to the edge; the text keeps its padding.
-        </Text>
-      </Stack>
+      </Card.Image>
+      <Card.Top>
+        <Label size="sm" variant="outline">
+          Customer story
+        </Label>
+      </Card.Top>
+      <Title order={3}>Six weeks to launch</Title>
+      <Text component="p">
+        The image reverses the card&apos;s padding to reach the corner; everything else keeps it.
+      </Text>
     </Card>
   ),
 }
@@ -244,14 +246,14 @@ export const FullWidthCard: Story = {
         <Text component="p">
           Horizontal cards centre their blocks against each other.
         </Text>
-        <Group gap="16" mt="8">
+        <Card.Cta>
           <Button size="md" rightSection={<IconArrowRight />}>
             Book a demo
           </Button>
           <Link href="#" size="md">
             Read the docs
           </Link>
-        </Group>
+        </Card.Cta>
       </Stack>
       <Box w={280} style={{ borderRadius: 8, overflow: 'hidden' }}>
         <Cover ratio="4 / 3" />
@@ -272,10 +274,12 @@ export const FullWidthCard: Story = {
 export const CustomerStoryCard: Story = {
   render: (args) => (
     <Card {...args} padding="md" w={320}>
-      <Card.Section>
+      <Card.Image>
         <Cover ratio="3 / 2" />
-      </Card.Section>
-      <Stat value="845" label="Months to launch" rightSection={<IconArrowUp />} />
+      </Card.Image>
+      <Card.Top>
+        <Stat value="845" label="Months to launch" rightSection={<IconArrowUp />} />
+      </Card.Top>
       <Text component="p">
         “With Liferay we can scale automatically, or on a schedule, a lot quicker than we could
         before.”
@@ -307,14 +311,18 @@ export const IconCard: Story = {
   render: (args) => (
     <Group align="stretch" gap="20">
       <Card {...args} w={260}>
-        <IconGlassComposable />
+        <Card.Top>
+          <IconGlassComposable />
+        </Card.Top>
         <Text fw={600}>Left aligned</Text>
         <Text component="p">
           The default flow of the card.
         </Text>
       </Card>
       <Card {...args} w={260} ta="center" style={{ alignItems: 'center' }}>
-        <IconGlassDatabase />
+        <Card.Top>
+          <IconGlassDatabase />
+        </Card.Top>
         <Text fw={600}>Centre aligned</Text>
         <Text component="p">
           Same card, centred content.
@@ -355,6 +363,61 @@ export const WithIllustrativeIcon: Story = {
         </Text>
       </Card>
     </Group>
+  ),
+}
+
+/**
+ * **The slots.** `Card.Image`, `Card.Top` and `Card.Cta` around whatever content belongs in the middle.
+ * All three are optional and the order is yours — the card is a flex column.
+ *
+ * Look at the bottom row: these cards carry different amounts of copy and their actions still line up,
+ * because `Card.Cta` pins itself to the bottom.
+ */
+export const Slots: Story = {
+  render: (args) => (
+    <SimpleGrid cols={3} spacing="20">
+      <Card {...args}>
+        <Card.Image>
+          <Cover />
+        </Card.Image>
+        <Card.Top>
+          <Label size="sm" variant="outline">
+            Image and label
+          </Label>
+        </Card.Top>
+        <Title order={3}>All three slots</Title>
+        <Text component="p">Image, top and cta.</Text>
+        <Card.Cta>
+          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+            Read more
+          </Link>
+        </Card.Cta>
+      </Card>
+      <Card {...args}>
+        <Card.Top>
+          <Stat size="sm" value="98%" label="Uptime" />
+        </Card.Top>
+        <Title order={3}>A stat on top</Title>
+        <Text component="p">
+          No image, and a longer description — so the cards do not agree on height, which is what makes
+          the bottom row worth looking at.
+        </Text>
+        <Card.Cta>
+          <Button size="sm">Book a demo</Button>
+        </Card.Cta>
+      </Card>
+      <Card {...args}>
+        <Card.Top>
+          <IconGlassComposable />
+        </Card.Top>
+        <Title order={3}>An icon on top</Title>
+        <Card.Cta>
+          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+            Read more
+          </Link>
+        </Card.Cta>
+      </Card>
+    </SimpleGrid>
   ),
 }
 

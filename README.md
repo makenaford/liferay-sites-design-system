@@ -435,13 +435,16 @@ for its skin, with the axes enumerated in the accompanying spreadsheet. A themed
 ```tsx
 import { Card, Label, Link } from 'scratch'
 
-<Card variant="glass" padding="md" interactive component="a" href="/story">
-  <Card.Section>
-    <img src={cover} alt="" />
-  </Card.Section>
-  <Label size="sm">Customer story</Label>
+<Card variant="glass" padding="md">
+  <Card.Image src={cover} alt="" />
+  <Card.Top>
+    <Label size="sm" variant="outline">Customer story</Label>
+  </Card.Top>
   <h3>Six weeks to launch</h3>
-  <Link href="/story">Read it</Link>
+  <p>How a bank rebuilt onboarding.</p>
+  <Card.Cta>
+    <Link href="/story" rightSection={<IconArrowRight />}>Read it</Link>
+  </Card.Cta>
 </Card>
 ```
 
@@ -465,6 +468,29 @@ which is what Figma's `Title- Card` is set to — and a paragraph is 18px/24px i
 they carry zero specificity and any call site that sets a size wins without a fight. Neither size is
 bound to a typography variable in the file (`Size/Paragraph/Large` reads 20px), which is the same
 text-style-versus-variable split Button and Link have.
+
+### The slots
+
+The spreadsheet's rows are three optional slots, and everything between them is the card's own content:
+
+| Slot | What goes in it |
+| --- | --- |
+| `Card.Image` | the picture — bleeds to the card's edges at any padding, held at 3:2 by default, and grows 6% on hover when the card is `interactive` |
+| `Card.Top` | a `Label`, a `Stat`, an illustrative icon, a subheading — a wrapping row, so a label and a date sit side by side |
+| `Card.Cta` | a `Link`, a `Button`, or several |
+
+Order is yours: the card is a flex column, so a label above an image works as well as below it, and a
+card with only an image is fine. `Card.Section` is still there for anything the image slot does not
+cover.
+
+**`Card.Cta` pins itself to the bottom.** In a row of cards carrying different amounts of copy, the
+actions still line up — measured: three cards of equal height with a 32px link, a 48px button and a 32px
+link all sit exactly 20px above their card's edge. Without it, each action floats under its own last
+line of text.
+
+`Card.Image` reverses the padding itself rather than going through Mantine's `Card.Section`. Mantine
+detects a section by comparing the child's component type, which any wrapper defeats; doing the bleed in
+CSS against `--card-padding` means it survives being wrapped, nested or conditionally rendered.
 
 **Content is composed, not configured.** The spreadsheet's slots — Top (label, illustrative icon,
 stat, subheading), Content (title, description, list), Bottom (author, link, button, stats) — are
@@ -528,8 +554,9 @@ bleed.
 Everything that moves on hover — the lift, the shadow, the fill, and the image behind it — shares one
 duration and one curve, so the card reads as a single object responding rather than four properties
 animating. The image is the resource card's treatment: it grows 6% inside `Card.Section`, which already
-clips to the corner, so it scales in its own frame instead of pushing the card around. A real `<img>`
-picks that up automatically; a placeholder element needs `data-card-image`.
+clips to the corner, so it scales in its own frame instead of pushing the card around. `Card.Image`
+carries that automatically, as does a real `<img>` in a `Card.Section`; a bare placeholder element in a
+section needs `data-card-image`.
 
 Two departures from the file worth naming. The lift and the press are not in Figma at all — a card is a
 big target and needs to acknowledge the pointer somewhere other than a 1px edge. And Figma's `State=Focus`
