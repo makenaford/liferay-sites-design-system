@@ -2,6 +2,7 @@ import {
   Anchor,
   Badge,
   Button,
+  Card,
   SegmentedControl,
   type MantineThemeComponents,
 } from '@mantine/core'
@@ -217,6 +218,26 @@ export const componentTheme: MantineThemeComponents = {
           '--sds-label-gap': '4px',
         },
       }
+    },
+  }),
+
+  Card: Card.extend({
+    classNames: {
+      root: classes.cardRoot,
+      section: classes.cardSection,
+    },
+
+    defaultProps: {
+      /**
+       * Figma's `card-main` draws 20px padding on the vertical card and 40px on the horizontal one;
+       * the spreadsheet names the scale Small 16 / Medium 20 / Large 40 / Image 0. 20 is the default,
+       * and `Card`'s own `padding` prop maps the names onto it.
+       */
+      padding: `${spacing['20']}`,
+      /** `Border Radius/medium` — every Surface variant in Figma draws an 8px corner. */
+      radius: 'md',
+      /** Figma's `Style=Glass`, the default cell of the Surface set. */
+      variant: 'glass',
     },
   }),
 

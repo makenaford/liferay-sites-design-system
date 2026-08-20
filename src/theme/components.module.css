@@ -964,3 +964,437 @@
     outline-color: Highlight;
   }
 }
+
+/* ================================================================================ Card
+ *
+ * Figma source: the `card-main` set (`24385:65090`) for the box, and the `Surface` set
+ * (`24385:58962`) for its skin — Style (Glass | Grey | Blue | Gradient Blue | Gradient Purple |
+ * no-bg) x State (Default | Hover | Focus). The accompanying spreadsheet enumerates the same axes
+ * plus the padding scale (Small 16 / Medium 20 / Large 40 / Image 0) and the content slots.
+ *
+ * Style maps onto Mantine's `variant`; the padding scale onto `padding`; Orientation onto Mantine
+ * Card's own `orientation`. The states are the real CSS interaction states, and only on a card that
+ * is actually interactive — the spreadsheet is explicit that Glass is the clickable surface and Grey
+ * is not, so the affordances are opt-in through `interactive` rather than attached to every card.
+ *
+ * Every selector carries `[data-orientation]`, which Mantine's Card always sets, so these rules
+ * outrank both Card's and Paper's single-class declarations regardless of stylesheet order.
+ */
+
+.cardRoot[data-orientation] {
+  position: relative;
+  /* `Border Radius/medium`, on the Surface rectangle in every variant. */
+  border-radius: var(--paper-radius, 8px);
+  /* Figma's Surface has no border; the hairline is part of the glass fill, painted below. */
+  border: none;
+  background-color: transparent;
+  color: var(--sds-surfaces-text-primary);
+  /* Card.Section bleeds to the edge, so the corner has to clip. */
+  overflow: hidden;
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
+    background-image var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* Figma's vertical card has a 20px gap between its blocks, the horizontal one 24px. */
+.cardRoot[data-orientation='vertical'] {
+  gap: 20px;
+}
+
+.cardRoot[data-orientation='horizontal'] {
+  gap: 24px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------------------ the surfaces */
+
+/*
+ * `Style=Glass` — `Components/Glass Card/Glass Step 01` into `02` on a 30-degree diagonal, a 1px
+ * `Glass Line` hairline, the 100-radius background blur (a 50px CSS blur) and the
+ * `Components/Glass Card/shadow` glow. The hairline is a masked ring for the same reason as
+ * everywhere else in this file: a gradient cannot be a border without losing the radius.
+ */
+.cardRoot[data-orientation][data-variant='glass'] {
+  /*
+   * Figma expresses the fill as a transformed linear gradient; inverting its matrix gives a direction
+   * of (0.87, -0.50) in the card's own box — up and to the right, i.e. 60deg in CSS terms.
+   */
+  background-image: linear-gradient(
+    60deg,
+    var(--sds-glass-step-01) 0%,
+    var(--sds-glass-step-02) 100%
+  );
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+}
+
+.cardRoot[data-orientation][data-variant='glass']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  /* 225deg is Figma's transform for this stroke, inverted — the same hairline the tab bar uses. */
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* `Style=Grey` — a flat `Surfaces/Card BG/Grey`, no hairline, no shadow. The non-clickable surface. */
+.cardRoot[data-orientation][data-variant='grey'] {
+  background-color: var(--sds-surfaces-card-bg-grey);
+}
+
+/* `Style=Blue` — `Surfaces/Card BG/Blue` at 25%, with a half-strength hairline and a tighter glow. */
+.cardRoot[data-orientation][data-variant='blue'] {
+  background-color: var(--sds-surfaces-card-bg-blue);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 2px 1px var(--sds-glass-shadow);
+}
+
+.cardRoot[data-orientation][data-variant='blue']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  opacity: 0.5;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+ * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all
+ * `Surfaces/Card BG/Grey` (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives
+ * in the last stop. Figma's transform is a shallow diagonal; reproduced at the same angle.
+ */
+.cardRoot[data-orientation][data-variant='gradient-blue'],
+.cardRoot[data-orientation][data-variant='gradient-purple'] {
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+}
+
+.cardRoot[data-orientation][data-variant='gradient-blue'] {
+  background-image: linear-gradient(
+    134deg,
+    var(--sds-surfaces-card-bg-grey) 0%,
+    var(--sds-surfaces-card-bg-grey) 46%,
+    var(--sds-gradient-card-blue) 88%
+  );
+}
+
+.cardRoot[data-orientation][data-variant='gradient-purple'] {
+  background-image: linear-gradient(
+    134deg,
+    var(--sds-surfaces-card-bg-grey) 0%,
+    var(--sds-surfaces-card-bg-grey) 46%,
+    var(--sds-gradient-card-purple) 61%
+  );
+}
+
+/* `Style=no-bg` — the box and its padding with nothing drawn. */
+.cardRoot[data-orientation][data-variant='none'] {
+  background: none;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------- interaction, when clickable
+ *
+ * Figma draws Hover and Focus for every Style as a `card-Focus Ring`: a gradient stroke from
+ * `Brand/Primary/Lighten/1` to `Accent/Product Accent`, 1px on hover and 2px on focus, outside the
+ * 8px corner. It is reproduced as a masked ring at the card's own edge rather than outside it, since
+ * the card has to clip its corner for full-bleed images and an outside ring would be clipped with it.
+ *
+ * Two things are added on top, from ordinary practice rather than the file: the card lifts 2px on
+ * hover and settles back on press, and the ring only appears on `:focus-visible` rather than on any
+ * focus. Figma's Focus variant does not distinguish the two, but showing a focus ring after a mouse
+ * click is noise.
+ */
+.cardRoot[data-orientation][data-interactive] {
+  cursor: pointer;
+  /* The whole card is one target, so nothing inside it should catch the text cursor. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cardRoot[data-orientation][data-interactive]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 0;
+  background-image: linear-gradient(
+    to bottom right,
+    var(--sds-brand-primary-lighten-1) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  opacity: 0;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  /*
+   * Only the opacity transitions. The ring's thickness is the difference between hover (1px) and
+   * focus (2px), and padding is a layout property — animating it would relayout the pseudo-element on
+   * every frame for a one-pixel change nobody can follow.
+   */
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover: the 1px ring, and the lift. */
+.cardRoot[data-orientation][data-interactive]:hover::after {
+  padding: 1px;
+  opacity: 1;
+}
+
+.cardRoot[data-orientation][data-interactive]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 12px 2px var(--sds-glass-shadow);
+}
+
+/*
+ * The glass surface also changes fill on hover: Figma swaps the diagonal for a radial sheen that
+ * runs `Glass Step 02` -> `01` -> `02`, i.e. a highlight sweeping through the middle.
+ */
+.cardRoot[data-orientation][data-variant='glass'][data-interactive]:hover {
+  /*
+   * Inverting Figma's radial transform puts the centre on the top-right corner with radii of 140% and
+   * 154% — so the sheen arrives from the corner rather than blooming in the middle.
+   */
+  background-image: radial-gradient(
+    ellipse 140% 154% at 100% 2%,
+    var(--sds-glass-step-02) 0%,
+    var(--sds-glass-step-01) 54%,
+    var(--sds-glass-step-02) 100%
+  );
+}
+
+/* Focus: the 2px ring, from the same gradient. */
+.cardRoot[data-orientation][data-interactive]:focus-visible {
+  outline: none;
+}
+
+.cardRoot[data-orientation][data-interactive]:focus-visible::after {
+  padding: 2px;
+  opacity: 1;
+}
+
+/* Pressed. Not drawn in Figma; the card settles back to the surface it lifted from. */
+.cardRoot[data-orientation][data-interactive]:active {
+  transform: translateY(0);
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardRoot[data-orientation] {
+    transition: box-shadow var(--sds-motion-fast) var(--sds-motion-ease);
+  }
+
+  .cardRoot[data-orientation][data-interactive]:hover,
+  .cardRoot[data-orientation][data-interactive]:active {
+    transform: none;
+  }
+}
+
+/*
+ * In a forced-colours mode the ring is a background and would be dropped, leaving hover and focus
+ * indistinguishable from rest. A real outline is the one thing that survives.
+ */
+@media (forced-colors: active) {
+  .cardRoot[data-orientation][data-interactive]:hover,
+  .cardRoot[data-orientation][data-interactive]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+/* ------------------------------------------------------------------------------ Card.Section
+ *
+ * The spreadsheet's "no padding image card": an image that bleeds to the card's edge. Mantine
+ * already reverses the padding with negative margins; this only has to stop the image from
+ * inheriting the card's gap treatment and keep it clipped to the corner.
+ */
+.cardSection {
+  overflow: hidden;
+}
+
+.cardSection > img,
+.cardSection > picture > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ================================================================================ Stat
+ *
+ * Figma source: the `Stats Item` set (`15121:237366`), `Property 1` = Default | Small, with
+ * `Show Stat Icon Left` / `Show Stat Icon Right` booleans and Value / Label text properties. The
+ * `Stats Bar` set (`16708:102931`) arranges several of them with the gradient `divider`
+ * (`16290:53873`).
+ *
+ * A stat is not interactive — it is a number with a caption — so it has no states at all: no hover,
+ * no focus, no cursor. Rendered as plain text so a screen reader reads "845 Months to Launch".
+ *
+ * There is no Mantine counterpart to theme, so unlike every other component here the markup is this
+ * library's own and the component imports these classes directly rather than through
+ * `Component.extend`.
+ */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  /* Figma's `Stats Item` is a vertical auto-layout with no gap between the value and the label. */
+  gap: 0;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.stat[data-align='center'] {
+  align-items: center;
+  text-align: center;
+}
+
+/*
+ * The value row: icon, number, icon. Figma sets no gap between them at all, which is why the icons
+ * sit tight against the digits.
+ */
+.statValue {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  /* `Accent/Primary Blue Accent`, and Source Sans 3 SemiBold at a 100% line height. */
+  color: var(--sds-accent-primary-blue-accent);
+  font-weight: 600;
+  line-height: 1;
+  /* 40px is not a step on the type scale — Figma sets it on the component. See README.md. */
+  font-size: 40px;
+}
+
+.stat[data-size='sm'] .statValue {
+  /* Small's 32px is `Size/Heading/F1`'s value, though the component is not bound to it. */
+  font-size: 32px;
+}
+
+/* Both icon slots. 20px at either size, which is what the `Stat Icon` instance is drawn at. */
+.statValue > [data-section] {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.statValue > [data-section] > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * The label. Default is the `Small Caps/Small Caps Smaller/Semi Bold` style — 12px, uppercased, with
+ * 6% tracking; Small is `Paragraph/XX-Small/Semi Bold`, which is 11/16 and *not* uppercased. Both are
+ * `Surfaces/Text/Secondary`.
+ */
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sds-surfaces-text-secondary);
+  font-weight: 600;
+  font-size: var(--sds-size-paragraph-small-caps-xs);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stat[data-size='sm'] .statLabel {
+  font-size: var(--sds-size-paragraph-x-small);
+  line-height: var(--sds-line-height-paragraph-x-small);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ------------------------------------------------------------------------------- the stat bar
+ *
+ * Figma's `Stats Bar`: a horizontal row with a 16px gap and a 1px gradient divider between the
+ * stats, running `Neutral/06` to `Brand/Primary/Lighten/3`.
+ *
+ * Below the token collection's tablet breakpoint it stacks, which is the shape Figma's own
+ * `Size=Small, Align=Vertical` variant draws — there the divider is horizontal, so it turns with it.
+ */
+.statBar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.statBar[data-align='center'] {
+  align-items: center;
+  text-align: center;
+}
+
+.statBar > .statBarDivider {
+  flex-shrink: 0;
+  align-self: stretch;
+  border: none;
+  margin: 0;
+  /* The horizontal rule of the stacked layout. */
+  height: 1px;
+  width: auto;
+  background-image: linear-gradient(
+    to right,
+    var(--sds-neutral-06) 0%,
+    var(--sds-brand-primary-lighten-3) 100%
+  );
+}
+
+@media (min-width: 576px) {
+  .statBar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .statBar[data-align='center'] {
+    justify-content: center;
+  }
+
+  .statBar > .statBarDivider {
+    height: auto;
+    width: 1px;
+    align-self: stretch;
+    background-image: linear-gradient(
+      to bottom,
+      var(--sds-neutral-06) 0%,
+      var(--sds-brand-primary-lighten-3) 100%
+    );
+  }
+}

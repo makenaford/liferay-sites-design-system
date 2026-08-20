@@ -68,6 +68,19 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     /** `Components/Glass Tab/tab-focus-shadow` — the selected segment's cast shadow. */
     'tab-shadow': scheme === 'light' ? color['brand-primary-lighten-4'] : color['neutral-01'],
 
+    /**
+     * `Components/Glass Card/Glass Step 01` / `02` — the two stops of the glass card's fill, and the
+     * three of its hover sheen (which reuses `02` at both ends).
+     */
+    'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+    'glass-step-02': 'rgba(140, 150, 169, 0.03)',
+    /**
+     * `Components/Gradient Card/blue` / `purple` — the coloured stop of a gradient card. Its other
+     * three stops are all `Surfaces/Card BG/Grey`, which is exported, so only these two are here.
+     */
+    'gradient-card-blue': scheme === 'light' ? color['brand-primary-lighten-4'] : '#0117ae',
+    'gradient-card-purple': scheme === 'light' ? color['accent-product-accent'] : '#7414ff',
+
     /** `Components/Glass Line/01` / `02` — the two stops of the container's hairline. */
     'glass-line-from':
       scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)',

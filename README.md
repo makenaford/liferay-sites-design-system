@@ -425,6 +425,122 @@ that do not exist.
 Long labels ellipsize rather than being cut: five segments of Figma's 18px label need the design's own
 1280px frame, and below that the text has to give somewhere.
 
+## Card
+
+From the Figma `card-main` set (node `24385:65090`) for the box and the `Surface` set (`24385:58962`)
+for its skin, with the axes enumerated in the accompanying spreadsheet. A themed Mantine `Card`.
+
+```tsx
+import { Card, Label, Link } from 'scratch'
+
+<Card variant="glass" padding="md" interactive component="a" href="/story">
+  <Card.Section>
+    <img src={cover} alt="" />
+  </Card.Section>
+  <Label size="sm">Customer story</Label>
+  <h3>Six weeks to launch</h3>
+  <Link href="/story">Read it</Link>
+</Card>
+```
+
+| Source | Prop |
+| --- | --- |
+| Surface `Style` — Glass / Grey / Blue / Gradient Blue / Gradient Purple / no-bg | `variant` (default `glass`) |
+| Padding — Small 16 / Medium 20 / Large 40 / Image 0 | `padding="sm" \| "md" \| "lg" \| "none"` |
+| Orientation — Vertical / Horizontal | `orientation` (Mantine's own) |
+| Surface `State` — Default / Hover / Focus | the real CSS states, when `interactive` |
+
+Measurements from `card-main`: 8px corner (`Border Radius/medium`) on every Surface variant, a 20px
+gap between blocks when vertical and 24px when horizontal, where Figma also centres them against each
+other.
+
+**Content is composed, not configured.** The spreadsheet's slots — Top (label, illustrative icon,
+stat, subheading), Content (title, description, list), Bottom (author, link, button, stats) — are
+children. That is what lets one component cover all five of its card types, each of which is a story:
+Resource, no-padding image, full width, customer story quote, and icon card. `Card.Section` is
+Mantine's full-bleed slot and reverses the padding, so an image reaches the corner.
+
+### Interaction, and only when clickable
+
+The spreadsheet is explicit that Glass is the **clickable** surface and Grey is **non-clickable**, so
+the affordances are opt-in through `interactive` rather than attached to every card. Nothing about a
+card is interactive by default.
+
+`interactive` styles the card; it does not make it operable. Pass `component="a"` with an `href` (or
+`component="button"`) so the whole card is one real target — the component is polymorphic for exactly
+this. A `<div>` with an `onClick` looks identical and is unreachable by keyboard.
+
+| State | Treatment | Source |
+| --- | --- | --- |
+| hover | 1px gradient ring, `Brand/Primary/Lighten/1` → `Accent/Product Accent` | `card-Focus Ring` (`16719:45438`), as drawn |
+| hover, glass only | the fill swaps to the radial sheen centred on the top-right corner | as drawn |
+| hover | a 2px lift and a wider shadow | **added** |
+| focus | the same ring at 2px, on `:focus-visible` only | as drawn, narrowed to focus-visible |
+| pressed | settles back to the resting elevation | **added** |
+
+Figma draws the ring as an *outside* stroke at a 9px radius. Here it is a masked ring at the card's own
+edge instead: the card has to clip its corner for a full-bleed image, and an outside ring would be
+clipped along with it. At 1–2px the difference is not visible; the alternative is losing the image
+bleed.
+
+Two departures from the file worth naming. The lift and the press are not in Figma at all — a card is a
+big target and needs to acknowledge the pointer somewhere other than a 1px edge. And Figma's `State=Focus`
+does not distinguish focus from focus-visible, so the ring would also appear after a mouse click; here
+it is `:focus-visible`, which is the behaviour every other component in this library already has.
+`prefers-reduced-motion` drops the lift and the press, keeping the rings.
+
+### Surfaces in both colour modes
+
+Every value comes from the `Components/Glass Card/*`, `Components/Glass Line/*`,
+`Components/Gradient Card/*` and `Surfaces/Card BG/*` groups, all of which are mode-aware, so — as with
+the segmented control — nothing had to be restructured for light mode.
+
+The gradients are reproduced from Figma's transform matrices rather than by eye: inverting them gives
+60° for the glass fill, 225° for both hairlines, 134° for the two gradient cards, and for the glass
+hover sheen a centre at the top-right corner with 140% × 154% radii. The stop positions are Figma's.
+
+## Stat
+
+From the Figma `Stats Item` set (node `15121:237366`), with `StatBar` from `Stats Bar`
+(`16708:102931`) and its gradient `divider` (`16290:53873`).
+
+```tsx
+import { IconArrowUp, Stat, StatBar } from 'scratch'
+
+<StatBar>
+  <Stat value="845" label="Months to launch" leftSection={<IconArrowUp />} />
+  <Stat value="98%" label="Uptime" />
+</StatBar>
+```
+
+| Figma | Prop |
+| --- | --- |
+| `Property 1` — Default / Small | `size="md" \| "sm"` (default `md`) |
+| `Value` / `Label` | `value` / `label` |
+| `Show Stat Icon Left` / `Right` | `leftSection` / `rightSection` |
+| `Stats Bar` `Align` — Left / Center | `StatBar align` |
+
+| | Value | Label | Icon |
+| --- | --- | --- | --- |
+| `md` | 40px/100%, SemiBold, `Accent/Primary Blue Accent` | 12px/120% uppercase, 6% tracking | 20px |
+| `sm` | 32px/100% | 11/16px, sentence case, no tracking | 20px |
+
+Both labels are `Surfaces/Text/Secondary`. There is no gap between the icons and the number — Figma
+sets the value row's spacing to zero, so the arrows sit tight against the digits. The label row keeps
+its 4px.
+
+**A stat is not interactive.** No hover, no focus, no pressed state, no clickable wrapper, no pointer
+cursor: it is a number with a caption. If a stat needs to lead somewhere, put a `Link` next to it.
+
+It renders as plain text in reading order, so it is announced as "845 Months to Launch". The icons are
+decorative and hidden from assistive technology, which means an arrow that carries meaning — up rather
+than down — has to be said in the label too. The **Direction In Words** story shows this.
+
+`StatBar` puts a 1px gradient rule between stats (`Neutral/06` into `Brand/Primary/Lighten/3`) at
+Figma's 16px gap, and stacks below 576px with the rules turning horizontal — the shape Figma's
+`Size=Small, Align=Vertical` cell draws. The rules are `<hr aria-hidden>`, so the bar reads as a list
+of numbers rather than announcing a separator between each one.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -582,9 +698,10 @@ Still missing: `Components/*` (49 variables) and `Surfaces/Page Background/*`. T
 together, because the former aliases the latter. Until then the handful of `Components/*` values the
 components actually use are transcribed in `src/theme/cssVariables.ts`, expressed as references to
 exported tokens wherever the alias target exists: `Button Outline/*` and `Glass Card/shadow` for the
-outline button, `Label/lab-tonal-bg`, `lab-tonal-text` and `lab-grad-bg-step-01/-02` for the Label, and
-`Glass Tab/*` plus `Glass Line/01`–`02` for the segmented control. Re-exporting the whole collection
-from Figma would close this and let those literals go.
+outline button, `Label/lab-tonal-bg`, `lab-tonal-text` and `lab-grad-bg-step-01/-02` for the Label,
+`Glass Tab/*` plus `Glass Line/01`–`02` for the segmented control, and `Glass Card/Glass Step 01`–`02`
+with `Gradient Card/blue` and `/purple` for the Card. Re-exporting the whole collection from Figma would
+close this and let those literals go.
 
 The collection also has a **third mode, `Learn-Dark`**, alongside `Light` and `LRDC-Dark`. Only the
 first two are wired up; Mantine has two colour schemes, so a third would need a different mechanism.
@@ -613,6 +730,46 @@ so the implementation takes the Desktop treatment at both breakpoints and only t
 SegmentedControl state table above for what each became and why. Two hints in the file support the
 focus choice: the Default variant carries a *hidden* drop shadow bound to `Brand/Primary/Lighten/4`,
 and `Styles/focus-ring` is `Brand/Primary/Lighten/1`, which is what every other component here uses.
+
+### The card's Surface set carries its states, but nothing else does
+
+`Surface` (`24385:58962`) is the only component in this library that draws Default, Hover **and**
+Focus for every one of its styles, which is why the Card needed less inference than the tabs did. Two
+gaps remain:
+
+- **No pressed state, and no disabled.** Both are inferred; see the Card state table above.
+- **The Blue surface loses its edge and shadow on hover.** `State=Default, Style=Blue` has a
+  half-opacity hairline and a 2px glow; `State=Hover, Style=Blue` has neither, while every other style
+  keeps its resting treatment and only adds the ring. Read as drift rather than intent, so the
+  implementation keeps the hairline and the glow across states and only the ring changes.
+- **The focus ring is drawn outside the corner.** At a 9px radius against the card's 8px, i.e. offset
+  by one pixel. Reproduced at the card's own edge instead, because the card has to clip its corner for
+  a full-bleed image and an outside ring is clipped with it.
+
+### The card's content slots are a spreadsheet, not a component
+
+The five card types — Resource, no-padding image, full width, customer story quote, icon card — and the
+Top / Content / Bottom slot lists live in the spreadsheet rather than in Figma as variants. Each type is
+a *composition* of the same box, so `Card` takes children and each type is a story instead of a prop.
+If any of them is meant to be a fixed component with a fixed content structure, that is a design-file
+decision that has not been made yet.
+
+### Two Stat values are off the type scale
+
+The `Stats Item` value is 40px at Default and 32px at Small. Neither is bound to a variable: 40px is
+not a step on the scale at all (`Display/Display sm` is 36 and `Display lg` is 41), and 32px matches
+`Size/Heading/F1` without being bound to it. Both are reproduced literally.
+
+The Small label is drawn with the text style named `Paragraph/XX-Small/Semi Bold` at 11/16, which is
+exactly what the `Size/Paragraph/X-Small` variables say — so the style's *name* is one step off the
+variable it matches. The same naming drift as the Link's `Action/Link/X-small`.
+
+### The stat bar stacks on the viewport, not on its container
+
+`StatBar` switches to the stacked layout below 576px using a media query, which means a bar inside a
+narrow card stays a row until the whole viewport is narrow. Figma models this as a separate
+`Align=Vertical` cell rather than a breakpoint, so there is no drawn answer for the in-between case. A
+container query on a wrapper would fix it properly if that case turns up.
 
 ### Smaller things
 
@@ -643,7 +800,7 @@ and `Styles/focus-ring` is `Brand/Primary/Lighten/1`, which is what every other 
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Label, Link, SegmentedControl)
+src/components/          One directory per component (Button, Card, Label, Link, SegmentedControl, Stat)
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the set; generated.tsx is built from @mingcute/svg
 src/docs/                Storybook Overview pages
