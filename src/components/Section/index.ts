@@ -1,4 +1,4 @@
-export { Section, type SectionProps, type SectionBackground, type SectionSpacing } from './Section'
+export { Section, type SectionProps, type SectionSpacing } from './Section'
 export {
   SectionTitle,
   type SectionTitleProps,

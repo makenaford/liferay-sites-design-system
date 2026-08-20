@@ -47,7 +47,6 @@ export {
   SectionTitle,
   ContentMedia,
   type SectionProps,
-  type SectionBackground,
   type SectionSpacing,
   type SectionTitleProps,
   type SectionTitleAlign,

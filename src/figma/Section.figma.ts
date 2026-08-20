@@ -5,7 +5,7 @@
 // Code Connect mapping for the Figma `Section` set.
 //
 // `Type` maps to **what goes in the body**, not to a prop: all fourteen cells are the same shell — a
-// background, a centred 1280 column, a `SectionTitle`, a body and sometimes a footer — differing only in
+// centred 1280 column, a `SectionTitle`, a body and sometimes a footer — differing only in
 // their content. So the enum picks the snippet's body rather than an attribute, and `Size` does not reach
 // the code at all, because the padding and the type are fluid between Figma's two cells rather than
 // switched between them.
@@ -40,7 +40,7 @@ const body = instance.getEnum('Type', {
 
 export default {
   example: figma.code`
-    <Section background="page" title={<SectionTitle title="Section title" description="Description" />}>
+    <Section title={<SectionTitle title="Section title" description="Description" />}>
       ${body}
     </Section>
   `,

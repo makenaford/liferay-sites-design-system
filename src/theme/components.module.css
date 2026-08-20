@@ -4467,24 +4467,6 @@
   --sds-section-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.019048), 40px);
 }
 
-/* `Page Background` `Style`. */
-.sectionRoot[data-background='page'] {
-  background-color: var(--sds-surfaces-page-bg-base-default);
-}
-
-/*
- * Figma's `Dark Blue` cell. The name is left over from an earlier palette — the variable it uses is
- * `Surfaces/Page Background/Grey`, which aliases `Surfaces/Card BG/Grey`. Recorded in README.md.
- */
-.sectionRoot[data-background='grey'] {
-  background-color: var(--sds-surfaces-card-bg-grey);
-}
-
-/* Figma's `Light Blue` cell — `Surfaces/Page Background/Blue`, aliasing `Surfaces/Card BG/Blue`. */
-.sectionRoot[data-background='blue'] {
-  background-color: var(--sds-surfaces-card-bg-blue);
-}
-
 /*
  * The content column. `max-width` carries the gutter as well as the 1280, so the *content* tops out at
  * 1280 while the section itself still fills the page — the standard container pattern, and what Figma's

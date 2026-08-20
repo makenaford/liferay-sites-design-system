@@ -3,28 +3,9 @@ import { Box } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
-/**
- * Figma `Page Background` `Style` (node `22455:38997`), resolved through its aliases:
- *
- * - `page` — `Surfaces/Page Background/Page Background` → `Surfaces/Page BG base/Default`
- * - `grey` — Figma's `Dark Blue` cell, which aliases `Surfaces/Card BG/Grey`
- * - `blue` — Figma's `Light Blue` cell, which aliases `Surfaces/Card BG/Blue`
- * - `none` — nothing painted, so the page shows through
- *
- * Figma's fourth cell, `Gradient Blue`, is a four-stop radial built on remote `Gradient Step` variables
- * that are not in this file's collections; it is not shipped rather than guessed. See README.md.
- */
-export type SectionBackground = 'none' | 'page' | 'grey' | 'blue'
-
-/**
- * How much air the section has above and below. `default` is the 80px every standard section uses;
- * `tight` is the 40px the `Quote` and `Highlight Text` sections use.
- */
 export type SectionSpacing = 'default' | 'tight'
 
 export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 'title'> {
-  /** @default 'none' */
-  background?: SectionBackground
   /** @default 'default' */
   spacing?: SectionSpacing
   /**
@@ -47,7 +28,7 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
 /**
  * Section — the shell every block in Figma's `Section` set (node `17892:146518`) is built on.
  *
- * All fourteen of its `Type` cells share one skeleton: a full-bleed background, a centred content column
+ * All fourteen of its `Type` cells share one skeleton: a centred content column
  * capped at 1280, a `Section Title`, a body, and sometimes a footer. `Type` is not a prop here, because
  * it is not a property of the shell — it is which component you put in the body. `Card Grid` is a Section
  * holding a grid of `Card`s; `FAQ` is a Section holding an `Accordion`; `Integrations Section` is a
@@ -55,7 +36,6 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
  *
  * | Figma | Prop |
  * | --- | --- |
- * | `Page Background` `Style` | `background` |
  * | `padding` 80 desktop / 20 mobile | fluid, see below |
  * | The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
  * | `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
@@ -65,10 +45,18 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
  * | The 1280 content column in a 1440 frame | `maxWidth` |
  *
  * ```tsx
- * <Section background="page" title={<SectionTitle title="Customer stories" />}>
+ * <Section title={<SectionTitle title="Customer stories" />}>
  *   <SimpleGrid cols={3} spacing="24">…</SimpleGrid>
  * </Section>
  * ```
+ *
+ * ## No background
+ *
+ * Figma's `Page Background` instance is deliberately **not** implemented. A section that paints its own
+ * ground fights whatever the page has already decided, and three of its four cells are a flat token a
+ * caller can set in one line — `bg="var(--sds-surfaces-card-bg-grey)"` — while the fourth is a gradient
+ * whose stops are not in this file. If sections do need a background later, it belongs here as one prop
+ * rather than at every call site; until then the page owns it.
  *
  * ## The padding is fluid, not stepped
  *
@@ -87,7 +75,6 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
  */
 export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
   {
-    background = 'none',
     spacing = 'default',
     bleed,
     title,
@@ -106,7 +93,6 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
       component="section"
       ref={ref}
       className={[classes.sectionRoot, className].filter(Boolean).join(' ')}
-      data-background={background}
       data-spacing={spacing}
       data-bleed={bleed || undefined}
       style={{

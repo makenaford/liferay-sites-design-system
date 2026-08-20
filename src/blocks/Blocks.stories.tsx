@@ -62,7 +62,7 @@ const meta = {
         component: [
           'The fourteen `Type` cells of Figma’s `Section` set (node `17892:146518`), each built from `Section` plus one of the library’s components.',
           '',
-          '**`Type` is not a prop.** All fourteen cells share one skeleton — a full-bleed background, a centred 1280 column, a `SectionTitle`, a body, sometimes a footer — and differ only in what goes in the body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section holding an `Accordion`; `Integrations Section` is a Section holding a `Marquee`. Adding a `type` prop would mean fourteen wrappers that forward slots and add nothing.',
+          '**`Type` is not a prop.** All fourteen cells share one skeleton — a centred 1280 column, a `SectionTitle`, a body, sometimes a footer — and differ only in what goes in the body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section holding an `Accordion`; `Integrations Section` is a Section holding a `Marquee`. Adding a `type` prop would mean fourteen wrappers that forward slots and add nothing.',
           '',
           'Every block here is copy-pasteable: what you see in the source is the whole block. Resize the preview — the padding, the type and the columns are all fluid rather than stepped, so there is no width at which a block is between layouts.',
         ].join('\n'),
@@ -80,7 +80,6 @@ type Story = StoryObj
 export const CardGrid: Story = {
   render: () => (
     <Section
-      background="page"
       title={
         <SectionTitle
           title="Built for every team"
@@ -141,7 +140,6 @@ export const CardGridNonClickable: Story = {
 export const Resources: Story = {
   render: () => (
     <Section
-      background="page"
       title={
         <SectionTitle
           title="Resources"
@@ -207,7 +205,7 @@ export const ContentLeftImage: Story = {
 /** **`Type=Content- Right Image`** — the same block mirrored, with a `List` in the text column. */
 export const ContentRightImage: Story = {
   render: () => (
-    <Section background="grey">
+    <Section>
       <ContentMedia
         mediaSide="right"
         media={<Cover />}
@@ -262,12 +260,11 @@ export const Faq: Story = {
 
 /**
  * **`Type=Integrations Section`** — `bleed` so the `Marquee` runs off both edges while the title keeps the
- * gutter, on the grey background and at Figma's 32px gap.
+ * gutter, at Figma's 32px gap.
  */
 export const Integrations: Story = {
   render: () => (
     <Section
-      background="grey"
       bleed
       gap={32}
       title={
@@ -295,7 +292,6 @@ export const Integrations: Story = {
 export const CarouselSection: Story = {
   render: () => (
     <Section
-      background="page"
       bleed
       title={<SectionTitle title="Customer stories" description="Seven teams, one platform." />}
     >
@@ -333,7 +329,6 @@ export const TabbedContent: Story = {
     }
     return (
       <Section
-        background="page"
         title={<SectionTitle align="center" title="One platform, four jobs" />}
       >
         <Stack gap="40" align="center" w="100%">
@@ -366,7 +361,7 @@ export const TabbedContent: Story = {
 /** **`Type=Customer Story`** — one horizontal `Card` carrying the stats and the links. */
 export const CustomerStory: Story = {
   render: () => (
-    <Section background="page">
+    <Section>
       <Card
         align="horizontal"
         titleSize="full"
@@ -446,7 +441,7 @@ export const HighlightText: Story = {
 /** **`Type=Quote`** — `spacing="tight"` around a centred pull quote and its attribution. */
 export const Quote: Story = {
   render: () => (
-    <Section spacing="tight" background="grey" maxWidth={900}>
+    <Section spacing="tight" maxWidth={900}>
       <Stack gap="24" align="center" ta="center">
         <Text
           component="blockquote"
@@ -482,7 +477,6 @@ export const Quote: Story = {
 export const QuickLinks: Story = {
   render: () => (
     <Section
-      background="page"
       title={<SectionTitle title="Quick links" description="The pages people actually want." />}
     >
       <Stack gap="16">

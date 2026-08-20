@@ -1372,15 +1372,14 @@ the pixel.
 Figma `Section` (node `17892:146518`) and `Section Title` (`17892:146487`).
 
 `Section`'s set has fourteen `Type` cells, and **`Type` is not a prop**. All fourteen share one skeleton —
-a full-bleed background, a centred 1280 column, a `Section Title`, a body, sometimes a footer — and differ
-only in what goes in the body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section
+a centred 1280 column, a `Section Title`, a body, sometimes a footer — and differ only in what goes in the
+body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section
 holding an `Accordion`; `Integrations Section` is a Section holding a `Marquee`. Fourteen wrappers that
 forward slots would add API surface and no capability, so the fourteen live as **stories** under
 `Blocks/Sections`, each one copy-pasteable.
 
 | Figma | Prop |
 | --- | --- |
-| `Page Background` `Style` | `background` — `page` / `grey` / `blue` / `none` |
 | `padding` 80 at 1440, 20 at 390 | fluid, no prop |
 | The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
 | `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
@@ -1391,10 +1390,15 @@ forward slots would add API surface and no capability, so the fourteen live as *
 | `Size` — Default / Desktop / Mobile | **fluid**, not a prop |
 
 ```tsx
-<Section background="page" title={<SectionTitle title="Customer stories" />}>
+<Section title={<SectionTitle title="Customer stories" />}>
   <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">…</SimpleGrid>
 </Section>
 ```
+
+Figma's `Page Background` instance is deliberately **not** implemented. A section that paints its own ground
+fights whatever the page has already decided; three of its four cells are a flat token a caller can set in
+one line, and the fourth is a gradient whose stops are not in this file. If sections do need a background
+later it belongs here as one prop rather than at every call site — until then the page owns it.
 
 ### Fluid, and it passes through both of Figma's cells exactly
 
@@ -1677,16 +1681,6 @@ the set's properties, so `componentPropertyDefinitions` throws and **Code Connec
 
 This is the second set in the file with the same defect — the Accordion has it too — and in both cases the
 duplicate is a Mobile cell mislabelled `Device=Desktop`.
-
-### `Page Background`'s `Dark Blue` cell is grey
-
-`Page Background` `Style=Dark Blue` uses `Surfaces/Page Background/Grey`, which aliases
-`Surfaces/Card BG/Grey`. Nothing about it is blue in either mode. The prop is called `grey` after the
-variable rather than the cell, since the variable is what actually paints.
-
-Its fourth cell, `Gradient Blue`, is a four-stop radial built on `Gradient Step 01`–`04` variables that are
-not in this file's collections — they resolve as remote and could not be read. It is **not shipped** rather
-than approximated; four invented stops would be worse than an honest omission.
 
 ### Three styles were invisible in light mode
 
