@@ -30,7 +30,7 @@ const body = instance.getEnum('Type', {
   FAQ: '<Accordion size="lg" order={3}>{/* Accordion.Item */}</Accordion>',
   'Integrations Section': '<Marquee label="Integrations" monochrome>{/* logos */}</Marquee>',
   Carousel: '<Carousel label="Customer stories" gutter={80}>{/* Card */}</Carousel>',
-  'Tabbed- Content': '<SegmentedControl data={/* … */} />',
+  'Tabbed- Content': '<Tabs variant="pills" defaultValue="…">{/* Tabs.List + Tabs.Panel */}</Tabs>',
   'Customer Story': '<Card align="horizontal" titleSize="full" />',
   'Full Card': '<Card align="horizontal" titleSize="full" />',
   'Highlight Text': '<Card align="horizontal" titleSize="full" />',

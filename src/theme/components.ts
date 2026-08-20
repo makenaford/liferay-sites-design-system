@@ -4,7 +4,6 @@ import {
   Badge,
   List,
   Button,
-  SegmentedControl,
   Select,
   Tabs,
   Textarea,
@@ -12,7 +11,7 @@ import {
   type MantineThemeComponents,
 } from '@mantine/core'
 import classes from './components.module.css'
-import { radius, spacing } from './tokens.generated'
+import { radius } from './tokens.generated'
 
 /**
  * The three Figma button sizes. Height, horizontal padding and gap are taken from the component's
@@ -96,18 +95,6 @@ const LABEL_SIZES = {
 } as const
 
 export type LabelThemeSize = keyof typeof LABEL_SIZES
-
-/**
- * The two Figma sizes of the segmented control (`Tabs Menu Carded`). Figma models these as a `Sizes`
- * variant, Desktop and Mobile; here they are a media query instead — see the note in
- * `components.module.css` — so the numbers live in the stylesheet and only the shared values that
- * Mantine reads through its own variables are set here.
- */
-const SEGMENTED_CONTROL = {
-  /** Figma's container padding (`padding/8`) and the `Border Radius/round` pill. */
-  padding: spacing['8'],
-  radius: radius.round,
-} as const
 
 /** The label colour per variant. Constant across sizes in Figma. */
 const LABEL_TEXT_COLOR = {
@@ -424,16 +411,11 @@ export const componentTheme: MantineThemeComponents = {
       panel: classes.tabsPanel,
     },
 
-    defaultProps: {
-      /**
-       * Figma's component is `Tabs Menu Bottom`: the rule and the active indicator sit on the *top*
-       * edge, because the bar is designed to close a section rather than open one. Mantine's
-       * `inverted` is exactly that flip, so it is the default here. Pass `inverted={false}` for a
-       * conventional underline beneath the labels.
-       */
-      inverted: true,
-    },
-
+    /*
+     * `inverted` is not defaulted here. `Tabs` owns it, because the answer depends on the variant: the
+     * underline bar wants it (Figma draws that rule on the top edge) and the pill menu has no rule to
+     * invert. One source of truth beats a default that one variant then has to undo.
+     */
     vars: () => ({
       root: {
         /**
@@ -447,47 +429,6 @@ export const componentTheme: MantineThemeComponents = {
         /** Neutralised: the stylesheet owns the indicator, and Figma gives hover no background. */
         '--tabs-color': 'transparent',
         '--tab-hover-color': 'transparent',
-      },
-    }),
-  }),
-
-  SegmentedControl: SegmentedControl.extend({
-    classNames: {
-      root: classes.scRoot,
-      indicator: classes.scIndicator,
-      control: classes.scControl,
-      input: classes.scInput,
-      label: classes.scLabel,
-      innerLabel: classes.scInnerLabel,
-    },
-
-    defaultProps: {
-      /**
-       * Figma's desktop container spans the full width of its frame with equal-width segments, which
-       * is what `fullWidth` gives. Below the desktop breakpoint the stylesheet lets the segments hug
-       * their labels and scroll instead.
-       */
-      fullWidth: true,
-      /** Figma draws no separators between segments — the selected pill is the only divider. */
-      withItemsBorders: false,
-    },
-
-    /**
-     * Mantine's own variables carry the container radius and the indicator's travel; everything the
-     * design specifies per breakpoint lives in `components.module.css`, since Figma's `Sizes` axis is
-     * a media query here rather than a prop.
-     */
-    vars: () => ({
-      root: {
-        '--sc-radius': `${SEGMENTED_CONTROL.radius}px`,
-        '--sc-padding': '0',
-        /*
-         * Mantine's own defaults carry the indicator and the hover — 200ms on `ease`. They were
-         * overridden with this library's motion tokens for a while; the stock animation is what the
-         * design calls for, so the overrides are gone rather than tuned.
-         */
-
-        '--sds-sc-padding': `${SEGMENTED_CONTROL.padding}px`,
       },
     }),
   }),

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Stack, Text, Title } from '@mantine/core'
 import { Tabs } from './Tabs'
+import { IconGlassComposable, IconGlassDatabase, IconGlassMail } from '../../icons'
 
 /** The six tabs Figma draws in `Tabs Menu Bottom`, at their drawn labels. */
 const TABS = [
@@ -25,7 +26,12 @@ const meta = {
         'On by default: the rule and indicator sit above the labels, as `Tabs Menu Bottom` draws them. Off puts them underneath.',
     },
     orientation: { control: false },
-    variant: { control: false },
+    variant: {
+      options: ['default', 'pills'],
+      control: 'inline-radio',
+      description:
+        '`default` is Figma’s `Tabs Menu Bottom`; `pills` is its `Tabs Pill Menu` — a glass container with a pill sliding under the selection.',
+    },
   },
   parameters: {
     frame: { width: 1216 },
@@ -38,7 +44,9 @@ const meta = {
           '',
           "Figma's `Size` axis is responsive here rather than a prop: 18/24px labels in 52px tall tabs from 1200px, and 14/20px labels in 48px tabs below it, where the row scrolls.",
           '',
-          'These are **tabs**, not a segmented control: `role="tablist"`, arrow-key navigation, and panels that swap. Use `SegmentedControl` when the choice itself is the outcome.',
+          '`variant="pills"` is the other set Figma draws, `Tabs Pill Menu` (node `17900:62310`) — a glass container with a full-radius pill under the selection. It used to be a separate `SegmentedControl` component; the Figma set is named for tabs, its cells are `Tabs Pill`, and it swaps panels, so it is a variant here instead.',
+          '',
+          'These are **tabs** in both variants: `role="tablist"`, arrow-key navigation, panels that swap. A segmented control is a radio group, for picking a value where the choice itself is the outcome — if that is what a screen needs, a `Radio.Group` or a `Select` is the honest control.',
         ].join('\n'),
       },
     },
@@ -159,4 +167,141 @@ export const DisabledTab: Story = {
 export const Scrolling: Story = {
   render: Playground.render,
   parameters: { viewport: { defaultViewport: 'mobile1' } },
+}
+
+/* -------------------------------------------------------------------------------- pills */
+
+/** **`variant="pills"`** — Figma `Tabs Pill Menu`. The pill slides between tabs. */
+export const Pills: Story = {
+  args: { variant: 'pills', defaultValue: 'commerce' },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List>
+        {TABS.slice(0, 4).map((tab) => (
+          <Tabs.Tab key={tab.value} value={tab.value}>
+            {tab.label}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/** `grow` spreads the pills across the container, which is how the Figma cell is drawn. */
+export const PillsGrow: Story = {
+  args: { variant: 'pills', defaultValue: 'websites' },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List grow>
+        {TABS.slice(0, 3).map((tab) => (
+          <Tabs.Tab key={tab.value} value={tab.value}>
+            {tab.label}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/**
+ * Labels of very different lengths. The pill is measured from the active tab rather than assuming equal
+ * widths, so it fits each one — which is the case that a CSS-only implementation gets wrong.
+ */
+export const PillsUnevenLabels: Story = {
+  args: { variant: 'pills', defaultValue: 'search' },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List>
+        <Tabs.Tab value="websites">Enterprise Websites and Portals</Tabs.Tab>
+        <Tabs.Tab value="search">Search</Tabs.Tab>
+        <Tabs.Tab value="commerce">Digital Commerce</Tabs.Tab>
+        <Tabs.Tab value="apps">Apps</Tabs.Tab>
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/** `Show Icon Left` — the pill's icon slot, at 20px on desktop and 16px below 1200px. */
+export const PillsWithIcons: Story = {
+  args: { variant: 'pills', defaultValue: 'commerce' },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List grow>
+        <Tabs.Tab value="websites" leftSection={<IconGlassComposable />}>
+          Websites
+        </Tabs.Tab>
+        <Tabs.Tab value="commerce" leftSection={<IconGlassDatabase />}>
+          Commerce
+        </Tabs.Tab>
+        <Tabs.Tab value="portals" leftSection={<IconGlassMail />}>
+          Portals
+        </Tabs.Tab>
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/** A disabled pill. Figma draws no disabled cell; this is the half-opacity every other control uses. */
+export const PillsDisabled: Story = {
+  args: { variant: 'pills', defaultValue: 'websites' },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List>
+        {TABS.slice(0, 4).map((tab, index) => (
+          <Tabs.Tab key={tab.value} value={tab.value} disabled={index === 2}>
+            {tab.label}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/** **`Sizes=Mobile`** — a 44px pill, 12px between them, a 16px icon, and a bar that scrolls. */
+export const PillsMobile: Story = {
+  args: { variant: 'pills', defaultValue: 'websites' },
+  parameters: { viewport: { defaultViewport: 'mobile1' }, frame: { width: 366 } },
+  render: (args) => (
+    <Tabs {...args}>
+      <Tabs.List>
+        {TABS.map((tab) => (
+          <Tabs.Tab key={tab.value} value={tab.value}>
+            {tab.label}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      <Panels />
+    </Tabs>
+  ),
+}
+
+/** The two variants together: the underline bar Figma calls `Tabs Menu Bottom`, and the pill menu. */
+export const Variants: Story = {
+  render: (args) => (
+    <Stack gap="60">
+      <Tabs {...args} variant="default" defaultValue="websites">
+        <Tabs.List>
+          {TABS.slice(0, 4).map((tab) => (
+            <Tabs.Tab key={tab.value} value={tab.value}>
+              {tab.label}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs>
+      <Tabs {...args} variant="pills" defaultValue="websites">
+        <Tabs.List>
+          {TABS.slice(0, 4).map((tab) => (
+            <Tabs.Tab key={tab.value} value={tab.value}>
+              {tab.label}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs>
+    </Stack>
+  ),
 }

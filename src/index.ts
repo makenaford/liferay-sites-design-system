@@ -77,10 +77,6 @@ export {
 export { Label, type LabelProps, type LabelSize, type LabelVariant } from './components/Label'
 export { Link, type LinkProps, type LinkSize, type LinkVariant } from './components/Link'
 export {
-  SegmentedControl,
-  type SegmentedControlProps,
-} from './components/SegmentedControl'
-export {
   Stat,
   StatBar,
   type StatProps,

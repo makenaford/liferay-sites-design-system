@@ -332,101 +332,6 @@ Contrast, measured in the browser against each variant's own background:
 | `filled` (both gradient stops) | 13.8 / 12.4 | 6.1 / 6.2 |
 | `outline` (against the page) | 13.7 | 17.5 |
 
-## SegmentedControl
-
-From the Figma `Tabs Menu Carded` component set (node `17900:62310`) — the carded strip in the Tabs
-section — together with the `Tab Text` (`20517:21553`) and `Tab Content` (`20640:6602`) sets it
-instantiates for each segment. A themed Mantine `SegmentedControl`.
-
-```tsx
-import { IconSearch, SegmentedControl } from 'scratch'
-
-<SegmentedControl
-  defaultValue="docs"
-  data={[
-    { value: 'all', label: 'All results' },
-    { value: 'docs', label: <><IconSearch />Documentation</> },
-  ]}
-/>
-```
-
-| Figma axis | Prop |
-| --- | --- |
-| `Sizes` — Desktop / Mobile | **responsive**, not a prop — a media query at 1200px |
-| `Tab Text` `State` — Default | the resting segment |
-| `State` — Hover | the real `:hover` state |
-| `State` — Selected | `value` / `defaultValue` |
-| Each tab's label, and `Show Icon Left` + its swap | one entry in `data` |
-
-Measurements, taken from the component:
-
-| | Container | Segment | Padding | Gap | Label | Icon | Widths |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Desktop | 64px | 48px | 12/36px | 0 | 18/24px | 20px | equal, fills the container |
-| Mobile | 60px | 44px | 12px | 12px | 14/20px | 16px | hug, the row scrolls |
-
-Both keep Figma's 8px container padding and `Border Radius/round` pill.
-
-### Why the size axis is a media query
-
-Figma models size as a `Sizes` variant, and Button and Label both turn such an axis into a `size`
-prop. This one does not: a strip of tabs spanning a page cannot sensibly have its breakpoint chosen at
-the call site, and the token layer is already responsive — Figma ships three typography modes and the
-generator emits all three as media queries. The switch is at **1200px**, the design's own desktop
-breakpoint, with the mobile treatment below it. Mobile is also where Figma's own tab bar is 762px wide
-inside a 366px container, so the row scrolls (with scroll snapping) rather than squeezing.
-
-### States
-
-The whole `Components/Glass Tab/*` group is mode-aware, which is why — unlike Button's `neutral` or
-the Link's `secondary` — **nothing here had to be restructured for light mode**. The selected fill
-resolves to the opaque `Brand/Primary` blue pair in light mode and to translucent white on dark, and
-the selected stroke is deliberately fully transparent in light, where an opaque fill needs no edge.
-
-| State | Treatment | Source |
-| --- | --- | --- |
-| rest | `Surfaces/Text/Secondary`, SemiBold | as drawn |
-| hover | `Action/Link/Hover Link`, plus a `Brand/Primary/Lighten/4` glow at (-1, 1) r4 spread 4 and a 40-radius blur | as drawn |
-| selected | `Action/Neutral/Inverted` at Bold, on the `Glass Tab/bg-gradient` fill with its 1.5px stroke, blur and `tab-focus-shadow` | as drawn |
-| pressed | `scale(0.985)` | **inferred** |
-| focus | `Styles/focus-ring` — 2px `Brand/Primary/Lighten/1`, offset 2px | **inferred** |
-| disabled | the resting appearance at 50% opacity | **inferred** |
-
-The three inferred states are marked as such in `components.module.css` too. Figma draws none of them
-for a tab: pressed follows the other action components, focus reuses the one focus treatment this
-system has everywhere else, and disabled copies Button, whose Figma disabled state is its resting
-appearance at half opacity.
-
-The selected segment is **one pill that travels** rather than a fill redrawn per segment — Mantine's
-floating indicator, on **Mantine's own animation**: 200ms on `ease`. That is deliberate. This component
-ran on the library's motion tokens for a while, with a longer glide and a small settle on the newly
-selected label; the stock timing is what the design asks for, so the overrides were removed rather than
-tuned. The press and the hover glow share that same 200ms so the three read as one movement.
-
-The press itself is `scale(0.985)` — under a pixel on a 48px segment. `prefers-reduced-motion` drops the
-indicator to an instant move and removes the press, keeping every state change while discarding the
-movement (WCAG 2.3.3).
-
-Contrast, measured in the browser with each state composited over what actually sits behind it:
-
-| | light | dark |
-| --- | --- | --- |
-| rest | 10.3 | 13.2 |
-| hover | 8.6 | 12.6 |
-| selected (both fill stops) | 5.1 / 6.0 | 15.1 / 18.5 |
-| focus ring vs the container | 3.7 | 5.0 |
-
-### It is a radio group, not tabs
-
-This renders radio inputs in a `role="radiogroup"`, which is what a segmented control is: one choice
-among a few, where the choice itself is the outcome, navigable with the arrow keys. Figma files often
-use the same carded strip for **tabs that swap panels** — that needs `role="tablist"` semantics and
-Mantine's `Tabs` instead. A segmented control announced as tabs promises a screen reader user panels
-that do not exist.
-
-Long labels ellipsize rather than being cut: five segments of Figma's 18px label need the design's own
-1280px frame, and below that the text has to give somewhere.
-
 ## Card
 
 Figma `card-main` (node `16728:26513`) with `Surface` (`16953:109831`), `card-image`,
@@ -622,9 +527,17 @@ them reads as one number.
 
 ## Tabs
 
-From the Figma `Tabs Menu Bottom` set (node `22570:34600`) as instantiated at `24385:69232`, built from
-`Tab Element` (`20517:20939`), `Tab Base` (`20517:19948`) and `Background States` (`20639:4643`). A
-themed Mantine `Tabs`.
+Two Figma sets, both of which are tabs, as two variants of one component:
+
+- **`variant="default"`** — `Tabs Menu Bottom` (node `22570:34600`) as instantiated at `24385:69232`, built
+  from `Tab Element` (`20517:20939`), `Tab Base` (`20517:19948`) and `Background States` (`20639:4643`).
+- **`variant="pills"`** — `Tabs Pill Menu` (node `17900:62310`), built from `Tabs Pill` (`20517:21553`): a
+  glass container with a full-radius pill under the selection.
+
+The pill menu **used to be a separate `SegmentedControl` component and is not any more.** The Figma set is
+named `Tabs Pill Menu`, its cells are `Tabs Pill`, and it swaps panels — every part of it says tabs. A
+segmented control is a radio group, where the choice itself is the outcome; when a screen needs that, a
+`Radio.Group` or a `Select` is the honest control rather than a tab bar wearing its clothes.
 
 ```tsx
 import { Tabs } from 'scratch'
@@ -697,12 +610,57 @@ Measured in the browser, against both page backgrounds:
 | label active | 13.7 | 15.1 |
 | indicator (both stops) | 8.7 / 6.2 | 5.6 / 6.4 |
 
-### Tabs, or a segmented control?
+### `variant="pills"`
 
-`Tabs` renders `role="tablist"` with `role="tab"` children and `role="tabpanel"` sections, and moves
-selection with the arrow keys — the semantics for **swapping panels**. `SegmentedControl` is a radio
-group, for picking one option where the choice itself is the outcome. The two look related in Figma;
-pick by what the control does, not by which mockup it came from.
+Figma's `Tabs Pill Menu`, measured from the set:
+
+| | Mobile | Desktop |
+| --- | --- | --- |
+| Container height | 60px | 64px |
+| Container padding | 8px | 8px |
+| Container radius | 1000 (full) | 1000 |
+| Pill height | 44px | 48px |
+| Pill padding | 12px all round | 12px / 36px |
+| Gap between pills | 12px | 0 |
+| Icon | 16px | 20px |
+
+48 + 8 + 8 is the drawn 64, so the container's hairline is a pseudo-element rather than a border — a border
+would add to the height. The container's fill differs between cells: a flat `Glass Tab/tab fill 1` at 3% on
+desktop, a radial of the `Glass Card` steps on mobile. Below 1200px the bar scrolls, which is what Figma's
+762px-wide `Tab bar` inside a 366px frame is describing.
+
+`Tabs Pill` `State`:
+
+| State | Figma |
+| --- | --- |
+| Default | nothing drawn at all |
+| Hover | no fill, no stroke — a `#adc9ff` glow at blur 4, spread 4 |
+| Selected | radial `Glass Tab/bg-gradient-01` 10% → `02` 5%, a 1.5px gradient stroke, a 40 background blur and a `#1f2531` drop shadow |
+
+### The pill slides, and its position is measured
+
+Figma draws three still frames and says nothing about how one becomes another. **The selected pill slides**
+between tabs rather than appearing on the new one: one element moving reads as a thing being moved, where two
+crossfading reads as two different things. It animates `transform` and `width`, and the label above it never
+moves.
+
+The position comes from the **active tab's own measured offset and width**, not from an assumption that the
+tabs are equal. That is the case a CSS-only pill gets wrong, and it is why there is JavaScript here at all:
+it holds with labels of any length, with `grow` on or off, after a resize, and after a late-loading font.
+
+The active tab is read from the **DOM** rather than a prop — `Tabs` is uncontrolled as often as not, so the
+value lives inside Mantine and the wrapper never re-renders when it changes. Mantine marks the active tab
+`data-active`, so a `MutationObserver` on that attribute is the one signal that works either way.
+
+`inverted` is deliberately **not** defaulted in the theme any more; the component owns it, because the answer
+depends on the variant. The underline bar wants it — Figma draws that rule on the top edge — and the pill
+menu has no rule to invert. One source of truth beats a default one variant has to undo.
+
+### Tabs, not a radio group
+
+Both variants render `role="tablist"` with `role="tab"` children and `role="tabpanel"` sections, and move the
+selection with the arrow keys — the semantics for **swapping panels**. Pick by what the control does, not by
+which mockup it came from.
 
 ## Hero
 
@@ -1847,10 +1805,11 @@ so the implementation takes the Desktop treatment at both breakpoints and only t
 
 ### Tabs have no focus, pressed or disabled state
 
-`Tab Text` draws Default, Hover and Selected only. Focus, pressed and disabled are inferred — see the
-SegmentedControl state table above for what each became and why. Two hints in the file support the
-focus choice: the Default variant carries a *hidden* drop shadow bound to `Brand/Primary/Lighten/4`,
-and `Styles/focus-ring` is `Brand/Primary/Lighten/1`, which is what every other component here uses.
+`Tab Text` draws Default, Hover and Selected only, and `Tabs Pill` the same three. Focus, pressed and
+disabled are inferred in both variants: `Styles/focus-ring` for focus, a 1.5% scale-down for the press, and
+half opacity for disabled — the treatments every other control here uses. Two hints in the file support the
+focus choice: the Default variant carries a *hidden* drop shadow bound to `Brand/Primary/Lighten/4`, and
+`Styles/focus-ring` is `Brand/Primary/Lighten/1`.
 
 ### The card's Surface set carries its states, but nothing else does
 
@@ -1978,8 +1937,9 @@ gradient alone. Not a bug, but a gap in the asset set rather than in the code: a
 tokens/figma/            Figma variable exports — the snapshot of record
 scripts/build-tokens.mjs The generator
 src/theme/               Mantine theme, CSS variables, component styling
-src/components/          One directory per component (Button, Card, Header, Hero, Image, Input,
-                         Label, Link, SegmentedControl, Stat, Tabs)
+src/components/          One directory per component (Accordion, Button, Card, Carousel, Header, Hero,
+                         Image, Input, Label, Link, List, Marquee, Section, Stat, Tabs)
+src/blocks/              Page-level section blocks, as stories composed from those components
 src/figma/               Code Connect mappings
 src/icons/               manifest.json declares the UI set, glass-manifest.json the illustrative one
 assets/glass-icons/      The illustrative SVGs — the snapshot of record, like tokens/figma/

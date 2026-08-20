@@ -9,8 +9,8 @@ import { Label } from '../components/Label'
 import { Link } from '../components/Link'
 import { List } from '../components/List'
 import { Marquee } from '../components/Marquee'
+import { Tabs } from '../components/Tabs'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
-import { SegmentedControl } from '../components/SegmentedControl'
 import { Stat, StatBar } from '../components/Stat'
 import {
   IconArrowRight,
@@ -319,7 +319,7 @@ export const CarouselSection: Story = {
   ),
 }
 
-/** **`Type=Tabbed- Content`** — a centred title, a `SegmentedControl`, and a panel per option. */
+/** **`Type=Tabbed- Content`** — a centred title, a pill `Tabs` bar, and a panel per option. */
 export const TabbedContent: Story = {
   render: () => {
     const PANELS = {
@@ -328,31 +328,31 @@ export const TabbedContent: Story = {
       portals: ['Customer portals', 'Self-service that reuses the public site’s components.'],
     }
     return (
-      <Section
-        title={<SectionTitle align="center" title="One platform, four jobs" />}
-      >
-        <Stack gap="40" align="center" w="100%">
-          <SegmentedControl
-            defaultValue="websites"
-            data={[
-              { value: 'websites', label: 'Websites' },
-              { value: 'commerce', label: 'Commerce' },
-              { value: 'portals', label: 'Portals' },
-            ]}
-            w="100%"
-          />
-          <ContentMedia
-            mediaSide="right"
-            media={<Cover />}
-            title={PANELS.websites[0]}
-            description={PANELS.websites[1]}
-            actions={
-              <Link href="#" size="lg" rightSection={<IconArrowRight />}>
-                See how it works
-              </Link>
-            }
-          />
-        </Stack>
+      <Section title={<SectionTitle align="center" title="One platform, four jobs" />}>
+        <Tabs variant="pills" defaultValue="websites">
+          <Tabs.List grow justify="center">
+            {Object.entries(PANELS).map(([value, [label]]) => (
+              <Tabs.Tab key={value} value={value}>
+                {label.split(' ')[label.split(' ').length - 1]}
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+          {Object.entries(PANELS).map(([value, [title, description]]) => (
+            <Tabs.Panel key={value} value={value}>
+              <ContentMedia
+                mediaSide="right"
+                media={<Cover />}
+                title={title}
+                description={description}
+                actions={
+                  <Link href="#" size="lg" rightSection={<IconArrowRight />}>
+                    See how it works
+                  </Link>
+                }
+              />
+            </Tabs.Panel>
+          ))}
+        </Tabs>
       </Section>
     )
   },
