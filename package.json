@@ -35,7 +35,7 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@figma/code-connect": "^1.5.2",
+    "@figma/code-connect": "^2.0.0",
     "@mantine/core": "9.5.1",
     "@mantine/hooks": "9.5.1",
     "@mingcute/svg": "3.0.2",
