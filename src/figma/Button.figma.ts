@@ -71,7 +71,7 @@ export default {
       Button
     </Button>
   `,
-  imports: ['import { Button } from "scratch"'],
+  imports: ['import { Button } from "liferay-sites-design-system"'],
   id: 'button',
   metadata: { nestable: true },
 }

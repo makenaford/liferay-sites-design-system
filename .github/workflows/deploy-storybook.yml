@@ -1,4 +1,4 @@
-# Builds Storybook and publishes it to GitHub Pages at https://makenaford.github.io/scratch/
+# Builds Storybook and publishes it to GitHub Pages at https://makenaford.github.io/liferay-sites-design-system/
 #
 # Ported from the workflow that shipped with the previous plain-React library in this repo, with
 # three changes: the package is now at the repo root rather than in a design-system/ subdirectory,

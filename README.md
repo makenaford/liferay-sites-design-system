@@ -1,4 +1,4 @@
-# scratch
+# Liferay Sites Design System
 
 A React component library whose single source of truth is the Figma library
 **Solutions Library- 2026** (file key `KihJKyGA20stc2SSjAlxYU`). Components are
@@ -31,7 +31,7 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm figma:publish` | Publish the Code Connect mappings to Figma |
 
 Pushing to `main` builds Storybook and publishes it to GitHub Pages at
-**https://makenaford.github.io/scratch/** (`.github/workflows/deploy-storybook.yml`). That workflow
+**https://makenaford.github.io/liferay-sites-design-system/** (`.github/workflows/deploy-storybook.yml`). That workflow
 also fails the build if the generated token files have drifted from `tokens/figma/`, so a hand-edited
 `*.generated.*` file cannot land quietly.
 
@@ -75,13 +75,13 @@ three are emitted as media-queried variables, so the type scale follows the view
 From the Figma `Button` component set (node `16123:189647`).
 
 ```tsx
-import { Button, IconArrowRight, IconRefresh, ScratchProvider } from 'scratch'
+import { Button, IconArrowRight, IconRefresh, LiferaySitesProvider } from 'liferay-sites-design-system'
 
-<ScratchProvider>
+<LiferaySitesProvider>
   <Button variant="filled" size="lg" leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
     Continue
   </Button>
-</ScratchProvider>
+</LiferaySitesProvider>
 ```
 
 Figma spreads the appearance over two axes, Color and Style. Those are collapsed into Mantine's single
@@ -170,7 +170,7 @@ From the Figma `Link` component set. A themed Mantine `Anchor` — an inline row
 icons with a 4px gap.
 
 ```tsx
-import { IconArrowForward, Link } from 'scratch'
+import { IconArrowForward, Link } from 'liferay-sites-design-system'
 
 <Link href="/pricing" variant="default" size="lg" rightSection={<IconArrowForward />}>
   CTA Link
@@ -271,7 +271,7 @@ From the Figma `Label CTA` component set (node `15121:237267`). A themed Mantine
 row of optional icon and text with a 4px gap.
 
 ```tsx
-import { IconCheck, Label } from 'scratch'
+import { IconCheck, Label } from 'liferay-sites-design-system'
 
 <Label variant="light" size="lg" leftSection={<IconCheck />}>
   Available now
@@ -484,7 +484,7 @@ From the Figma `Stats Item` set (node `15121:237366`), with `StatBar` from `Stat
 (`16708:102931`) and its gradient `divider` (`16290:53873`).
 
 ```tsx
-import { IconArrowUp, Stat, StatBar } from 'scratch'
+import { IconArrowUp, Stat, StatBar } from 'liferay-sites-design-system'
 
 <StatBar>
   <Stat value="845" label="Months to launch" leftSection={<IconArrowUp />} />
@@ -540,7 +540,7 @@ segmented control is a radio group, where the choice itself is the outcome; when
 `Radio.Group` or a `Select` is the honest control rather than a tab bar wearing its clothes.
 
 ```tsx
-import { Tabs } from 'scratch'
+import { Tabs } from 'liferay-sites-design-system'
 
 <Tabs defaultValue="websites">
   <Tabs.List>
@@ -743,7 +743,7 @@ set: a fixed glass band over the page, an inset panel that drops out of it, and 
 the columns inside.
 
 ```tsx
-import { Button, Header, MegaMenu } from 'scratch'
+import { Button, Header, MegaMenu } from 'liferay-sites-design-system'
 
 <Header
   logo={<Logo />}
@@ -1508,7 +1508,7 @@ same categories, drawn the same way. Depending on the package keeps both sides o
 re-exporting each glyph from Figma by hand.
 
 ```tsx
-import { Button, IconArrowRight } from 'scratch'
+import { Button, IconArrowRight } from 'liferay-sites-design-system'
 
 <Button rightSection={<IconArrowRight />}>Continue</Button>
 ```
@@ -1539,7 +1539,7 @@ pipeline — `scripts/build-glass-icons.mjs`, `src/icons/glass-manifest.json`, `
 rather than a second style in the first one.
 
 ```tsx
-import { Card, IconGlassMail } from 'scratch'
+import { Card, IconGlassMail } from 'liferay-sites-design-system'
 
 <Card variant="glass">
   <IconGlassMail />

@@ -30,7 +30,7 @@ export default {
       <Card>{/* … */}</Card>
     </Carousel>
   `,
-  imports: ['import { Carousel, Card } from "scratch"'],
+  imports: ['import { Carousel, Card } from "liferay-sites-design-system"'],
   id: 'carousel',
   metadata: { nestable: false },
 }

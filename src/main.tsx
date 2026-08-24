@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Group, Stack, Text, Title } from '@mantine/core'
 import { Button } from './components/Button'
 import { IconArrowRight, IconRefresh2 } from './icons'
-import { ScratchProvider } from './theme'
+import { LiferaySitesProvider } from './theme'
 
 /**
  * A minimal preview page for `pnpm dev`. Storybook is the real documentation surface — this exists
@@ -11,10 +11,10 @@ import { ScratchProvider } from './theme'
  */
 function App() {
   return (
-    <ScratchProvider>
+    <LiferaySitesProvider>
       <Stack p="xl" gap="xl" mih="100vh" bg="var(--mantine-color-body)">
         <Stack gap="4">
-          <Title order={1}>Scratch</Title>
+          <Title order={1}>Liferay Sites Design System</Title>
           <Text c="var(--sds-surfaces-text-tertiary)">
             Sourced from the Figma “Solutions Library- 2026” library.
           </Text>
@@ -39,7 +39,7 @@ function App() {
           <Button size="sm">Small</Button>
         </Group>
       </Stack>
-    </ScratchProvider>
+    </LiferaySitesProvider>
   )
 }
 

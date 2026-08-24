@@ -31,7 +31,7 @@ export default {
       <Tabs.Panel value="portals">{/* … */}</Tabs.Panel>
     </Tabs>
   `,
-  imports: ['import { Tabs } from "scratch"'],
+  imports: ['import { Tabs } from "liferay-sites-design-system"'],
   id: 'tabs-pills',
   metadata: { nestable: false },
 }

@@ -19,7 +19,7 @@ export default {
       actions={<Button variant="outline" size="md">See all</Button>}
     />
   `,
-  imports: ['import { SectionTitle, Button } from "scratch"'],
+  imports: ['import { SectionTitle, Button } from "liferay-sites-design-system"'],
   id: 'section-title',
   metadata: { nestable: false },
 }

@@ -66,7 +66,7 @@ export default {
       ${instance.getString('Text')}
     </Link>
   `,
-  imports: ['import { Link } from "scratch"'],
+  imports: ['import { Link } from "liferay-sites-design-system"'],
   id: 'link',
   metadata: { nestable: true },
 }

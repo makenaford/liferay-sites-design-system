@@ -75,7 +75,7 @@ const example = instance.getEnum('Type', {
 export default {
   example: figma.code`${example}`,
   imports: [
-    'import { Card, Image, Label, Stat, StatBar } from "scratch"',
+    'import { Card, Image, Label, Stat, StatBar } from "liferay-sites-design-system"',
   ],
   id: 'common-cards',
   metadata: { nestable: false },

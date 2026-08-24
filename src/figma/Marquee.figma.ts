@@ -32,7 +32,7 @@ export default {
       <img src={petrobras} alt="Petrobras" />
     </Marquee>
   `,
-  imports: ['import { Marquee } from "scratch"'],
+  imports: ['import { Marquee } from "liferay-sites-design-system"'],
   id: 'marquee',
   metadata: { nestable: false },
 }

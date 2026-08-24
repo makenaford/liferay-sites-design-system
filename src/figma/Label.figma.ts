@@ -46,7 +46,7 @@ export default {
       ${instance.getString('Text')}
     </Label>
   `,
-  imports: ['import { Label } from "scratch"'],
+  imports: ['import { Label } from "liferay-sites-design-system"'],
   id: 'label',
   metadata: { nestable: true },
 }

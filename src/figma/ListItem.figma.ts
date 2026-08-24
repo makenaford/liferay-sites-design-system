@@ -30,7 +30,7 @@ export default {
       </List.Item>
     </List>
   `,
-  imports: ['import { List } from "scratch"'],
+  imports: ['import { List } from "liferay-sites-design-system"'],
   id: 'list-item',
   metadata: { nestable: false },
 }

@@ -1,7 +1,7 @@
 /**
- * Public entry point for the Scratch design system.
+ * Public entry point for the Liferay Sites Design System.
  *
- * Consumers wrap their app in `ScratchProvider` once, then import components from here. The
+ * Consumers wrap their app in `LiferaySitesProvider` once, then import components from here. The
  * provider is what installs the theme and the `--sds-*` token variables that every component
  * assumes are present.
  */
@@ -90,8 +90,8 @@ export { Tabs, type TabsProps } from './components/Tabs'
 export * from './icons'
 
 export {
-  ScratchProvider,
-  type ScratchProviderProps,
+  LiferaySitesProvider,
+  type LiferaySitesProviderProps,
   theme,
   cssVariablesResolver,
   componentTheme,

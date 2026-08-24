@@ -44,7 +44,7 @@ export default {
       ${body}
     </Section>
   `,
-  imports: ['import { Section, SectionTitle } from "scratch"'],
+  imports: ['import { Section, SectionTitle } from "liferay-sites-design-system"'],
   id: 'section',
   metadata: { nestable: false },
 }

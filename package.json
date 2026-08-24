@@ -1,5 +1,5 @@
 {
-  "name": "scratch",
+  "name": "liferay-sites-design-system",
   "version": "0.1.0",
   "description": "React + Mantine component library generated from the Figma \"Solutions Library- 2026\" design library.",
   "type": "module",

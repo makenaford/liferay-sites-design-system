@@ -39,7 +39,7 @@ export default {
       bottom={<Link href="#" size="md">Read more</Link>}
     />
   `,
-  imports: ['import { Card, Image, Label, Link } from "scratch"'],
+  imports: ['import { Card, Image, Label, Link } from "liferay-sites-design-system"'],
   id: 'card-main',
   metadata: { nestable: false },
 }

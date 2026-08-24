@@ -50,7 +50,7 @@ export default {
     />
   `,
   imports: [
-    'import { Button, Hero, Label, TextInput } from "scratch"',
+    'import { Button, Hero, Label, TextInput } from "liferay-sites-design-system"',
     'import bubble from "./assets/bubbles/bubble_corner.webm"',
   ],
   id: 'hero',

@@ -31,7 +31,7 @@ export default {
     {/* alt is required and has no default: "" for a decorative image, a sentence otherwise */}
     <Image src={shot} alt="" ratio="${ratio}" orientation="${orientation}" radius="md" />
   `,
-  imports: ['import { Image } from "scratch"'],
+  imports: ['import { Image } from "liferay-sites-design-system"'],
   id: 'image',
   metadata: { nestable: false },
 }

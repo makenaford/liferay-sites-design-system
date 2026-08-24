@@ -1,4 +1,4 @@
-export { ScratchProvider, type ScratchProviderProps } from './ScratchProvider'
+export { LiferaySitesProvider, type LiferaySitesProviderProps } from './LiferaySitesProvider'
 export { theme } from './theme'
 export { cssVariablesResolver } from './cssVariables'
 export {
