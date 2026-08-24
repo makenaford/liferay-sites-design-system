@@ -655,6 +655,12 @@
  */
 .cardRoot[data-align='vertical'][data-padding='full'] {
   padding: 20px;
+  /*
+   * `V p[20] g20`. The gap rule above is "16 with an image, 20 without", read off the five `Card Examples`
+   * cards — and the `Padding=Full` cell breaks it: it has an image *and* a 20px gap. So it says so here
+   * rather than being folded into a rule it does not follow.
+   */
+  gap: 20px;
 }
 
 .cardRoot[data-align='vertical'][data-padding='full'] > .cardBody {
@@ -2653,6 +2659,8 @@
 
 .hero {
   position: relative;
+  container-type: inline-size;
+  container-name: sds-hero;
   isolation: isolate;
   overflow: hidden;
   background-color: var(--sds-surfaces-page-bg-base-default);
@@ -2754,14 +2762,24 @@
 
 /* ------------------------------------------------------------------------------- the layout */
 
+/*
+ * `Hero` frame: padding 80, the row `5051` at 1280 wide with **gap 80** and two 600px columns.
+ *
+ * The content column was 1440 here and should be **1280**, the same as every other section — a hero whose
+ * text starts 80px further out than the section below it is the one thing on the page that does not line up.
+ *
+ * Padding is the same two-point interpolation `Section` uses, in `cqi` rather than `vw`: it passes through
+ * 80 at 1440 and 20 at 390 exactly, and it measures the hero's own width rather than the window's, which is
+ * what the rest of the library now does.
+ */
 .heroInner {
   display: flex;
   align-items: center;
   gap: 80px;
-  max-width: 1440px;
+  max-width: calc(1280px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
   margin: 0 auto;
-  /* Figma's 80px, easing off on narrow viewports where 80px is most of the screen. */
-  padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 80px);
+  padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
 }
 
 .heroContent {
@@ -2862,10 +2880,13 @@
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
  *
- * Figma draws a Mobile cell of the hero; the difference that matters is that the two columns stop being
- * columns. The padding and type already scale with the viewport.
+ * Figma draws a Mobile cell; the difference that matters is that the two columns stop being columns.
+ *
+ * A **container** query, like the rest of the library: a hero inside a narrower shell is the narrow case
+ * while the window is not, and a viewport query cannot tell the difference. It also makes the breakpoint
+ * measurable, which a `vw`-based one is not in a zero-width preview.
  */
-@media (max-width: 1199px) {
+@container sds-hero (max-width: 1199px) {
   .heroInner {
     flex-direction: column;
     align-items: flex-start;
@@ -4125,6 +4146,11 @@
    * own padding without the size depending on itself.
    */
   container: sds-section / inline-size;
+}
+
+/* Flush against its neighbour — the logo strip under the home template's hero. */
+.sectionRoot[data-spacing='none'] {
+  --sds-section-block: 0px;
 }
 
 /* `Quote` and `Highlight Text` — the same formula halved: 40 at 1440, 20 at 390. */

@@ -3,7 +3,7 @@ import { Box } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
-export type SectionSpacing = 'default' | 'tight'
+export type SectionSpacing = 'default' | 'tight' | 'none'
 
 export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 'title'> {
   /** @default 'default' */

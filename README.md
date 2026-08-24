@@ -1644,6 +1644,43 @@ validates. All of it verified by driving it, not by looking at it.
 
 Eleven of its twelve sections needed nothing new. These are the gaps it exposed.
 
+### Fixed here — measured against the file at 1440
+
+The first pass of the prototype did not match. Everything below was measured, corrected, and re-measured.
+
+**`Hero` was wrong in three ways, all in the component rather than the template.**
+
+| | Was | Figma | Now |
+| --- | --- | --- | --- |
+| Content column | 1440 | **1280** | 1280 |
+| Padding | none on the root | **80** | 80 |
+| Row gap (text ↔ media) | 40 | **80** | 80 |
+
+The 1440 column was the worst of the three: a hero whose text starts 80px further out than the section below
+it is the one thing on a page that visibly fails to line up. `Hero` was also the last layout component still
+on `vw` and viewport media queries — it now uses `cqi` and a container query like `Section`, `Marquee`,
+`Form` and `Footer`, with the same two-point interpolation that passes through 80 at 1440 and 20 at 390.
+
+**`Card`'s `Padding=Full` cell had the wrong gap.** The gap rule was "16 with an image, 20 without", read off
+the five `Card Examples` cards. `Padding=Full` has an image *and* a 20px gap, so it breaks that rule and now
+states its own. Verified at Figma's 302px card width: padding 20, gap **20**, content padding 20, content gap
+16, image 262.
+
+**The logo strip was the wrong size and in the wrong band.** The template asked for `size="md"` — a 49px
+row, Figma's `Size=Desktop` cell — where the home page uses `Size=Size3`, a **64px** row. And it was wrapped
+in a `tight` bleeding section, giving it 39px of block padding against the file's **0**. `Section` gained
+`spacing="none"` for bands that sit flush against their neighbour.
+
+**Section gaps were all defaulting to 24.** The file varies them: **32** on `Audience Specific Goals` and
+`Integrations`, **40** on `Customer Story`. Every section now measures its own number.
+
+**The integrations band was the wrong component.** `Type=Integrations Section` is a `List` of **64px glass
+tiles at gap 16**, not a logo marquee — the marquee belongs to the separate `Logos scrolling section`. Now a
+row of 64×64 glass `Card`s holding 40px icons, verified at 64×64 with a 16px gap.
+
+Every section verified at 1440: padding 80 (0 on the logo strip), gaps 32/24/24/24/40/32/24/24, and content
+1280 except where the file narrows the column itself — 1000 for the customer story, 900 for the FAQ.
+
 ### Fixed here
 
 **`card-main`'s `Padding` axis has been restructured in Figma, and two of its cells produced no snippet.**
@@ -1685,6 +1722,18 @@ Each of these appears in the template, and each is currently hand-rolled in the 
 `Chip` is the one I would build next — it is a real interactive control with five states, it is the only
 form-adjacent primitive on the page with no code, and unlike the others it is not reducible to components
 that already exist.
+
+### Two off-axis card paddings
+
+Both of these are `card-main` instances at padding values that are **not on the `Padding` axis**, so the
+template sizes them by hand and the component cannot help:
+
+- the hero's **1000×60 announcement strip** at padding 8/16
+- the integrations **64×64 tile** at padding 12
+
+Two off-axis instances is a pattern rather than an accident. Either the axis needs those values, or these are
+two components of their own — an announcement bar and an icon tile. The file does not say which, and guessing
+would put an invented cell in a published mapping.
 
 ### The announcement strip
 

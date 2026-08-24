@@ -151,9 +151,9 @@ function HomePage() {
         media={<Image src={shot(620, 460, 0)} alt="" ratio="4:3" radius="md" />}
       />
 
-      {/* 2. Logos scrolling section */}
-      <Section spacing="tight" bleed>
-        <Marquee label="Customers" monochrome size="md">
+      {/* 2. Logos scrolling section — Size3: a 64px logo row, 24px under the hero, 1280 wide */}
+      <Section spacing="none" pt="24">
+        <Marquee label="Customers" monochrome size="lg">
           {CUSTOMERS.map((name) => (
             <Wordmark key={name} name={name} />
           ))}
@@ -162,6 +162,7 @@ function HomePage() {
 
       {/* 3. Audience Specific Goals — four Padding=Full cards */}
       <Section
+        gap={32}
         title={
           <SectionTitle
             title="Whatever you came here to do"
@@ -283,14 +284,18 @@ function HomePage() {
       {/* 7. Customer story — a 4:3 feature */}
       <Section
         maxWidth={1000}
+        gap={40}
         title={<SectionTitle align="center" title="How Airbus did it" description="Four minutes." />}
       >
         <Image src={shot(1000, 750, 1)} alt="Airbus case study video" ratio="4:3" radius="md" />
       </Section>
 
-      {/* 8. Integrations */}
+      {/*
+       * 8. Integrations — Figma's `Type=Integrations Section` is a `List` of **64px glass tiles at gap 16**,
+       * not a logo marquee. The tile is `card-main` 64x64 at padding 12, which is not a value on the
+       * `Padding` axis, so the box is sized here rather than by the component. Recorded in the README.
+       */}
       <Section
-        bleed
         gap={32}
         title={
           <SectionTitle
@@ -304,11 +309,32 @@ function HomePage() {
           />
         }
       >
-        <Marquee label="Integrations" monochrome size="md" direction="right">
-          {CUSTOMERS.map((name) => (
-            <Wordmark key={name} name={name} />
+        <Box style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+          {[
+            IconGlassComposable,
+            IconGlassDatabase,
+            IconGlassMail,
+            IconGlassComposable,
+            IconGlassDatabase,
+            IconGlassMail,
+            IconGlassComposable,
+            IconGlassDatabase,
+          ].map((Glyph, i) => (
+            <Card
+              // eslint-disable-next-line react/no-array-index-key
+              key={i}
+              surface="glass"
+              padding="none"
+              w={64}
+              h={64}
+              /* `flex: none` so a tile never shrinks below its 64px — it is a fixed box, not a column. */
+              style={{ display: 'grid', placeItems: 'center', flex: 'none' }}
+              aria-label="Integration"
+            >
+              <Glyph width={40} height={40} />
+            </Card>
           ))}
-        </Marquee>
+        </Box>
       </Section>
 
       {/* 9. Card grid */}
