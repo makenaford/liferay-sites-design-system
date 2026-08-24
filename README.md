@@ -976,7 +976,8 @@ row opens.
 | `Size=Condensed` | `size="sm"` |
 | `Expand` — Closed / Expanded | `value` / `defaultValue`, or the user clicking |
 | `Header` text | `<Accordion.Control>` children |
-| `divider` `Property 1=normal` | the closed row's rule — 1px `Neutral/02` |
+| The header's `UI Icon` | a chevron rather than Figma's arrow — see below |
+| `divider` `Property 1=normal` | the closed row's rule — 1px `Neutral/03`, see the gaps list |
 | `divider` `Property 1=gradient` | the open row's rule — `Neutral/06` → `Brand/Primary/Lighten/3` |
 | The panel's placeholder frame | `<Accordion.Panel>` children |
 
@@ -1006,6 +1007,16 @@ The row height comes from the **arrow, not the text**: 32 + 24 = 56 and 24 + 16 
 from the label alone gives 50px and 39px, neither of which is what Figma draws.
 
 Figma gives the header no horizontal padding, so the rule and the text share an edge; that is kept.
+
+### A chevron, not an arrow
+
+Figma's header draws `UI Icon Name=arrow/arrow_down` — a full arrow with a shaft. This uses `arrow/down`,
+the chevron.
+
+An arrow means **go**: it is what the `Link` and the `Button` in this same library use, on things that
+navigate. A chevron means **there is more of this here**, which is what a disclosure does. Sharing one glyph
+between the two makes an accordion look like it will take you somewhere. The `UI Icon` set has both, so this
+is a swap the file can adopt rather than an invention.
 
 ### The rule is the state
 
@@ -1469,6 +1480,10 @@ Figma `divider` component set (node `16290:53873`) on Mantine's `Divider`.
 All four cells are 1px, verified: 720×1 with a single top border on the horizontal ones, 1×60 with a single
 inline-start border on the vertical ones.
 
+**The normal tone is `Neutral/03` on both axes.** Figma draws it as `Neutral/02` horizontally and
+`Neutral/03` vertically; matching them on the stronger value is the one deviation this component makes — see
+the gaps list.
+
 `size`, `color` and Mantine's `dashed` / `dotted` line styles are deliberately not exposed. Every cell in
 the file is 1px solid and the colour is the `tone` axis, so a width scale and three line styles would all be
 inventions.
@@ -1633,6 +1648,15 @@ grey's 1.05:1. It was a second option that looked like the first, so `grey` is t
 Worth having as a distinct surface if the token moves far enough from grey to be seen; until then it is one
 choice presented as two.
 
+### The Accordion's header uses a navigation arrow
+
+`Accordion`'s header draws `UI Icon Name=arrow/arrow_down`, the arrow with a shaft — the same glyph the
+`Link` and `Button` use for actions that navigate. A disclosure does not navigate; it reveals. The `UI Icon`
+set already contains `arrow/down`, the chevron, which is the conventional glyph for this and is what the
+implementation uses.
+
+A one-instance swap in the file, and worth making so the two meanings stay separate.
+
 ### The divider's two axes use different neutrals
 
 `divider`'s four cells are 1px each, and the normal tone is not the same colour on both axes:
@@ -1642,14 +1666,20 @@ choice presented as two.
 | normal | `Neutral/02` | `Neutral/03` |
 | gradient | `Neutral/06` → `Brand/Primary/Lighten/3` | same |
 
-Nothing about turning a line 90° should change its weight, so this reads as drift rather than intent. Both
-are reproduced as drawn — the `Divider` docs and its `TheAsymmetry` story put the two side by side, where the
-vertical is visibly the stronger of the pair.
+Nothing about turning a line 90° should change its weight, so this reads as drift rather than intent.
 
-It compounds the contrast problem already recorded for the Accordion: `Neutral/02` is **1.24:1 against the
-light page** and `Neutral/03` is 1.42:1, so a normal divider is close to invisible in light mode either way.
-`Neutral/05` is the step that reads in both modes, which is what the Card's static surface hairline settled
-on. One value for both axes, at a step that can be seen, would fix the asymmetry and the visibility together.
+**Fixed by using `Neutral/03` for both** — the stronger of the pair, and the value every other flat rule in
+this library already uses (`StatBar`'s stat divider, the underline tab bar's rule). Two places changed: the
+`Divider` component's horizontal cell, and the `Accordion`'s closed-row rule, which is the same Figma cell
+and would otherwise have recreated the inconsistency inside the library.
+
+One value for both axes is the fix to take back to the file.
+
+**What this does not fix.** `Neutral/03` is **1.42:1 against the light page** and 2.23:1 on dark. It is the
+stronger of Figma's two values, not a strong line, so a normal divider is still faint in light mode — the
+same flat end of the neutral scale that the Card's static surface ran into, where `Neutral/05` was what
+finally read in both modes. If dividers are meant to be *seen* rather than merely be present, that is the
+step, and it would want deciding for the `divider` component in Figma rather than per use here.
 
 ### The Accordion set is in an error state, from a duplicated variant name
 

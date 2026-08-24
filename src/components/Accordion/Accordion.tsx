@@ -1,7 +1,7 @@
 import type { Ref } from 'react'
 import { Accordion as MantineAccordion } from '@mantine/core'
 import type { AccordionProps as MantineAccordionProps } from '@mantine/core'
-import { IconArrowDown } from '../../icons'
+import { IconDown } from '../../icons'
 
 /**
  * Figma's `Size` axis, renamed to this library's scale.
@@ -27,7 +27,7 @@ export interface AccordionProps<Multiple extends boolean = false>
 
 function AccordionBase<Multiple extends boolean = false>({
   size = 'lg',
-  chevron = <IconArrowDown />,
+  chevron = <IconDown />,
   mod,
   ...props
 }: AccordionProps<Multiple>) {
@@ -55,6 +55,7 @@ function AccordionBase<Multiple extends boolean = false>({
  * | --- | --- |
  * | `Size` — Default / Condensed | `size="lg"` / `size="sm"` |
  * | `Expand` — Closed / Expanded | `value` / `defaultValue`, or the user clicking |
+ * | The header's `UI Icon` | a chevron — see below |
  * | `Header` text | `<Accordion.Control>` children |
  * | `divider` `Property 1=normal` | the closed row's rule, `Neutral/02` |
  * | `divider` `Property 1=gradient` | the open row's rule, `Neutral/06` → `Brand/Primary/Lighten/3` |
@@ -79,7 +80,13 @@ function AccordionBase<Multiple extends boolean = false>({
  * part of the way, so the row says what clicking it will do before it is clicked. It is one layer whose
  * opacity moves 0 → 0.5 → 1, which runs on the compositor rather than repainting a border.
  *
- * **The arrow is the affordance, so it gets the target.** A soft disc grows in behind it on hover — the
+ * **A chevron, not an arrow.** Figma's header draws `UI Icon Name=arrow/arrow_down` — a full arrow with a
+ * shaft — and this uses `arrow/down`, the chevron, instead. An arrow says "go", which is what it means on a
+ * `Link` and a `Button` in this same library; a chevron says "there is more of this here", which is what a
+ * disclosure does. Using the same glyph for both makes the accordion look like it will navigate somewhere.
+ * A deviation, recorded in README.md, and one the file could adopt — the `UI Icon` set has both.
+ *
+ * **The chevron is the affordance, so it gets the target.** A soft disc grows in behind it on hover — the
  * full 32px (or 24px) box, not a smaller hit area — and the arrow itself nudges 1px in the direction it
  * is about to travel while the row is held. Rotation is Mantine's, retimed to `--sds-motion-medium` on
  * this library's easing so it settles rather than stops.
