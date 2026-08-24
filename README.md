@@ -1635,6 +1635,64 @@ The social row's icons are **not bundled** — brand marks are trademarked asset
 rather than to a design system. `Footer.Brand`'s `social` slot lays them out and gives each a 44px target
 around Figma's 24px glyph, which is inferred; the file draws no target.
 
+## What the Home template needed
+
+The `Home` template (node `24563:52720`) — a 1440×8559 page — is built in `src/templates/Home.stories.tsx`
+from the library, as an interactive prototype rather than a picture: the header opens its mega menu, the pill
+tabs swap the panel below them, the carousel snaps, both marquees run, the accordion expands and the form
+validates. All of it verified by driving it, not by looking at it.
+
+Eleven of its twelve sections needed nothing new. These are the gaps it exposed.
+
+### Fixed here
+
+**`card-main`'s `Padding` axis has been restructured in Figma, and two of its cells produced no snippet.**
+It was `True` / `False` when this was first mapped. It is now **four** cells — `True`, `False`, `On content`,
+`Full` — and the Vertical/`True` combination is gone. Two consequences:
+
+- `On content` is the shape this implementation already had as `padding="content"`, invented for the file's
+  hand-built `no image padding` frame. The design has since named it. Pleasing, but it means the mapping was
+  silently incomplete.
+- **`Full` was genuinely new**: 20px on the card *and* 20px again on the content, so the image sits 20 from
+  the edge and the text 40. The template's `Audience Specific Goals` row uses it four times. Added as
+  `padding="full"`.
+
+The Code Connect mapping now covers all four. Until this, selecting either new cell in Dev Mode gave nothing.
+
+### Needs a decision
+
+**`LRDC Primary Nav` (`22775:43617`) is not what `Header` was built from.** `Header` and `MegaMenu` were
+built from `liferay-nav-desktop_12.html`, because no Figma set was found at the time. This set exists, and it
+has a `Breakpoint` axis of four values — `1200+ Dynamic Width`, `Desktop 1200+`, `Tablet 600+`, `Mobile 0+` —
+against the single 1200px breakpoint the implementation uses. The prototype uses `Header` and it looks right,
+but it has never been checked against this component. Worth a pass before anyone treats the two as the same
+thing.
+
+**`Tabs Menu Logo` `Type=Logo`** — the template's section 6 uses the text cell, which is implemented. The
+logo cell puts customer logos in the tabs instead of labels and `Tabs.Tab` has no logo mode.
+
+### No component yet
+
+Each of these appears in the template, and each is currently hand-rolled in the story or omitted:
+
+| Figma set | What it is | Status in the prototype |
+| --- | --- | --- |
+| `Chip` (`16858:51126`) | A filter chip, 5 states incl. Dragged | Hidden in the file's own instances; omitted |
+| `Call to Action` (`16276:63170`) | A button/link group, Align × Size × Primary/Secondary | Hidden in the file; composed inline where needed |
+| `Logo Container` (`19660:24292`) | A logo box in four sizes | Hidden; the marquee lays logos out itself |
+| `Page Action Section` (`22502:27194`) | The footer's CTA band, now its own set | Composed as `Footer`'s `cta` slot |
+
+`Chip` is the one I would build next — it is a real interactive control with five states, it is the only
+form-adjacent primitive on the page with no code, and unlike the others it is not reducible to components
+that already exist.
+
+### The announcement strip
+
+The hero opens with a 1000×60 glass `card-main` at `padding` 8/16 — a thin full-width strip holding a label
+and a link row. It is a `Card` with a very tight padding rather than a new component, but that padding is not
+on the `Padding` axis, so the template is drawing it by hand. Either it is a `Card` variant or it is an
+announcement-bar component; the file does not say which.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px

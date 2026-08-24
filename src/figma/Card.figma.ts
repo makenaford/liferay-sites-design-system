@@ -18,13 +18,15 @@ const align = instance.getEnum('Align', {
 })
 
 /**
- * Figma's `Padding` is a boolean; this implementation has a third case, `content`, for the file's
- * `no image padding` frame — `Padding=True` with the 20px moved down onto the content so the image can
- * reach the card's edge. That frame is not a variant, so it cannot be read from here.
+ * All four cells of the `Padding` axis. It was two — True and False — when this was first mapped, and the
+ * set has since gained `On content` (which this implementation already had, as `content`) and `Full`. The
+ * two new cells produced no snippet until they were added here.
  */
 const padding = instance.getEnum('Padding', {
   True: 'all',
   False: 'none',
+  'On content': 'content',
+  Full: 'full',
 })
 
 export default {

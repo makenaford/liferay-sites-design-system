@@ -12,13 +12,16 @@ export type CardAlign = 'vertical' | 'horizontal'
 /**
  * Figma's `Padding` axis, plus the third case the file draws as a separate example.
  *
- * - `all` — `Padding=True`: 20px around everything, the image included. The four padded card types.
- * - `content` — the file's `no image padding` frame: the image runs to the card's edge and the 20px moves
- *   onto the content below it. `card-main` is still `Padding=True` there; the padding has been pushed down
- *   a level by hand.
+ * - `all` — `Padding=True`: 20px around everything, the image included.
+ * - `content` — `Padding=On content`: the image runs to the card's edge and the 20px moves onto the content
+ *   below it. This started as a hand-built frame in the file (`no image padding`) and is now a named cell,
+ *   which is the design catching up with the shape rather than the other way round.
+ * - `full` — `Padding=Full`: `all`, plus a second 20px inset on the content, so the text sits 40px from the
+ *   card's edge while the image sits 20. Used by the four cards in the home template's `Audience Specific
+ *   Goals` row.
  * - `none` — `Padding=False`: nothing has padding. What the Resource card uses.
  */
-export type CardPadding = 'all' | 'content' | 'none'
+export type CardPadding = 'all' | 'content' | 'full' | 'none'
 
 /** Figma `header-alignment` `Align`. */
 export type CardHeaderAlign = 'vertical' | 'center'

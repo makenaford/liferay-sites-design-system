@@ -649,6 +649,22 @@
   padding: 20px;
 }
 
+/*
+ * `Padding=Full` — `all` on the card *and* 20px again on the content, so the image is inset 20 from the
+ * card's edge and the text 40. The home template's `Audience Specific Goals` cards are drawn this way.
+ */
+.cardRoot[data-align='vertical'][data-padding='full'] {
+  padding: 20px;
+}
+
+.cardRoot[data-align='vertical'][data-padding='full'] > .cardBody {
+  padding: 20px;
+}
+
+.cardRoot[data-align='horizontal'][data-padding='full'] {
+  padding: 24px 40px;
+}
+
 .cardRoot[data-align='horizontal'][data-padding='all'],
 .cardRoot[data-align='horizontal'][data-padding='content'] {
   padding: 24px 40px;
@@ -721,7 +737,8 @@
   border-radius: inherit;
 }
 
-.cardRoot[data-padding='all'] > .cardImage {
+.cardRoot[data-padding='all'] > .cardImage,
+.cardRoot[data-padding='full'] > .cardImage {
   /* Inside the padding, the image gets its own smaller corner. */
   border-radius: 4px;
 }
