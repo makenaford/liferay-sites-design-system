@@ -229,6 +229,11 @@ export const IconLeft: Story = {
 
 /** **`Type=Icon-Center`** — the same card with `header-alignment Align=Center`: centred, gap 20, no description. */
 export const IconCenter: Story = {
+  args: {
+    interactive: true,
+    surface: "glass"
+  },
+
   render: (args) => (
     <Box w={320}>
       <Card
@@ -238,7 +243,7 @@ export const IconCenter: Story = {
         title="Card Title"
       />
     </Box>
-  ),
+  )
 }
 
 /** The five cards from `Card Examples`, side by side. */

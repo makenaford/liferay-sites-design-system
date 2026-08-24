@@ -407,6 +407,7 @@ export const componentTheme: MantineThemeComponents = {
       root: classes.tabsRoot,
       list: classes.tabsList,
       tab: classes.tabsTab,
+      tabSection: classes.tabsTabSection,
       tabLabel: classes.tabsTabLabel,
       panel: classes.tabsPanel,
     },

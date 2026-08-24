@@ -662,7 +662,7 @@ function HomePage() {
             type="email"
             placeholder="Enter Your Email"
             containedButton={
-              <Button size="sm" rightSection={<IconArrowRight />}>
+              <Button size="md" rightSection={<IconArrowRight />}>
                 Start Free Trial
               </Button>
             }

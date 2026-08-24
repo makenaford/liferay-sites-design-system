@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { Box, Burger, UnstyledButton } from '@mantine/core'
+import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
-import { IconDown } from '../../icons'
+import { IconClose, IconDown, IconMenu } from '../../icons'
 
 export interface HeaderNavItem {
   /** Identifies the item, and ties the trigger to its panel through `aria-controls`. */
@@ -171,20 +171,29 @@ export function Header({
 
             <div className={classes.headerActions}>{actions}</div>
 
-            <Burger
+            {/*
+             * A UI icon rather than Mantine's `Burger`, which draws its own three bars in CSS. Everything
+             * else in this header is a MingCute glyph from the `UI Icon` set — `system/menu` and
+             * `system/close` are the same set, so the bar no longer mixes two icon sources at different
+             * stroke weights.
+             *
+             * The label changes with the state; `aria-expanded` says which state it is in.
+             */}
+            <UnstyledButton
+              component="button"
+              type="button"
               className={classes.headerBurger}
-              opened={drawer}
               aria-expanded={drawer}
+              aria-label={drawer ? 'Close navigation' : 'Open navigation'}
               onClick={() => {
                 setDrawer((value) => {
                   if (value) change(null)
                   return !value
                 })
               }}
-              aria-label="Open navigation"
-              size="sm"
-              color="var(--sds-surfaces-text-primary)"
-            />
+            >
+              {drawer ? <IconClose aria-hidden /> : <IconMenu aria-hidden />}
+            </UnstyledButton>
           </div>
         </div>
       </div>

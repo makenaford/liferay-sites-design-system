@@ -4681,6 +4681,15 @@
   font-weight: 600;
 }
 
+/*
+ * The icon sits against the label. Mantine gives the section an 8px margin *and* the tab an 8px flex
+ * gap, which compounded to 16 — the icon floated away from the word it belongs to. The gap owns the
+ * spacing; the margin is zeroed.
+ */
+.tabsRoot[data-pills] .tabsTabSection {
+  margin: 0;
+}
+
 .tabsRoot[data-pills] .tabsTab :where(svg) {
   width: var(--sds-pill-icon);
   height: var(--sds-pill-icon);
@@ -4731,8 +4740,15 @@
  *
  * Figma's Mobile cell: a 44px pill with 12px of padding all round, 12px between pills, a 16px icon, and a
  * container that scrolls — its `Tab bar` is 762px wide inside a 366px frame.
+ *
+ * **The threshold is 480, not 1200.** This is a query on the *bar's own* width, and almost no pill bar is
+ * 1200px wide — so at 1200 every real bar was the Mobile cell. The Home page's two bars are drawn 520 and
+ * 776 wide and are plainly the Desktop cell in the file, yet both came out with 44px pills and 16px
+ * labels. 480 separates them from a phone's, where the bar is the column width (~311 at 375). The page
+ * breakpoint is 1200 because that is where a *layout* stops being desktop; a component that measures
+ * itself needs its own number.
  */
-@container sds-tabs (max-width: 1199px) {
+@container sds-tabs (max-width: 479px) {
   /*
    * On the list rather than the root: the root is the query container, and a container cannot be restyled
    * by a query against itself. Everything downstream inherits from here.
