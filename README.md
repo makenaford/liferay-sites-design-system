@@ -1945,6 +1945,28 @@ These are places where the Figma library is ambiguous, inconsistent, or incomple
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
 
+### `Content Text`'s description has no text property
+
+`Content Text` — the heading block inside both `card-main` and `Section Title` — exposes its title as a
+TEXT property (`Title Card#308:0`) but exposes **nothing** for the description. Only its visibility is a
+property (`Show description#21373:0`); the characters are unreachable.
+
+That matters for Code Connect: a bound property is how a snippet gets the real copy. Card and Section Title
+work around it by reading the layer directly with `findText('Description')`, which works but depends on the
+layer keeping its name. **Adding a TEXT property to the description layer** would make both mappings
+simpler and sturdier, and it is a one-field change in Figma.
+
+### `Quotee` is a Figma frame with no code counterpart
+
+The `CS- Quote` card's attribution is a frame named `Quotee`, holding `Name` and `Position` text layers.
+The Code Connect snippet used to write it as `<Quotee name="…" title="…" />` — a component this library has
+never exported, so the snippet did not compile. The name was not invented: it is the layer's.
+
+It is now bound as a slot, so the mapping renders whatever is actually in it. But the shape recurs — four
+times on the Home page alone, plus the template's own local helper — and a frame that has a name in Figma
+and no component in code is a gap in one direction or the other. Either `Quotee` becomes a real export, or
+the Figma frame should stop looking like a component.
+
 ### A static card had no edge, and now has one
 
 `Surfaces/Card BG/Grey` is **1.05:1 against the light page** and 1.06:1 against the dark one. With glass off

@@ -9,9 +9,23 @@
 // their content. So the enum picks the snippet's body rather than an attribute, and `Size` does not reach
 // the code at all, because the padding and the type are fluid between Figma's two cells rather than
 // switched between them.
+//
+// ## The heading comes from the instance
+//
+// The snippet used to restate `<SectionTitle title="Section title" description="Description" />`, so a
+// section's real heading never reached the code even though `Section Title` sits right there in the
+// instance. It now renders the nested `Section Title`, which carries its own Code Connect snippet and its
+// own copy — see SectionTitle.figma.ts. A cell without one falls back to the placeholder.
 import figma from 'figma'
 
 const instance = figma.selectedInstance
+
+/**
+ * The nested `Section Title`. `findInstance` returns an `ErrorHandle` when the cell has no heading, and
+ * interpolating that would render an error where the title should be, so it is checked before use.
+ */
+const heading = instance.findInstance('Section Title', { traverseInstances: true })
+const hasHeading = heading && heading.type === 'INSTANCE'
 
 /** Read to be explicit that it is deliberately unused: Desktop and Mobile are the same code. */
 instance.getEnum('Size', {
@@ -40,7 +54,7 @@ const body = instance.getEnum('Type', {
 
 export default {
   example: figma.code`
-    <Section title={<SectionTitle title="Section title" description="Description" />}>
+    <Section title={${hasHeading ? heading : '<SectionTitle title="Section title" />'}}>
       ${body}
     </Section>
   `,
