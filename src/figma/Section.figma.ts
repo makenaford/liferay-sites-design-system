@@ -21,11 +21,20 @@ import figma from 'figma'
 const instance = figma.selectedInstance
 
 /**
- * The nested `Section Title`. `findInstance` returns an `ErrorHandle` when the cell has no heading, and
- * interpolating that would render an error where the title should be, so it is checked before use.
+ * The heading's own words, read off the nested `Section Title`'s text layers.
+ *
+ * Not by interpolating the nested instance: `section-title` is declared `nestable: false`, so rendering
+ * it inside this snippet made the whole Section template fall back to Figma's generic
+ * `<Section type=… size=…>` output — worse than the hardcoded string it replaced. Reading the text is
+ * the same technique Card and SectionTitle use, and it does not care whether the child is nestable.
  */
-const heading = instance.findInstance('Section Title', { traverseInstances: true })
-const hasHeading = heading && heading.type === 'INSTANCE'
+const text = (layerName: string) => {
+  const node = instance.findText(layerName, { traverseInstances: true })
+  return node && node.type === 'TEXT' && node.textContent ? node.textContent : undefined
+}
+
+const heading = text('Title')
+const standfirst = text('Description')
 
 /** Read to be explicit that it is deliberately unused: Desktop and Mobile are the same code. */
 instance.getEnum('Size', {
@@ -54,7 +63,7 @@ const body = instance.getEnum('Type', {
 
 export default {
   example: figma.code`
-    <Section title={${hasHeading ? heading : '<SectionTitle title="Section title" />'}}>
+    <Section title={<SectionTitle ${heading ? figma.code`title="${heading}"` : ''} ${standfirst ? figma.code`description="${standfirst}"` : ''} />}>
       ${body}
     </Section>
   `,
