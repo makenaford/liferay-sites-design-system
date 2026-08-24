@@ -110,6 +110,20 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     /** `elevation/tight/4` — DROP_SHADOW #2D2D2D3D, offset (0, 2), radius 7. */
     '--sds-elevation-tight-4': '0 2px 7px 0 rgba(45, 45, 45, 0.24)',
     /** Not published by Figma: the transition applied to interactive state changes. */
+    /*
+     * The footer's dark band. Mode-independent on purpose: that band carries the dark bubble artwork and
+     * white text in *both* colour modes, so a mode-aware page colour would turn it inside out in light
+     * mode. `Neutral/00`'s dark value, and the `Components/Overlay Carousel/Dark/02` vignette over it.
+     */
+    '--sds-footer-ground': '#070b13',
+    '--sds-footer-vignette': 'rgba(7, 11, 19, 0.5)',
+    /*
+     * And the text on it, for the same reason. `Surfaces/Text/Primary` and `Action/Link/Hover Link` are
+     * mode-aware, which is right on a page and wrong on a band that is dark in both modes — in light mode
+     * they resolve to dark ink on a dark ground. These are their dark-canvas values, pinned.
+     */
+    '--sds-footer-text': '#f0f1f5',
+    '--sds-footer-link-hover': '#bbd2ff',
     '--sds-motion-fast': '120ms',
     '--sds-motion-ease': 'cubic-bezier(0.4, 0, 0.2, 1)',
     /**

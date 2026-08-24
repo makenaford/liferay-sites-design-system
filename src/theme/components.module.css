@@ -4932,3 +4932,269 @@
     display: none;
   }
 }
+
+/* =====================================================================================
+ * Footer — Figma `LRDC footer` component set (node `16288:12662`)
+ *
+ * Three bands in one component. Measured from the Desktop cell:
+ *
+ *   Page Action Section  V, padding 80, gap 32, `Surfaces/Page Background/Grey`
+ *   Number Footer        V, padding 24/80, gap 24, `Surfaces/Page Background/Blue`
+ *   Footer LRDC Base     the dark band: a bubble image under a radial overlay from
+ *                        `Components/Overlay Carousel/Dark/02` to `#070b13`
+ *                        Container V, padding 40, gap 40, content 1200 in 1280
+ *                        column rows H gap 32, each column 214 wide and growing
+ *                        column V gap 24 — title, then a links list at gap 16
+ *                        Subfooter H, padding 3/0, gap 80
+ *
+ *   Column title  18px bold `Paragraph/Default/Heavier`, `Action/Neutral/Inverted`
+ *   Links         `Link Style=Secondary, Size=Medium`
+ *   Address       18px regular, `Action/Neutral/Inverted`
+ *   Social row    six 24px icons, gap 16
+ *
+ * `Action/Neutral/Inverted` is white in both colour modes, which broke the `neutral` button and the
+ * `secondary` link elsewhere. Here it is right: this band is dark in both modes by design.
+ * ===================================================================================== */
+
+.footerRoot {
+  display: block;
+  width: 100%;
+}
+
+/* `Page Action Section` — the grey band. Padding is the page gutter, so it is fluid like `Section`'s. */
+.footerCta {
+  padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  background-color: var(--sds-surfaces-card-bg-grey);
+  container-type: inline-size;
+}
+
+/* `Number Footer` — the blue strip. 24px of block padding rather than the gutter's. */
+.footerStats {
+  padding-block: 24px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  background-color: var(--sds-surfaces-card-bg-blue);
+  container-type: inline-size;
+}
+
+/*
+ * The dark band.
+ *
+ * Figma layers a bubble image with a radial overlay on top — and that overlay is a **vignette**, not the
+ * ground: it runs from `rgba(7, 11, 19, 0)` at the centre to `rgba(7, 11, 19, 0.5)` at the edges, darkening
+ * the corners so the white text holds over the artwork. It is not the band's background, which was worth
+ * measuring rather than assuming.
+ *
+ * The artwork itself is not bundled — it is the same 2MB asset the Hero declines to put inside anyone's
+ * CSS — so `backdrop` is a slot and this ground shows when nothing is passed.
+ *
+ * Both colours are mode-independent by design. The band is dark and its text is white in *both* colour
+ * modes, so a mode-aware page colour would turn it inside out in light mode. It is also the one place
+ * `Action/Neutral/Inverted` is the right token rather than a bug.
+ */
+.footerBase {
+  position: relative;
+  container-type: inline-size;
+  background-color: var(--sds-footer-ground);
+  color: var(--sds-action-neutral-inverted);
+  isolation: isolate;
+}
+
+/* The backdrop artwork, behind everything and decorative. */
+.footerBackdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.footerBackdrop > :where(img, video, picture, div, svg) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The vignette, over the artwork and under the content. */
+.footerBase::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    120% 140% at 50% 0%,
+    transparent 0%,
+    var(--sds-footer-vignette) 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/*
+ * Links on the dark band.
+ *
+ * `Link variant="secondary"` is mode-aware — deliberately, since that is what fixed it being white-on-white
+ * in light mode elsewhere. But this band is dark in *both* modes, so a mode-aware link inverts the wrong way
+ * inside it: measured at **1.4:1** in light mode, dark ink on a dark ground, for every link in the footer.
+ *
+ * So the band pins them to their dark-canvas values, the same way it pins its own ground. The selector
+ * carries an attribute so it outranks `.link[data-variant='secondary']` rather than relying on file order.
+ */
+.footerBase a[data-variant] {
+  color: var(--sds-footer-text);
+}
+
+@media (hover: hover) {
+  .footerBase a[data-variant]:hover {
+    color: var(--sds-footer-link-hover);
+  }
+}
+
+.footerInner {
+  display: flex;
+  flex-direction: column;
+  /* `Container` gap 40 and padding 40, with the 1200 content column centred. */
+  gap: 40px;
+  padding-block: 40px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  max-width: calc(1200px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+  margin-inline: auto;
+}
+
+/*
+ * The columns. Figma has a nine-column Desktop cell in two rows and a Mobile cell 4,828px tall with
+ * everything stacked; rather than switch between the two, this is one grid of 214px tracks — Figma's own
+ * column width — so the count follows the space. Its two cells are the two ends of that range.
+ */
+.footerColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(214px, 1fr));
+  gap: 40px 32px;
+}
+
+.footerColumn {
+  display: flex;
+  flex-direction: column;
+  /* Title to links: 24. */
+  gap: 24px;
+  min-width: 0;
+}
+
+.footerColumnTitle {
+  margin: 0;
+  /* `Paragraph/Default/Heavier`. */
+  font-size: 18px;
+  line-height: 23px;
+  font-weight: 700;
+  color: var(--sds-action-neutral-inverted);
+}
+
+.footerLinks {
+  display: flex;
+  flex-direction: column;
+  /* Between links: 16. */
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  /* A list of links is a list; the marker is what goes, not the semantics. */
+  list-style: none;
+}
+
+.footerLinkItem {
+  display: flex;
+}
+
+/* ------------------------------------------------------------------- brand */
+
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.footerLogo {
+  display: flex;
+  align-items: center;
+}
+
+.footerLogo > :where(img, svg) {
+  /* Figma's lockup is 134x48; height is what a logo should be pinned by. */
+  height: 48px;
+  width: auto;
+}
+
+.footerAddress {
+  /* `<address>` is italic by default in every browser, and Figma's is not. */
+  font-style: normal;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--sds-action-neutral-inverted);
+  white-space: pre-line;
+}
+
+.footerSocial {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* Six icons, 16 apart. */
+  gap: 16px;
+}
+
+.footerSocial :where(a, button) {
+  display: grid;
+  place-items: center;
+  /*
+   * Figma's icons are 24px, which is under the 24x24 minimum a pointer target wants — so the glyph stays 24
+   * and the target around it is 44, the size everything else in this library uses for an icon-only control.
+   * Inferred; the file draws no target.
+   */
+  width: 44px;
+  height: 44px;
+  margin: -10px;
+  border-radius: 1000px;
+  color: var(--sds-action-neutral-inverted);
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.footerSocial :where(a, button) > svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (hover: hover) {
+  .footerSocial :where(a, button):hover {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+.footerSocial :where(a, button):focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------- subfooter */
+
+/* `Subfooter Content` — H, gap 80, and it wraps rather than overflowing on a narrow page. */
+.footerLegal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 80px;
+  padding-block: 3px;
+  font-size: 16px;
+  line-height: 24px
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footerSocial :where(a, button) {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* A vignette is invisible in forced colours and the artwork only competes with the text. */
+  .footerBase::before,
+  .footerBackdrop {
+    display: none;
+  }
+}

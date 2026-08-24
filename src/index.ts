@@ -14,6 +14,13 @@ export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
 export { Divider, type DividerProps, type DividerTone } from './components/Divider'
+export {
+  Footer,
+  type FooterProps,
+  type FooterColumnProps,
+  type FooterLinkProps,
+  type FooterBrandProps,
+} from './components/Footer'
 export { Form, type FormProps, type FormRowProps } from './components/Form'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {

@@ -1549,6 +1549,83 @@ rules inside the query **silently never applied** — a container cannot be styl
 rows collapsed while the padding stayed at 40. The container is now a wrapper with no padding, so its inline
 size is the card's outer width, and all four mobile values land. Verified switching at exactly 520px.
 
+## Footer
+
+Figma `LRDC footer` component set (node `16288:12662`) — three stacked bands the file draws as one
+component.
+
+| Figma | Prop | What it is |
+| --- | --- | --- |
+| `Page Action Section` | `cta` | A grey band with a heading and a signup field |
+| `Number Footer` | `stats` | A blue strip of figures |
+| `Footer LRDC Base` | `brand`, children, `legal` | The dark footer proper |
+| Its bubble artwork | `backdrop` | Not bundled; pass the asset |
+| `Property 1` — Desktop / Mobile | **responsive**, no prop | |
+
+```tsx
+<Footer brand={<Footer.Brand logo={<Logo />} address="…" social={icons} />} legal={…}>
+  <Footer.Column title="Getting Started">
+    <Footer.Link href="/trial">Start a trial</Footer.Link>
+  </Footer.Column>
+</Footer>
+```
+
+**The top two bands are slots, not built in.** They are separate sections that happen to sit above a footer:
+the CTA is a `Section` with a `Form`, the strip is a `StatBar`. Building them in would mean a second, worse
+copy of two components that already exist — and plenty of pages want the footer without either.
+
+### The columns reflow without a breakpoint
+
+Figma has a nine-column Desktop cell and a Mobile cell **4,828px tall** with everything stacked. Rather than
+switch between those two, the columns are a grid of `minmax(214px, 1fr)` tracks — 214px being Figma's own
+column width — so the count follows the space, and Figma's cells are the two ends of that range. Measured:
+
+| Footer width | Columns | Track | Gutter | Content |
+| --- | --- | --- | --- | --- |
+| 1440 | **5** | **214px** | **80** | **1200** |
+| 1280 | 4 | 261px | 71 | 1138 |
+| 1024 | 3 | 283px | 56 | 912 |
+| 768 | 2 | 326px | 42 | 685 |
+| 414 | 1 | 371px | 21 | 371 |
+
+1440 lands on Figma's Desktop numbers exactly.
+
+### The dark band is dark in both colour modes
+
+It carries the dark bubble artwork and white text, so its ground, its vignette and its text are all
+**mode-independent** — pinned to their dark-canvas values rather than read from mode-aware tokens.
+
+This is also the one place `Action/Neutral/Inverted` is the *right* token. That token is `#ffffff` in both
+modes, which is what made the `neutral` button and the `secondary` link invisible in light mode; on a band
+that is always dark it is exactly correct, and the column titles and address use it at 19.69:1.
+
+### Mode-aware links inverted the wrong way on it
+
+A bug worth recording, because it is the mirror image of one already in this list. `Link variant="secondary"`
+was **made** mode-aware to fix it being white-on-white in light mode. On this band that is wrong: the band is
+dark in both modes, so in light mode a mode-aware link resolves to dark ink on a dark ground —
+**1.4:1**, measured, for every link in the footer.
+
+Fixed by pinning the band's links to their dark-canvas values alongside its ground:
+`Surfaces/Text/Primary`'s dark value for the resting colour and `Action/Link/Hover Link`'s for hover. Now
+**17.45:1 in both modes**, verified in each.
+
+The general lesson for the design file: a surface that ignores the colour mode cannot use tokens that follow
+it. Any always-dark band needs its own pinned set, not the page's.
+
+### Semantics
+
+A real `<footer>`, each column's links in a `<ul>` — a screen reader announcing "list, 7 items" is how
+someone knows how much a column holds before reading it. The address is an `<address>` with the browser's
+default italic removed, since Figma's is upright. Column headings are real headings, `h3` by default.
+
+Every link is `Link variant="secondary" size="md"`, which is what the file draws, and neither is exposed: a
+footer link in another style is a mistake rather than a choice.
+
+The social row's icons are **not bundled** — brand marks are trademarked assets belonging to the application
+rather than to a design system. `Footer.Brand`'s `social` slot lays them out and gives each a 44px target
+around Figma's 24px glyph, which is inferred; the file draws no target.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
