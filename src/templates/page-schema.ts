@@ -212,6 +212,11 @@ export type SectionSpec =
       type: 'tabbedContent'
       title: string
       description?: string
+      /**
+       * Figma's `Content Left Image` / `Content- Right Image` cells. A **named** choice the file
+       * sanctions, so it belongs in the data — unlike a gap, which does not. @default 'right'
+       */
+      mediaSide?: 'left' | 'right'
       tabs: TabGroup<PanelSpec>[]
     }
   /**

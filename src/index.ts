@@ -97,6 +97,29 @@ export {
 } from './components/Stat'
 export { Tabs, type TabsProps } from './components/Tabs'
 
+/**
+ * Page templates as data. A builder produces a `PageSpec`; a developer renders it with `PageRenderer`
+ * and needs nothing else — which is what makes the handoff a file rather than a screenshot.
+ */
+export { PageRenderer } from './templates/PageRenderer'
+export { SECTION_TYPES, sectionSummary, sectionTypeFor, type SectionType } from './templates/section-catalog'
+export type {
+  CardSpec,
+  GlassIconName,
+  Headline,
+  HeroBanner,
+  HeroSpec,
+  IconName,
+  ImageRef,
+  LinkRef,
+  PageSpec,
+  PanelSpec,
+  SectionSpec,
+  StatSpec,
+  StorySpec,
+  TabGroup,
+} from './templates/page-schema'
+
 export * from './icons'
 
 export {

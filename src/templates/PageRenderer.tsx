@@ -437,7 +437,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
 
         {panel ? (
           <ContentMedia
-            mediaSide="right"
+            mediaSide={spec.mediaSide ?? 'right'}
             /* A stat row under the media makes the column taller than 3:2, so the box takes its height. */
             mediaRatio={panel.stats?.length ? 'auto' : '3:2'}
             order={3}
