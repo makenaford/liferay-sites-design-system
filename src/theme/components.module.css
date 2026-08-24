@@ -5362,3 +5362,166 @@
     display: none;
   }
 }
+
+/* ==========================================================================================
+ * Chip — Figma `Chip` (node `16858:51126`)
+ *
+ * A removable filter chip. One drawn size — 90x30 in the file — so there is no size axis: 8px of
+ * horizontal padding, 6px vertical, an 8px gap, `Border Radius/medium` and
+ * `Paragraph/X-Small/Semi Bold`. Five cells on the `State` axis, of which only two are props: focus and
+ * disabled are real CSS states, `Selected` is the checkbox, and `Dragged` is a hook for whatever is
+ * doing the dragging.
+ * ========================================================================================== */
+
+.chipWrapper {
+  display: inline-flex;
+}
+
+/*
+ * The pill itself is Mantine's `label`, not the root — the root is the wrapper holding the hidden
+ * checkbox. Every box property belongs here.
+ */
+.chipWrapper .chipLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding-block: 6px;
+  padding-inline: 8px;
+  border: none;
+  border-radius: var(--mantine-radius-md);
+  color: var(--sds-surfaces-text-primary);
+  /*
+   * 14/1.25 from the `Paragraph/X-Small/Semi Bold` **text style**, not from
+   * `Size/Paragraph/X-Small`, which is 11 in all three typography modes. The two disagree in the file —
+   * the same split `Button` and `Link` have between their `Action/*` text styles and their `Size/*`
+   * variables — and the text style is what the component is drawn with. The height confirms it: 14 at
+   * 1.25 is 17.5, plus 6 and 6 of padding, which is the drawn 30. At 11 the pill would be 28.
+   */
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  transition:
+    background-color var(--sds-motion-fast) var(--sds-motion-ease),
+    color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * `State=Default`'s stroke is a *gradient* — `Components/Button Outline/line-stp-01` into `-02`, white
+ * into `Accent/Primary Blue Accent` — which a border-color cannot express. Same masked pseudo-element
+ * the card and the tab bar use for their hairlines, so all three hairlines are built the same way.
+ */
+.chipWrapper .chipLabel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    var(--sds-btn-outline-line) 0%,
+    var(--sds-accent-primary-blue-accent) 100%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+ * The resting fill. Its own rule, and qualified with `:not([data-disabled])`, because Mantine paints the
+ * unchecked chip `--mantine-color-dark-5` from
+ * `:where([data-mantine-color-scheme='dark']) .m_fa109255:not([data-disabled])` — which ties with a
+ * two-class selector on specificity and wins on stylesheet order. Matching its shape outranks it.
+ */
+.chipWrapper .chipLabel:not([data-disabled]) {
+  background-color: transparent;
+}
+
+/* Mantine's tick, and the space it reserves. Figma's Selected cell is the same pill with a fill. */
+.chipIconWrapper {
+  display: none;
+}
+
+/*
+ * Mantine wraps whatever is passed as children in a bare `<span>` inside the label, so the row lives
+ * there rather than on the label — a gap on the label has one child to space and does nothing. The
+ * label's own gap is left in place for the tick, which is hidden but still Mantine's business.
+ */
+.chipWrapper .chipLabel > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chipLabelText {
+  white-space: nowrap;
+}
+
+/* Both icon slots are the 16px `UI Icon` the file draws, and neither shrinks with the label. */
+.chipSection {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.chipSection > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * `State=Selected` — `Surfaces/Card BG/Blue`, and **no hairline**: the Selected variant binds no
+ * `Button Outline` line token at all, so the stroke is the thing that goes when the fill arrives.
+ */
+.chipWrapper .chipInput:checked + .chipLabel {
+  background-color: var(--sds-surfaces-card-bg-blue);
+}
+
+.chipWrapper .chipInput:checked + .chipLabel::before {
+  display: none;
+}
+
+/*
+ * `State=Focused` — `Styles/focus-ring`. Figma draws it as the brand-to-accent gradient ring the pill
+ * sits inside, which is two rings: the hairline stays, and the ring sits outside it.
+ */
+.chipWrapper .chipInput:focus-visible + .chipLabel {
+  outline: 2px solid var(--sds-brand-primary-lighten-1);
+  outline-offset: 1px;
+}
+
+/* `State=Dragged` — lifted: the selected fill plus `elevation/tight/1`. */
+.chipWrapper .chipLabel[data-dragging],
+.chipWrapper[data-dragging] .chipLabel {
+  background-color: var(--sds-surfaces-card-bg-blue);
+  box-shadow: 0 1px 3px rgba(45, 45, 45, 0.3);
+}
+
+/*
+ * `State=Disabled` — `Neutral/07` text and the hairline dropped back, which is how the file draws it:
+ * the pill is still there, it has just stopped being an control.
+ */
+.chipWrapper .chipInput:disabled + .chipLabel,
+.chipWrapper .chipLabel[data-disabled] {
+  color: var(--sds-neutral-07);
+  background-color: transparent;
+  cursor: not-allowed;
+}
+
+.chipWrapper .chipInput:disabled + .chipLabel::before,
+.chipWrapper .chipLabel[data-disabled]::before {
+  opacity: 0.4;
+}
+
+@media (hover: hover) {
+  .chipWrapper .chipInput:not(:disabled) + .chipLabel:hover {
+    background-color: var(--sds-surfaces-card-bg-blue);
+  }
+}

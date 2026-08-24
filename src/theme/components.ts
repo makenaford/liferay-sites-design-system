@@ -2,6 +2,7 @@ import {
   Accordion,
   Anchor,
   Badge,
+  Chip as MantineChipComponent,
   List,
   Button,
   Select,
@@ -208,6 +209,34 @@ export const componentTheme: MantineThemeComponents = {
         },
       }
     },
+  }),
+
+  /**
+   * Chip — Figma `Chip` (`16858:51126`). One drawn size, so there is no size axis: 30px tall, 8px of
+   * horizontal padding, 6px vertical, an 8px gap, `Border Radius/medium` and
+   * `Paragraph/X-Small/Semi Bold`. The fills, the gradient hairline and the states live in
+   * `components.module.css`, which is also where Mantine's tick is hidden.
+   */
+  Chip: MantineChipComponent.extend({
+    classNames: {
+      root: classes.chipWrapper,
+      label: classes.chipLabel,
+      input: classes.chipInput,
+      iconWrapper: classes.chipIconWrapper,
+    },
+
+    vars: () => ({
+      root: {
+        '--chip-fz': 'var(--sds-size-paragraph-x-small)',
+        '--chip-size': '30px',
+        '--chip-padding': '8px',
+        /* Figma keeps the padding identical when selected; Mantine narrows it to make room for a tick. */
+        '--chip-checked-padding': '8px',
+        '--chip-icon-size': '0px',
+        /* `gap/8` — the icon-to-label gap. Mantine uses this for the label's own flex gap. */
+        '--chip-spacing': '8px',
+      },
+    }),
   }),
 
   Badge: Badge.extend({

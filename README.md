@@ -265,6 +265,70 @@ temporarily unavailable is a `Button`.
 Renders an `<a>`. For a router link pass `component={NavLink}`; for an action that is not navigation,
 use `Button`.
 
+## Chip
+
+Figma `Chip` component set (node `16858:51126`), on Mantine's `Chip`.
+
+A **removable filter chip** — it toggles, it takes focus, and every drawn cell carries a close glyph on
+the right. For a read-only tag (the pill over a card, the `CMS Trends` marker) use `Label`, which is
+Figma's separate set.
+
+```tsx
+<Chip defaultChecked leftSection={<IconSearch />} rightSection={<IconClose />}>
+  Financial Services
+</Chip>
+```
+
+| Figma | Prop |
+| --- | --- |
+| `Label` | `children` |
+| `Left Icon` + `↳ Left Icon` | `leftSection` |
+| `Right Icon` + `↳ Right Icon` | `rightSection` |
+| `State=Default` | the resting pill |
+| `State=Selected` | `checked` / `defaultChecked` |
+| `State=Focused` | `:focus-visible`, a real state |
+| `State=Disabled` | `disabled` |
+| `State=Dragged` | `dragging` |
+
+One drawn size (90×30), so there is no size axis: 8px of horizontal padding, 6px vertical, an 8px gap,
+`Border Radius/medium`, and `Paragraph/X-Small/Semi Bold`.
+
+**Three of the five states are not props.** Focus and disabled are real CSS states, so they are
+`:focus-visible` and `:disabled` — the same treatment `Button`, `Link` and `Card` get. That leaves
+`Selected`, which is the checkbox, and `Dragged`, which is a styling hook: dragging is the page's job,
+because a chip cannot know it is being reordered.
+
+### The label is 14px, not 11
+
+`Paragraph/X-Small/Semi Bold` — the text style the chip is drawn with — is **14px**. The variable
+`Size/Paragraph/X-Small` is **11px**, in all three typography modes. The same split `Button` and `Link`
+have between their `Action/*` text styles and their `Size/*` variables, and resolved the same way: the
+text style wins, because it is what the component is drawn with. The height settles it — 14 at 1.25 is
+17.5, plus 6 and 6 of padding, which is the drawn 30. At 11 the pill would come out 28.
+
+### Selected loses the hairline
+
+`State=Default` has a gradient stroke — `Components/Button Outline/line-stp-01` into `-02`, white into
+`Accent/Primary Blue Accent` — drawn with the same masked pseudo-element the card and the tab bar use, so
+all three hairlines are built alike. `State=Selected` binds **no** outline token at all: the stroke is
+what goes when `Surfaces/Card BG/Blue` arrives. Verified against the variant's own variables rather than
+inferred from the set's.
+
+**The selected fill is very weak.** `Surfaces/Card BG/Blue` is `#6399ff0d` — 5% alpha — so on the dark
+canvas a picked chip is only just distinguishable from a resting one. It is reproduced as drawn; a filter
+row where selection is the whole point wants more separation than that.
+
+### No check mark, and no built-in remove
+
+Mantine puts a tick inside a checked chip and reflows the label around it. Figma does not, so the tick is
+hidden and the padding is held constant — otherwise picking a chip would resize it and shove every chip
+after it along the row.
+
+`rightSection` renders inside the chip's own `<label>`, which wraps a checkbox — so a `<button>` cannot go
+in it, and clicking the glyph toggles the chip like clicking anywhere else. **A row that needs real
+removal must put the close control beside the chip** and give it its own accessible name. Figma draws the
+close glyph as part of the chip, which cannot work as a second control; that is a gap in the design.
+
 ## Label
 
 From the Figma `Label CTA` component set (node `15121:237267`). A themed Mantine `Badge` — a static
@@ -1821,14 +1885,58 @@ integrations band as a `List` of 64px glass tiles rather than a marquee. All re-
 
 | Figma set | What it is | Status in the prototype |
 | --- | --- | --- |
-| `Chip` (`16858:51126`) | A filter chip, 5 states incl. Dragged | Hidden in the file's own instances; omitted |
 | `Call to Action` (`16276:63170`) | A button/link group, Align × Size × Primary/Secondary | Hidden in the file; composed inline where needed |
 | `Logo Container` (`19660:24292`) | A logo box in four sizes | Hidden; the marquee lays logos out itself |
 | `Page Action Section` (`22502:27194`) | The footer's CTA band, now its own set | Composed as `Footer`'s `cta` slot |
 
-`Chip` is the one I would build next — it is a real interactive control with five states, it is the only
-form-adjacent primitive on the page with no code, and unlike the others it is not reducible to components
-that already exist.
+`Chip` **has since been built** — see above. Worth knowing how little that was driven by demand: it is
+hidden in every instance on the Home page *and* in all three Detail Page templates, so nothing visible in
+the file uses it yet. It was built because it is a real interactive control with five states that no other
+component covers, not because a page needed it.
+
+## What the Detail Page templates need
+
+`Detail Pages` (node `24223:174319`) holds three templates — **Product Info**, **Industry**, **Solution**
+— two variants each, 4,900–5,900px tall, four to seven sections apiece. Not built yet; this is the
+coverage read, taken from the node tree rather than by eye.
+
+The library covers almost all of it: `Hero`, `Section`, `SectionTitle`, `Card` (as `card-main` /
+`Common Cards` / `card-image` / `header-alignment` / `Content Text`), `Carousel`, `StatBar` (`Stats Bar`),
+`ContentMedia` (`Content Block`), `Tabs` in both variants, `List`, `Link`, `Button`, `Image`
+(`Aspect Ratio`), `Marquee` (`Logos scrolling section`), `Header` (`LRDC Primary Nav`) and `Footer`.
+
+**Two components are genuinely missing**, counting only instances that are actually visible:
+
+| Missing | Product Info | Industry | Solution |
+| --- | --- | --- | --- |
+| `2 Button` | 1 | 1 | 1 |
+| `Label CTA` | 1 | 1 | — |
+
+`Chip` and `Call to Action` are drawn in these templates but **every instance is hidden**, exactly as on
+the Home page — so neither blocks the work. That is worth stating plainly because a first pass over the
+tree that ignores visibility counts `Chip` three times in each template and reaches the opposite
+conclusion.
+
+### The extraction path is blocked by stale mappings
+
+`get_design_context` on these templates does not return this library. On a `Section` it returns
+
+```
+import Surface from "src/components/Surface.tsx"
+<Section type="Card Grid" size="Default">
+  <Surface state="Default" style="Glass" />   ×6
+```
+
+and on a `Chip` variant it returns `import Chip from "src/components/Chip.tsx"` with a `state` prop.
+Neither file exists in this repo, and neither snippet compiles. They are **auto-generated mappings on
+individual variant nodes**, published at some point from an older state of a sibling repo or by accepting
+Figma's Code Connect suggestions, and they shadow the hand-written set-level mappings here.
+
+They cannot be removed from this repo: `figma connect unpublish --node … --label …` answers
+`No Code Connect CLI mapping found for this component` for every label, and the node ids they are keyed to
+(`0:158`, `0:205`, …) do not resolve in this file at all. They are not CLI-managed, so they have to go
+through Figma's own Dev Mode UI. **Until they do, design-to-code on these templates returns snippets
+pointing at files that do not exist**, which is worse than returning nothing.
 
 ## Icons
 
