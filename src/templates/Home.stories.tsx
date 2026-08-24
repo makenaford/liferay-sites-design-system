@@ -585,7 +585,11 @@ function HomePage() {
           />
         }
       >
-        <Stack gap={40} align="center" w="100%">
+        {/*
+          * 24, not 40. The file puts `Tabs Pill Menu` ending at 248 and `Content` starting at 272 in
+          * both tabbed sections; this one had 40 until porting the page to data caught the mismatch.
+          */}
+        <Stack gap={24} align="center" w="100%">
           {/* Same explicit width as the goals row, and for the same reason. 776 is the drawn width. */}
           <Tabs
             variant="pills"

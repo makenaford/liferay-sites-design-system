@@ -1,25 +1,147 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PageRenderer } from './PageRenderer'
-import type { PageSpec } from './page-schema'
+import type { PageSpec, PanelSpec } from './page-schema'
 import { SiteFooter, SiteHeader } from './shared'
 
+import capabilityMedia from '../../assets/home/capability-media.png'
 import goal1 from '../../assets/home/goal-1.png'
 import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import heroMedia from '../../assets/home/hero-media.png'
+import industryMedia from '../../assets/home/industry-media.png'
+import platformDiagram from '../../assets/home/platform-diagram.png'
+import teamsMedia from '../../assets/home/teams-media.png'
 
 /*
- * Three sections of the Home page, expressed as data instead of JSX.
+ * The whole Home page, expressed as data instead of JSX.
  *
- * Chosen because they are the awkward ones. The hero carries a banner holding a bespoke solution
- * finder; the carousel band bleeds off both edges and swaps dots for arrows; the goals grid puts a
- * pill bar in its title row and swaps its cards behind it. If those three survive being reduced to
- * data, the ten easier sections will.
+ * Every one of its eleven sections renders to the same height as the hand-written `Templates/Home`,
+ * and everything below is content: no widths, no gaps, no `bleed`, no component imports. All of that
+ * lives in `PageRenderer`, once per section type.
  *
- * Compare against `Templates/Home`. Everything below is content — no widths, no gaps, no `bleed`, no
- * component imports. All of that lives in `PageRenderer`, once per section type.
+ * Two things the port caught that reading the code had not:
+ *
+ * - The hand-written page used a 40px gap between the pill bar and the panel in one tabbed section and
+ *   24 in the other. The file draws 24 in both. Home was wrong and is now fixed.
+ * - `Trending Now` and `Our Latest Research & Data` are a *different* Figma cell from the goals grid,
+ *   with a 24px section gap rather than 32. Folding all three into one section type left two of them
+ *   8px out, which is why `resourceGrid` exists separately from `cardGrid`.
  */
+
+const TEAM_PANELS = {
+  marketers: {
+    title: 'Launch faster. Convert more.',
+    description: 'For teams that drive campaigns, content, and customer experience.',
+    items: [
+      {
+        question: 'Create smarter content. Convert more visitors.',
+        answer:
+          'Use AI to create and manage content faster, while agents auto-tag assets, translate pages, and segment visitors in real time – so every piece of content lands with the right audience automatically.',
+        link: { label: 'Explore AI Hub', href: '#' },
+      },
+      {
+        question: 'Launch campaigns without waiting on IT',
+        answer:
+          'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
+        link: { label: 'Explore the page builder', href: '#' },
+      },
+      {
+        question: 'Reach every visitor with the right message',
+        answer:
+          'Segment on behaviour, account and locale, then personalise any fragment on the page against those segments.',
+        link: { label: 'Explore personalization', href: '#' },
+      },
+      {
+        question: 'Keep content and assets consistent across every channel',
+        answer:
+          'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
+        link: { label: 'Explore the DAM', href: '#' },
+      },
+      {
+        question: 'Turn your site into a B2B revenue engine',
+        answer:
+          'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
+        link: { label: 'Explore commerce', href: '#' },
+      },
+    ],
+    media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
+    stats: [
+      { value: '56', label: 'Websites launched' },
+      { value: '24', label: 'Industries served' },
+      { value: '77', label: 'Countries served' },
+    ],
+  },
+  it: {
+    title: 'One platform to build on and to operate.',
+    description: 'For teams that own the stack, the upgrades and the audit.',
+    items: [
+      {
+        question: 'Build against APIs, not a template language',
+        answer:
+          'REST and GraphQL for everything on the page, with typed client SDKs and local development in one command.',
+        link: { label: 'Read the API reference', href: '#' },
+      },
+      {
+        question: 'Run it where your policy says you can',
+        answer: 'The same distribution as SaaS, PaaS or self-hosted, with one upgrade path between them.',
+        link: { label: 'Compare deployment options', href: '#' },
+      },
+      {
+        question: 'One identity, one audit surface',
+        answer:
+          'Content, commerce, search and portals behind a single identity provider and a single audit log.',
+        link: { label: 'Visit the Trust Center', href: '#' },
+      },
+      {
+        question: 'Extend without forking',
+        answer: 'Low-code for the small things, OSGi modules for the rest — upgrades stay upgrades.',
+        link: { label: 'Explore low-code', href: '#' },
+      },
+    ],
+    media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
+    stats: [
+      { value: '56', label: 'Websites launched' },
+      { value: '24', label: 'Industries served' },
+      { value: '77', label: 'Countries served' },
+    ],
+  },
+  partners: {
+    title: 'Deliver more, with less rebuilding.',
+    description: 'For agencies and integrators shipping on behalf of clients.',
+    items: [
+      {
+        question: 'Reuse what you built for the last client',
+        answer: 'Ship accelerators as modules and design systems, then reuse them across engagements.',
+        link: { label: 'Visit the Marketplace', href: '#' },
+      },
+      {
+        question: 'Get your team certified',
+        answer: 'Role-based learning paths and certification for developers, architects and administrators.',
+        link: { label: 'Explore training', href: '#' },
+      },
+      {
+        question: 'Grow with the programme',
+        answer: 'Co-selling, deal registration and technical enablement through the partner portal.',
+        link: { label: 'Become a partner', href: '#' },
+      },
+    ],
+    media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
+    stats: [
+      { value: '56', label: 'Websites launched' },
+      { value: '24', label: 'Industries served' },
+      { value: '77', label: 'Countries served' },
+    ],
+  },
+} satisfies Record<string, PanelSpec>
+
+const CAPABILITY_MEDIA = {
+  src: capabilityMedia,
+  alt: 'A financial-services website built on Liferay',
+}
+
+const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', 'Figma', 'Payhip']
+
 const PAGE: PageSpec = {
   hero: {
     background: 'corner',
@@ -66,6 +188,12 @@ const PAGE: PageSpec = {
   },
 
   sections: [
+    {
+      type: 'logoMarquee',
+      label: 'Customers using Liferay',
+      logos: ['DATAMATICS', 'PETROBRAS', 'CITY OF BURBANK', 'Excellus', 'AIRBUS', 'Carrefour'],
+    },
+
     {
       type: 'cardGrid',
       title: 'What Teams Can Achieve with Liferay',
@@ -184,6 +312,177 @@ const PAGE: PageSpec = {
         },
       ],
     },
+
+    {
+      type: 'tabbedContent',
+      title: 'Different Teams. One Platform.',
+      description:
+        'Whether you drive campaigns, build infrastructure, or grow partnerships – Liferay empowers your success.',
+      tabs: [
+        { value: 'marketers', label: 'Marketers', icon: 'user', content: TEAM_PANELS.marketers },
+        { value: 'it', label: 'IT/Developers', icon: 'user', content: TEAM_PANELS.it },
+        { value: 'partners', label: 'Partners', icon: 'user', content: TEAM_PANELS.partners },
+      ],
+    },
+
+    {
+      type: 'fullCard',
+      title: 'Designed for Your Industry. Built for Growth.',
+      tabs: [
+        'Financial Services',
+        'Energy and Utilities',
+        'Manufacturing',
+        'Public Sector',
+        'Healthcare',
+        'All Industries',
+      ],
+      card: {
+        icon: 'financial-services',
+        title: '{tab}',
+        description:
+          'Unify client and advisor data, personalize every financial journey, strengthen security, and simplify compliance to build lasting trust and a competitive edge.',
+        links: [
+          { label: '{tab} Solutions', href: '#' },
+          { label: 'Digital transformation in {tab}', href: '#' },
+        ],
+        stats: [
+          { value: '45', suffix: '%', label: 'Faster loading time' },
+          { value: '96', suffix: '%', label: 'Less consulting time', trend: 'down' },
+          { value: '845', suffix: '%', label: 'Less data entry time*', trend: 'down' },
+        ],
+        media: { src: industryMedia, alt: 'Someone signing in to their account from a phone' },
+      },
+    },
+
+    {
+      type: 'mediaBand',
+      title: 'Everything You Need in One Platform',
+      image: {
+        src: platformDiagram,
+        alt: 'DXP at the centre of four groups: Content & Experience, Commerce & Sales, Platform & Infrastructure, and Intelligence & AI',
+      },
+    },
+
+    {
+      type: 'tabbedContent',
+      title: 'Every Capability Your Enterprise Needs',
+      tabs: [
+        {
+          value: 'customer-portals',
+          label: 'Customer Portals',
+          icon: 'user',
+          content: {
+            eyebrow: 'customer-portals',
+            title: 'Give customers one place to do everything.',
+            description:
+              'Let customers find answers, raise a case and manage their account without calling — on the same content your site runs on.',
+            action: { label: 'Explore Customer Portals', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+        {
+          value: 'supplier-portals',
+          label: 'Supplier Portals',
+          icon: 'monitor',
+          content: {
+            eyebrow: 'supplier-portals',
+            title: 'Onboard suppliers in days, not quarters.',
+            description:
+              'Collect documents, track compliance and settle invoices in one place, with the approvals your finance team already runs.',
+            action: { label: 'Explore Supplier Portals', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+        {
+          value: 'partner-portals',
+          label: 'Partner Portals',
+          icon: 'department',
+          content: {
+            eyebrow: 'partner-portals',
+            title: 'Arm your partners with what they need to sell.',
+            description:
+              'Deal registration, co-branded assets and enablement behind one login, personalised by partner tier.',
+            action: { label: 'Explore Partner Portals', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+        {
+          value: 'enterprise-websites',
+          label: 'Enterprise Websites',
+          icon: 'building',
+          content: {
+            eyebrow: 'enterprise-websites',
+            title: 'Captivate visitors, generate leads, and grow fast.',
+            description:
+              'Turn visitors into conversions and conversions into customers and lifelong advocates with personalized, scalable websites.',
+            action: { label: 'Explore Enterprise Websites', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+        {
+          value: 'intranets',
+          label: 'Intranets',
+          icon: 'group',
+          content: {
+            eyebrow: 'intranets',
+            title: 'One place your people actually go.',
+            description:
+              'Company news, the document you need and the form you have to file, searchable in one index and one login.',
+            action: { label: 'Explore Intranets', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+        {
+          value: 'digital-commerce',
+          label: 'Digital Commerce',
+          icon: 'cart',
+          content: {
+            eyebrow: 'commerce',
+            title: 'Sell the way your buyers buy.',
+            description:
+              'Negotiated pricing, self-serve reordering and quote-to-cash on the same content tree as the marketing site.',
+            action: { label: 'Explore Digital Commerce', href: '#' },
+            media: CAPABILITY_MEDIA,
+          },
+        },
+      ],
+    },
+
+    {
+      type: 'integrations',
+      title: 'Extend Your platform. Integrate without limits.',
+      description:
+        'Liferay connects flexibly with the platforms and vendors your team relies on every day.',
+      action: { label: 'Explore our integration capabilities', href: '#' },
+      logos: [...VENDORS, ...VENDORS],
+    },
+
+    {
+      type: 'resourceGrid',
+      title: 'Trending Now',
+      description: 'Latest insights and resources from Liferay.',
+      cards: Array.from({ length: 6 }, () => ({
+        title: 'Card Title',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        icon: 'mail' as const,
+        href: '#',
+      })),
+    },
+
+    {
+      type: 'resourceGrid',
+      title: 'Our Latest Research & Data',
+      description: 'New studies and reports to help you make smarter decisions.',
+      cards: [
+        { tag: 'CMS Trends', title: '2026 Liferay Digital Content Management Report', href: '#' },
+        {
+          tag: 'Agentic AI',
+          title: 'Liferay 2026 Agentic AI Adoption and Governance Report',
+          href: '#',
+        },
+        { tag: 'Digital Trust', title: 'Liferay 2026 Broken Trust Report', href: '#' },
+      ],
+    },
   ],
 }
 
@@ -195,11 +494,11 @@ const meta = {
     docs: {
       description: {
         component: [
-          'Three sections of the Home page rendered from **data** rather than JSX — a test of whether a page can be a `PageSpec` without becoming JSX-in-JSON.',
+          'The **whole Home page** rendered from data rather than JSX. All eleven sections come out to the same heights as the hand-written `Templates/Home`, and every interaction is the real one — three pill bars, an underline bar, a snapping carousel, an accordion, a running marquee.',
           '',
-          'The three were picked for being awkward: the hero carries a banner holding a bespoke solution finder, the carousel band bleeds off both edges with arrows instead of dots, and the goals grid puts a pill bar in its title row and swaps its cards behind it.',
+          '**Nothing in the page data is a measurement.** No widths, no gaps, no `bleed`, no component imports — only content and the handful of real choices. Every drawn number lives in `PageRenderer`, once per section type, because it belongs to the *kind* of section rather than to the page.',
           '',
-          '**Nothing in the page data is a measurement.** No widths, no gaps, no `bleed`, no component imports — only content and the handful of real choices. Every drawn number lives in `PageRenderer`, once per section type, because it belongs to the *kind* of section rather than to the page. Compare with `Templates/Home`, which hardcodes all of it inline.',
+          'Porting it caught two things reading the code had not: the hand-written page used a 40px gap in one tabbed section where the file draws 24, and the two three-column resource grids are a different Figma cell from the goals grid with a different gap — which is why `resourceGrid` is its own type rather than `cardGrid` with a `columns` knob.',
         ].join('\n'),
       },
     },
@@ -209,7 +508,7 @@ const meta = {
 export default meta
 type Story = StoryObj
 
-/** The three sections, from data, with the shared chrome around them. */
+/** The whole page, from data, with the shared chrome around it. */
 export const FromData: Story = {
   render: () => (
     <>

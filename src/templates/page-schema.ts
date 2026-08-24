@@ -96,11 +96,36 @@ export interface HeroSpec {
 
 /* ------------------------------------------------------------------ the sections */
 
+/** A named illustrative icon from `assets/glass-icons/`. Resolved in `PageRenderer`. */
+export type GlassIconName =
+  | 'financial-services'
+  | 'enterprise-websites'
+  | 'customer-portals'
+  | 'supplier-portals'
+  | 'partner-portals'
+  | 'intranets'
+  | 'commerce'
+  | 'mail'
+  | 'search'
+  | 'sites'
+
 export interface CardSpec {
   title: string
   description?: string
+  /** The three decorations a card can lead with. A card uses at most one. */
   image?: ImageRef
+  icon?: GlassIconName
+  tag?: string
   href?: string
+}
+
+/** A figure and its unit — `140` + `%`, `+` + `100M`. `trend` draws the arrow the file puts on a fall. */
+export interface StatSpec {
+  value: string
+  prefix?: string
+  suffix?: string
+  label: string
+  trend?: 'down' | 'up'
 }
 
 export interface StorySpec {
@@ -123,10 +148,31 @@ export interface TabGroup<T> {
   content: T
 }
 
+/**
+ * The body of a tabbed section — the right half of `Different Teams. One Platform.` and of
+ * `Every Capability Your Enterprise Needs`. One shape covers both: the first fills `items` and
+ * `stats`, the second fills `eyebrow` and `action`, and the renderer draws whichever are present.
+ */
+export interface PanelSpec {
+  eyebrow?: GlassIconName
+  title: string
+  description: string
+  action?: LinkRef
+  /** An accordion under the description. */
+  items?: { question: string; answer: string; link?: LinkRef }[]
+  media?: ImageRef
+  /** A stat row under the media, inside the same column. */
+  stats?: StatSpec[]
+}
+
 export type SectionSpec =
   /**
-   * Figma `Type=Card Grid`. Four columns, a 32px section gap, `Padding=Full` cards, each one a link.
-   * All four of those are the type's, not the page's.
+   * Figma `Type=Card Grid`. Four columns of image cards at a 32px section gap.
+   *
+   * Deliberately *not* the same type as `resourceGrid`, though both are grids of cards. They are
+   * different cells in Figma with different gaps — 32 here, 24 there — and folding them together
+   * meant one of the two came out 8px wrong. A shared type would have to take the gap as data, which
+   * is the thing this schema exists to avoid.
    */
   | {
       type: 'cardGrid'
@@ -137,6 +183,17 @@ export type SectionSpec =
       tabs?: TabGroup<CardSpec[]>[]
     }
   /**
+   * Figma `Type=Resources` / `Card Grid- Non Clickable`. Three columns at a 24px gap, each card led by
+   * a glass icon or a tag rather than an image — the Home page's `Trending Now` and
+   * `Our Latest Research & Data`.
+   */
+  | {
+      type: 'resourceGrid'
+      title: string
+      description?: string
+      cards: CardSpec[]
+    }
+  /**
    * Figma `Type=Carousel`. Always centre-titled and always bleeding off both edges, with arrows
    * rather than dots — the drawn cell has no dots.
    */
@@ -144,6 +201,52 @@ export type SectionSpec =
       type: 'customerStories'
       title: string
       stories: StorySpec[]
+    }
+  /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
+  | { type: 'logoMarquee'; label: string; logos: string[] }
+  /**
+   * Figma `Type=Tabbed- Content`. A centred title, a pill bar, and a content-and-media panel that the
+   * bar swaps. Covers both of the Home page's tabbed sections.
+   */
+  | {
+      type: 'tabbedContent'
+      title: string
+      description?: string
+      tabs: TabGroup<PanelSpec>[]
+    }
+  /**
+   * Figma `Type=Full Card`. One horizontal card with links and a stat row, over a rule of tabs.
+   *
+   * `tabs` is a list of *labels*, not of cards, because that is what the file draws: one card that the
+   * bar relabels, with no distinct content behind the other industries. `{tab}` in a title or a link
+   * label is replaced with the active one. When the other industries get written, `tabs` becomes a
+   * list of cards and this note goes away.
+   */
+  | {
+      type: 'fullCard'
+      title: string
+      tabs?: string[]
+      card: {
+        icon?: GlassIconName
+        title: string
+        description: string
+        links?: LinkRef[]
+        stats?: StatSpec[]
+        media?: ImageRef
+      }
+    }
+  /** A centred band holding one wide graphic — the product map, drawn at 1000 across. */
+  | { type: 'mediaBand'; title: string; image: ImageRef }
+  /**
+   * Figma `Type=Integrations Section`. A title with an action beside it, over a wrapping row of 64px
+   * glass tiles — not a marquee, which is the separate `Logos scrolling section`.
+   */
+  | {
+      type: 'integrations'
+      title: string
+      description?: string
+      action?: LinkRef
+      logos: string[]
     }
 
 export interface PageSpec {
