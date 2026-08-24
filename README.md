@@ -1917,26 +1917,47 @@ the Home page — so neither blocks the work. That is worth stating plainly beca
 tree that ignores visibility counts `Chip` three times in each template and reaches the opposite
 conclusion.
 
-### The extraction path is blocked by stale mappings
+### Query an instance, not a variant
 
-`get_design_context` on these templates does not return this library. On a `Section` it returns
+`get_design_context` on a component **variant** returns something that looks like a broken mapping and
+is not one. On a `Chip` variant it comes back as
 
 ```
-import Surface from "src/components/Surface.tsx"
-<Section type="Card Grid" size="Default">
-  <Surface state="Default" style="Glass" />   ×6
+import Chip from "src/components/Chip.tsx"
+<Chip />
 ```
 
-and on a `Chip` variant it returns `import Chip from "src/components/Chip.tsx"` with a `state` prop.
-Neither file exists in this repo, and neither snippet compiles. They are **auto-generated mappings on
-individual variant nodes**, published at some point from an older state of a sibling repo or by accepting
-Figma's Code Connect suggestions, and they shadow the hand-written set-level mappings here.
+— a file that does not exist here, wrapped around auto-generated Tailwind. Two separate things cause
+that, and neither is a stale mapping:
 
-They cannot be removed from this repo: `figma connect unpublish --node … --label …` answers
-`No Code Connect CLI mapping found for this component` for every label, and the node ids they are keyed to
-(`0:158`, `0:205`, …) do not resolve in this file at all. They are not CLI-managed, so they have to go
-through Figma's own Dev Mode UI. **Until they do, design-to-code on these templates returns snippets
-pointing at files that do not exist**, which is worse than returning nothing.
+1. **`figma.selectedInstance` has no property values on a variant.** A variant is the component
+   definition, not a use of it, so every `getString` / `getEnum` / `getSlot` in a template returns
+   undefined and the snippet renders empty. Figma fills the gap with its own generated code.
+2. **`src/components/<Name>.tsx` is a placeholder Figma synthesises for a component it has no mapping
+   for** — a guess at where the code would live, not a published connection. Proof: before `Chip` was
+   mapped here that node reported `source: src/components/Chip.tsx`; after publishing, the same node
+   reports `source: src/index.ts` and the real template.
+
+So `figma connect unpublish` answering `No Code Connect CLI mapping found for this component` was
+correct — there was nothing to unpublish. **Always point design-to-code at an instance**: a card on a
+page, not a cell in the component set. Verified on a live `card-main` instance, where the mapping returns
+the real customer quote and renders the nested `Stat` through that component's own snippet.
+
+`Surface` is the same story from the other end. It has no mapping here and should not have one: it is a
+design-side resource that carries the card's states and background fills, which this library expresses as
+`Card`'s `surface` prop. A component that exists only to hold fills in Figma has no code counterpart to
+connect.
+
+### Two repos publish to the same Figma file
+
+`solutions-design-system` — the older sibling — still declares Code Connect for `Badge`, `Button`, `Chip`
+and `TextInput` against **this same file key**. Its `Chip.figma.ts` maps the same node as
+`src/figma/Chip.figma.ts` here, so the two repos compete for that component and whichever published last
+wins.
+
+Worth settling deliberately rather than by accident. And if those mappings should go, they have to be
+unpublished **from that repo** — `figma connect unpublish` only knows what the local files declare, so
+deleting the repo would remove the only way to remove them.
 
 ## Icons
 
