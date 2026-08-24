@@ -865,6 +865,15 @@ Mantine renders the label as a *sibling* of the input's wrapper, so the float is
 with `:focus-within` and `:has()` — a sibling selector cannot reach backwards from the input to its
 label.
 
+**`Select` takes `floating` too.** Every field in the `Form` set is `Condensed=True`, dropdowns included, so
+a form built from the file needs both or it looks misaligned — floating labels on the text fields and
+stacked labels on the selects. Verified in both states: empty, the label sits inside at 18px Regular,
+identical to a text field's; with an option chosen it is at 14px SemiBold on the border, `translateY(-32px)`.
+
+It needs no extra wiring because the mechanism is `:placeholder-shown`, which a select stops matching the
+moment an option is picked — so it also drops back on its own when a `clearable` select is cleared, and it
+floats while someone types in a `searchable` one.
+
 ### The info tooltip
 
 Figma's `Info Button` is a `Status/Info` pill beside the label. Here it is a tooltip **trigger**: a real
