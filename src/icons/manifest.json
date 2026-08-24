@@ -21,7 +21,24 @@
     "alert",
     "question",
     "pause",
-    "play"
+    "play",
+    "user_1",
+    "brackets_angle",
+    "presentation_1",
+    "monitor",
+    "department",
+    "building_2",
+    "group",
+    "shopping_cart_1",
+    "facebook",
+    "github",
+    "instagram",
+    "linkedin",
+    "social_x",
+    "youtube",
+    "menu"
   ],
-  "filled": []
+  "filled": [
+    "star"
+  ]
 }

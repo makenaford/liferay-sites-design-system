@@ -29,6 +29,16 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   videoPoster?: string
   /** Figma's `Alignnemt` axis. `center` centres the column and its text. */
   align?: HeroAlign
+  /**
+   * A full-width band above the content and the media, centred in the hero's own gutters. The Home
+   * page (node `24563:52720`) draws a solution finder there — a 1000px bar sitting over the bubble,
+   * above the heading and spanning both columns — which none of the content slots can hold, because
+   * every one of them lives inside the left column.
+   *
+   * It is the hero's first child in the reading order, so put something that introduces the page in
+   * it, not an afterthought.
+   */
+  banner?: ReactNode
   /** Above the heading — a `Label`, an eyebrow, a breadcrumb. */
   label?: ReactNode
   /**
@@ -65,6 +75,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
  * | `Theme` — Dark / Light | the colour scheme, not a prop |
  * | Label, Header, Description, Button(s), Link | `label`, `title`, `description`, `actions` |
+ * | A band above both columns (Home's solution finder) | `banner` |
  * | Input with button | `form` |
  * | Gartner logo and tags | `proof` |
  *
@@ -105,6 +116,7 @@ export function Hero({
   video,
   videoPoster,
   align = 'left',
+  banner,
   label,
   title,
   description,
@@ -135,6 +147,7 @@ export function Hero({
       data-background={background === 'none' ? undefined : background}
       data-align={align === 'center' ? 'center' : undefined}
       data-with-media={media ? true : undefined}
+      data-with-banner={banner ? true : undefined}
       {...props}
     >
       {background === 'none' ? null : (
@@ -154,6 +167,8 @@ export function Hero({
           ) : null}
         </div>
       )}
+
+      {banner ? <div className={classes.heroBanner}>{banner}</div> : null}
 
       <div className={classes.heroInner}>
         <div className={classes.heroContent}>

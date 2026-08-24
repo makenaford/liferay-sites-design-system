@@ -5,14 +5,21 @@ import classes from '../../theme/components.module.css'
 
 /** Which side the media sits on — Figma's `Content Left Image` and `Content- Right Image` types. */
 export type ContentMediaSide = 'left' | 'right'
-export type ContentMediaRatio = '3:2' | '16:9'
+export type ContentMediaRatio = '3:2' | '16:9' | 'auto'
 
 export interface ContentMediaProps extends BoxProps, Omit<ElementProps<'div'>, 'title'> {
   /** The image, video, or anything else that belongs in the media column. */
   media?: ReactNode
   /** @default 'left' */
   mediaSide?: ContentMediaSide
-  /** The media box's ratio, from `card-image`'s own axis. @default '3:2' */
+  /**
+   * The media box's ratio, from `card-image`'s own axis. `auto` takes the ratio off and lets the
+   * column be as tall as what is in it — which is what the Home page's `Different Teams. One
+   * Platform.` needs, because its right column is an image *and* a row of stats under it, and a
+   * fixed 3:2 box clips the second half.
+   *
+   * @default '3:2'
+   */
   mediaRatio?: ContentMediaRatio
   /** Above the heading — a `Label`, an eyebrow. */
   eyebrow?: ReactNode

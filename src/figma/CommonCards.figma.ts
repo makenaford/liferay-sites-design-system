@@ -11,6 +11,10 @@
 // Three of the eight are not in `Card Examples` and have no verified arrangement — `CS-Stat`,
 // `Quick Link` and `Stat Highlight`. They map to the nearest shape with a note rather than being left
 // unmapped, so a designer placing one still gets something to start from.
+//
+// `CS- Quote`'s attribution used to be written as `<Quotee />`, a component this library has never
+// exported — a snippet a designer could not paste. It is now the two lines of type Figma actually
+// draws: the name at `Paragraph/Small/Semi Bold` over the role in small caps.
 import figma from 'figma'
 
 const instance = figma.selectedInstance
@@ -30,7 +34,12 @@ const example = instance.getEnum('Type', {
       image={<Image src={logo} alt="Advanced Energy" ratio="3:2" />}
       top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
       description="Short description here"
-      bottom={<Quotee name="Anne Anderson" title="VP of Experience" />}
+      bottom={
+        <div>
+          <Text fz="sm" fw={600}>Anne Anderson</Text>
+          <Text fz={12} fw={600} tt="uppercase" lts="0.06em">VP of Experience</Text>
+        </div>
+      }
     />`,
   'CS- Details': `<Card
       component="a"
@@ -76,6 +85,7 @@ export default {
   example: figma.code`${example}`,
   imports: [
     'import { Card, Image, Label, Stat, StatBar } from "liferay-sites-design-system"',
+    'import { Text } from "@mantine/core"',
   ],
   id: 'common-cards',
   metadata: { nestable: false },

@@ -98,6 +98,40 @@ export function IconArrowUp(props: IconProps) {
   )
 }
 
+/** MingCute `brackets_angle` (regular, development). */
+export function IconBracketsAngle(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m9 4-5 8 5 8m6-16 5 8-5 8"/>
+    </svg>
+  )
+}
+
+/** MingCute `building_2` (regular, buildings). */
+export function IconBuilding2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 20h18M5 20V6.36a.5.5 0 0 1 .342-.474l8-2.667a.5.5 0 0 1 .658.475V20m0-10 4.598.92a.5.5 0 0 1 .402.49V20"/>
+    </svg>
+  )
+}
+
 /** MingCute `check` (regular, system). */
 export function IconCheck(props: IconProps) {
   return (
@@ -128,6 +162,23 @@ export function IconClose(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m5.636 5.637 12.728 12.728m-12.728 0L18.364 5.637"/>
+    </svg>
+  )
+}
+
+/** MingCute `department` (regular, development). */
+export function IconDepartment(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 0v4m-6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
     </svg>
   )
 }
@@ -166,6 +217,57 @@ export function IconExternalLink(props: IconProps) {
   )
 }
 
+/** MingCute `facebook` (regular, brands). */
+export function IconFacebook(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0v-8m2.5-5H14a2 2 0 0 0-2 2v3m0 0h-2m2 0h2"/>
+    </svg>
+  )
+}
+
+/** MingCute `github` (regular, brands). */
+export function IconGithub(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M3 16c1.5.5 1.5 3.5 5 3l1-.2m6 2.2v-3c0-.86-.363-1.636-.943-2.183a.01.01 0 0 1 .005-.018C17.48 15.117 20 12.78 20 10.001c0-1.262-.52-2.433-1.406-3.399a.01.01 0 0 1-.002-.01c.632-1.537.048-3.52-.096-3.591-.139-.07-1.957.288-3.45 1.445a.01.01 0 0 1-.009.002A10.3 10.3 0 0 0 12 4c-1.076 0-2.103.16-3.04.449a.01.01 0 0 1-.009-.002C7.458 3.29 5.64 2.931 5.5 3.001c-.144.072-.728 2.057-.095 3.593a.01.01 0 0 1-.002.01C4.518 7.57 4 8.74 4 10.002c0 2.779 2.52 5.116 5.938 5.798a.01.01 0 0 1 .005.018A3 3 0 0 0 9 18v3"/><path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M3 16c1.5.5 1.5 3.5 5 3l1-.2m6 2.2v-3c0-.86-.363-1.636-.943-2.183a.01.01 0 0 1 .005-.018C17.48 15.117 20 12.78 20 10.001c0-1.262-.52-2.433-1.406-3.399a.01.01 0 0 1-.002-.01c.632-1.537.048-3.52-.096-3.591-.139-.07-1.957.288-3.45 1.445a.01.01 0 0 1-.009.002A10.3 10.3 0 0 0 12 4c-1.076 0-2.103.16-3.04.449a.01.01 0 0 1-.009-.002C7.458 3.29 5.64 2.931 5.5 3.001c-.144.072-.728 2.057-.095 3.593a.01.01 0 0 1-.002.01C4.518 7.57 4 8.74 4 10.002c0 2.779 2.52 5.116 5.938 5.798a.01.01 0 0 1 .005.018A3 3 0 0 0 9 18v3"/>
+    </svg>
+  )
+}
+
+/** MingCute `group` (regular, users). */
+export function IconGroup(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M20 18a1 1 0 1 0 2 0zm-5 1a1 1 0 1 0 2 0zM2 19a1 1 0 1 0 2 0zm15-5v1h2v-2h-2zm4 2h-1v2h2v-2zm-1-7h-1a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3zm-2 2v-1a1 1 0 0 1-1-1h-2a3 3 0 0 0 3 3zm-2-2h1a1 1 0 0 1 1-1V6a3 3 0 0 0-3 3zm2-2v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3zM6 14v1h7v-2H6zm10 3h-1v2h2v-2zM3 19h1v-2H2v2zM13 7.5h-1A2.5 2.5 0 0 1 9.5 10v2A4.5 4.5 0 0 0 14 7.5zM9.5 11v-1A2.5 2.5 0 0 1 7 7.5H5A4.5 4.5 0 0 0 9.5 12zM6 7.5h1A2.5 2.5 0 0 1 9.5 5V3A4.5 4.5 0 0 0 5 7.5zM9.5 4v1A2.5 2.5 0 0 1 12 7.5h2A4.5 4.5 0 0 0 9.5 3zM13 14v1a2 2 0 0 1 2 2h2a4 4 0 0 0-4-4zm-7 0v-1a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2zm13 0v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3z"/>
+    </svg>
+  )
+}
+
 /** MingCute `information` (regular, system). */
 export function IconInformation(props: IconProps) {
   return (
@@ -179,6 +281,74 @@ export function IconInformation(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8h.002M11 11h1v6h.5m8.5-5a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>
+    </svg>
+  )
+}
+
+/** MingCute `instagram` (regular, brands). */
+export function IconInstagram(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16.5 7.5h.002M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-7 8h8a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4"/>
+    </svg>
+  )
+}
+
+/** MingCute `linkedin` (regular, brands). */
+export function IconLinkedin(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 8h.002M8 11v5m3-6v2m0 0v4m0-4c0-.5.917-1.783 2-2 1.38-.276 3 .5 3 2v4M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/>
+    </svg>
+  )
+}
+
+/** MingCute `menu` (regular, editing). */
+export function IconMenu(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  )
+}
+
+/** MingCute `monitor` (regular, devices). */
+export function IconMonitor(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M7.757 19.03a1 1 0 1 0 .486 1.94L8 20zm8 1.94a1 1 0 1 0 .486-1.94L16 20zm4.06-4.173-.158.987zM21 6.2h-1v9.6h2V6.2zM3 15.8h1V6.2H2v9.6zm16.818.997.158-.987a49.5 49.5 0 0 0-15.952 0l.158.987.159.987a47.5 47.5 0 0 1 15.318 0zM4.182 5.203l-.158.987a49.5 49.5 0 0 0 15.952 0l-.158-.987-.159-.987a47.5 47.5 0 0 1-15.318 0zM12 16.5h-1v3h2v-3zM8 20l.242.97h.003l.013-.004.295-.066a19 19 0 0 1 .861-.164A16 16 0 0 1 12 20.5v-2c-1.076 0-2.135.134-2.914.264a21 21 0 0 0-1.32.264l-.005.001h-.003zm4-.5v1c.924 0 1.865.116 2.586.236a19 19 0 0 1 1.172.234 463 463 0 0 1 .484-1.94l-.003-.001-.006-.002-.02-.005-.076-.017-.271-.06c-.231-.05-.56-.116-.952-.181-.779-.13-1.838-.264-2.914-.264zm-9-3.7H2c0 1.256 1.132 2.178 2.34 1.984l-.158-.987-.158-.987h-.011l-.01-.006-.004-.004.001.002V15.8zm18 0h-1v.002-.002l-.003.004-.01.005-.004.001h-.007l-.158.987-.159.987C20.87 17.978 22 17.056 22 15.8zm0-9.6h1c0-1.256-1.132-2.178-2.34-1.984l.158.987.158.987h.011l.01.006.004.004L20 6.198V6.2zm-18 0h1v-.002.002l.003-.004.01-.005.004-.001h.007l.158-.987.159-.987C3.13 4.022 2 4.944 2 6.2z"/>
     </svg>
   )
 }
@@ -213,6 +383,23 @@ export function IconPlay(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeWidth="2" d="M6.661 4.88a.47.47 0 0 1 .656-.378c1.032.441 3.375 1.502 6.354 3.222s5.071 3.22 5.97 3.893a.468.468 0 0 1 0 .755c-.889.667-2.954 2.148-5.97 3.89-3.019 1.742-5.334 2.79-6.356 3.226a.468.468 0 0 1-.653-.378c-.135-1.11-.389-3.662-.389-7.116 0-3.452.254-6.003.388-7.115Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `presentation_1` (regular, business). */
+export function IconPresentation1(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m8.46 21 3.535-3.535L15.532 21M3 4h18M8 12v1m4-3v3m4-5v5M4 4h16v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>
     </svg>
   )
 }
@@ -281,6 +468,91 @@ export function IconSearch(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m15.879 15.879 4.242 4.242M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `shopping_cart_1` (regular, business). */
+export function IconShoppingCart1(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M8 20.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m10 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h.138a2 2 0 0 1 1.995 1.858l.8 11.213a1 1 0 0 0 .998.929h11.234a1 1 0 0 0 .984-.821l1.637-9A1 1 0 0 0 19.802 6H6m2 14.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m10 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+    </svg>
+  )
+}
+
+/** MingCute `social_x` (regular, brands). */
+export function IconSocialX(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M19.753 4.659a1 1 0 0 0-1.506-1.317L19 4zM4.247 19.342a1 1 0 0 0 1.506 1.317L5 20zM4 4V3a1 1 0 0 0-.8 1.6zm4 0 .8-.6A1 1 0 0 0 8 3zm12 16v1a1 1 0 0 0 .8-1.6zm-4 0-.8.6a1 1 0 0 0 .8.4zm3-16-.753-.659-5.923 6.77.753.658.752.659 5.924-6.77zm-8.077 9.23-.752-.658-5.924 6.77L5 20l.753.659 5.923-6.77zM4 4v1h4V3H4zm4 0-.8.6 12 16 .8-.6.8-.6-12-16zm12 16v-1h-4v2h4zm-4 0 .8-.6-12-16L4 4l-.8.6 12 16z"/>
+    </svg>
+  )
+}
+
+/** MingCute `star` (filled, shapes). */
+export function IconStarFilled(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M10.92 2.37a1.25 1.25 0 0 1 2.16 0l2.795 4.8 5.428 1.175a1.25 1.25 0 0 1 .667 2.054l-3.7 4.142.56 5.525a1.25 1.25 0 0 1-1.748 1.27L12 19.096l-5.082 2.24a1.25 1.25 0 0 1-1.747-1.27l.559-5.525-3.7-4.142a1.25 1.25 0 0 1 .667-2.054L8.125 7.17z"/>
+    </svg>
+  )
+}
+
+/** MingCute `user_1` (regular, users). */
+export function IconUser1(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `youtube` (regular, brands). */
+export function IconYoutube(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M3.232 7.808a2.8 2.8 0 0 1 2.58-2.523C7.481 5.149 9.815 5 12 5s4.52.15 6.188.285a2.8 2.8 0 0 1 2.58 2.523C20.887 9.03 21 10.572 21 12s-.113 2.97-.232 4.192a2.8 2.8 0 0 1-2.58 2.523C16.519 18.851 14.185 19 12 19s-4.52-.15-6.188-.285a2.8 2.8 0 0 1-2.58-2.523C3.113 14.97 3 13.428 3 12s.113-2.97.232-4.192Z"/><path fill="currentColor" d="M15.1 11.48a.6.6 0 0 1 0 1.04l-4.2 2.425a.6.6 0 0 1-.9-.52v-4.85a.6.6 0 0 1 .9-.52z"/>
     </svg>
   )
 }

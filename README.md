@@ -687,6 +687,7 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 | `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
 | `Alignnemt` — Left / Center | `align` |
 | `Image` — Yes / No | the `media` slot |
+| A band above both columns | the `banner` slot |
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
 | `Theme` — Dark / Light | the colour scheme, not a prop |
 | Label / Header / Description / Button(s) / Link | `label`, `title`, `description`, `actions` |
@@ -699,6 +700,12 @@ the media, and 24px inside the content stack. The content and media columns are 
 
 `Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
 and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
+
+`banner` is the one slot with no cell on the set. Every other slot lives inside the left column; the Home
+page (node `24563:52720`) puts a 1000px solution finder across the top of the hero, above the heading and
+spanning both columns, and there was nowhere to hang it. It renders as a full-width band inside the hero's
+own gutters — 40px above it, 64px below — and it is the hero's first child in the reading order, so what
+goes in it should introduce the page rather than trail it.
 
 The heading element is the caller's: `title` takes whatever node you pass and only styles it. A hero
 cannot know whether it holds the page's `h1`.
@@ -1377,6 +1384,7 @@ forward slots would add API surface and no capability, so the fourteen live as *
 | Figma | Prop |
 | --- | --- |
 | `padding` 80 at 1440, 20 at 390 | fluid, no prop |
+| `card-image` `Ratio` on the media column | `mediaRatio="3:2" \| "16:9" \| "auto"` |
 | The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
 | `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
 | `Section Title` | `title` |
@@ -1637,80 +1645,137 @@ around Figma's 24px glyph, which is inferred; the file draws no target.
 
 ## What the Home template needed
 
-The `Home` template (node `24563:52720`) — a 1440×8559 page — is built in `src/templates/Home.stories.tsx`
-from the library, as an interactive prototype rather than a picture: the header opens its mega menu, the pill
-tabs swap the panel below them, the carousel snaps, both marquees run, the accordion expands and the form
-validates. All of it verified by driving it, not by looking at it.
+The `Home` page (node `24563:52720`) — a 1440×8559 frame — is built in `src/templates/Home.stories.tsx`
+from the library, as an interactive prototype rather than a picture: the header opens its mega menus, three
+separate pill sets swap the panel below them, the industry tabs retitle the card, the carousel snaps, the
+marquee runs, the accordion expands and both forms validate. All of it verified by driving it at 1440 and at
+375, not by looking at it.
 
-Eleven of its twelve sections needed nothing new. These are the gaps it exposed.
+It carries the file's **own** content — the headline and its gradient half, the Gartner rating, the four
+goal-card titles, the four customer quotes with their figures and attributions, the accordion's first panel,
+the industry stats, the six capability cells, the two report tags, the whole footer taxonomy and the Gartner
+disclaimer. Where the file has not been written yet, that is said below rather than papered over with
+invented copy.
 
-### Fixed here — measured against the file at 1440
+### What is committed, and what is not
 
-The first pass of the prototype did not match. Everything below was measured, corrected, and re-measured.
+The product screenshots and the platform diagram are the design's own assets and are committed under
+`assets/home/` (2.3MB, exported at the drawn size or 2×). **Customer and vendor logos are not** — Airbus,
+Sky, Broadcom, Unilever, Stadt Wien, Carrefour, Petrobras, OpenAI, Asana and the rest are other companies'
+trademarks rather than design-system assets, so the marquee, the carousel tiles and the integration row use
+stand-ins at the drawn size. The Gartner "Leader / Summer 2026" shield is omitted for the same reason; the
+rating, the stars and the attribution line are real.
 
-**`Hero` was wrong in three ways, all in the component rather than the template.**
+### Fixed here — the components the page changed
 
-| | Was | Figma | Now |
-| --- | --- | --- | --- |
-| Content column | 1440 | **1280** | 1280 |
-| Padding | none on the root | **80** | 80 |
-| Row gap (text ↔ media) | 40 | **80** | 80 |
+**`Hero` gained a `banner` slot.** The page opens with a 1000×60 glass bar — a label, two selects and a
+`Continue` button — centred *above* both columns. Every other hero slot lives inside the left column, so
+there was nowhere to put it. `banner` is a full-width band in the hero's own gutters, 40px below the nav and
+64px above the heading, and it is the hero's first child in the reading order.
 
-The 1440 column was the worst of the three: a hero whose text starts 80px further out than the section below
-it is the one thing on a page that visibly fails to line up. `Hero` was also the last layout component still
-on `vw` and viewport media queries — it now uses `cqi` and a container query like `Section`, `Marquee`,
-`Form` and `Footer`, with the same two-point interpolation that passes through 80 at 1440 and 20 at 390.
+**`ContentMedia` gained `mediaRatio="auto"`.** `Different Teams. One Platform.` puts a screenshot *and* a
+row of three stats in its right column. The figure was a fixed `aspect-ratio` with `overflow: hidden`, so
+the stat row was clipped away entirely — present in the DOM, invisible on the page. `auto` takes the ratio
+off and lets the column be as tall as what is in it.
 
-**`Card`'s `Padding=Full` cell had the wrong gap.** The gap rule was "16 with an image, 20 without", read off
-the five `Card Examples` cards. `Padding=Full` has an image *and* a 20px gap, so it breaks that rule and now
-states its own. Verified at Figma's 302px card width: padding 20, gap **20**, content padding 20, content gap
-16, image 262.
+**A `Button` label longer than its container now wraps instead of overflowing.** Mantine's button is a fixed
+height with a `nowrap` label, so `Explore our integration capabilities` ran straight out through the gutter
+at 375px. The root is now `height: auto; min-height: var(--button-height)` and the label wraps — the drawn
+height is the floor, so every button that fits on one line is unchanged.
 
-**The logo strip was the wrong size and in the wrong band.** The template asked for `size="md"` — a 49px
-row, Figma's `Size=Desktop` cell — where the home page uses `Size=Size3`, a **64px** row. And it was wrapped
-in a `tight` bleeding section, giving it 39px of block padding against the file's **0**. `Section` gained
-`spacing="none"` for bands that sit flush against their neighbour.
-
-**Section gaps were all defaulting to 24.** The file varies them: **32** on `Audience Specific Goals` and
-`Integrations`, **40** on `Customer Story`. Every section now measures its own number.
-
-**The integrations band was the wrong component.** `Type=Integrations Section` is a `List` of **64px glass
-tiles at gap 16**, not a logo marquee — the marquee belongs to the separate `Logos scrolling section`. Now a
-row of 64×64 glass `Card`s holding 40px icons, verified at 64×64 with a 16px gap.
-
-Every section verified at 1440: padding 80 (0 on the logo strip), gaps 32/24/24/24/40/32/24/24, and content
-1280 except where the file narrows the column itself — 1000 for the customer story, 900 for the FAQ.
-
-### Fixed here
-
-**`card-main`'s `Padding` axis has been restructured in Figma, and two of its cells produced no snippet.**
-It was `True` / `False` when this was first mapped. It is now **four** cells — `True`, `False`, `On content`,
-`Full` — and the Vertical/`True` combination is gone. Two consequences:
-
-- `On content` is the shape this implementation already had as `padding="content"`, invented for the file's
-  hand-built `no image padding` frame. The design has since named it. Pleasing, but it means the mapping was
-  silently incomplete.
-- **`Full` was genuinely new**: 20px on the card *and* 20px again on the content, so the image sits 20 from
-  the edge and the text 40. The template's `Audience Specific Goals` row uses it four times. Added as
-  `padding="full"`.
-
-The Code Connect mapping now covers all four. Until this, selecting either new cell in Dev Mode gave nothing.
+**A pill bar with more cells than fit now scrolls.** `Every Capability Your Enterprise Needs` is six cells;
+at the desktop cell they want ~1460px inside a 1280 column, and the bar was running off the page. The list
+scrolls at both sizes now, as the Mobile cell already did. See the note on `Segmented Control Bar` below for
+why six cells do not fit in the first place.
 
 ### Needs a decision
 
-**`LRDC Primary Nav` (`22775:43617`) is not what `Header` was built from.** `Header` and `MegaMenu` were
-built from `liferay-nav-desktop_12.html`, because no Figma set was found at the time. This set exists, and it
-has a `Breakpoint` axis of four values — `1200+ Dynamic Width`, `Desktop 1200+`, `Tablet 600+`, `Mobile 0+` —
-against the single 1200px breakpoint the implementation uses. The prototype uses `Header` and it looks right,
-but it has never been checked against this component. Worth a pass before anyone treats the two as the same
-thing.
+**`Tabs variant="pills"` cannot size itself to its content.** Its root declares
+`container: sds-tabs / inline-size` so the bar can switch to the Mobile cell on *its own* width rather than
+the window's — which is the right call, and it also means the root contributes nothing to a content-based
+measurement. Put the bar in any flex row that sizes to content (a `SectionTitle` action, a centred `Stack`)
+and it collapses to **zero width**. The page hits this twice, and both call sites pass the drawn width
+explicitly:
 
-**`Tabs Menu Logo` `Type=Logo`** — the template's section 6 uses the text cell, which is implemented. The
-logo cell puts customer logos in the tabs instead of labels and `Tabs.Tab` has no logo mode.
+| Where | Width |
+| --- | --- |
+| `What Teams Can Achieve with Liferay`, in `SectionTitle`'s `actions` | 520 |
+| `Different Teams. One Platform.`, in a centred `Stack` | 776 |
+
+That works, but a component that silently disappears in a flex row is a trap. Either the container moves to
+an element the caller does not own, or `Tabs` needs a `compact` prop so the cell is asked for rather than
+inferred from a width.
+
+**Figma's `Segmented Control Bar` is not `Tabs Pill Menu`.** `SegmentedControl` was removed from this library
+because Figma's set is named `Tabs Pill Menu`, which became `variant="pills"`. But section 8 uses a
+*different* set — `Segmented Control Bar` (`24247:69863`) — and it packs six cells into 1280 with tighter
+padding than the pill menu has. The mapping is lossy: `variant="pills"` needs ~1460px for the same six
+labels. Worth deciding whether the two sets are really one component.
+
+**`Stat` has no unit slot.** Every figure on this page carries one — `140%`, `+100M`, `45%`, `1,200+`,
+`17+` — drawn smaller than the figure and set tight against it. There is no prop for it, so the template
+passes a `Text` into `value`. Five instances of the same shape is an axis, not a one-off.
+
+**`Stat size="sm"` drops the small caps that the page still wants.** The small cell sets
+`text-transform: none`, which is right for the footer's `Enterprise Customers` and wrong for the industry
+card, where the file draws a 32px figure over `FASTER LOADING TIME`. The template uses `size="md"` there and
+takes the 40px figure, because the label's case matters more than eight pixels.
+
+**`Form` is Figma's glass *form card*, not a field row.** It is a 40px-padded glass surface, which is correct
+for the set it was built from and wrong for the footer's action band, where the file draws the field and the
+button straight onto the page. The band uses a bare `<form>` with a `Group`. If a plain field row is a
+recurring shape, `Form` needs a surface-less cell.
+
+**`LRDC Primary Nav` (`22775:43617`) is still not what `Header` was built from.** `Header` and `MegaMenu`
+came from `liferay-nav-desktop_12.html`. This set has a `Breakpoint` axis of four values —
+`1200+ Dynamic Width`, `Desktop 1200+`, `Tablet 600+`, `Mobile 0+` — against the single 1200px breakpoint the
+implementation uses. The page's header looks right at both widths, but the two have never been reconciled.
+
+**`Tabs Menu Logo` `Type=Logo`** — section 6 uses the text cell, which is implemented. The logo cell puts
+customer logos in the tabs instead of labels, and `Tabs.Tab` has no logo mode.
+
+### Fixed in the Code Connect mappings
+
+**`CS- Quote` promised a component that has never existed.** The `Common Cards` mapping wrote its
+attribution as `<Quotee name="…" title="…" />` — so a designer copying that snippet out of Dev Mode got code
+that does not compile. It is now the two lines of type the file actually draws: the name at
+`Paragraph/Small/Semi Bold` over the role in small caps. The template has the same shape as a local helper.
+If it turns up a third time it should be a component.
+
+### Where the file is not written yet
+
+Reproduced as drawn rather than filled in with invented copy:
+
+| Section | State in the file |
+| --- | --- |
+| `Trending Now` | Six cards, every one of them `Card Title` and a line of lorem |
+| `Audience Specific Goals`, second tab | Drawn hidden and empty — the four IT/Developer titles here are **authored**, and marked as such in the source |
+| `Different Teams. One Platform.` | Only the first accordion panel has body copy; the other four bodies and the other two pills are **authored** |
+| `CAROUSEL` | Six cards, of which the first and last are 74px slivers with no readable content. The four full stories are implemented |
+
+A tab that changes nothing is worse than a tab with a stated guess, which is why the authored copy exists
+rather than duplicate panels. Every one of those strings is a comment away from the real thing.
+
+### Two off-axis card paddings
+
+Both are `card-main` instances at padding values **not on the `Padding` axis**, so the template sizes them by
+hand and the component cannot help:
+
+- the hero's **1000×60 solution finder** at padding 8/16 — a label, two selects and a rounded button
+- the integrations **64×64 tile** at padding 12
+
+Two off-axis instances is a pattern rather than an accident. Either the axis needs those values, or these are
+two components of their own — a solution finder and an icon tile. The file does not say which, and guessing
+would put an invented cell in a published mapping.
+
+### Still true from the first pass
+
+`Hero`'s 1280 content column, 80px padding and 80px row gap; `Card`'s `Padding=Full` gap of 20; the logo
+strip at `Size=Size3` (64px) in a `spacing="none"` band; per-section gaps of 32/24/24/24/40/32/24/24; and the
+integrations band as a `List` of 64px glass tiles rather than a marquee. All re-verified against the file at
+1440.
 
 ### No component yet
-
-Each of these appears in the template, and each is currently hand-rolled in the story or omitted:
 
 | Figma set | What it is | Status in the prototype |
 | --- | --- | --- |
@@ -1722,25 +1787,6 @@ Each of these appears in the template, and each is currently hand-rolled in the 
 `Chip` is the one I would build next — it is a real interactive control with five states, it is the only
 form-adjacent primitive on the page with no code, and unlike the others it is not reducible to components
 that already exist.
-
-### Two off-axis card paddings
-
-Both of these are `card-main` instances at padding values that are **not on the `Padding` axis**, so the
-template sizes them by hand and the component cannot help:
-
-- the hero's **1000×60 announcement strip** at padding 8/16
-- the integrations **64×64 tile** at padding 12
-
-Two off-axis instances is a pattern rather than an accident. Either the axis needs those values, or these are
-two components of their own — an announcement bar and an icon tile. The file does not say which, and guessing
-would put an invented cell in a published mapping.
-
-### The announcement strip
-
-The hero opens with a 1000×60 glass `card-main` at `padding` 8/16 — a thin full-width strip holding a label
-and a link row. It is a `Card` with a very tight padding rather than a new component, but that padding is not
-on the `Padding` axis, so the template is drawing it by hand. Either it is a `Card` variant or it is an
-announcement-bar component; the file does not say which.
 
 ## Icons
 

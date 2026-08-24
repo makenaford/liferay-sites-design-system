@@ -9,6 +9,7 @@
   ],
   "icons": [
     "Business/Dashboard",
+    "Business/Enterprise Website 4",
     "Business/Proof of Value",
     "Content/Search",
     "Content/Sites",
@@ -21,8 +22,12 @@
     "General/Developer Tools",
     "General/Mail",
     "General/Performance",
+    "Industries/Financial Services",
     "Platform/Premium Security",
+    "Product Modules/Commerce",
     "Security/Security & Compliance",
-    "Services/Intranets"
+    "Services/Intranets",
+    "Solutions/Partner Portals",
+    "Solutions/Supplier Portals"
   ]
 }

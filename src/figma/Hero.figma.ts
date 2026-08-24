@@ -7,6 +7,10 @@
 // `Theme` does not reach the snippet — the colour scheme handles it — and neither does `Size`, which is
 // a media query at 1200px. `Type=Form` and `Type=Guide` are content compositions rather than chrome, so
 // they map to the props that carry that content: a form instead of buttons, and no media.
+//
+// The `banner` prop is not in this snippet because this component set has no slot for it. It is a band
+// across the top of the hero, above both columns, and the Home page (node `24563:52720`) draws a
+// solution finder there — see `src/templates/Home.stories.tsx`.
 import figma from 'figma'
 
 const instance = figma.selectedInstance
