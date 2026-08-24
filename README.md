@@ -822,6 +822,48 @@ stagger.
   `Surfaces/Page BG base/Default`. If the design file ever publishes the glass surfaces as their own
   variables, these become plain token references.
 
+## Logo
+
+The Liferay lockup, built from the supplied `Liferay Logo.svg` (152×48). The `Home` template uses it twice
+— the header at the top of the hero, and the footer's brand block.
+
+```tsx
+<Logo />                          // mark + wordmark, 48px tall
+<Logo height={32} />              // in a header bar
+<Logo variant="mark" height={24} />
+<Logo title="" />                 // decorative, beside a visible name
+```
+
+| Prop | |
+| --- | --- |
+| `variant` — `full` / `mark` | the lockup, or the glyph alone |
+| `height` | the rendered height; width follows the artwork's ratio |
+| `title` | the accessible name, `Liferay` by default; `''` when decorative |
+
+It is pinned by **height**, not width — that is what makes it sit level with the text beside it.
+
+### The wordmark follows `currentColor`, the mark does not
+
+The source file hardcodes the wordmark to `#F0F1F5`, a near-white that only works on a dark ground and
+would have been **invisible on a light page** — the same trap several tokens in this library already fall
+into, because the components are only ever drawn on the dark canvas. Here it is `currentColor`, so it takes
+`Surfaces/Text/Primary` on a page and the pinned inverted white on the footer's band.
+
+The **mark keeps its `#0B5FFF`**. That is `Brand/Primary/Primary`, and a brand mark is the one thing on a
+page that should *not* change with the colour scheme — it is the same blue on every surface, which is what
+makes it recognisable. It is a literal rather than a token for exactly that reason: it must not be re-themed.
+
+### Two gaps
+
+**There is no Figma component behind it, so it has no Code Connect mapping** — the only component here
+without one. The Solutions Library file has no logo set; a library search turns up `Liferay` in *Customer
+Logos* and `Logo / Desktop / Default` in *liferay-marketing*, both in other files. Mapping across file keys
+is a decision rather than a detail, so it is not guessed at here.
+
+**There is no inverse lockup.** On a brand-blue ground the mark is the same blue and disappears into it,
+leaving only the wordmark — see the `On surfaces` story, which shows it rather than hiding it. A logo that
+has to sit on the brand colour needs a single-colour version, and the supplied artwork does not include one.
+
 ## Fields — TextInput, Textarea, Select, LanguagePicker
 
 From the Figma `Input` set (node `16166:23969`), laid out in the `input` section `24397:77217`, with the

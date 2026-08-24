@@ -6,34 +6,33 @@ import { Form } from '../Form'
 import { TextInput } from '../Input'
 import { Link } from '../Link'
 import { SectionTitle } from '../Section'
+import { Logo } from '../Logo'
 import { Stat, StatBar } from '../Stat'
-import { IconArrowUp } from '../../icons'
+import {
+  IconArrowUp,
+  IconFacebook,
+  IconGithub,
+  IconInstagram,
+  IconLinkedin,
+  IconSocialX,
+  IconYoutube,
+} from '../../icons'
 
-/** Stands in for the Liferay lockup — the real one is an app asset, not a library one. */
-const Logo = () => (
-  <svg viewBox="0 0 134 48" role="img" aria-label="Liferay" height={48}>
-    <rect x="0" y="12" width="24" height="24" rx="6" fill="currentColor" opacity="0.6" />
-    <text x="32" y="33" fontSize="22" fontWeight="700" fill="currentColor">
-      Liferay
-    </text>
-  </svg>
-)
-
-/**
- * Stands in for the social marks. Brand icons are trademarked assets belonging to the application, so none
- * are bundled — `Footer.Brand`'s `social` slot only lays them out and gives each one a label.
- */
-const SOCIALS = ['LinkedIn', 'X', 'YouTube', 'GitHub', 'Facebook', 'Instagram']
-const socialIcons = SOCIALS.map((name) => (
-  <a key={name} href="#" aria-label={name}>
-    <svg viewBox="0 0 24 24" aria-hidden focusable="false">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <text x="12" y="16" fontSize="9" textAnchor="middle" fill="currentColor">
-        {name[0]}
-      </text>
-    </svg>
-  </a>
-))
+const socialIcons = [
+  ['LinkedIn', IconLinkedin],
+  ['X', IconSocialX],
+  ['YouTube', IconYoutube],
+  ['GitHub', IconGithub],
+  ['Facebook', IconFacebook],
+  ['Instagram', IconInstagram],
+].map(([name, Glyph]) => {
+  const Icon = Glyph as typeof IconLinkedin
+  return (
+    <a key={name as string} href="#" aria-label={name as string}>
+      <Icon aria-hidden />
+    </a>
+  )
+})
 
 const COLUMNS = [
   ['Getting Started', ['Start a trial', 'Documentation', 'Training', 'Partner directory', 'Support']],

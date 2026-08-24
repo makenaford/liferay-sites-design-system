@@ -12,6 +12,7 @@ import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
+import { Logo } from '../components/Logo'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
@@ -103,17 +104,6 @@ function VendorTile({ name }: { name: string }) {
       <rect x="4" y="4" width="32" height="32" rx="8" fill="none" stroke="currentColor" strokeWidth="2" />
       <text x="20" y="26" fontSize="16" fontWeight="700" textAnchor="middle" fill="currentColor">
         {name.slice(0, 1)}
-      </text>
-    </svg>
-  )
-}
-
-function LiferayLogo() {
-  return (
-    <svg viewBox="0 0 134 40" role="img" aria-label="Liferay" height={32}>
-      <rect x="0" y="8" width="24" height="24" rx="4" fill="currentColor" opacity="0.85" />
-      <text x="32" y="29" fontSize="24" fontWeight="600" fill="currentColor" fontFamily="inherit">
-        Liferay
       </text>
     </svg>
   )
@@ -550,7 +540,7 @@ function HomePage() {
   return (
     <>
       <Header
-        logo={<LiferayLogo />}
+        logo={<Logo height={32} title="" />}
         position="static"
         items={NAV.map((item) => ({
           value: item.value,
@@ -1216,7 +1206,7 @@ function HomePage() {
          * is the sixth child rather than the `brand` prop, which would put it first.
          */}
         <Footer.Brand
-          logo={<LiferayLogo />}
+          logo={<Logo height={32} title="" />}
           address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
           social={SOCIALS.map(([name, icon]) => (
             <a key={name} href="#" aria-label={name}>

@@ -44,6 +44,7 @@ export {
   type MegaFeaturedCardProps,
   type MegaCtaProps,
 } from './components/Header'
+export { Logo, type LogoProps, type LogoVariant } from './components/Logo'
 export {
   List,
   type ListProps,
