@@ -4753,3 +4753,182 @@
     border-inline-start: 1px solid CanvasText;
   }
 }
+
+/* =====================================================================================
+ * Form — Figma `Form` component set (node `21405:74359`)
+ *
+ *   Desktop   600 wide, V, padding 40, gap 40, on a `Surface Style=Glass`
+ *             heading block gap 8 — title 28/35 semibold `Desktop/Heading/H5/Semi Bold`,
+ *             description 18 regular
+ *             the fields frame V gap 24; each slot is H gap 16 holding one or two inputs
+ *             `Description/Terms` 16px, then the action frame at gap 8:
+ *             a full-width `Size=Medium` button and a 16px footnote
+ *   Mobile    padding 16, gap 24, fields gap 16, title 23 `Mobile/Heading/H6/Semibold`,
+ *             and every row collapses to a single column
+ *
+ * The surface is the same glass the Card uses — radial `Glass Step 01`/`02`, the `Glass Line` hairline at
+ * 225°, the 100-radius background blur and the `#000 @0.08` glow — so it is expressed with the same tokens
+ * rather than a second set of values.
+ *
+ * Responsive by container query, not viewport: this card is dropped into a hero column, a section, or a
+ * modal, and how wide *it* is has nothing to do with how wide the window is.
+ * ===================================================================================== */
+
+/*
+ * The container is this wrapper, not the card. A container cannot be styled by its own query, so with
+ * `container-type` on the form the padding and gap rules below silently never applied — the rows collapsed
+ * while the padding stayed at 40. The wrapper has no padding of its own, so its inline size is the card's
+ * outer width, which is the number the breakpoint should be about.
+ */
+.formShell {
+  container-type: inline-size;
+  container-name: sds-form;
+}
+
+.formRoot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 40px;
+  border-radius: 8px;
+  /* `Surface Style=Glass`, the same construction as the Card's glass surface. */
+  background-image: radial-gradient(
+    circle at 0% 0%,
+    var(--sds-glass-step-01) 0%,
+    var(--sds-glass-step-02) 100%
+  );
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The glass hairline — a masked ring, since a gradient cannot be a border. */
+.formRoot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  /* `header-alignment` gap 8. */
+  gap: 8px;
+}
+
+/*
+ * `Desktop/Heading/H5/Semi Bold` at 28px down to `Mobile/Heading/H6/Semibold` at 23px. A `<p>` rather than a
+ * heading tag on purpose: a form's own title is rarely the right level for the page it sits on, and the
+ * caller can pass a real heading as `title` when it is.
+ */
+.formTitle {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.formDescription {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.28;
+  font-weight: 400;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The fields frame — `Form` V gap 24. */
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* One numbered slot: a row of one or two fields, 16px apart, each sharing the width. */
+.formRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.formRow > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* `Description/Terms` — 16px, and above the button, which is where the file puts it. */
+.formTerms {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* The action frame, gap 8: a full-width button and the footnote under it. */
+.formActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formFootnote {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/*
+ * Figma's `Size=Mobile` cell. A container query rather than a media query: this card lives in a hero column
+ * or a section, so its own width is the thing that decides, not the window's.
+ */
+/*
+ * Figma's `Size=Mobile` cell. 520px is the card's own outer width: below it, the two 252px fields a two-up
+ * row is drawn with no longer fit beside each other inside the 40px padding.
+ */
+@container sds-form (max-width: 520px) {
+  .formRoot {
+    gap: 24px;
+    padding: 16px;
+  }
+
+  .formFields {
+    gap: 16px;
+  }
+
+  .formTitle {
+    font-size: 23px;
+  }
+
+  /* Every two-up row becomes a single column, as the Mobile cell draws it. */
+  .formRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .formRow > * {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .formRoot {
+    border: 1px solid CanvasText;
+  }
+
+  .formRoot::before {
+    display: none;
+  }
+}

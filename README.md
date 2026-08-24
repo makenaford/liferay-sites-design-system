@@ -1497,6 +1497,58 @@ inventions.
 - `Accordion`'s rule **crossfades** between the flat and the gradient tone as a row opens, which needs two
   stacked layers on one element. A single `Divider` cannot animate between its own tones.
 
+## Form
+
+Figma `Form` component set (node `21405:74359`) — a glass card holding a heading, rows of fields, the terms
+line and a submit button. The `Type=Form` hero template (`24263:171716`) is this card beside a content
+block; that composition is the `FormSection` story in `Blocks`.
+
+| Figma | Prop |
+| --- | --- |
+| `Content Text` title + description | `title`, `description` |
+| `Slot 1`–`Slot 5`, `Slot 8` | `Form.Row`, one per row |
+| `Description/Terms` | `terms` |
+| `Action section` `Type=Button` | `submit` |
+| The second `Description Card` | `footnote` |
+| `Size` — Desktop / Mobile | a container query on the card's own width |
+| `Format` — Short | the only cell; nothing to switch on |
+
+It renders a real `<form>`, so `onSubmit` fires, Enter submits, and `required` fields report themselves with
+no JavaScript.
+
+### Measured
+
+| | Figma Desktop | Verified | Figma Mobile | Verified |
+| --- | --- | --- | --- | --- |
+| Padding | 40 | 40 | 16 | 16 |
+| Card gap | 40 | 40 | 24 | 24 |
+| Fields gap | 24 | 24 | 16 | 16 |
+| Row gap | 16 | 16 | 16 | 16 |
+| Title | 28 semibold | 28 w600 | 23 | 23 |
+| Two-up pair at 600 wide | 252 + 252 | **252 + 252** | single column | single column |
+
+### The numbered slots are not the API
+
+Figma's slots are `Slot 1`, `2`, `3`, `4`, `5` and `8` — not in visual order, with no 6 or 7, and whether a
+given one holds one field or two is set per instance. That is how Figma's slot system works, not a
+description of a form. `Form.Row` is one repeatable thing instead, and the order you write is the order it
+renders.
+
+### Terms above the button
+
+`terms` renders **above** `submit`, which is where the file puts it and the only defensible order: text you
+agree to by pressing a button has to be readable before the button, not underneath it.
+
+### A container cannot style itself
+
+The mobile cell is a container query on the card's own width, because this card lives in a hero column — it
+is narrow while the window is not, which is exactly the case a viewport query gets wrong.
+
+Getting there took a fix worth recording. With `container-type` on the `<form>` itself, the padding and gap
+rules inside the query **silently never applied** — a container cannot be styled by its own query — so the
+rows collapsed while the padding stayed at 40. The container is now a wrapper with no padding, so its inline
+size is the card's outer width, and all four mobile values land. Verified switching at exactly 520px.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
