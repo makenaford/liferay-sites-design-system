@@ -53,6 +53,7 @@ export const Stat = forwardRef<HTMLDivElement, StatProps>(function Stat(
       className={[classes.stat, className].filter(Boolean).join(' ')}
       data-size={size === 'sm' ? 'sm' : undefined}
       data-align={align === 'center' ? 'center' : undefined}
+      style={{'gap': 'var(--mantine-spacing-4)'}}
       {...props}
     >
       <div className={classes.statValue}>

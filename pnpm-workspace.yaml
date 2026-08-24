@@ -26,3 +26,6 @@ trustPolicyIgnoreAfter: 131040
 # platform binary — required for the build to work, so it's explicitly allowed to run.
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@figma/code-connect@2.0.0'
