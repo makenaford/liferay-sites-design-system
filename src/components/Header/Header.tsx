@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
+import { Logo } from '../Logo'
 import { IconClose, IconDown, IconMenu } from '../../icons'
 
 export interface HeaderNavItem {
@@ -78,7 +79,7 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
  * mobile variant: the column grid and the featured rail collapse to one column on their own.
  */
 export function Header({
-  logo,
+  logo = <Logo height={54} title="" />,
   items = [],
   actions,
   defaultOpen = null,

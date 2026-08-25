@@ -39,6 +39,8 @@
     "menu"
   ],
   "filled": [
-    "star"
+    "star",
+    "user_1",
+    "down_small"
   ]
 }

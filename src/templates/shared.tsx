@@ -4,7 +4,6 @@ import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
 import { Header, MegaMenu } from '../components/Header'
 import { Link } from '../components/Link'
-import { Logo } from '../components/Logo'
 import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import { LanguagePicker, TextInput } from '../components/Input'
@@ -13,8 +12,9 @@ import {
   IconGithub,
   IconInstagram,
   IconLinkedin,
+  IconDownSmallFilled,
   IconSocialX,
-  IconUser1,
+  IconUser1Filled,
   IconYoutube,
 } from '../icons'
 
@@ -224,7 +224,6 @@ const SOCIALS: [string, ReactNode][] = [
 export function SiteHeader() {
   return (
   <Header
-    logo={<Logo height={32} title="" />}
     position="static"
     items={NAV.map((item) => ({
       value: item.value,
@@ -249,8 +248,8 @@ export function SiteHeader() {
       <>
         <LanguagePicker
           aria-label="Language"
-          /* The drawn label is `EN (US)`; the component's default 78px is cut for "EN" alone. */
-          w={116}
+          /* `EN (US)` and its caret measure 65px across in the file. */
+          w={72}
           defaultValue="en-US"
           data={[
             { value: 'en-US', label: 'EN (US)' },
@@ -259,7 +258,18 @@ export function SiteHeader() {
             { value: 'ja-JP', label: 'JA' },
           ]}
         />
-        <Link href="#" size="md" leftSection={<IconUser1 />}>
+        {/*
+          * `Log In` is a menu trigger, not a link: the file draws a **filled** person glyph, the label,
+          * and the same small solid caret the nav items use. It was an outline glyph with no caret,
+          * which read as a plain link and gave no sign there was anything behind it.
+          */}
+        <Link
+          href="#"
+          /* 14px, matching the drawn label — `Log In` measures 39px across in the file, not 50. */
+          size="sm"
+          leftSection={<IconUser1Filled />}
+          rightSection={<IconDownSmallFilled />}
+        >
           Log In
         </Link>
         <Button size="sm">Contact Sales</Button>
@@ -385,8 +395,7 @@ export function SiteFooter() {
      * is the sixth child rather than the `brand` prop, which would put it first.
      */}
     <Footer.Brand
-      logo={<Logo height={32} title="" />}
-      address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
+        address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
       social={SOCIALS.map(([name, icon]) => (
         <a key={name} href="#" aria-label={name}>
           {icon}

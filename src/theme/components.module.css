@@ -1861,11 +1861,21 @@
  * with a 4px corner. The flags come from a `Flags` component set that is not part of either icon
  * pipeline, so the code renders the language code and takes a flag as an optional node — see README.md.
  */
-.langPicker {
+/*
+ * The nav's language trigger is text and a caret, not a field.
+ *
+ * Qualified with `.fieldWrapper` because that is how the field's own rule is written
+ * (`.fieldWrapper .fieldInput`), and a bare class ties with nothing and loses. Unqualified, this rule
+ * was overridden entirely: the trigger kept the field's `12px 40px 12px 16px`, which is 56px of padding
+ * in a 92px box — so `EN (US)` came out clipped to `EN (I`.
+ */
+.fieldWrapper .langPicker {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 0 4px;
+  height: 32px;
+  min-height: 0;
+  /* No leading padding: the trigger's text is the leading edge, as the file draws it. */
+  padding: 0 16px 0 0;
   border: none;
   border-radius: 4px;
   background: transparent;
@@ -1874,12 +1884,6 @@
   font-weight: 600;
   line-height: 24px;
   cursor: pointer;
-}
-
-.langPicker > svg {
-  width: 16px;
-  height: 16px;
-  color: var(--sds-surfaces-text-secondary);
 }
 
 .langPicker:focus-visible {
@@ -2010,9 +2014,22 @@
   }
 }
 
+/*
+ * The gutter lives here, not on the bar.
+ *
+ * It used to be `max-width: 1280` centred *and* 48px of padding on the bar inside it, which is a
+ * double gutter: at 1440 the logo landed at 128 where the file draws it at 80, and the button's right
+ * edge at 1312 rather than 1360 — so the nav did not line up with the section below it, which is the
+ * one thing a nav must do.
+ *
+ * Same two-point interpolation `Section` uses — 20 at 390, 80 at 1440 — in `vw` rather than `cqi`,
+ * because the header spans the window rather than a column.
+ */
 .headerInner {
-  max-width: 1280px;
+  --sds-header-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
+  max-width: calc(1280px + 2 * var(--sds-header-gutter));
   margin: 0 auto;
+  padding-inline: var(--sds-header-gutter);
 }
 
 .headerBar {
@@ -2021,7 +2038,6 @@
   justify-content: space-between;
   gap: 10px;
   min-height: 64px;
-  padding-inline: clamp(20px, 4vw, 48px);
 }
 
 .headerLeft {
@@ -2554,6 +2570,18 @@
   position: fixed;
   inset: 0;
   z-index: -1;
+}
+
+/*
+ * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and the drawer
+ * breakpoint is where the nav stops being the desktop one, so it takes `Size=Small`. Height only: the
+ * lockup keeps its own ratio.
+ */
+@media (max-width: 1199px) {
+  .headerLogo > svg {
+    height: 40px;
+    width: auto;
+  }
 }
 
 /* -------------------------------------------------------------- below 1200px: bar becomes drawer

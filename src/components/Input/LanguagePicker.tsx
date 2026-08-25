@@ -1,6 +1,7 @@
 import { forwardRef, type ReactNode } from 'react'
 import { Select } from '@mantine/core'
 import type { SelectProps } from '@mantine/core'
+import { IconDownSmallFilled } from '../../icons'
 import classes from '../../theme/components.module.css'
 
 export interface LanguageOption {
@@ -47,6 +48,13 @@ export const LanguagePicker = forwardRef<HTMLInputElement, LanguagePickerProps>(
         aria-label={props['aria-label'] ?? 'Language'}
         withCheckIcon={false}
         allowDeselect={false}
+        /*
+         * The file draws a small solid caret, the same one the nav items use — not Mantine's stroked
+         * chevron. It is decoration beside a real select, so it takes no pointer events of its own.
+         */
+        rightSection={<IconDownSmallFilled width={16} height={16} />}
+        rightSectionWidth={18}
+        rightSectionPointerEvents="none"
         w={78}
         comboboxProps={{ width: 220, position: 'bottom-start' }}
         {...props}

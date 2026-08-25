@@ -200,6 +200,23 @@ export function IconDown(props: IconProps) {
   )
 }
 
+/** MingCute `down_small` (filled, arrow). */
+export function IconDownSmallFilled(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" fillRule="evenodd" d="M12.707 14.535a1 1 0 0 1-1.414 0l-2.829-2.828A1 1 0 0 1 9.172 10h5.656a1 1 0 0 1 .708 1.707z" clipRule="evenodd"/>
+    </svg>
+  )
+}
+
 /** MingCute `external_link` (regular, files). */
 export function IconExternalLink(props: IconProps) {
   return (
@@ -536,6 +553,23 @@ export function IconUser1(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `user_1` (filled, users). */
+export function IconUser1Filled(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
     </svg>
   )
 }
