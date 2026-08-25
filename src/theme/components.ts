@@ -99,12 +99,12 @@ export type LabelThemeSize = keyof typeof LABEL_SIZES
 
 /** The label colour per variant. Constant across sizes in Figma. */
 const LABEL_TEXT_COLOR = {
-  /** Figma `Style=Gradient`. The one label colour Figma leaves untokenised — see `cssVariables.ts`. */
-  filled: 'var(--sds-label-grad-text)',
-  /** Figma `Style=Tonal` — `Components/Label/lab-tonal-text`. */
-  light: 'var(--sds-label-tonal-text)',
-  /** Figma `Style=Outline` — `Surfaces/Text/Primary`. */
-  outline: 'var(--sds-surfaces-text-primary)',
+  /** `Style=Filled` — `Components/Label/lab-tonal-text`, white on the flat fill. */
+  filled: 'var(--sds-label-tonal-text)',
+  /** `Style=Glass` — `Surfaces/Text/Primary`. */
+  glass: 'var(--sds-surfaces-text-primary)',
+  /** `Style=Gradient` — `Surfaces/Text/Primary`, inside the gradient ring. */
+  gradient: 'var(--sds-surfaces-text-primary)',
 } as const
 
 /**
@@ -247,8 +247,8 @@ export const componentTheme: MantineThemeComponents = {
     },
 
     defaultProps: {
-      /** Figma's default cell: Style Tonal, Size Large. */
-      variant: 'light',
+      /** Figma's default cell: `Style=Filled, Size=Large`, the first one the set draws. */
+      variant: 'filled',
       size: 'lg',
     },
 
@@ -264,8 +264,8 @@ export const componentTheme: MantineThemeComponents = {
     vars: (_theme, props) => {
       const size = (props.size ?? 'lg') as LabelThemeSize
       const spec = LABEL_SIZES[size] ?? LABEL_SIZES.lg
-      const variant = (props.variant ?? 'light') as keyof typeof LABEL_TEXT_COLOR
-      const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.light
+      const variant = (props.variant ?? 'filled') as keyof typeof LABEL_TEXT_COLOR
+      const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.filled
 
       return {
         root: {

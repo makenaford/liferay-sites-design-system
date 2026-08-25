@@ -109,7 +109,7 @@ export const Playground: Story = {
   args: {
     image: <Cover />,
     hero: (
-      <Label size="sm" variant="outline">
+      <Label size="sm" variant="gradient">
         Label
       </Label>
     ),
@@ -150,7 +150,7 @@ export const Resource: Story = {
         padding="none"
         image={<Cover />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Guide
           </Label>
         }
@@ -259,7 +259,7 @@ export const CardExamples: Story = {
         padding="none"
         image={<Cover />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Guide
           </Label>
         }
@@ -348,7 +348,7 @@ export const Surfaces: Story = {
           component={surface === 'glass' || surface === 'no-bg' ? 'a' : 'div'}
           href={surface === 'glass' || surface === 'no-bg' ? '#' : undefined}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               {surface}
             </Label>
           }
@@ -463,7 +463,7 @@ export const Hover: Story = {
           padding="none"
           image={<Cover />}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               Guide
             </Label>
           }
@@ -519,7 +519,7 @@ export const Slots: Story = {
         image={<Cover />}
         top={<Label size="sm" variant="filled">top</Label>}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             hero
           </Label>
         }

@@ -3,7 +3,15 @@ import { Badge } from '@mantine/core'
 import type { BadgeProps, ElementProps } from '@mantine/core'
 
 export type LabelSize = 'sm' | 'md' | 'lg'
-export type LabelVariant = 'filled' | 'light' | 'outline'
+/**
+ * Figma `Label CTA`'s `Style` axis.
+ *
+ * The set was restyled: it used to be Gradient / Tonal / Outline and is now **Filled / Glass /
+ * Gradient**. Two of the three survived under new names — Tonal's flat fill is `filled`, and
+ * Outline's gradient stroke is `gradient` — while the old Gradient *background* has no cell any more.
+ * `glass` is new.
+ */
+export type LabelVariant = 'filled' | 'glass' | 'gradient'
 
 export interface LabelProps
   extends Omit<BadgeProps, 'variant' | 'size'>,

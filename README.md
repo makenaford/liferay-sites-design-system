@@ -331,70 +331,44 @@ close glyph as part of the chip, which cannot work as a second control; that is 
 
 ## Label
 
-From the Figma `Label CTA` component set (node `15121:237267`). A themed Mantine `Badge` — a static
-row of optional icon and text with a 4px gap.
+Figma `Label CTA` (node `15121:237267`). Its `Style` axis maps onto `variant` and `Size` onto `size`.
 
-```tsx
-import { IconCheck, Label } from 'liferay-sites-design-system'
-
-<Label variant="light" size="lg" leftSection={<IconCheck />}>
-  Available now
-</Label>
-```
-
-Figma's Style axis maps onto Mantine's `variant` names one for one:
-
-| Figma Style | `variant` | What it is |
-| --- | --- | --- |
-| Tonal | `light` (default) | flat `Components/Label/lab-tonal-bg` fill |
-| Gradient | `filled` | two-stop `lab-grad-bg-step-01` → `-02` fill |
-| Outline | `outline` | gradient stroke, no fill |
-
-| Figma axis | Prop |
+| Figma | Prop |
 | --- | --- |
-| Size — Large / Medium / Small | `size="lg" \| "md" \| "sm"` (default `lg`) |
-| `Show Icon` + its instance swap | `leftSection` |
-| Text | `children` |
+| `Style=Filled` | `variant="filled"` — a flat `Components/Label/lab-tonal-bg` under white text |
+| `Style=Glass` | `variant="glass"` — `Surfaces/Card BG/Translucent` with the `glass effect card` blur and shadow |
+| `Style=Gradient` | `variant="gradient"` — no fill, a `Brand/Primary` → `Accent/Product Accent` stroke |
+| `Size=Large / Medium / Small` | `size="lg" \| "md" \| "sm"` — 40 / 32 / 22 tall |
+| `Show Icon` + `Instance` | `leftSection` / `rightSection` |
 
-Measurements, all taken from the component:
+Defaults are `Style=Filled, Size=Large`, the first cell the set draws.
 
-| | Height | Padding X | Gap | Label | Icon | Border | Radius |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `lg` | 40px | 16px | 4px | 16/24px | 20px | 2px | `round` (pill) |
-| `md` | 32px | 8px | 4px | 16/24px | 20px | 1.5px | 8px |
-| `sm` | 22px | 8px | 4px | `Paragraph/Small` (13/20) | 16px | 1px | 4px |
+Size carries the radius with it, because Figma binds it that way: `round` at Large (a pill), `medium`
+at Medium, `small` at Small. A snippet never needs to pass `radius`.
 
-Large and Medium share one text style (`Paragraph/Base/Heavy`); only Small steps down, and it steps down
-to the **`Paragraph/Small` token** (13/20) rather than the 14px its Figma text style is set at — that
-style is named `Paragraph/X-Small/Semi Bold` and matches neither the X-Small variable (11px) nor Small
-(13px), so the token is the one unambiguous value in the set. The border weight only shows on `outline`,
-and Figma varies it per size.
+### The set was restyled
 
-**Radius comes with the size.** Figma binds it to the Size axis — `Border Radius/round` at Large,
-`/medium` at Medium, `/small` at Small — so `radius` is only for deviating from the design:
-`radius="round"` is the 1000px pill and `radius="sm"` the 4px corner, on any size. The **Radius**
-story shows all three rows.
+`Style` used to be **Gradient / Tonal / Outline**. It is now **Filled / Glass / Gradient**, and two of
+the three survived under new names:
 
-A label is not a control: the design draws no hover, focus or pressed state, and this renders a plain
-`<div>`. For something clickable use `Button`; for navigation, `Link`. Because the variant carries no
-meaning a screen reader can reach, put anything the label is actually communicating in its text.
-
-Mantine's Badge is uppercase, bold and letter-spaced by default; Figma's label is none of those, so
-the theme resets all three (text case as authored, Source Sans 3 SemiBold, no tracking).
-
-The `outline` stroke is a gradient — `Brand/Primary/Primary` held to the halfway point, then out to
-`Accent/Product Accent`. CSS cannot paint a gradient border directly (`border-image` ignores
-`border-radius`, which would square off the pill), so it is a masked background on a pseudo-element.
-The mask has to live on the pseudo-element rather than the label: a mask applies to everything an
-element renders, so on the root it takes the text and icon with it.
-
-Contrast, measured in the browser against each variant's own background:
-
-| | light | dark |
+| Was | Is | Note |
 | --- | --- | --- |
-| `light` (tonal) | 12.3 | 11.6 |
-| `filled` (both gradient stops) | 13.8 / 12.4 | 6.1 / 6.2 |
-| `outline` (against the page) | 13.7 | 17.5 |
+| `Tonal` → `variant="light"` | `Filled` → `variant="filled"` | same flat fill, new name |
+| `Outline` → `variant="outline"` | `Gradient` → `variant="gradient"` | same gradient stroke, new name |
+| `Gradient` → `variant="filled"` | — | the gradient *background* has no cell any more |
+| — | `Glass` | new |
+
+The 24 call sites that said `variant="outline"` now say `variant="gradient"`.
+
+**One judgement call worth knowing.** The Home hero's compliance marks (`SOC 2 Type 2`, `ISO/IEC
+27001`…) are drawn as plain subtle chips, and the restyled set has no plain-outline cell — a mechanical
+rename would have given them a blue ring they do not have in the file. They use `glass` instead. The
+report tags on `Our Latest Research & Data` *are* ringed in the file, and keep `gradient`.
+
+CSS cannot paint a gradient *border* directly — `border-image` ignores `border-radius`, which would
+square off the pill — so the ring is a background with its interior masked out on a pseudo-element.
+The mask sits on the pseudo-element rather than the root because a mask applies to everything an
+element renders, text and icon included.
 
 ## Card
 

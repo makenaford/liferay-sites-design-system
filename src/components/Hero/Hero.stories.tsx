@@ -44,10 +44,10 @@ function GartnerProof() {
         Gartner
       </Box>
       <Group gap="8">
-        <Label size="sm" variant="outline">
+        <Label size="sm" variant="gradient">
           Magic Quadrant Leader
         </Label>
-        <Label size="sm" variant="outline">
+        <Label size="sm" variant="gradient">
           DXP 2026
         </Label>
       </Group>
@@ -62,7 +62,7 @@ const meta = {
     background: 'corner',
     align: 'left',
     label: (
-      <Label size="sm" variant="outline">
+      <Label size="sm" variant="gradient">
         Platform
       </Label>
     ),
@@ -177,7 +177,7 @@ export const Guide: Story = {
     background: 'none',
     media: undefined,
     label: (
-      <Label size="sm" variant="outline">
+      <Label size="sm" variant="gradient">
         Guide
       </Label>
     ),

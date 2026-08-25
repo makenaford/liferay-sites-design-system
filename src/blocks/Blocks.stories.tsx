@@ -165,7 +165,7 @@ export const Resources: Story = {
             padding="none"
             image={<Cover />}
             hero={
-              <Label size="sm" variant="outline">
+              <Label size="sm" variant="gradient">
                 {kind}
               </Label>
             }
@@ -185,7 +185,7 @@ export const ContentLeftImage: Story = {
         mediaSide="left"
         media={<Cover />}
         eyebrow={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Platform
           </Label>
         }
@@ -525,7 +525,7 @@ export const FormSection: Story = {
         }}
       >
         <Stack gap="24" style={{ flex: '1 1 min(100%, 28rem)', minWidth: 0 }}>
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Free trial
           </Label>
           <Title order={2} fz="clamp(32px, 2.57cqi, 37px)" lh={1.24} m={0}>

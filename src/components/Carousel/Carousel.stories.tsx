@@ -147,7 +147,7 @@ export const ImageCards: Story = {
           padding="content"
           image={<Cover />}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               Story
             </Label>
           }

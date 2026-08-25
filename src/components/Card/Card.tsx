@@ -216,7 +216,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  *   surface="no-bg"
  *   padding="none"
  *   image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
- *   hero={<Label size="sm" variant="outline">Guide</Label>}
+ *   hero={<Label size="sm" variant="gradient">Guide</Label>}
  *   title="Card Title"
  * />
  * ```

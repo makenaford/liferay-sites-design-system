@@ -468,7 +468,7 @@ function HomePage() {
             </Text>
             <Group gap={8} wrap="wrap">
               {['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'].map((mark) => (
-                <Label key={mark} variant="outline" size="sm" radius="sm">
+                <Label key={mark} variant="glass" size="sm" radius="sm">
                   {mark}
                 </Label>
               ))}
@@ -869,7 +869,7 @@ function HomePage() {
               href="#"
               interactive
               hero={
-                <Label variant="outline" size="md">
+                <Label variant="gradient" size="md">
                   {report.tag}
                 </Label>
               }

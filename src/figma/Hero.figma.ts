@@ -44,7 +44,7 @@ export default {
       background="${type}"
       ${type !== 'none' ? 'video={bubble}' : ''}
       align="${align}"
-      label={<Label size="sm" variant="outline">Platform</Label>}
+      label={<Label size="sm" variant="gradient">Platform</Label>}
       title={<h1>One platform, every channel</h1>}
       description="Build once and deliver everywhere."
       ${isForm

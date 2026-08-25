@@ -479,26 +479,25 @@
   justify-content: center;
 }
 
-/* `Style=Tonal` — a flat fill under the tonal text colour. */
-.labelRoot[data-variant='light'] {
+/* `Style=Filled` — a flat `Components/Label/lab-tonal-bg` under white text. */
+.labelRoot[data-variant='filled'] {
   background-color: var(--sds-label-tonal-bg);
 }
 
 /*
- * `Style=Gradient` — `lab-grad-bg-step-01` into `-02`. Figma's gradient transform is the identity
- * matrix, i.e. a plain left-to-right sweep across the label box.
+ * `Style=Glass` — `Surfaces/Card BG/Translucent` under the `glass effect card` effect: a background
+ * blur and the ambient shadow. No hairline; the set binds no stroke to this cell, and the edge you can
+ * see in the file is the translucent fill against the dark ground rather than a border.
  */
-.labelRoot[data-variant='filled'] {
-  background-color: transparent;
-  background-image: linear-gradient(
-    to right,
-    var(--sds-label-grad-from) 0%,
-    var(--sds-label-grad-to) 100%
-  );
+.labelRoot[data-variant='glass'] {
+  background-color: var(--sds-surfaces-card-bg-translucent);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
 /*
- * `Style=Outline` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
+ * `Style=Gradient` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
  * held to the halfway point, then out to `Accent/Product Accent`. Its weight comes from the size
  * (2px / 1.5px / 1px).
  *
@@ -511,14 +510,14 @@
  * pseudo-element covers the border box (hence the negative inset, and `overflow: visible` so it is
  * not clipped away), and its own padding is what the mask cuts back to, leaving just the ring.
  */
-.labelRoot[data-variant='outline'] {
+.labelRoot[data-variant='gradient'] {
   position: relative;
   overflow: visible;
   background-color: transparent;
   background-image: none;
 }
 
-.labelRoot[data-variant='outline']::before {
+.labelRoot[data-variant='gradient']::before {
   content: '';
   position: absolute;
   inset: calc(-1 * var(--badge-border-width));
@@ -578,11 +577,11 @@
  * Handing the border back to the system colour keeps the shape visible.
  */
 @media (forced-colors: active) {
-  .labelRoot[data-variant='outline'] {
+  .labelRoot[data-variant='gradient'] {
     border-color: CanvasText;
   }
 
-  .labelRoot[data-variant='outline']::before {
+  .labelRoot[data-variant='gradient']::before {
     content: none;
   }
 }
@@ -1796,12 +1795,13 @@
  * The button wants `size="sm"` — 40px in this library, which leaves 4px above and below inside the
  * 48px box. `md` is itself 48px and would fill the field edge to edge.
  */
+/* `padding/8` — the button sits 8 in from the field's edge, not 4. */
 .fieldRoot[data-contained-button] .fieldInput {
-  padding-inline-end: 4px;
+  padding-inline-end: 8px;
 }
 
 .fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
-  inset-inline-end: 4px;
+  inset-inline-end: 8px;
   width: auto;
   /* The generic icon inset would push the button 16px off the border. */
   padding-inline-end: 0;

@@ -246,7 +246,7 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
       {proof.marks?.length ? (
         <Group gap={8} wrap="wrap">
           {proof.marks.map((mark) => (
-            <Label key={mark} variant="outline" size="sm" radius="sm">
+            <Label key={mark} variant="glass" size="sm" radius="sm">
               {mark}
             </Label>
           ))}
@@ -313,7 +313,7 @@ function GridCard({ card }: { card: CardSpec }) {
         card.icon ? (
           GLASS[card.icon](40)
         ) : card.tag ? (
-          <Label variant="outline" size="md">
+          <Label variant="gradient" size="md">
             {card.tag}
           </Label>
         ) : undefined

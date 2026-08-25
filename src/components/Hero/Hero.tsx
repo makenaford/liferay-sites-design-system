@@ -85,7 +85,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * <Hero
  *   background="corner"
  *   video={bubble}
- *   label={<Label size="sm" variant="outline">Platform</Label>}
+ *   label={<Label size="sm" variant="gradient">Platform</Label>}
  *   title={<h1>One platform, every channel</h1>}
  *   description="Build once, deliver everywhere."
  *   actions={<Button>Book a demo</Button>}
