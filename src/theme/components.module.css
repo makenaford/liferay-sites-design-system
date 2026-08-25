@@ -617,7 +617,7 @@
   min-width: 0;
   /* `Surface`'s radius. Every card instance in the file draws 8; the set itself says 9. */
   border-radius: 8px;
-  /* Set per surface below; `no-bg` leaves it transparent. */
+  /* Set per surface below; `none` leaves it transparent. */
   background-color: transparent;
   color: var(--sds-surfaces-text-primary);
   text-decoration: none;
@@ -913,11 +913,27 @@
     var(--sds-glass-step-02) 100%
   );
   backdrop-filter: blur(var(--sds-glass-blur));
-  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  /*
+   * A lit top edge, not a shadow.
+   *
+   * Figma's `glass effect card` shadow is `#000 @8%`, which over a #070b13 page is black on near-black
+   * and does nothing — the card had no elevation cue at all on the canvas it is mostly used on. Dark
+   * interfaces raise a surface by catching light on its top edge instead, so that is what carries it
+   * here. The shadow is kept for the light canvas, where it does read.
+   */
+  box-shadow:
+    inset 0 1px 0 var(--sds-card-lit-edge),
+    0 0 6px 1px var(--sds-glass-shadow);
 }
 
-/* `Style=Grey` — a flat `Surfaces/Card BG/Grey`, no hairline, no shadow. The non-clickable surface. */
-.cardRoot[data-align][data-surface='grey'] {
+/*
+ * `static` — a flat fill, and nothing else. No rim, no shadow, no lit edge.
+ *
+ * The absence is the point. A rim is what this system uses to say *you can touch this*, so the one kind
+ * of card that cannot be touched is the one kind that must not have one. It reads as a region of the
+ * page rather than an object sitting on it.
+ */
+.cardRoot[data-align][data-surface='static'] {
   background-color: var(--sds-surfaces-card-bg-grey);
 }
 
@@ -926,13 +942,12 @@
  * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
  * transform is a shallow diagonal, reproduced at the same angle.
  */
-.cardRoot[data-align][data-surface='gradient-blue'],
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'] {
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-align][data-surface='gradient-blue'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -941,7 +956,7 @@
   );
 }
 
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='purple'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -950,8 +965,8 @@
   );
 }
 
-/* `Style=no-bg` — the box and its content with nothing drawn. The Resource card. */
-.cardRoot[data-align][data-surface='no-bg'] {
+/* `Style=none` — the box and its content with nothing drawn. The Resource card. */
+.cardRoot[data-align][data-surface='none'] {
   background: none;
   box-shadow: none;
 }
@@ -961,7 +976,7 @@
  * pseudo-element because glass's is a gradient and a border cannot be one — the same construction the
  * Label's outline ring uses.
  */
-.cardRoot[data-align]:where([data-surface='glass'], [data-surface='grey'])::before {
+.cardRoot[data-align][data-surface='glass']::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -983,24 +998,6 @@
   );
 }
 
-/*
- * Grey: a flat hairline, and the only thing giving a static card an edge.
- *
- * `Surfaces/Card BG/Grey` is 1.05:1 against the light page and 1.06:1 against the dark one — the fill alone
- * does not read as a surface, and glass's hairline is not available to a card that cannot be clicked. So the
- * edge is `Neutral/05`, the lowest step on the scale that is unambiguously visible against both the fill and
- * the page in **both** modes:
- *
- *   light   2.75:1 against the card, 2.90:1 against the page
- *   dark    3.46:1 against the card, 3.67:1 against the page
- *
- * `Neutral/04` was the alternative: fine on dark at 2.82/2.99, but only 1.59/1.67 in light, which is the mode
- * the problem was in. `Neutral/06` clears 3:1 everywhere at 4.6+, but on a barely-tinted fill a line that
- * dark reads as a table rule rather than a card edge. Not a Figma value — the file draws no edge here.
- */
-.cardRoot[data-align][data-surface='grey']::before {
-  background-color: var(--sds-neutral-05);
-}
 
 /* ---------------------------------------------------------------------- interaction
  *
@@ -1050,7 +1047,7 @@
   /*
    * The ring on hover belongs to the **padded** card only. A full-bleed card is clickable across its
    * whole area — the root is the anchor — but nothing about the card reacts: only the image does. A ring
-   * drawn around a `no-bg` card outlines a box that has no edge at rest, which reads as a border
+   * drawn around a `none` card outlines a box that has no edge at rest, which reads as a border
    * appearing out of nowhere rather than as the image lighting up.
    *
    * Focus is the exception, below: a focus ring has to be visible wherever the focus is, so it stays on
@@ -1132,7 +1129,7 @@
 
 @media (forced-colors: active) {
   /* A masked gradient is invisible in forced colours, so the hairline becomes a real border. */
-  .cardRoot[data-align]:not([data-surface='no-bg']) {
+  .cardRoot[data-align]:not([data-surface='none']) {
     border: 1px solid CanvasText;
   }
 

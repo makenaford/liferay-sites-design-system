@@ -351,7 +351,12 @@ function GridCard({ card }: { card: CardSpec }) {
     <Card
       component={card.href ? 'a' : 'div'}
       href={card.href}
-      interactive={Boolean(card.href)}
+      /*
+       * The link decides the kind of card. With one, it is a target and wears glass; without, it is a
+       * panel and wears `static`. Previously both were glass and only the hover differed, so a card
+       * with nowhere to go looked exactly like one that had somewhere.
+       */
+      surface={card.href ? 'glass' : 'static'}
       padding={card.image ? 'all' : undefined}
       image={
         card.image ? (
@@ -444,6 +449,8 @@ const logoTile = (name: string) => {
 function StoryCard({ story }: { story: StorySpec }) {
   return (
     <Card
+      /* A quote is content, not a destination. */
+      surface="static"
       image={<Image src={logoTile(story.customer)} alt={story.customer} ratio="3:2" radius="sm" />}
       top={
         <Stat

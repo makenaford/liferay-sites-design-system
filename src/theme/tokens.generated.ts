@@ -159,7 +159,7 @@ export const colorDark: Record<keyof typeof colorLight, string> = {
   "status-error-error": "#f3766d",
   "status-error-lighten-1": "#f7a29c",
   "status-error-lighten-2": "#fffbfa",
-  "surfaces-card-bg-grey": "#212936",
+  "surfaces-card-bg-grey": "#1a2130",
   "surfaces-card-bg-blue": "rgba(99, 153, 255, 0.05)",
   "surfaces-card-bg-translucent": "rgba(255, 255, 255, 0.1)",
   "surfaces-card-bg-transparent": "rgba(255, 255, 255, 0)",

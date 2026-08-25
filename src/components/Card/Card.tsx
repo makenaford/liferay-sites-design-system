@@ -3,8 +3,25 @@ import { Box, createPolymorphicComponent } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
-/** Figma `Surface` `Style` (node `16953:109831`). `glass` and `no-bg` are the two the card set uses. */
-export type CardSurface = 'glass' | 'no-bg' | 'grey' | 'gradient-blue' | 'gradient-purple'
+/**
+ * The four kinds of card, from Figma `Surface` `Style` (node `16953:109831`).
+ *
+ * The name says what the card *is*, not what it looks like, because three of the four also decide
+ * whether it can be clicked:
+ *
+ * - `glass` — the primary card. The **whole surface is the target**, so it is interactive by default
+ *   and carries the rim, the lit edge and the hover.
+ * - `static` — content that is only content. Never interactive.
+ * - `highlighted` — also never interactive, but drawn with a gradient to pull the eye. For the one
+ *   card in a group that matters more, not for decoration.
+ * - `none` — no fill at all, for a card on a surface that is already busy, or where an edge-to-edge
+ *   image is the card. The only one where clickability is a separate question: Figma's `Type=Resources`
+ *   draws exactly this — a link with no fill, the hover landing on the image.
+ */
+export type CardSurface = 'glass' | 'static' | 'highlighted' | 'none'
+
+/** Which gradient a `highlighted` card wears. Figma draws both. @default 'blue' */
+export type CardTone = 'blue' | 'purple'
 
 /** Figma `card-main` `Align`. */
 export type CardAlign = 'vertical' | 'horizontal'
@@ -44,18 +61,14 @@ export interface CardProps
   Omit<BoxProps, 'top' | 'bottom'>,
     Omit<ElementProps<'div'>, 'title'> {
   /**
-   * Figma `Surface` `Style`.
+   * Which of the four kinds of card this is. See `CardSurface` — the choice carries the meaning, and
+   * for `static` and `highlighted` it also settles `interactive`.
    *
-   * **Defaults from `interactive`**: `glass` for a card that is a link or a button, `grey` for one that is
-   * not. Glass is the clickable surface in this system — it carries the hairline that warms on hover and
-   * the ring that appears on focus — so a static card should not wear it, and does not have to ask.
-   *
-   * `grey` is the only static surface. Figma's `Blue` cell was removed: at 5% blue over near-black it was
-   * indistinguishable from grey on the dark canvas, so it was a second option that looked like the first.
-   *
-   * @default 'glass', since `interactive` is on by default
+   * @default 'glass'
    */
   surface?: CardSurface
+  /** The gradient on a `highlighted` card. Ignored by the other three. @default 'blue' */
+  tone?: CardTone
   /** Figma `card-main` `Align`. @default 'vertical' */
   align?: CardAlign
   /** Where the 20px goes. @default 'all' */
@@ -94,13 +107,15 @@ export interface CardProps
   bottom?: ReactNode
 
   /**
-   * Turns on the hover and focus treatment. **On by default**, which also makes `surface` default to
-   * `glass`.
+   * Turns on the hover and focus treatment.
+   *
+   * Mostly you should not need it. `glass` is interactive by default because that is what it is for,
+   * and `static` and `highlighted` **cannot** be interactive — passing `true` there is ignored, because
+   * a card that says it is not a target should not be able to grow a hover state by accident.
+   *
+   * It is a real choice only on `surface="none"`, which has no fill to carry the meaning either way.
    *
    * Pass `component="a" href="…"` or an `onClick` alongside it so the affordance is telling the truth.
-   * A card that genuinely is not clickable — a stat panel, a quote — should say `interactive={false}`,
-   * which drops it back to the flat `grey` surface.
-   *
    * Where the hover lands depends on `padding`: see the component docs.
    */
   interactive?: boolean
@@ -111,7 +126,8 @@ export interface CardProps
 
 const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   {
-    surface,
+    surface = 'glass',
+    tone = 'blue',
     align = 'vertical',
     padding = 'all',
     image,
@@ -125,7 +141,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
     main,
     secondary,
     bottom,
-    interactive = true,
+    interactive,
     children,
     className,
     ...props
@@ -135,22 +151,29 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
   const hasHeader = Boolean(hero || title || description)
 
   /*
-   * Glass is the clickable surface: it is the one carrying the hairline that warms on hover and the ring
-   * that appears on focus. A card that cannot be clicked has nothing to do with either, so it defaults to
-   * `grey`, the only static surface. Figma draws glass on four of its five card types while marking only
-   * two of them clickable, which is the file disagreeing with itself; see README.md.
+   * The surface decides whether the card can be clicked, rather than the two being set independently
+   * and left to agree.
+   *
+   * They did not agree before. `static` cards were coming out with a hover lift and a focus ring
+   * because `interactive` defaulted to on, and the whole point of the split is that a reader can tell
+   * a target from a panel without trying it. So `static` and `highlighted` force it off — one prop
+   * cannot contradict the other, which means a mockup cannot ship a card that lies about itself.
+   *
+   * `none` keeps the choice, because it is the one kind that is a *presentation* decision: Figma's
+   * `Type=Resources` is a link with no fill and its hover on the image.
    */
-  const resolvedSurface = surface ?? (interactive ? 'glass' : 'grey')
+  const clickable = surface === 'static' || surface === 'highlighted' ? false : (interactive ?? true)
 
   return (
     <Box
       ref={ref}
       className={[classes.cardRoot, className].filter(Boolean).join(' ')}
-      data-surface={resolvedSurface}
+      data-surface={surface}
+      data-tone={surface === 'highlighted' ? tone : undefined}
       data-align={align}
       data-padding={padding}
       data-image={image ? true : undefined}
-      data-interactive={interactive || undefined}
+      data-interactive={clickable || undefined}
       {...props}
     >
       {image ? (
@@ -217,7 +240,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  *   component="a"
  *   href="/guide"
  *   interactive
- *   surface="no-bg"
+ *   surface="none"
  *   padding="none"
  *   image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
  *   hero={<Label size="sm" variant="gradient">Guide</Label>}

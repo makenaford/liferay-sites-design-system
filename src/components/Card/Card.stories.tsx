@@ -14,7 +14,7 @@ import {
   IconGlassMail,
 } from '../../icons'
 
-const SURFACES = ['glass', 'no-bg', 'grey', 'gradient-blue', 'gradient-purple'] as const
+const SURFACES = ['glass', 'static', 'highlighted', 'none'] as const
 
 /** Stands in for a photograph: the stories have to render offline, so no remote images. */
 const PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -146,7 +146,7 @@ export const Resource: Story = {
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
@@ -255,7 +255,7 @@ export const CardExamples: Story = {
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
@@ -318,7 +318,7 @@ export const Padding: Story = {
           <Card
             {...args}
             padding={padding}
-            surface={padding === 'none' ? 'no-bg' : 'glass'}
+            surface={padding === 'none' ? 'none' : 'glass'}
             interactive
             component="a"
             href="#"
@@ -344,9 +344,10 @@ export const Surfaces: Story = {
           {...args}
           key={surface}
           surface={surface}
-          interactive={surface === 'glass' || surface === 'no-bg'}
-          component={surface === 'glass' || surface === 'no-bg' ? 'a' : 'div'}
-          href={surface === 'glass' || surface === 'no-bg' ? '#' : undefined}
+          /* The two kinds that can be targets; `static` and `highlighted` refuse it anyway. */
+          component={surface === 'glass' || surface === 'none' ? 'a' : 'div'}
+          href={surface === 'glass' || surface === 'none' ? '#' : undefined}
+          interactive={surface === 'glass' || surface === 'none'}
           hero={
             <Label size="sm" variant="gradient">
               {surface}
@@ -404,7 +405,7 @@ export const NonClickableSurfaces: Story = {
         </Text>
         <Card
           {...args}
-          surface="grey"
+          surface="static"
           hero={<IconGlassMail width={40} height={40} />}
           title="Not clickable"
           description="Grey is the only static surface; setting it changes nothing."
@@ -459,7 +460,7 @@ export const Hover: Story = {
           component="a"
           href="#"
           interactive
-          surface="no-bg"
+          surface="none"
           padding="none"
           image={<Cover />}
           hero={

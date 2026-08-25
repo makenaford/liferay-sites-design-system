@@ -72,8 +72,14 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      * `Components/Glass Card/Glass Step 01` / `02` — the two stops of the glass card's fill, and the
      * three of its hover sheen (which reuses `02` at both ends).
      */
-    'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-    'glass-step-02': 'rgba(140, 150, 169, 0.03)',
+    /*
+     * Raised on dark from 5% / 3%, which put the clickable card at 1.10:1 against the page while the
+     * static one sat at 1.35 — the surface you can press was the fainter of the two. 9% / 5% brings
+     * glass to 1.22, level with the static card once that comes down to match, so neither wins on fill
+     * and the rim is left to say which is which.
+     */
+    'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.09)',
+    'glass-step-02': scheme === 'light' ? 'rgba(140, 150, 169, 0.03)' : 'rgba(140, 150, 169, 0.05)',
     /**
      * `Components/Gradient Card/blue` / `purple` — the coloured stop of a gradient card. Its other
      * three stops are all `Surfaces/Card BG/Grey`, which is exported, so only these two are here.
@@ -81,10 +87,26 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'gradient-card-blue': scheme === 'light' ? color['brand-primary-lighten-4'] : '#0117ae',
     'gradient-card-purple': scheme === 'light' ? color['accent-product-accent'] : '#7414ff',
 
+    /**
+     * The lit top edge that raises a glass card on the dark canvas.
+     *
+     * Not a Figma value. The file gives glass a `#000 @8%` shadow, which over the near-black page is
+     * invisible, so on dark the card had no elevation cue at all. Light mode keeps the shadow and takes
+     * nothing here.
+     */
+    'card-lit-edge': scheme === 'light' ? 'transparent' : 'rgba(255, 255, 255, 0.08)',
+
     /** `Components/Glass Line/01` / `02` — the two stops of the container's hairline. */
     'glass-line-from':
-      scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)',
-    'glass-line-to': scheme === 'light' ? 'rgba(111, 160, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
+      scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.36)',
+    /*
+     * The dark stops were 20% / 10% white, which put the rim at 1.45:1 against the page — below the 3:1
+     * that WCAG 1.4.11 asks of the boundary identifying an interactive component, and well under the
+     * static card's own 3.67:1 edge — the clickable card was the harder one to see. 36% / 32% puts the
+     * whole stroke over 3:1 (3.67 into 3.19); 30% looked right but measured 2.97, which is the kind of
+     * near-miss that only a number catches.
+     */
+    'glass-line-to': scheme === 'light' ? 'rgba(111, 160, 255, 0.4)' : 'rgba(255, 255, 255, 0.32)',
   }
 }
 

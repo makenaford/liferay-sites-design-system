@@ -198,6 +198,10 @@ export const FewLogos: Story = {
  * 32px gap.
  */
 export const InASection: Story = {
+  args: {
+    logoWidth: 200
+  },
+
   render: (args) => (
     <Stack gap="32" py="80">
       <Stack gap="8" px="80">
@@ -210,7 +214,7 @@ export const InASection: Story = {
       </Stack>
       <Marquee {...args}>{logos()}</Marquee>
     </Stack>
-  ),
+  )
 }
 
 /** In a card, at the small cell — a logo strip as a footnote rather than a section. */
