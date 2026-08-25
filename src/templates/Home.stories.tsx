@@ -467,7 +467,7 @@ function HomePage() {
               Source: Gartner Peer Insights&trade;
             </Text>
             <Group gap={8} wrap="wrap">
-              {['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'].map((mark) => (
+              {['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'].map((mark) => (
                 <Label key={mark} variant="glass" size="sm" radius="sm">
                   {mark}
                 </Label>

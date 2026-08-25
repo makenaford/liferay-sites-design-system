@@ -53,6 +53,24 @@ export const LanguagePicker = forwardRef<HTMLInputElement, LanguagePickerProps>(
          * chevron. It is decoration beside a real select, so it takes no pointer events of its own.
          */
         rightSection={<IconDownSmallFilled width={16} height={16} />}
+        /*
+         * The caret slot has to be narrowed here rather than in CSS.
+         *
+         * The theme gives every field a 40px right section — Figma's icon slot: 16px padding, a 16px
+         * glyph, an 8px gap. This trigger draws a bare 18px caret, and `.langPicker` drops the input's
+         * right padding to 16px to match. But the *slot* stayed 40px, so the caret box overhung the
+         * text by 24px and painted over the last glyph: `EN (US)` rendered as `EN (U9)`.
+         *
+         * Three things do not fix it, which is why the fix looks blunt. `rightSectionWidth` maps to
+         * `--input-right-section-width`, a different variable from the `--input-right-section-size`
+         * the theme sets. A stylesheet rule loses, because the theme emits its vars as *inline* styles
+         * on the wrapper. And a prop-level `vars` loses too — Mantine merges theme vars last, so the
+         * 40px simply overwrites it.
+         *
+         * So the slot is sized directly on the element. `styles` is inline on the section itself,
+         * which is downstream of every variable involved.
+         */
+        styles={{ section: { width: 18 } }}
         rightSectionWidth={18}
         rightSectionPointerEvents="none"
         w={78}

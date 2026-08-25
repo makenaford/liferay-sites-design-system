@@ -248,8 +248,12 @@ export function SiteHeader() {
       <>
         <LanguagePicker
           aria-label="Language"
-          /* `EN (US)` and its caret measure 65px across in the file. */
-          w={72}
+          /*
+           * No width override. `EN (US)` measures 53.3px at the drawn 14px/600, and the caret takes
+           * 18px — 71.3px, which the component's own 78px default clears with a little room. The 72px
+           * that used to be here was taken from the file's 65px label-plus-caret measurement, and it
+           * was 6px short of what the text actually renders at.
+           */
           defaultValue="en-US"
           data={[
             { value: 'en-US', label: 'EN (US)' },

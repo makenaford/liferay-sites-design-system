@@ -185,7 +185,7 @@ export const HOME_PAGE: PageSpec = {
     action: { label: 'Request a Demo', href: '#' },
     proof: {
       rating: { score: '4.6', outOf: 5, source: 'Source: Gartner Peer Insights™' },
-      marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'],
+      marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
     },
     media: {
       src: heroAnimation,

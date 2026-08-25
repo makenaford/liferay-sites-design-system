@@ -4057,8 +4057,23 @@
   container-name: sds-marquee;
 }
 
+/*
+ * A narrow strip steps *down one size*, rather than jumping to the smallest.
+ *
+ * This used to set 24px flat, which meant an explicit `size="lg"` silently became `sm` — skipping
+ * `md` entirely and overriding the caller rather than adapting to it. A responsive step is right; a
+ * responsive override that ignores what was asked for is not, and it is why the logo carousel did
+ * not look large even where it was told to be.
+ *
+ * `sm` is already the floor, so it is left alone.
+ */
 @container sds-marquee (max-width: 768px) {
   .marqueeViewport {
+    --sds-marquee-logo: 49px;
+  }
+
+  .marqueeRoot[data-size='md'] .marqueeViewport,
+  .marqueeRoot[data-size='sm'] .marqueeViewport {
     --sds-marquee-logo: 24px;
   }
 }
