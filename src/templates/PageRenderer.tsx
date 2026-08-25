@@ -126,20 +126,30 @@ function renderStat(stat: StatSpec, align?: 'center') {
  */
 function HeroMedia({ media }: { media: ImageRef }) {
   const reducedMotion = useReducedMotion()
+  const [failed, setFailed] = useState(false)
 
-  if (!isVideo(media.src)) {
-    return <Image src={media.src} alt={media.alt} ratio="4:3" radius="md" />
+  /*
+   * Footage lives in the git-ignored `media/` folder, so "the file is not there" is the *normal* case
+   * on a fresh clone and on the deployed Storybook — not an edge case. Falling back to the still keeps
+   * the hero a hero instead of an empty column.
+   */
+  const showStill = !isVideo(media.src) || (failed && media.poster)
+
+  if (showStill) {
+    return <Image src={failed ? media.poster! : media.src} alt={media.alt} ratio="4:3" radius="md" />
   }
 
   return (
     <video
       src={media.src}
+      poster={media.poster}
       autoPlay={!reducedMotion}
       muted
       loop
       playsInline
       /* A posterless video that has not buffered draws nothing, so there must be a first frame. */
       preload="auto"
+      onError={() => setFailed(true)}
       aria-hidden
       tabIndex={-1}
     />

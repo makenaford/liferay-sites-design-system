@@ -1981,6 +1981,37 @@ Worth settling deliberately rather than by accident. And if those mappings shoul
 unpublished **from that repo** — `figma connect unpublish` only knows what the local files declare, so
 deleting the repo would remove the only way to remove them.
 
+## Where mockup footage lives
+
+Videos are **served, not bundled**, and `media/` is git-ignored.
+
+A single 1200×800 alpha webm runs to 15MB. A library that accumulates one per mockup would put
+hundreds of megabytes into every clone, permanently — git keeps every version of a binary it has ever
+seen, so a file committed once is carried forever, even after it is deleted.
+
+So Storybook serves `media/` at `/media` (`staticDirs`), pages reference it by URL through
+`mediaUrl()`, and nothing goes through the bundler:
+
+```ts
+media: { src: mediaUrl('hero-animation.webm'), poster: heroStill, alt: '…' }
+```
+
+| | |
+| --- | --- |
+| A missing file | 404s and falls back to `poster` — it does not fail the build |
+| `VITE_MEDIA_BASE` | Points the base at real hosting for a deployed build. Defaults to `/media` |
+| `poster` | The still that shows while the video buffers, **and** the fallback when it is absent |
+
+**A fresh clone and the deployed Storybook have no footage**, which is why `poster` is not optional in
+practice: without it a hero would render as an empty column. The animation is the enhancement; the
+still is the page. That is a deliberate trade — an empty-ish demo site is cheaper than a repo nobody
+can clone.
+
+`assets/` is different and stays as it is: the bubble animations, the glass icons, the product
+screenshots the Figma file supplies. Those are small, are part of the design system rather than page
+content, and are imported through the bundler so a missing one breaks the build — which is what you
+want from a dependency.
+
 ## Layout tests
 
 `pnpm test` runs Playwright over **every story in the library**, at 375, 768 and 1440, in both colour

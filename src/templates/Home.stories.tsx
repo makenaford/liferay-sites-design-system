@@ -13,6 +13,7 @@ import { Label } from '../components/Label'
 import { Link } from '../components/Link'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
+import { mediaUrl } from './media'
 import { Stat, StatBar } from '../components/Stat'
 import { Quotee, SiteFooter, SiteHeader, VendorTile, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
@@ -43,8 +44,8 @@ import goal1 from '../../assets/home/goal-1.png'
 import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
+import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
-import heroAnimation from '../../assets/home/hero-animation.webm'
 import industryMedia from '../../assets/home/industry-media.png'
 import platformDiagram from '../../assets/home/platform-diagram.png'
 import teamsMedia from '../../assets/home/teams-media.png'
@@ -485,7 +486,8 @@ function HomePage() {
            * a first frame to show — a posterless video that has not buffered draws nothing.
            */
           <video
-            src={heroAnimation}
+            src={mediaUrl('hero-animation.webm')}
+            poster={heroMedia}
             autoPlay={!reducedMotion}
             muted
             loop

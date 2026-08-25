@@ -45,6 +45,14 @@ export interface ImageRef {
   src: string
   /** Empty for decorative media. Required so it cannot be forgotten. */
   alt: string
+  /**
+   * A still for a video `src`, and its safety net.
+   *
+   * It is the `poster` while the file buffers, *and* what renders if the file is not there at all —
+   * which is the normal state of a fresh clone, since `media/` is git-ignored. The animation is the
+   * enhancement; the still is the page. Without this a deployed Storybook would show an empty hero.
+   */
+  poster?: string
 }
 
 /** Whether a media ref points at something that moves. */

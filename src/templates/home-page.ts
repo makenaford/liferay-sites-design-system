@@ -1,3 +1,4 @@
+import { mediaUrl } from './media'
 import type { PageSpec, PanelSpec } from './page-schema'
 
 /*
@@ -8,12 +9,12 @@ import type { PageSpec, PanelSpec } from './page-schema'
  * every drawn measurement left to `PageRenderer`.
  */
 
+import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import goal1 from '../../assets/home/goal-1.png'
 import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
-import heroAnimation from '../../assets/home/hero-animation.webm'
 import industryMedia from '../../assets/home/industry-media.png'
 import platformDiagram from '../../assets/home/platform-diagram.png'
 import teamsMedia from '../../assets/home/teams-media.png'
@@ -187,8 +188,10 @@ export const HOME_PAGE: PageSpec = {
       marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'],
     },
     media: {
-      src: heroAnimation,
-      alt: '',
+      src: mediaUrl('hero-animation.webm'),
+      /* The still is the fallback, not decoration — see `poster` in page-schema.ts. */
+      poster: heroMedia,
+      alt: 'A Liferay-built product catalogue with simulation and asset-intelligence tools',
     },
   },
 

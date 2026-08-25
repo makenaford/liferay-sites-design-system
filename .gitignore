@@ -12,3 +12,8 @@ storybook-static/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Mockup footage — served from media/, never committed. A single alpha webm is 15MB and git keeps
+# every version of a binary forever. See media/README.md.
+/media/*
+!/media/README.md
