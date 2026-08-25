@@ -23,6 +23,7 @@ import { SECTION_TYPES, sectionSummary, sectionTypeFor } from './section-catalog
 import type { CardSpec, PageSpec, SectionSpec } from './page-schema'
 import { SiteFooter, SiteHeader } from './shared'
 import { HOME_PAGE } from './home-page'
+import { PAGE_PRESETS } from './page-presets'
 
 /*
  * A page builder.
@@ -310,6 +311,39 @@ function Builder() {
           <Text fw={700} size="sm">
             Page
           </Text>
+          <Group gap="xs">
+            <Menu position="bottom-end" withinPortal>
+              <Menu.Target>
+                <MantineButton size="xs" variant="subtle">
+                  New
+                </MantineButton>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {PAGE_PRESETS.map((preset) => (
+                  <Menu.Item
+                    key={preset.id}
+                    onClick={() => {
+                      /*
+                       * A preset replaces the whole page, so it throws away whatever is open. There is
+                       * no undo here and a mockup is an hour of someone's afternoon, so this asks —
+                       * once, plainly, and only when there is something to lose.
+                       */
+                      const dirty = page.sections.length > 0
+                      if (dirty && !window.confirm(`Start a new ${preset.label.toLowerCase()}? This replaces the page you have open.`)) {
+                        return
+                      }
+                      setPage(preset.create())
+                      setSelected(0)
+                    }}
+                  >
+                    <Text size="sm">{preset.label}</Text>
+                    <Text size="xs" c="dimmed" maw={240} style={{ whiteSpace: 'normal' }}>
+                      {preset.hint}
+                    </Text>
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
           <Menu position="bottom-end" withinPortal>
             <Menu.Target>
               <MantineButton size="xs" variant="light">
@@ -333,6 +367,7 @@ function Builder() {
               ))}
             </Menu.Dropdown>
           </Menu>
+          </Group>
         </Group>
 
         <Divider />

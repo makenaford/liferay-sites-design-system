@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
@@ -136,7 +136,14 @@ function HeroMedia({ media }: { media: ImageRef }) {
   const showStill = !isVideo(media.src) || (failed && media.poster)
 
   if (showStill) {
-    return <Image src={failed ? media.poster! : media.src} alt={media.alt} ratio="4:3" radius="md" />
+    return (
+      <Image
+        src={failed ? media.poster! : media.src}
+        alt={media.alt}
+        ratio={media.ratio ?? '4:3'}
+        radius="md"
+      />
+    )
   }
 
   return (
@@ -202,10 +209,31 @@ function renderHero(hero: HeroSpec) {
         ) : undefined
       }
       actions={
-        hero.action ? (
-          <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
-            {hero.action.label}
-          </Link>
+        hero.buttons?.length || hero.action ? (
+          <>
+            {hero.buttons?.map((button) => (
+              /*
+               * Mantine's `Button` rather than the library's, on its own advice: the wrapper is
+               * deliberately non-polymorphic, and a hero CTA has to be an anchor. The theme keys on
+               * `Button`, so the appearance is identical either way.
+               */
+              <MantineButton
+                key={button.label}
+                component="a"
+                href={button.href}
+                /* The file draws Medium in every hero, so this is the type's, not the page's. */
+                size="md"
+                variant={button.variant === 'outline' ? 'outline' : 'filled'}
+              >
+                {button.label}
+              </MantineButton>
+            ))}
+            {hero.action ? (
+              <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
+                {hero.action.label}
+              </Link>
+            ) : null}
+          </>
         ) : undefined
       }
       proof={hero.proof ? renderProof(hero.proof) : undefined}
