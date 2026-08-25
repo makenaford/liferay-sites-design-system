@@ -156,13 +156,25 @@ export interface CardSpec {
   href?: string
 }
 
-/** A figure and its unit — `140` + `%`, `+` + `100M`. `trend` draws the arrow the file puts on a fall. */
+/** A figure and its unit — `140` + `%`, `+` + `100M`. */
 export interface StatSpec {
   value: string
   prefix?: string
   suffix?: string
   label: string
-  trend?: 'down' | 'up'
+  /**
+   * Which way to *feel* about the figure, not which way the figure moved.
+   *
+   * These two come apart whenever the metric is a cost. `96% less consulting time` is a fall in the
+   * number and a win for the reader, and the old `trend: 'down'` drew a falling arrow on it — the
+   * prop encoded the direction of the figure, and every reader decoded it as the direction of the
+   * outcome. The copy already says which way it went (“less”, “faster”, “+”), so the arrow's only
+   * job is telling you whether that is good.
+   *
+   * Figma has no axis for this: `Stat Icon` offers Arrow-Down / Arrow-Up / Percent / Plus as an
+   * icon swap, and choosing between them is exactly the judgement this prop makes explicit.
+   */
+  sentiment?: 'positive' | 'negative'
 }
 
 export interface StorySpec {

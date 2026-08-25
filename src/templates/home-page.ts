@@ -355,8 +355,8 @@ export const HOME_PAGE: PageSpec = {
         ],
         stats: [
           { value: '45', suffix: '%', label: 'Faster loading time' },
-          { value: '96', suffix: '%', label: 'Less consulting time', trend: 'down' },
-          { value: '845', suffix: '%', label: 'Less data entry time*', trend: 'down' },
+          { value: '96', suffix: '%', label: 'Less consulting time', sentiment: 'positive' },
+          { value: '845', suffix: '%', label: 'Less data entry time*', sentiment: 'positive' },
         ],
         media: { src: industryMedia, alt: 'Someone signing in to their account from a phone' },
       },

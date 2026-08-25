@@ -17,6 +17,7 @@ import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
   IconArrowDown,
+  IconArrowUp,
   IconArrowRight,
   IconBracketsAngle,
   IconBuilding2,
@@ -109,7 +110,14 @@ function renderStat(stat: StatSpec, align?: 'center') {
         </>
       }
       label={stat.label}
-      leftSection={stat.trend === 'down' ? <IconArrowDown /> : undefined}
+      /* A win points up regardless of which way the number went; see `sentiment` in the schema. */
+      leftSection={
+        stat.sentiment === 'negative' ? (
+          <IconArrowDown />
+        ) : stat.sentiment === 'positive' ? (
+          <IconArrowUp />
+        ) : undefined
+      }
     />
   )
 }
