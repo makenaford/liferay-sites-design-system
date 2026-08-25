@@ -2002,6 +2002,11 @@ media: { src: mediaUrl('hero-animation.webm'), poster: heroStill, alt: '…' }
 | `VITE_MEDIA_BASE` | Points the base at real hosting for a deployed build. Defaults to `/media` |
 | `poster` | The still that shows while the video buffers, **and** the fallback when it is absent |
 
+Compress before adding anything. The hero animation went **14.76MB → 2.10MB at SSIM 0.995** with no
+change to its dimensions, frame rate or duration; `media/README.md` has the command and the one trap
+worth knowing — ffmpeg's native VP9 decoder does not expose the alpha plane, so a straight transcode
+silently drops the transparency while still writing `ALPHA_MODE=1` into the container.
+
 **A fresh clone and the deployed Storybook have no footage**, which is why `poster` is not optional in
 practice: without it a hero would render as an empty column. The animation is the enhancement; the
 still is the page. That is a deliberate trade — an empty-ish demo site is cheaper than a repo nobody

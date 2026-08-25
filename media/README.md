@@ -39,14 +39,32 @@ can clone.
 
 ## Compressing
 
-Export what the design tool gives you, then bring it down before using it. VP9 with an alpha channel
-at a sensible CRF takes a 15MB clip to a small fraction of that:
+Export what the design tool gives you, then bring it down before using it. This is what the hero
+animation was put through — **14.76MB to 2.10MB, SSIM 0.995** at the same 1200×800, 30fps and 28.5s:
 
 ```sh
-ffmpeg -i in.webm -c:v libvpx-vp9 -pix_fmt yuva420p -crf 40 -b:v 0 -an out.webm
+ffmpeg -c:v libvpx-vp9 -i in.webm \
+  -c:v libvpx-vp9 -pix_fmt yuva420p -crf 33 -b:v 0 -row-mt 1 -cpu-used 2 -an \
+  out.webm
 ```
 
-`-an` matters: these play muted and autoplay, so an audio track is bytes nobody will ever hear.
+Every flag there is load-bearing:
+
+| Flag | Why |
+| --- | --- |
+| `-c:v libvpx-vp9` **before `-i`** | Forces the libvpx *decoder*. The native VP9 decoder does not expose the alpha plane, and without this the transparency is silently dropped — the output looks fine until it is over a background |
+| `-pix_fmt yuva420p` | The `a` is the alpha. `yuv420p` encodes happily and throws it away |
+| `-crf 33 -b:v 0` | Constant quality. CRF 40 gives 1.41MB at SSIM 0.992, which is also fine — 33 was chosen because this clip is full of small UI text, where artefacts show first |
+| `-an` | These autoplay muted, so an audio track is bytes nobody will ever hear |
+
+**Check the alpha survived, do not assume it.** ffmpeg writes `ALPHA_MODE=1` into the container even
+when the pixels are opaque, so the tag proves nothing:
+
+```sh
+ffprobe -v error -show_streams -of default=noprint_wrappers=1 out.webm | grep -i alpha
+```
+
+The reliable test is to draw a frame to a canvas and read a corner pixel's alpha — it should be `0`.
 
 ## What does not belong here
 
