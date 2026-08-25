@@ -14,6 +14,7 @@
     "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && pnpm assets:check && tsc --noEmit && vite build",
     "build-storybook": "storybook build",
     "dev": "vite",
+    "figma:drift": "node scripts/check-figma-drift.mjs",
     "figma:publish": "figma connect publish",
     "figma:unpublish": "figma connect unpublish",
     "glass-icons": "node scripts/build-glass-icons.mjs",

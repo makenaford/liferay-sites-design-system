@@ -2126,6 +2126,54 @@ Two conventions worth knowing before you touch the CSS:
   `.storybook/StoryFrame.tsx`; a story asks for what it needs with
   `parameters: { frame: { width: 400 } }`.
 
+## Checking the mappings still describe the file
+
+`pnpm figma:drift` compares what every `src/figma/*.figma.ts` asserts against what the Figma file
+actually has, using the same token `figma connect publish` uses.
+
+It exists because two sets have been restyled underneath the mappings without anything noticing:
+
+- **`card-main`'s `Padding`** went from two cells to four. `On content` and `Full` produced no snippet
+  at all, so a designer selecting either got nothing in Dev Mode.
+- **`Label CTA`'s `Style`** went from Gradient / Tonal / Outline to Filled / Glass / Gradient. The
+  mapping kept emitting `variant="light"` and `variant="outline"` for cells that no longer existed.
+
+Both were found by hand, months apart, while doing something else.
+
+The check reads the node id and the asserted axes out of the mapping files themselves, so there is no
+second list to keep in sync — which is how a check like this normally rots. It reports four things:
+
+| | Means |
+| --- | --- |
+| **Node is gone** | The set was deleted or moved to another file |
+| **Axis renamed or removed** | `getEnum('X')` names a property the set no longer has |
+| **Mapping names cells the file no longer has** | The snippet is for a variant nobody can select |
+| **File has cells the mapping does not name** | Selecting that cell in Dev Mode yields no snippet |
+
+A fifth, **property not declared on the set**, is the weakest signal and will always fire for a mapping
+that reaches into a nested instance — `Card` reads `Title` off a `Content Text` two levels down.
+
+**It is not part of `pnpm build`.** It needs a token and a network round trip, and a design file moves
+for reasons that have nothing to do with whether the code compiles. Blocking a deploy because a
+designer renamed a cell would train everyone to ignore it. It runs weekly instead, and a red run is
+the notification.
+
+Confirm anything it reports against `get_context_for_code_connect` before editing — that is the
+authority; this is a smoke alarm.
+
+### What it found on its first run
+
+The `Hero` set has drifted and the code has not followed:
+
+- `Type=Guide` **no longer exists**, and the mapping still emits a snippet for it.
+- `Alignnemt` has lost `Center` — every cell is now `Left`. `Hero`'s `align="center"` prop therefore
+  implements a cell the file does not have.
+- `Type=Minimal` is **new** and unmapped.
+- `Image=No` exists and is unmapped.
+
+Also unmapped: `Form`'s `Size=Mobile`, `Input`'s `Condensed=False`, `ListItem`'s `Padding=No`. None of
+these are broken, but each is a Dev Mode selection that produces nothing.
+
 ## Connecting to Figma
 
 `src/figma/Button.figma.ts` maps the Figma component set to this library's code, so selecting a
