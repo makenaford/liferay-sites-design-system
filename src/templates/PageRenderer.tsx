@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
@@ -40,10 +41,12 @@ import {
   IconUser1,
 } from '../icons'
 import { Quotee, VendorTile, Wordmark, unit } from './shared'
+import { isVideo } from './page-schema'
 import type {
   CardSpec,
   GlassIconName,
   HeroSpec,
+  ImageRef,
   IconName,
   PageSpec,
   PanelSpec,
@@ -113,6 +116,36 @@ function renderStat(stat: StatSpec, align?: 'center') {
 
 /* ------------------------------------------------------------------ the hero */
 
+/**
+ * The hero's media column.
+ *
+ * A video here is not a picture in a frame: the LRDC hero animation carries an alpha channel, so
+ * `.heroMedia` blurs the bubble gradient behind it rather than boxing it in. Under
+ * `prefers-reduced-motion` it still renders, paused on its first frame — the content is the point, and
+ * dropping it would leave the hero half empty.
+ */
+function HeroMedia({ media }: { media: ImageRef }) {
+  const reducedMotion = useReducedMotion()
+
+  if (!isVideo(media.src)) {
+    return <Image src={media.src} alt={media.alt} ratio="4:3" radius="md" />
+  }
+
+  return (
+    <video
+      src={media.src}
+      autoPlay={!reducedMotion}
+      muted
+      loop
+      playsInline
+      /* A posterless video that has not buffered draws nothing, so there must be a first frame. */
+      preload="auto"
+      aria-hidden
+      tabIndex={-1}
+    />
+  )
+}
+
 function renderHero(hero: HeroSpec) {
   return (
     <Hero
@@ -166,11 +199,7 @@ function renderHero(hero: HeroSpec) {
         ) : undefined
       }
       proof={hero.proof ? renderProof(hero.proof) : undefined}
-      media={
-        hero.media ? (
-          <Image src={hero.media.src} alt={hero.media.alt} ratio="4:3" radius="md" />
-        ) : undefined
-      }
+      media={hero.media ? <HeroMedia media={hero.media} /> : undefined}
     />
   )
 }

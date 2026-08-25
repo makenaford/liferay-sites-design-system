@@ -2986,6 +2986,23 @@
   border-radius: var(--mantine-radius-md);
 }
 
+/*
+ * A hero video carrying an alpha channel needs something behind it.
+ *
+ * The LRDC hero animation is fully transparent at its corners and only ~70% opaque at its centre, so
+ * dropped straight onto the page it reads as a hole rather than as a panel. The backdrop blurs the
+ * bubble gradient it is sitting on, which gives the animation softened light to float on and keeps
+ * the transparency doing something instead of fighting the background.
+ *
+ * `:has()` rather than a prop: the treatment is only ever right for a video, and the media slot
+ * already knows whether it holds one.
+ */
+.heroMedia:has(> video) {
+  border-radius: var(--mantine-radius-md);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
+}
+
 /* ------------------------------------------------------------------------------ the content */
 
 .heroLabel {

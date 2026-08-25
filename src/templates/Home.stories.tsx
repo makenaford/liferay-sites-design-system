@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
+import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
@@ -43,7 +44,7 @@ import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
-import heroMedia from '../../assets/home/hero-media.png'
+import heroAnimation from '../../assets/home/hero-animation.webm'
 import industryMedia from '../../assets/home/industry-media.png'
 import platformDiagram from '../../assets/home/platform-diagram.png'
 import teamsMedia from '../../assets/home/teams-media.png'
@@ -337,6 +338,7 @@ const RESEARCH = [
 /* ------------------------------------------------------------------ the page */
 
 function HomePage() {
+  const reducedMotion = useReducedMotion()
   const [goalTab, setGoalTab] = useState('marketers')
   const [teamTab, setTeamTab] = useState('marketers')
   const [capability, setCapability] = useState('enterprise-websites')
@@ -473,11 +475,24 @@ function HomePage() {
           </>
         }
         media={
-          <Image
-            src={heroMedia}
-            alt="A Liferay-built product catalogue with simulation and asset-intelligence tools"
-            ratio="4:3"
-            radius="md"
+          /*
+           * The animation carries an alpha channel, so it is not a picture in a frame — the corners
+           * are transparent and the middle is about 70% opaque. `.heroMedia` blurs the bubble behind
+           * it; see components.module.css.
+           *
+           * Under `prefers-reduced-motion` it still renders, paused on its first frame: the content is
+           * the point and removing it would leave the hero half empty. `preload="auto"` so there *is*
+           * a first frame to show — a posterless video that has not buffered draws nothing.
+           */
+          <video
+            src={heroAnimation}
+            autoPlay={!reducedMotion}
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden
+            tabIndex={-1}
           />
         }
       />

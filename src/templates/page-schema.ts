@@ -38,10 +38,17 @@ export type IconName =
   | 'close'
 
 export interface ImageRef {
+  /**
+   * A picture or a video. `.webm` and `.mp4` render as video, inferred from the extension rather than
+   * declared, so swapping a still for a motion version is a one-field change in a builder.
+   */
   src: string
   /** Empty for decorative media. Required so it cannot be forgotten. */
   alt: string
 }
+
+/** Whether a media ref points at something that moves. */
+export const isVideo = (src: string) => /\.(webm|mp4)(\?|#|$)/i.test(src)
 
 export interface LinkRef {
   label: string
