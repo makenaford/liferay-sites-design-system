@@ -1,4 +1,3 @@
-import { mediaUrl } from './media'
 import type { PageSpec, PanelSpec } from './page-schema'
 
 /*
@@ -9,6 +8,7 @@ import type { PageSpec, PanelSpec } from './page-schema'
  * every drawn measurement left to `PageRenderer`.
  */
 
+import heroAnimation from '../../assets/home/hero-animation.webm'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import goal1 from '../../assets/home/goal-1.png'
@@ -188,7 +188,7 @@ export const HOME_PAGE: PageSpec = {
       marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'],
     },
     media: {
-      src: mediaUrl('hero-animation.webm'),
+      src: heroAnimation,
       /* The still is the fallback, not decoration — see `poster` in page-schema.ts. */
       poster: heroMedia,
       alt: 'A Liferay-built product catalogue with simulation and asset-intelligence tools',

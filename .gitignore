@@ -13,7 +13,8 @@ storybook-static/
 /blob-report/
 /playwright/.cache/
 
-# Mockup footage — served from media/, never committed. A single alpha webm is 15MB and git keeps
-# every version of a binary forever. See media/README.md.
+# media/ is the pressure valve for oversized or raw footage — git-ignored on purpose. Compressed page
+# assets live in assets/ and ARE committed, so the deployed Storybook is self-contained. See
+# media/README.md for which is which.
 /media/*
 !/media/README.md

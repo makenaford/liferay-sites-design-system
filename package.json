@@ -10,7 +10,8 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && tsc --noEmit && vite build",
+    "assets:check": "node scripts/check-asset-size.mjs",
+    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && pnpm assets:check && tsc --noEmit && vite build",
     "build-storybook": "storybook build",
     "dev": "vite",
     "figma:publish": "figma connect publish",

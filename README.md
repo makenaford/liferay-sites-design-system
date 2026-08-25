@@ -1981,41 +1981,24 @@ Worth settling deliberately rather than by accident. And if those mappings shoul
 unpublished **from that repo** — `figma connect unpublish` only knows what the local files declare, so
 deleting the repo would remove the only way to remove them.
 
-## Where mockup footage lives
+## Where assets live
 
-Videos are **served, not bundled**, and `media/` is git-ignored.
+**Committed, under 4MB a file.** The deployed Storybook is the reference the designers work from, so it
+has to render on every branch and every preview with no configuration — which means the assets have to
+be in the repo. Hosting them elsewhere would add something that can be misconfigured or expire, and
+when it breaks every page looks broken.
 
-A single 1200×800 alpha webm runs to 15MB. A library that accumulates one per mockup would put
-hundreds of megabytes into every clone, permanently — git keeps every version of a binary it has ever
-seen, so a file committed once is carried forever, even after it is deleted.
+What makes that affordable is compression, not restraint. A raw 1200×800 alpha webm out of a design
+tool is 15MB; the same clip at CRF 33 is **2.1MB at 0.995 SSIM** — the size of the bubble animations
+that have been committed here all along.
 
-So Storybook serves `media/` at `/media` (`staticDirs`), pages reference it by URL through
-`mediaUrl()`, and nothing goes through the bundler:
+`pnpm assets:check` runs in the build and fails at **4MB per file**, with the ffmpeg recipe in the
+error. The failure mode it exists for is not "too many files", it is one raw export committed because
+compressing was a step too many — and git keeps that forever, even after it is deleted.
 
-```ts
-media: { src: mediaUrl('hero-animation.webm'), poster: heroStill, alt: '…' }
-```
-
-| | |
-| --- | --- |
-| A missing file | 404s and falls back to `poster` — it does not fail the build |
-| `VITE_MEDIA_BASE` | Points the base at real hosting for a deployed build. Defaults to `/media` |
-| `poster` | The still that shows while the video buffers, **and** the fallback when it is absent |
-
-Compress before adding anything. The hero animation went **14.76MB → 2.10MB at SSIM 0.995** with no
-change to its dimensions, frame rate or duration; `media/README.md` has the command and the one trap
-worth knowing — ffmpeg's native VP9 decoder does not expose the alpha plane, so a straight transcode
-silently drops the transparency while still writing `ALPHA_MODE=1` into the container.
-
-**A fresh clone and the deployed Storybook have no footage**, which is why `poster` is not optional in
-practice: without it a hero would render as an empty column. The animation is the enhancement; the
-still is the page. That is a deliberate trade — an empty-ish demo site is cheaper than a repo nobody
-can clone.
-
-`assets/` is different and stays as it is: the bubble animations, the glass icons, the product
-screenshots the Figma file supplies. Those are small, are part of the design system rather than page
-content, and are imported through the bundler so a missing one breaks the build — which is what you
-want from a dependency.
+Anything that genuinely cannot come down goes in the git-ignored `media/` folder, served at `/media`
+and referenced by URL through `mediaUrl()`, with `poster` as the fallback when the file is not there.
+See `media/README.md` for that path and for the alpha-channel trap.
 
 ## Layout tests
 

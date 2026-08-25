@@ -62,6 +62,11 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # Page assets are committed and capped at 4MB a file, so the deployed reference renders with no
+      # configuration. See README.md, "Where assets live".
+      - name: Check asset sizes
+        run: pnpm assets:check
+
       - name: Build Storybook
         run: pnpm build-storybook
 
