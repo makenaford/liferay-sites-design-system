@@ -62,6 +62,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # Browsers are not in the lockfile — they live in a shared cache and are fetched on demand.
+      # `--with-deps` pulls the system libraries a headless Chromium needs on a bare runner.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Structural checks over every story: no horizontal overflow at 375/768/1440 in both colour
+      # schemes, and nothing throwing while it renders. Runs before the build, so a layout regression
+      # fails the run rather than shipping to Pages.
+      - name: Layout tests
+        run: pnpm test
+
       - name: Build Storybook
         run: pnpm build-storybook
 

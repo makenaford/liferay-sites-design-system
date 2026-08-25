@@ -122,7 +122,7 @@ export const Playground: Story = {
     ),
   },
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card {...args} />
     </Box>
   ),
@@ -140,7 +140,7 @@ export const Playground: Story = {
  */
 export const Resource: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         component="a"
@@ -166,7 +166,7 @@ export const Resource: Story = {
  */
 export const CustomerQuote: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         image={<CustomerThumb name="Advanced Energy" />}
@@ -196,7 +196,7 @@ export const CustomerQuote: Story = {
 /** **`Type=CS- Details`** — the same padded shape with a title and a description, and no slots. */
 export const CustomerStory: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         component="a"
@@ -216,7 +216,7 @@ export const CustomerStory: Story = {
  */
 export const IconLeft: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         hero={<IconGlassComposable width={40} height={40} />}
@@ -235,7 +235,7 @@ export const IconCenter: Story = {
   },
 
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         headerAlign="center"
@@ -513,7 +513,7 @@ export const Horizontal: Story = {
 /** Every slot at once, labelled, so the order is legible. */
 export const Slots: Story = {
   render: (args) => (
-    <Box w={360}>
+    <Box w={360} maw="100%">
       <Card
         {...args}
         image={<Cover />}
@@ -540,7 +540,7 @@ export const Slots: Story = {
 /** Buttons rather than a link in the bottom slot, in a card that is not itself clickable. */
 export const WithButtons: Story = {
   render: (args) => (
-    <Box w={360}>
+    <Box w={360} maw="100%">
       <Card
         {...args}
         hero={<IconGlassMail width={40} height={40} />}

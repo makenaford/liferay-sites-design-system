@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "liferay-sites-storybook",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "storybook:6007"
+      ],
+      "port": 6007
+    }
+  ]
+}

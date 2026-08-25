@@ -163,7 +163,7 @@ export const NoHeading: Story = {
 export const Narrow: Story = {
   parameters: { frame: { width: 420 } },
   render: (args) => (
-    <Box w={380}>
+    <Box w={380} maw="100%">
       {Playground.render!(args as never, {} as never)}
     </Box>
   ),
@@ -184,7 +184,7 @@ export const BothSizes: Story = {
         <Text fz="sm" c="var(--sds-surfaces-text-tertiary)" ff="monospace">
           under 520px — single column
         </Text>
-        <Box w={360}>{Playground.render!(args as never, {} as never)}</Box>
+        <Box w={360} maw="100%">{Playground.render!(args as never, {} as never)}</Box>
       </Stack>
     </SimpleGrid>
   ),

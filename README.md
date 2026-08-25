@@ -1981,6 +1981,52 @@ Worth settling deliberately rather than by accident. And if those mappings shoul
 unpublished **from that repo** — `figma connect unpublish` only knows what the local files declare, so
 deleting the repo would remove the only way to remove them.
 
+## Layout tests
+
+`pnpm test` runs Playwright over **every story in the library**, at 375, 768 and 1440, in both colour
+schemes, plus a pass that fails on anything thrown while rendering. The story list comes from
+Storybook's own `index.json`, so a new component is covered the moment it has a story — there is no
+register to keep in sync, which is how a suite like this usually rots.
+
+It is deliberately **not** visual regression. There are no reference images to approve and nothing to
+re-baseline when a colour moves. It asks one structural question — *does this story drag the page
+sideways?* — because every real defect found while building the Home page was that question:
+
+| Bug | How it showed up |
+| --- | --- |
+| Pill tabs in a flex row | collapsed to 0px |
+| `ContentMedia` at a fixed 3:2 | silently clipped the stat row |
+| A long button label | ran out through the gutter at 375 |
+| Industry tabs in `sectionFooter` | 823px wide inside 311 |
+
+All four were found by hand, and none needed a screenshot to detect.
+
+Scrollers are exempt by construction: a carousel track, a scrolling tab bar and a marquee are all
+*meant* to be wider than their box, so the check ignores anything clipped by an ancestor and only
+counts overflow that reaches the document.
+
+Stories tagged `desktop-only` are exempt below 1200. Only the two authoring tools carry it — a builder
+is a rail beside a live preview, which has no phone form. The tag sits on the story that claims it
+rather than in a skip list inside the test.
+
+### What it found on its first run
+
+Three bugs, none of them in a component:
+
+- **`Logo` set `width="auto"` as an SVG attribute**, which is not a valid SVG length. Every render
+  logged an error. It is a CSS `auto`, and it is now in `style`.
+- **`StoryFrame`'s `maxWidth: '100%'` had never worked.** `layout: 'centered'` makes `<body>` a flex
+  container and `#storybook-root` a flex item, whose default `min-width: auto` refuses to shrink below
+  its content — so a fixed-width story stretched the root and `100%` clamped against a box the story
+  had already widened. `#storybook-root { min-width: 0 }` in `preview-head.html` fixes it, and about
+  forty stories stopped overflowing a phone.
+- **Fixed-width demos did not shrink.** `w={360}` with no upper bound overflows at 375; the component
+  stories now pair it with `maw="100%"`, which is what the frame's own doc comment always claimed.
+
+There was also a **false pass**: `load` fires before Storybook has rendered a story it is compiling on
+demand, so some runs measured an empty document and reported it as fine. The suite now waits for the
+root to have children before it measures.
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px

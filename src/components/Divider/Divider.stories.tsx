@@ -110,7 +110,7 @@ export const WithLabel: Story = {
 /** In a card, separating two blocks of content. */
 export const InACard: Story = {
   render: () => (
-    <Card w={420} title="Plan details" description="What is included at this tier.">
+    <Card w={420} maw="100%" title="Plan details" description="What is included at this tier.">
       <Stack gap="16">
         <Divider />
         <StatBar>
@@ -127,7 +127,7 @@ export const InACard: Story = {
  */
 export const GradientAsAccent: Story = {
   render: () => (
-    <Stack gap="12" w={420}>
+    <Stack gap="12" w={420} maw="100%">
       <Text fz="var(--sds-size-heading-f4)" fw={700}>
         Where is my data hosted?
       </Text>

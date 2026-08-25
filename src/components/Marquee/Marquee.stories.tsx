@@ -98,7 +98,10 @@ type Story = StoryObj<typeof meta>
 export const Playground: Story = { render: (args) => <Marquee {...args}>{logos()}</Marquee> }
 
 /** **`Size=Size3`** — the 64px cell, which is the set's default. */
-export const Large: Story = { args: { size: 'lg' }, render: (args) => <Marquee {...args}>{logos()}</Marquee> }
+export const Large: Story = { args: {
+  size: 'lg',
+  logoWidth: 200
+}, render: (args) => <Marquee {...args}>{logos()}</Marquee> }
 
 /** **`Size=Desktop`** — the 49px cell. */
 export const Medium: Story = { args: { size: 'md' }, render: (args) => <Marquee {...args}>{logos()}</Marquee> }
@@ -214,7 +217,7 @@ export const InASection: Story = {
 export const InACard: Story = {
   render: (args) => (
     <Card
-      w={520}
+      w={520} maw="100%"
       title="Trusted by"
       main={
         <Marquee {...args} size="sm" gap={32} speed={30}>

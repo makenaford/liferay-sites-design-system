@@ -65,14 +65,18 @@ export const Logo = forwardRef<SVGSVGElement, LogoProps>(function Logo(
       ref={ref}
       viewBox={viewBox}
       height={height}
-      width="auto"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={labelled ? title : undefined}
       aria-hidden={labelled ? undefined : true}
       focusable="false"
-      style={{ display: 'block', ...props.style }}
+      /*
+       * `width` is a *CSS* auto, not an SVG attribute one — `width="auto"` is not a valid SVG length
+       * and the browser rejects it with a console error on every render. Caught by the Playwright
+       * console check.
+       */
+      style={{ display: 'block', width: 'auto', ...props.style }}
       {...props}
     >
       {/* The mark — `Brand/Primary/Primary`, mode-independent by design. */}

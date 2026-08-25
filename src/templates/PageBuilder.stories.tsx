@@ -303,7 +303,7 @@ function Builder() {
       {/* ------------------------------------------------ the rail */}
       <Stack
         gap={0}
-        w={320}
+        w={320} maw="100%"
         style={{ borderRight: '1px solid var(--mantine-color-dark-4)', flex: 'none' }}
       >
         <Group justify="space-between" p="sm">
@@ -489,6 +489,11 @@ function Builder() {
 
 const meta = {
   title: 'Templates/Page builder',
+  /*
+   * Desktop-only, and the layout suite is told so rather than left to fail: this is a rail plus a live preview
+   * side by side, which has no phone form. It is a tool for building pages, not a page.
+   */
+  tags: ['desktop-only'],
   parameters: {
     layout: 'fullscreen',
     frame: { fullBleed: true },
