@@ -1869,6 +1869,22 @@
  * was overridden entirely: the trigger kept the field's `12px 40px 12px 16px`, which is 56px of padding
  * in a 92px box — so `EN (US)` came out clipped to `EN (I`.
  */
+/*
+ * No gradient border on the nav trigger.
+ *
+ * `.fieldWrapper::after` is the field's focus treatment — a 1px gradient border drawn as a masked
+ * pseudo-element, sized to an input box. This trigger is not an input box: it is bare text and a
+ * caret sitting in the nav, with no padding on its leading edge. The ring therefore drew a rounded
+ * rectangle hard against the `E`, which read both as an outline that should not be there and as the
+ * label being boxed in.
+ *
+ * It also appeared on *mouse* clicks, not just keyboard: a text input matches `:focus-visible`
+ * whenever it is focused, whatever the input modality, so clicking the trigger left the box behind.
+ */
+.fieldWrapper:has(.langPicker)::after {
+  content: none;
+}
+
 .fieldWrapper .langPicker {
   display: inline-flex;
   align-items: center;
@@ -1886,7 +1902,17 @@
   cursor: pointer;
 }
 
-.langPicker:focus-visible {
+/*
+ * Which leaves this as the only focus indicator, so it has to actually apply — qualified with
+ * `.fieldWrapper` because the rule it competes with is `.fieldWrapper .fieldInput`, and a bare class
+ * ties on specificity and loses on order. Unqualified, this never drew at all: `outline-style`
+ * computed to `none` while the gradient ring did the work.
+ *
+ * Gated on `data-keyboard-focus`, which the component sets from the real input modality. Without it
+ * the ring appears on mouse clicks too — `:focus-visible` always matches a focused text input — and a
+ * box in the nav after every click is exactly what this was meant to remove.
+ */
+.fieldWrapper .langPicker[data-keyboard-focus]:focus-visible {
   outline: 2px solid var(--sds-action-primary-hover);
   outline-offset: 2px;
 }

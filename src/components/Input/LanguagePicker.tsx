@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Select } from '@mantine/core'
 import type { SelectProps } from '@mantine/core'
 import { IconDownSmallFilled } from '../../icons'
@@ -38,8 +38,46 @@ export interface LanguagePickerProps
  * Sitting inside a field it needs a label of its own that the field's label does not provide:
  * `aria-label` is required, and defaults to "Language".
  */
+/**
+ * Whether focus arrived from the keyboard.
+ *
+ * `:focus-visible` cannot answer this on its own: a text input matches it whenever it is focused,
+ * whatever the modality, so a plain `:focus-visible` ring on this trigger appears on mouse clicks too
+ * and leaves a box sitting in the nav. Buttons do not have that problem, which is why the rest of the
+ * header does not need this.
+ *
+ * So the modality is tracked directly. `Tab` is the only key that moves focus *into* a control from
+ * outside it, and by the time `focus` fires the listeners below have already recorded which it was.
+ */
+function useKeyboardFocus() {
+  const modality = useRef<'pointer' | 'keyboard'>('pointer')
+  const [keyboard, setKeyboard] = useState(false)
+
+  useEffect(() => {
+    const onPointerDown = () => (modality.current = 'pointer')
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Tab') modality.current = 'keyboard'
+    }
+    /* Capture, so this runs before anything that stops propagation. */
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('keydown', onKeyDown, true)
+    }
+  }, [])
+
+  return {
+    'data-keyboard-focus': keyboard || undefined,
+    onFocus: () => setKeyboard(modality.current === 'keyboard'),
+    onBlur: () => setKeyboard(false),
+  }
+}
+
 export const LanguagePicker = forwardRef<HTMLInputElement, LanguagePickerProps>(
   function LanguagePicker({ data, ...props }, ref) {
+    const focusRing = useKeyboardFocus()
+
     return (
       <Select
         ref={ref}
@@ -73,6 +111,7 @@ export const LanguagePicker = forwardRef<HTMLInputElement, LanguagePickerProps>(
         styles={{ section: { width: 18 } }}
         rightSectionWidth={18}
         rightSectionPointerEvents="none"
+        {...focusRing}
         w={78}
         comboboxProps={{ width: 220, position: 'bottom-start' }}
         {...props}
