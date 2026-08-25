@@ -810,8 +810,30 @@ an animation.
 ## Header and MegaMenu
 
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
-set: a fixed glass band over the page, an inset panel that drops out of it, and a staggered reveal of
-the columns inside.
+set: a fixed band over the page, an inset panel that drops out of it, and a staggered reveal of the
+columns inside.
+
+### It condenses on scroll
+
+**At the top of the page the band is nothing** — no fill, no blur, no hairline, no shadow — so it sits
+on the hero and reads as part of it, which is what the file draws: the nav lives *inside* the
+`Left Hero` frame, over the bubble. Past 24px of scroll the glass arrives and the bar tightens from 64
+to 56.
+
+This corrected a real problem rather than adding polish. The band used to carry the blur, the hairline
+**and** a 30px drop shadow at all times, so a header at the top of an unscrolled page cast a shadow
+separating itself from content that had not arrived yet.
+
+| | |
+| --- | --- |
+| `condense` | On by default. Only meaningful with `position="fixed"` — a static header scrolls away, so there is nothing to condense. |
+| An open menu | Takes the glass whatever the scroll position. Without that the bar is transparent while a panel hangs off it, and the two read as unrelated things rather than one surface. |
+| `prefers-reduced-motion` | The state still changes and simply arrives immediately. The separation is the point; the fade is not. |
+
+It reads `window.scrollY` behind a `requestAnimationFrame` guard rather than watching a sentinel with
+an `IntersectionObserver`, because the sentinel would have to live outside the header in page markup
+this component does not own. One boolean flip near the top of the page is cheap, and the guard means a
+fast scroll cannot queue more than one read per frame.
 
 ```tsx
 import { Button, Header, MegaMenu } from 'liferay-sites-design-system'

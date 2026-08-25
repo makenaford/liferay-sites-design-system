@@ -31,6 +31,17 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   onOpenChange?: (value: string | null) => void
   /** `fixed` overlays the page, which is what the glass blur is for. `static` sits in the flow. */
   position?: 'fixed' | 'static'
+  /**
+   * Condense on scroll: at the top of the page the band is transparent and part of the hero, and once
+   * the page moves it gains the glass, the hairline and a tighter bar.
+   *
+   * On by default, and only meaningful when `position="fixed"` — a static header scrolls away, so there
+   * is nothing to condense. It reverses what the band used to do, which was to carry a blur, a hairline
+   * *and* a 30px drop shadow at rest, separating it from content that was not there yet.
+   *
+   * @default true
+   */
+  condense?: boolean
 }
 
 /**
@@ -73,6 +84,7 @@ export function Header({
   defaultOpen = null,
   onOpenChange,
   position = 'fixed',
+  condense = true,
   className,
   ...props
 }: HeaderProps) {
@@ -117,6 +129,40 @@ export function Header({
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [open, change])
 
+  /*
+   * Whether the page has moved.
+   *
+   * A passive scroll listener batched into one `requestAnimationFrame`, rather than an
+   * IntersectionObserver on a sentinel: the sentinel would have to live outside the header, in page
+   * markup this component does not own. One boolean flip near the top of the page is cheap, and the
+   * rAF guard means a fast scroll cannot queue more than one read per frame.
+   */
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    if (position !== 'fixed' || !condense) {
+      setScrolled(false)
+      return undefined
+    }
+
+    let frame = 0
+    const read = () => {
+      frame = 0
+      /* 24px, so a trackpad's inertia at the very top does not flicker the band on and off. */
+      setScrolled(window.scrollY > 24)
+    }
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(read)
+    }
+
+    read()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [position, condense])
+
   const openItem = items.find((item) => item.value === open && item.menu)
 
   return (
@@ -125,6 +171,10 @@ export function Header({
       ref={shellRef}
       className={[classes.headerShell, className].filter(Boolean).join(' ')}
       data-position={position}
+      data-condense={position === 'fixed' && condense ? true : undefined}
+      data-scrolled={scrolled || undefined}
+      /* An open panel needs the bar to be a surface, or the two read as unrelated. */
+      data-menu-open={openItem || drawer ? true : undefined}
       {...props}
     >
       <div className={classes.headerBand}>

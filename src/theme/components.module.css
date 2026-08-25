@@ -1955,6 +1955,61 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
+/* -------------------------------------------------------------- condense on scroll
+ *
+ * At rest the band is **nothing**: no fill, no blur, no hairline, no shadow. It sits on the hero and
+ * reads as part of it, which is what the file draws — the nav is inside the `Left Hero` frame, over the
+ * bubble. The glass was previously on at all times, so a header at the top of an unscrolled page cast a
+ * 30px shadow separating it from content that had not arrived yet.
+ *
+ * Once the page moves, the whole treatment arrives at once and the bar tightens by 8px. Only the fixed
+ * header does this: a static one scrolls away, so there is nothing to condense.
+ */
+.headerShell[data-condense] .headerBand {
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  transition:
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    border-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * An open menu takes the glass whatever the scroll position. Without this the bar is transparent while
+ * a panel hangs off it, and the two read as unrelated things rather than one surface.
+ */
+.headerShell[data-condense][data-scrolled] .headerBand,
+.headerShell[data-condense][data-menu-open] .headerBand {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom-color: var(--sds-glass-line-to);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* 64 -> 56. Small enough to feel like settling rather than a jump, and it is the only thing that moves. */
+.headerShell[data-condense] .headerBar {
+  transition: min-height var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerShell[data-condense][data-scrolled] .headerBar {
+  min-height: 56px;
+}
+
+/*
+ * The state still changes — the glass still arrives, the bar is still 56 — it just arrives immediately.
+ * Someone who has asked for less motion still needs the header to separate from the content under it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .headerShell[data-condense] .headerBand,
+  .headerShell[data-condense] .headerBar {
+    transition: none;
+  }
+}
+
 .headerInner {
   max-width: 1280px;
   margin: 0 auto;
