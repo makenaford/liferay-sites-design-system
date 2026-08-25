@@ -923,7 +923,7 @@
    */
   box-shadow:
     inset 0 1px 0 var(--sds-card-lit-edge),
-    0 0 6px 1px var(--sds-glass-shadow);
+    var(--sds-card-cast-shadow);
 }
 
 /*
@@ -935,6 +935,7 @@
  */
 .cardRoot[data-align][data-surface='static'] {
   background-color: var(--sds-surfaces-card-bg-grey);
+  border: 1px solid var(--sds-card-static-line);
 }
 
 /*

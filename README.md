@@ -2575,6 +2575,27 @@ Two smaller things in that export:
   `Premium Security 5`, `Out of the box3`) look like iterations that were never pruned. Nothing breaks —
   the manifest takes an `as` name — but the set would be easier to search with one name per icon.
 
+### The glass card's rim is deliberately under 3:1
+
+`glass` is the clickable card, and WCAG 1.4.11 asks 3:1 of the visual boundary that *identifies* an
+interactive component. Its rim measures 1.42–1.63:1 against its own fill. That is a decision, not an
+oversight, and it is written down here so nobody has to rediscover the reasoning.
+
+The rim was briefly taken to 3.5–4:1 to satisfy the rule outright. It measured correctly and looked
+wrong — glass stopped reading as a material and became a grey card with a bright edge, which is the
+one thing the surface exists to avoid.
+
+What makes it defensible is that the rim is not the only signal. Glass sits about twice as far
+forward of the page as `static` does, carries a lit top edge and a cast shadow that `static` has
+none of, and moves on hover. `static` is not rimless either — it has one at roughly a third the
+strength — so the two are told apart by *degree* across four properties rather than by one boundary
+doing all the work.
+
+What is still missing is a **non-tonal** cue. Every signal above is contrast, and contrast is what a
+dimmed laptop, a projector or low vision takes away first. A clickable card should carry something
+structural — a link-styled title, or an arrow in a corner — and until it does, this gap is real
+rather than theoretical.
+
 ### A card that is a link cannot contain links
 
 `<a>` inside `<a>` is invalid, and browsers unnest it into markup neither element controls. So an
