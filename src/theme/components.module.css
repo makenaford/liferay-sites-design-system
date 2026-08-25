@@ -1796,15 +1796,49 @@
  * 48px box. `md` is itself 48px and would fill the field edge to edge.
  */
 /* `padding/8` — the button sits 8 in from the field's edge, not 4. */
+/*
+ * Stop the value before the button: its measured width plus the 8px of inset on either side of it.
+ * `TextInput` sets the variable; the fallback keeps the field sane for the frame before it measures.
+ */
 .fieldRoot[data-contained-button] .fieldInput {
-  padding-inline-end: 8px;
+  padding-inline-end: calc(var(--sds-contained-button-width, 0px) + 16px);
+}
+
+/* The measured element. It is the button's box; the button fills it. */
+.containedButtonSlot {
+  display: flex;
+  height: 100%;
 }
 
 .fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
   inset-inline-end: 8px;
+  /*
+   * The same 8px on the other three sides, so the button sits in an even inset rather than filling the
+   * field's full height with a gap only on one edge.
+   *
+   * `inset-block` is what makes it even: the section stretched the full 48px, so the button did too
+   * and the top and bottom gaps were zero. Insetting the *section* keeps the button centred without
+   * anyone having to know its height.
+   */
+  inset-block: 8px;
   width: auto;
   /* The generic icon inset would push the button 16px off the border. */
   padding-inline-end: 0;
+}
+
+/*
+ * The button fills what the inset leaves — 32px in the drawn 48px field.
+ *
+ * A height rather than a size: 32px is not a step on the button scale (40 / 48 / 56), and adding one
+ * for a single context would put a size in the system that Figma does not draw. The call site asks for
+ * the small *style* — 14px label, 12px padding — and the field decides the height.
+ *
+ * `min-height` has to go too, or `--button-height` holds the floor at 40px.
+ */
+.fieldRoot[data-contained-button] .fieldSection[data-position='right'] > *,
+.fieldRoot[data-contained-button] .containedButtonSlot > * {
+  height: 100%;
+  min-height: 0;
 }
 
 /* ------------------------------------------------------------------------ the dropdown menu

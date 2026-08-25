@@ -209,7 +209,8 @@ function renderHero(hero: HeroSpec) {
             type="email"
             placeholder={hero.form.placeholder}
             containedButton={
-              <Button size="md" rightSection={<IconArrowRight />}>
+              /* Small, so the label and padding suit the 32px the field's 8px inset leaves. */
+              <Button size="sm" rightSection={<IconArrowRight />}>
                 {hero.form.submit}
               </Button>
             }
@@ -298,7 +299,19 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
  */
 function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> }) {
   return (
-    <Card surface="glass" padding="none" bdrs={{ base: 24, md: 30 }} w="100%" maw={1000}>
+    /*
+     * Not interactive: this card is a container for the selects and button inside it. With the default
+     * on, a hover lift and focus ring would fire on the bar itself while the real controls sit within
+     * it — an affordance pointing at nothing, wrapped around things that have their own.
+     */
+    <Card
+      surface="glass"
+      interactive={false}
+      padding="none"
+      bdrs={{ base: 24, md: 30 }}
+      w="100%"
+      maw={1000}
+    >
       <Group gap={16} px={16} py={8} align="center">
         <Text fz="lg" fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
           {banner.label}
@@ -592,6 +605,8 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
     >
       <Card
         align="horizontal"
+        /* Its links do the work — see the nested-interactive note in Card's docs. */
+        interactive={false}
         titleSize="full"
         hero={spec.card.icon ? GLASS[spec.card.icon](48) : undefined}
         title={fill(spec.card.title)}

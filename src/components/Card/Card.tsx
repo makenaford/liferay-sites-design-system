@@ -53,7 +53,7 @@ export interface CardProps
    * `grey` is the only static surface. Figma's `Blue` cell was removed: at 5% blue over near-black it was
    * indistinguishable from grey on the dark canvas, so it was a second option that looked like the first.
    *
-   * @default 'glass' when `interactive`, otherwise 'grey'
+   * @default 'glass', since `interactive` is on by default
    */
   surface?: CardSurface
   /** Figma `card-main` `Align`. @default 'vertical' */
@@ -94,8 +94,12 @@ export interface CardProps
   bottom?: ReactNode
 
   /**
-   * Turns on the hover and focus treatment. Only for a card that really is a link or a button — pass
-   * `component="a" href="…"` or an `onClick` with it.
+   * Turns on the hover and focus treatment. **On by default**, which also makes `surface` default to
+   * `glass`.
+   *
+   * Pass `component="a" href="…"` or an `onClick` alongside it so the affordance is telling the truth.
+   * A card that genuinely is not clickable — a stat panel, a quote — should say `interactive={false}`,
+   * which drops it back to the flat `grey` surface.
    *
    * Where the hover lands depends on `padding`: see the component docs.
    */
@@ -121,7 +125,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
     main,
     secondary,
     bottom,
-    interactive,
+    interactive = true,
     children,
     className,
     ...props

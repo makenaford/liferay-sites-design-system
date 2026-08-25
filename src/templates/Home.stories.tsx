@@ -431,7 +431,7 @@ function HomePage() {
             type="email"
             placeholder="Enter Your Email"
             containedButton={
-              <Button size="md" rightSection={<IconArrowRight />}>
+              <Button size="sm" rightSection={<IconArrowRight />}>
                 Start Free Trial
               </Button>
             }
