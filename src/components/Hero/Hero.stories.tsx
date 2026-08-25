@@ -169,30 +169,25 @@ export const Form: Story = {
 }
 
 /**
- * **Guide** — Figma's `Type=Guide`: no media, a longer description, and the proof row under the
- * actions.
+ * **Minimal** — Figma's `Type=Minimal`, the cell that used to be called `Guide`; its placeholder in the
+ * file still reads *"This Is An Example Of A Guide Title"*.
+ *
+ * A heading, one line under it, and the corner bubble. Nothing else: no label, no actions, no media. It
+ * is the shortest hero in the set — a section header for a page whose content starts immediately — which
+ * is why it is the one cell where `background` matters on its own.
+ *
+ * This story used to render a label, two actions and the Gartner proof row over a plain surface, which
+ * was neither the old cell nor this one. `pnpm figma:drift` caught the rename; the drawing was wrong
+ * independently of it.
  */
-export const Guide: Story = {
+export const Minimal: Story = {
   args: {
-    background: 'none',
+    background: 'corner',
     media: undefined,
-    label: (
-      <Label size="sm" variant="gradient">
-        Guide
-      </Label>
-    ),
-    title: <h1>The composable enterprise</h1>,
-    description:
-      'What changes when every team ships on the same platform — and the twelve decisions that make or break the first year.',
-    actions: (
-      <>
-        <Button rightSection={<IconArrowRight />}>Download the guide</Button>
-        <Link href="#" size="md">
-          Read the summary
-        </Link>
-      </>
-    ),
-    proof: <GartnerProof />,
+    label: undefined,
+    title: <h1>This is an example of a guide title</h1>,
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    actions: undefined,
   },
 }
 

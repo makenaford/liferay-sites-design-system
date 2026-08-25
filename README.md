@@ -722,8 +722,8 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 
 | Source | Prop |
 | --- | --- |
-| `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
-| `Alignnemt` — Left / Center | `align` |
+| `Type` — Default / Minimal / Corner Bubble / Full Bubble / Form | `background`, and the slots each cell fills |
+| `Alignnemt` — Left only | `align`, which still supports `center` — see below |
 | `Image` — Yes / No | the `media` slot |
 | A band above both columns | the `banner` slot |
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
@@ -786,6 +786,20 @@ an animation.
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
 set: a fixed band over the page, an inset panel that drops out of it, and a staggered reveal of the
 columns inside.
+
+### The set has drifted, and two things came out of it
+
+Found by `pnpm figma:drift` (see below), then confirmed against the set:
+
+**`Type=Guide` was renamed to `Minimal`, not deleted.** Its placeholder still reads *"This Is An Example
+Of A Guide Title"*. It also draws a corner bubble, which the old `Guide: 'none'` mapping did not
+reflect — so the mapping was both naming a dead cell *and* describing it wrongly. Now `Minimal:
+'corner'`.
+
+**`Alignnemt` has lost `Center`.** Every cell in the set is `Left`. `align="center"` is therefore a
+capability the design does not currently exercise. It is kept — it works, a centred hero is a common
+shape, and removing it would break callers to satisfy an axis that may well come back — but Code
+Connect no longer offers it, because a snippet should only produce something a designer can select.
 
 ### It condenses on scroll
 

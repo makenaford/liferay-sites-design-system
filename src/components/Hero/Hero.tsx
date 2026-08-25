@@ -27,7 +27,14 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   video?: string
   /** A still for the video's first frame, shown while it loads. */
   videoPoster?: string
-  /** Figma's `Alignnemt` axis. `center` centres the column and its text. */
+  /**
+   * `center` centres the column and its text.
+   *
+   * **The file no longer draws this.** `Alignnemt` was Left / Center; every cell in the set is now
+   * `Left`, so `center` is a capability the design does not currently exercise — kept because it works,
+   * is a common hero shape, and removing it would break callers to satisfy an axis that may well come
+   * back. Code Connect does not offer it. Recorded in README.md.
+   */
   align?: HeroAlign
   /**
    * A full-width band above the content and the media, centred in the hero's own gutters. The Home
@@ -69,8 +76,8 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  *
  * | Source | Prop |
  * | --- | --- |
- * | `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
- * | `Alignnemt` — Left / Center | `align` |
+ * | `Type` — Default / Minimal / Corner Bubble / Full Bubble / Form | `background`, and the slots each cell fills |
+ * | `Alignnemt` — Left only, since `Center` was dropped | `align`, which still supports `center` |
  * | `Image` — Yes / No | `media` |
  * | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
  * | `Theme` — Dark / Light | the colour scheme, not a prop |
@@ -93,8 +100,10 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * />
  * ```
  *
- * Figma's `Form` and `Guide` cells are compositions rather than variants — a hero with a form instead of
- * buttons, and a hero with no media — so they are stories, the same way the Card's five types are.
+ * Figma's `Form` and `Minimal` cells are compositions rather than variants — a hero with a form instead
+ * of buttons, and a hero with a corner bubble and nothing but a heading and a line of text — so they are
+ * stories, the same way the Card's five types are. (`Minimal` is the cell that used to be called `Guide`;
+ * its placeholder still says so.)
  *
  * ## The bubble
  *
