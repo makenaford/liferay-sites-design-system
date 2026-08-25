@@ -1885,6 +1885,18 @@
   content: none;
 }
 
+/*
+ * The caret needs the whole slot, because this trigger has no padding to sit inside.
+ *
+ * A field's right section is pinned 16px in from the box's padding edge — Figma's icon inset. This
+ * trigger's slot is 18px wide (see `LanguagePicker`), so that 16px left 2px for a 16px glyph and the
+ * flex row shrank it to a 2px sliver: the caret was still rendered, still `visible`, and effectively
+ * gone. Its leading edge is the text, so there is no padding for it to be inset from.
+ */
+.fieldWrapper:has(.langPicker) .fieldSection[data-position='right'] {
+  padding-inline-end: 0;
+}
+
 .fieldWrapper .langPicker {
   display: inline-flex;
   align-items: center;
