@@ -2027,6 +2027,16 @@ There was also a **false pass**: `load` fires before Storybook has rendered a st
 demand, so some runs measured an empty document and reported it as fine. The suite now waits for the
 root to have children before it measures.
 
+### CI runs it against the build, not a dev server
+
+Locally `pnpm test` starts `storybook dev`, which is right for iterating. CI serves the **built**
+Storybook with `vite preview` instead, because on-demand compilation is what made the first CI attempt
+time out: a two-core runner spent the whole budget compiling stories. Since the workflow builds
+Storybook for Pages anyway, the tests reuse that output — no second build, and nothing to compile.
+
+The difference is not marginal. Same suite, same machine: **1m 25s per test against the dev server,
+11s against the build.**
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px

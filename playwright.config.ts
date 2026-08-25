@@ -14,13 +14,20 @@ import { defineConfig, devices } from '@playwright/test'
  * both colour schemes, and those answers are either yes or no.
  */
 const PORT = 6009
+const CI = Boolean(process.env.CI)
 
 export default defineConfig({
   testDir: './tests',
-  /* The suite walks every story; a slow machine should not turn that into a failure. */
-  timeout: 120_000,
+  /*
+   * The suite walks every story in one test, so the budget is per *run* rather than per assertion. CI
+   * gets more of it: a two-core runner is several times slower than a laptop, and the first attempt
+   * at 120s timed out there while passing locally in 90.
+   */
+  timeout: CI ? 600_000 : 180_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
+  /* Seven workers against two cores thrash. Locally, let Playwright decide. */
+  workers: CI ? 2 : undefined,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['list']] : [['list']],
@@ -33,13 +40,20 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
   /**
-   * Its own port, so a test run cannot collide with a Storybook you already have open on 6006 or
-   * 6007 — and `reuseExistingServer` locally so repeat runs do not pay the startup twice.
+   * Its own port, so a run cannot collide with a Storybook already open on 6006 or 6007.
+   *
+   * **CI serves the built Storybook; locally it runs the dev server.** The dev server compiles each
+   * story the first time it is asked for, which is fine on a laptop and ruinous on a two-core runner —
+   * the first CI attempt spent its whole budget waiting for stories to compile and timed out. CI
+   * builds Storybook for Pages regardless, so the tests now run against that same output: nothing to
+   * compile, and no second build. `vite preview` serves it because Vite is already a dependency.
    */
   webServer: {
-    command: `pnpm exec storybook dev -p ${PORT} --no-open --quiet`,
+    command: CI
+      ? `pnpm exec vite preview --outDir storybook-static --port ${PORT} --strictPort`
+      : `pnpm exec storybook dev -p ${PORT} --no-open --quiet`,
     url: `http://localhost:${PORT}/index.json`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !CI,
     timeout: 180_000,
   },
 })
