@@ -3016,6 +3016,7 @@
 /* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */
 .headerDrawerPanel .megaColumns {
   grid-template-columns: 1fr;
+  gap: 20px;
   padding: 0 0 16px;
   min-width: 0;
 }
@@ -3035,6 +3036,41 @@
 
 .headerDrawerPanel .megaBody {
   flex-direction: column;
+  /*
+   * `nowrap`, or the panel spills sideways.
+   *
+   * `.megaBody` wraps by default, and a *column* flex container with a definite height — which this is,
+   * being an absolutely positioned scroll panel — wraps into extra **columns**. So the Solutions menu
+   * filled column one with its tiles and pushed everything else off the right edge.
+   */
+  flex-wrap: nowrap;
+}
+
+/*
+ * No tile row in the drawer.
+ *
+ * Every tile label is also the heading of the column beneath it, so on one narrow column the tiles were
+ * saying each thing twice — and each one was a 250px-tall box before the list it introduced. The
+ * headings carry it.
+ */
+.headerDrawerPanel .megaTiles {
+  display: none;
+}
+
+/*
+ * Tighter than the desktop panel, which has four columns to fill and a whole viewport to do it in. Here
+ * everything is one column and the only cost of air is scrolling.
+ */
+.headerDrawerPanel .megaColumn {
+  gap: 10px;
+}
+
+.headerDrawerPanel .megaItem {
+  padding-block: 2px;
+}
+
+.headerDrawerPanel .megaColumnHeading {
+  margin-bottom: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
