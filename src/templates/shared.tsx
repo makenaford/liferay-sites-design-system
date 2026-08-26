@@ -4,6 +4,7 @@ import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
 import { Link } from '../components/Link'
+import { Logo } from '../components/Logo'
 import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import { LanguagePicker, TextInput } from '../components/Input'
@@ -210,15 +211,23 @@ export function SiteFooter() {
           <SectionTitle
             align="center"
             order={2}
+            /*
+             * The gradient runs on the second clause only, which is how the file draws it: the question
+             * is asked in plain white and the answer is what lights up. Wrapping the whole line made it
+             * one long gradient with nothing to contrast against.
+             */
             title={
-              <Text
-                span
-                inherit
-                variant="gradient"
-                gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
-              >
-                Ready for the future? Let&apos;s Get There Together.
-              </Text>
+              <>
+                Ready for the future?{' '}
+                <Text
+                  span
+                  inherit
+                  variant="gradient"
+                  gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
+                >
+                  Let&apos;s get there together.
+                </Text>
+              </>
             }
             description="Join thousands of organizations transforming their digital experiences with Liferay. Start your free trial today."
           />
@@ -248,7 +257,7 @@ export function SiteFooter() {
           </Box>
           <Group gap={16} justify="center">
             <Button variant="outline" size="md">
-              Book a Demo
+              Start Free Trial
             </Button>
             <Button variant="outline" size="md">
               Contact Sales
@@ -316,7 +325,9 @@ export function SiteFooter() {
      * is the sixth child rather than the `brand` prop, which would put it first.
      */}
     <Footer.Brand
-        address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
+      /* The file heads the brand block with the lockup; it was the one slot left empty. */
+      logo={<Logo height={40} />}
+      address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
       social={SOCIALS.map(([name, icon]) => (
         <a key={name} href="#" aria-label={name}>
           {icon}

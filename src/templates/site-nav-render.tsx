@@ -1,6 +1,7 @@
 import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
 import { IconArrowRight } from '../icons'
+import classes from '../theme/components.module.css'
 import { navIcon } from './nav-icons'
 import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
@@ -28,7 +29,26 @@ function menuOf(menu: NavMenu) {
 
         <MegaMenu.Columns>
           {menu.columns.map((column, i) => (
-            <MegaMenu.Column key={column.heading ?? i} heading={column.heading}>
+            /*
+             * The tile goes in twice on a menu that has them: once in the row above, which is what the
+             * desktop panel draws, and once at the head of its own column, which is what the drawer
+             * shows instead of the heading. One of the two is always `display: none`, so nothing is
+             * announced twice — and it saves pairing tiles to columns in CSS, which is not expressible.
+             */
+            <MegaMenu.Column
+              key={column.heading ?? i}
+              heading={column.heading}
+              tile={
+                menu.tiles?.[i] ? (
+                  <MegaMenu.Tile
+                    className={classes.megaColumnTile}
+                    href={menu.tiles[i].href}
+                  >
+                    {menu.tiles[i].title}
+                  </MegaMenu.Tile>
+                ) : undefined
+              }
+            >
               {column.links.map((link) => (
                 <MegaMenu.Item
                   key={link.title}

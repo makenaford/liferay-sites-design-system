@@ -1247,6 +1247,53 @@
   align-items: stretch;
 }
 
+/*
+ * The reveal: each figure rises and fades in, a beat after the one before it.
+ *
+ * The stagger is what makes it read as figures arriving rather than a block appearing, and 60ms is
+ * enough to notice without becoming a queue. `data-revealed` is set once, by the bar, the first time it
+ * is scrolled into view.
+ *
+ * Note what is *not* animated: nothing here moves layout. The rise is a transform, so a figure landing
+ * cannot nudge what is beside it, and the bar occupies its final space from the start.
+ */
+.statBar > :not(.statBarDivider) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity var(--sds-motion-slow) var(--sds-motion-ease-out),
+    transform var(--sds-motion-slow) var(--sds-motion-ease-out);
+}
+
+.statBar[data-revealed] > :not(.statBarDivider) {
+  opacity: 1;
+  transform: none;
+}
+
+.statBar[data-revealed] > :nth-child(3) {
+  transition-delay: 60ms;
+}
+
+.statBar[data-revealed] > :nth-child(5) {
+  transition-delay: 120ms;
+}
+
+.statBar[data-revealed] > :nth-child(7) {
+  transition-delay: 180ms;
+}
+
+/*
+ * Reduced motion: the bar starts revealed, since the hook seeds its state from this same query. This
+ * only guards a transition still running if the preference changes mid-session.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .statBar > :not(.statBarDivider) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .statBar[data-align='center'] {
   align-items: center;
   text-align: center;
@@ -3047,14 +3094,38 @@
 }
 
 /*
- * No tile row in the drawer.
+ * The tile row stays in the drawer, but as compact full-width cards rather than the desktop's grid.
  *
- * Every tile label is also the heading of the column beneath it, so on one narrow column the tiles were
- * saying each thing twice — and each one was a 250px-tall box before the list it introduced. The
- * headings carry it.
+ * I had hidden it, on the grounds that each tile label repeats the heading of the column beneath it.
+ * That was wrong: the tile is the *destination* for the group — a link in its own right — and taking it
+ * away removed the only way to reach it on a phone. What was actually wrong was the shape: a 250px-tall
+ * box standing in front of the list it introduces.
  */
+/*
+ * The per-column tile is the drawer's, so it is off everywhere else. Its twin in the row above is what
+ * the desktop panel draws.
+ */
+.megaColumnTile {
+  display: none;
+}
+
+/* In the drawer the pair swaps: the row goes, and each column is headed by its own tile. */
+.headerDrawerPanel .megaColumnTile {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.headerDrawerPanel .megaColumn:has(.megaColumnTile) > .megaColumnHeading {
+  display: none;
+}
+
 .headerDrawerPanel .megaTiles {
   display: none;
+}
+
+.headerDrawerPanel .megaTile {
+  min-height: 0;
+  padding: 12px 14px;
 }
 
 /*
@@ -5641,6 +5712,74 @@
   background-color: var(--sds-footer-ground);
   color: var(--sds-action-neutral-inverted);
   isolation: isolate;
+  /*
+   * Clips the mesh. Without it the gradient layer widened the document by 243px on every page with a
+   * footer — and it did so invisibly, because a `::after` is not in `querySelectorAll`, so an element
+   * sweep for overflow finds nothing. Only the document-width check caught it.
+   */
+  overflow: hidden;
+}
+
+/*
+ * The mesh gradient, on by default.
+ *
+ * Three wide radial blooms in the brand hues, drifting slowly past each other. It sits under the
+ * vignette and over the ground, so it reads as light in the band rather than as a pattern on top of it —
+ * which is what the file draws: a purple bloom low-left and a blue one to the right of centre.
+ *
+ * A pseudo-element rather than a `background-image` on `.footerBase`, because the drift animates
+ * `background-position` and the band's own background is a flat colour that should not move with it.
+ *
+ * It is drawn whether or not `backdrop` is passed: with artwork it sits behind it, and the artwork's
+ * `object-fit: cover` covers it. Without, it is the whole of the interest in the band.
+ */
+.footerBase::after {
+  content: '';
+  position: absolute;
+  /*
+   * `inset: 0` and the travel comes from `background-size` being larger than the box, not from the box
+   * being larger than the band. Same drift, nothing outside the footer.
+   */
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(38% 44% at 22% 78%, var(--sds-footer-mesh-1) 0%, transparent 68%),
+    radial-gradient(42% 38% at 74% 42%, var(--sds-footer-mesh-2) 0%, transparent 70%),
+    radial-gradient(34% 40% at 52% 96%, var(--sds-footer-mesh-3) 0%, transparent 66%);
+  background-size: 180% 180%, 165% 165%, 190% 190%;
+  /*
+   * 48 seconds and three different offsets, so the blooms never line up into an obvious loop. Slow
+   * enough that it reads as light shifting rather than as something moving.
+   */
+  animation: sds-footer-mesh 48s ease-in-out infinite alternate;
+}
+
+@keyframes sds-footer-mesh {
+  from {
+    background-position:
+      0% 100%,
+      100% 0%,
+      50% 100%;
+  }
+  to {
+    background-position:
+      30% 70%,
+      64% 34%,
+      22% 72%;
+  }
+}
+
+/*
+ * Reduced motion keeps the gradient and drops the drift. The mesh is the band's colour, not an effect
+ * layered on it, so removing it would change the design rather than calm it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .footerBase::after {
+    animation: none;
+  }
 }
 
 /* The backdrop artwork, behind everything and decorative. */

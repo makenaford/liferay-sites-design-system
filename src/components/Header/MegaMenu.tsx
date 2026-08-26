@@ -78,9 +78,10 @@ function Tiles({ children }: { children: ReactNode }) {
   return <div className={classes.megaTiles}>{children}</div>
 }
 
-function Tile({ icon, children, ...props }: MegaTileProps) {
+function Tile({ icon, children, className, ...props }: MegaTileProps) {
   return (
-    <a className={classes.megaTile} {...props}>
+    /* Merged, not replaced: a caller's class marks *which* tile this is, it does not restyle it. */
+    <a className={[classes.megaTile, className].filter(Boolean).join(' ')} {...props}>
       {icon ? <span className={classes.megaTileIcon}>{icon}</span> : null}
       <span>{children}</span>
     </a>

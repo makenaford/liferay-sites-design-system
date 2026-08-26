@@ -154,6 +154,14 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--sds-footer-ground': '#070b13',
     '--sds-footer-vignette': 'rgba(7, 11, 19, 0.5)',
     /*
+     * The mesh blooms. Brand blue, the product accent purple, and a deeper indigo between them — the
+     * three the file's gradient runs through. Mode-independent like the rest of the band: it is dark in
+     * both colour modes, so a mode-aware hue would turn it inside out in light mode.
+     */
+    '--sds-footer-mesh-1': 'rgba(116, 20, 255, 0.55)',
+    '--sds-footer-mesh-2': 'rgba(11, 95, 255, 0.45)',
+    '--sds-footer-mesh-3': 'rgba(1, 23, 174, 0.5)',
+    /*
      * And the text on it, for the same reason. `Surfaces/Text/Primary` and `Action/Link/Hover Link` are
      * mode-aware, which is right on a page and wrong on a band that is dark in both modes — in light mode
      * they resolve to dark ink on a dark ground. These are their dark-canvas values, pinned.
