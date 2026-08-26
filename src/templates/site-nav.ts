@@ -9,7 +9,11 @@
  * `icon` is a MingCute name from this library's own set. `standin: true` marks the ten items the file
  * draws with Marketing or LRDC brand artwork, which is not in MingCute and not in this library: those
  * carry the nearest UI icon until the real SVGs are exported. Items with no icon have none in the file
- * either — Featured cards, customer stories and the AI Agents list are drawn without one.
+ * either — Featured cards and customer stories are drawn without one.
+ *
+ * **`AI Agents` is deliberately not here.** The sheet lists it, but marks it with an asterisk and
+ * gives eight of its nine items a `tbd` URL, and the rebrand icon library has no entry for any of
+ * them. Excluded on request; re-add it from the sheet when the destinations exist.
  */
 
 export interface NavLink {
@@ -144,25 +148,6 @@ export const SITE_NAV: NavMenu[] = [
       { title: 'How to Win in AI Search Results', href: '#' },
       { title: 'Skoda Auto\'s Intranet Serves 40,000 Employees', href: 'https://www.liferay.com/web/guest/resources/case-studies/skoda-auto', description: 'Inside Škoda personalized employee experience' },
       { title: '11 Building Blocks for a High-Performing Supplier Portal', href: 'https://www.liferay.com/blog/business-partner-experience/-11-building-blocks-for-a-high-performing-supplier-portal', description: 'Checklist: Automate workflows, boost efficiency.' },
-    ],
-  },
-  {
-    value: 'ai-agents',
-    label: 'AI Agents',
-    columns: [
-      {
-        links: [
-          { title: 'Writing Assistant', href: '#' },
-          { title: 'Auto Categorization and Tagging', href: '#' },
-          { title: 'Content Translation', href: '#' },
-          { title: 'Generate Image', href: '#' },
-          { title: 'Generate Content', href: '#' },
-          { title: 'Content GAP Analysis', href: '#' },
-          { title: 'Generate Pages', href: '#' },
-          { title: 'Generate Fragments', href: '#' },
-          { title: 'AI Agent Builder', href: 'https://www.liferay.com/capabilities/ai-hub', description: 'AI, built fast, deployed faster.', icon: 'IconRocket' },
-        ],
-      },
     ],
   },
   {
