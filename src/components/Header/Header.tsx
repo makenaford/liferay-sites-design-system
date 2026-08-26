@@ -190,7 +190,11 @@ export function Header({
       data-menu-open={openItem || drawer ? true : undefined}
       {...props}
     >
-      <div className={classes.headerBand}>
+      {/*
+       * `inert` while the drawer is open: the drawer covers the band completely on a phone, so the
+       * logo and the burger underneath it are invisible but would still take focus.
+       */}
+      <div className={classes.headerBand} inert={drawer ? true : undefined}>
         <div className={classes.headerInner}>
           <div className={classes.headerBar}>
             <div className={classes.headerLeft}>
@@ -298,14 +302,15 @@ export function Header({
        */}
       <div className={classes.headerDrawer} data-open={drawer || undefined} hidden={!drawer}>
         {/*
-         * Only shown once drilled in, and it carries no close of its own.
+         * This bar *replaces* the header band rather than sitting under it: the drawer covers the
+         * viewport, so on a phone the logo and burger give way to where you are and the two ways out.
          *
-         * The bar in the band is already the toggle and already flips to a cross, so a second close in
-         * here was two controls doing one job — and at the top level this row had nothing in it at all,
-         * which is a strip of chrome earning nothing.
+         * Which is why the close lives here now. It was cut earlier as a duplicate of the burger, and
+         * that was right while the band stayed visible — with the band covered, the burger is behind
+         * the drawer and this is the only close there is.
          */}
-        {view ? (
-          <div className={classes.headerDrawerBar}>
+        <div className={classes.headerDrawerBar}>
+          {view ? (
             <UnstyledButton
               component="button"
               type="button"
@@ -315,14 +320,27 @@ export function Header({
               <IconArrowLeft aria-hidden />
               <span className={classes.headerDrawerBackLabel}>Back</span>
             </UnstyledButton>
-
-            <span className={classes.headerDrawerTitle}>
-              {items.find((item) => item.value === view)?.label}
-            </span>
-
+          ) : (
             <span aria-hidden />
-          </div>
-        ) : null}
+          )}
+
+          <span className={classes.headerDrawerTitle}>
+            {view ? items.find((item) => item.value === view)?.label : null}
+          </span>
+
+          <UnstyledButton
+            component="button"
+            type="button"
+            className={classes.headerDrawerClose}
+            aria-label="Close navigation"
+            onClick={() => {
+              setDrawer(false)
+              setView(null)
+            }}
+          >
+            <IconClose aria-hidden />
+          </UnstyledButton>
+        </div>
 
         <div className={classes.headerDrawerPanels}>
           <div

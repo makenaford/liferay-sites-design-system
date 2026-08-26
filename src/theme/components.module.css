@@ -2737,16 +2737,29 @@
  * Fixed to the viewport under the band rather than sized to content, because a menu that is sometimes
  * a sheet and sometimes a dropdown reads as two components.
  */
+/*
+ * `display: flex` below beats the UA's `[hidden] { display: none }`, so the closed drawer stayed laid
+ * out over the whole viewport and swallowed every click — including the burger's. An explicit rule
+ * rather than swapping to a `data-open` selector, so `hidden` keeps doing the accessibility half of the
+ * job too: out of the tab order and out of the accessibility tree.
+ */
+.headerDrawer[hidden] {
+  display: none;
+}
+
 .headerDrawer {
   position: fixed;
-  inset: var(--sds-header-bar-height, 64px) 0 0;
+  /*
+   * The whole viewport, band included. The drawer's own bar takes the band's place, so the offset that
+   * used to sit under it is gone — and with it the alignment problem of two bars of different heights.
+   */
+  inset: 0;
   z-index: 20;
   display: flex;
   flex-direction: column;
   background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 96%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-top: 1px solid var(--sds-glass-line-to);
 }
 
 /* Back / title / close. The title names the level you are on, so it is empty at the top. */
@@ -2756,7 +2769,9 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 8px;
-  padding: 12px clamp(16px, 4vw, 24px);
+  /* The band's own height, so the row lands where the logo was rather than a few pixels off it. */
+  min-height: var(--sds-header-bar-height, 64px);
+  padding: 8px clamp(16px, 4vw, 24px);
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
@@ -2781,6 +2796,21 @@
   line-height: 1;
 }
 
+.headerDrawerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.headerDrawerClose > svg {
+  width: 20px;
+  height: 20px;
+}
+
 .headerDrawerTitle {
   justify-self: center;
   color: var(--sds-surfaces-text-primary);
@@ -2789,6 +2819,7 @@
 }
 
 .headerDrawerBack:focus-visible,
+.headerDrawerClose:focus-visible,
 .headerDrawerRow:focus-visible {
   outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: -2px;
