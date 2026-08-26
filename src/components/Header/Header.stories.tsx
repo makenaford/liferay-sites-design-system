@@ -6,19 +6,25 @@ import { Button } from '../Button'
 import { Link } from '../Link'
 import {
   IconArrowRight,
+  IconBook2,
+  IconBox3,
+  IconBracketsAngle,
+  IconBulb,
+  IconChartLine,
   IconCheck,
+  IconDepartment,
+  IconDocument2,
   IconDown,
-  IconGlassComposable,
-  IconGlassDatabase,
-  IconGlassDocumentation,
-  IconGlassIntranets,
-  IconGlassMail,
-  IconGlassPremiumSecurity,
-  IconGlassSearch,
-  IconGlassSites,
-  IconGlassSupport,
   IconInformation,
+  IconLayoutGrid,
+  IconMindMap,
+  IconPresentation1,
+  IconQuestion,
   IconSearch,
+  IconShieldShape,
+  IconShoppingCart1,
+  IconUser1,
+  IconWeb,
 } from '../../icons'
 
 /** The prototype's logo: a 28px mark and the wordmark beside it. */
@@ -49,8 +55,6 @@ function Thumb({ label, color }: { label: string; color: string }) {
   )
 }
 
-const iconSize = 20
-
 /** Platform: four columns of links, closed by a CTA strip. */
 const platformMenu = (
   <MegaMenu>
@@ -59,25 +63,25 @@ const platformMenu = (
         <MegaMenu.Column heading="Digital Experience">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassComposable size={iconSize} />}
+            icon={<IconLayoutGrid />}
             title="Platform Overview"
             description="Explore the complete digital experience platform."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassMail size={iconSize} />}
+            icon={<IconBulb />}
             title="Content Marketing Platform"
             description="Plan and deliver marketing campaigns."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDatabase size={iconSize} />}
+            icon={<IconBox3 />}
             title="Digital Asset Management"
             description="Organize and publish assets in one place."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSites size={iconSize} />}
+            icon={<IconWeb />}
             title="Sites"
             description="Build and manage on-brand websites fast."
           />
@@ -85,19 +89,19 @@ const platformMenu = (
         <MegaMenu.Column heading="Content Management">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDocumentation size={iconSize} />}
+            icon={<IconDocument2 />}
             title="CMS Overview"
             description="Create and publish content with ease."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassIntranets size={iconSize} />}
+            icon={<IconDepartment />}
             title="Intranet"
             description="Keep employees informed and connected."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSearch size={iconSize} />}
+            icon={<IconSearch />}
             title="AI Search & SEO"
             description="Optimize content for AI and search."
           />
@@ -105,13 +109,13 @@ const platformMenu = (
         <MegaMenu.Column heading="Digital Commerce">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassComposable size={iconSize} />}
+            icon={<IconShoppingCart1 />}
             title="Commerce Overview"
             description="End-to-end commerce, built into your DXP."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDatabase size={iconSize} />}
+            icon={<IconBox3 />}
             title="Product Information Management"
             description="Centralize product data for every channel."
           />
@@ -119,13 +123,13 @@ const platformMenu = (
         <MegaMenu.Column heading="Developer">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassPremiumSecurity size={iconSize} />}
+            icon={<IconShieldShape />}
             title="Security"
             description="Enterprise-grade security, built in."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSupport size={iconSize} />}
+            icon={<IconMindMap />}
             title="Integration"
             description="Connect Liferay to your existing systems."
           />
@@ -154,13 +158,13 @@ const solutionsMenu = (
         >
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSearch size={iconSize} />}
+            icon={<IconSearch />}
             title="AI Search"
             description="Get found and cited by AI search engines."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDocumentation size={iconSize} />}
+            icon={<IconChartLine />}
             title="Audit"
             description="Catch SEO and accessibility issues early."
           />
@@ -174,13 +178,13 @@ const solutionsMenu = (
         >
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSupport size={iconSize} />}
+            icon={<IconUser1 />}
             title="Customer Portals"
             description="Help customers self-serve and succeed."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassIntranets size={iconSize} />}
+            icon={<IconDepartment />}
             title="Intranets"
             description="Give employees a connected digital home."
           />
@@ -194,7 +198,7 @@ const solutionsMenu = (
         >
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSites size={iconSize} />}
+            icon={<IconWeb />}
             title="Enterprise Websites"
             description="Launch and manage websites at scale."
           />
@@ -228,19 +232,19 @@ const resourcesMenu = (
         <MegaMenu.Column heading="Knowledge Center">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDocumentation size={iconSize} />}
+            icon={<IconBook2 />}
             title="Resource Hub"
             description="Explore guides, ebooks, and whitepapers."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassSupport size={iconSize} />}
+            icon={<IconPresentation1 />}
             title="Webinars & Events"
             description="Save your seat, live or in person."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDocumentation size={iconSize} />}
+            icon={<IconDocument2 />}
             title="Documentation"
             description="Official guides for Liferay DXP."
             external
@@ -249,13 +253,13 @@ const resourcesMenu = (
         <MegaMenu.Column heading="Technical Insights">
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassComposable size={iconSize} />}
+            icon={<IconBracketsAngle />}
             title="Headless CMS vs Traditional CMS"
             description="Find the right fit for your team."
           />
           <MegaMenu.Item
             href="#"
-            icon={<IconGlassDatabase size={iconSize} />}
+            icon={<IconQuestion />}
             title="DXP vs CMS: What's the Difference?"
             description="One manages content. The other does a lot more."
           />

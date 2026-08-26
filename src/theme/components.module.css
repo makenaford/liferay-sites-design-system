@@ -2367,6 +2367,16 @@
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
+/*
+ * Figma's `nav icon` wrapper: a 20px box holding a 16.667px glyph, so 1.667px of padding. The icons are
+ * MingCute outlines at `1em`, which is why nothing passes a size — the box sizes the glyph, and the
+ * glyph takes its colour from `currentColor`. That is the whole difference from the glass icons this
+ * replaced: those were 48px full-colour artwork forced down to 20, and they carried their own palette.
+ */
+.megaItemIcon {
+  padding: 1.667px;
+}
+
 .megaItemIcon > svg {
   width: 100%;
   height: 100%;
