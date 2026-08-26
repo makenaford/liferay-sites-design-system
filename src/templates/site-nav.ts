@@ -20,6 +20,8 @@ export interface NavLink {
   title: string
   href: string
   description?: string
+  /** A featured card's thumbnail, drawn as a brand-coloured field at this hue. */
+  hue?: number
   /** A MingCute icon name, resolved to a component in `nav-icons.tsx`. */
   icon?: string
   /** The file draws brand artwork here; this is the nearest stand-in. */
@@ -39,8 +41,12 @@ export interface NavMenu {
   columns: NavColumn[]
   /** Solutions leads with four tiles, each heading a column. */
   tiles?: NavLink[]
-  /** The rail on the right. */
+  /** The rail on the right. Cards with a `hue` draw a thumbnail. */
   featured?: NavLink[]
+  /** The heading over the rail. @default 'Featured' */
+  featuredHeading?: string
+  /** The "see all" link that closes the rail. */
+  featuredMore?: { label: string; href: string }
   /** The strip across the bottom of the Platform menu. */
   cta?: { label: string; href: string }
 }
@@ -145,9 +151,9 @@ export const SITE_NAV: NavMenu[] = [
       },
     ],
     featured: [
-      { title: 'How to Win in AI Search Results', href: '#' },
-      { title: 'Skoda Auto\'s Intranet Serves 40,000 Employees', href: 'https://www.liferay.com/web/guest/resources/case-studies/skoda-auto', description: 'Inside Škoda personalized employee experience' },
-      { title: '11 Building Blocks for a High-Performing Supplier Portal', href: 'https://www.liferay.com/blog/business-partner-experience/-11-building-blocks-for-a-high-performing-supplier-portal', description: 'Checklist: Automate workflows, boost efficiency.' },
+      { title: 'How to Win in AI Search Results', href: '#', hue: 190 },
+      { title: 'Skoda Auto\'s Intranet Serves 40,000 Employees', href: 'https://www.liferay.com/web/guest/resources/case-studies/skoda-auto', description: 'Inside Škoda personalized employee experience', hue: 205 },
+      { title: '11 Building Blocks for a High-Performing Supplier Portal', href: 'https://www.liferay.com/blog/business-partner-experience/-11-building-blocks-for-a-high-performing-supplier-portal', description: 'Checklist: Automate workflows, boost efficiency.', hue: 268 },
     ],
   },
   {
@@ -181,16 +187,14 @@ export const SITE_NAV: NavMenu[] = [
           { title: 'Composable Architecture Guide', href: '#' },
         ],
       },
-      {
-        heading: 'Customer Stories',
-        links: [
-          { title: 'Unilever Achieves 133% Faster Go to Market', href: 'https://www.liferay.com/resources/case-studies/unilever', description: 'How a platform overhaul sped up new product rollouts.' },
-          { title: 'Petrobras creates better experiences for employees and customers', href: 'https://www.liferay.com/resources/case-studies/petrobras', description: 'See how Petrobras unified sites for 4M+ users.' },
-          { title: 'Lenovo increases partner satisfaction and sales', href: 'https://www.liferay.com/resources/case-studies/lenovo', description: 'How one unified hub set partners up for success.' },
-          { title: 'All Customer Stories -->', href: 'https://www.liferay.com/resources-hub/customer-stories', description: 'Real results from Liferay customers.' },
-        ],
-      },
     ],
+    featuredHeading: 'Customer Stories',
+    featured: [
+      { title: 'Unilever Achieves 133% Faster Go to Market', href: 'https://www.liferay.com/resources/case-studies/unilever', description: 'How a platform overhaul sped up new product rollouts.', hue: 232 },
+      { title: 'Petrobras creates better experiences for employees and customers', href: 'https://www.liferay.com/resources/case-studies/petrobras', description: 'See how Petrobras unified sites for 4M+ users.', hue: 150 },
+      { title: 'Lenovo increases partner satisfaction and sales', href: 'https://www.liferay.com/resources/case-studies/lenovo', description: 'How one unified hub set partners up for success.', hue: 356 },
+    ],
+    featuredMore: { label: 'See All Customer Stories', href: 'https://www.liferay.com/resources-hub/customer-stories' },
   },
   {
     value: 'partners',
@@ -227,8 +231,8 @@ export const SITE_NAV: NavMenu[] = [
       },
     ],
     featured: [
-      { title: 'Techem\'s Customer Portal Goes Live in 18 Countries', href: 'https://www.liferay.com/resources/case-studies/techem', description: 'tech' },
-      { title: 'Maschio Gaspardo Builds a Single Source of Truth for Product Data', href: 'https://www.liferay.com/resources/case-studies/maschio-gaspardo', description: 'From 6,000 printed catalogs a year to just 100.' },
+      { title: 'Techem\'s Customer Portal Goes Live in 18 Countries', href: 'https://www.liferay.com/resources/case-studies/techem', description: 'tech', hue: 20 },
+      { title: 'Maschio Gaspardo Builds a Single Source of Truth for Product Data', href: 'https://www.liferay.com/resources/case-studies/maschio-gaspardo', description: 'From 6,000 printed catalogs a year to just 100.', hue: 96 },
     ],
   },
 ]

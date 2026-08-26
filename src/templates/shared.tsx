@@ -17,6 +17,10 @@ import {
   IconUser1Filled,
   IconYoutube,
 } from '../icons'
+import { logoTile } from './logo-tile'
+
+/* Re-exported: it used to live here, and the templates import it from here. */
+export { logoTile }
 import { SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
 
 /*
@@ -58,18 +62,6 @@ export function Wordmark({ name }: { name: string }) {
   )
 }
 
-/** The 270×180 logo tile a customer-story card carries, drawn as a brand-coloured field. */
-export const logoTile = (name: string, hue: number) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="540" height="360" viewBox="0 0 540 360">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="hsl(${hue} 70% 34%)"/>
-    <stop offset="1" stop-color="hsl(${hue} 80% 12%)"/>
-  </linearGradient></defs>
-  <rect width="540" height="360" fill="url(#g)"/>
-  <text x="270" y="196" font-size="46" font-weight="700" text-anchor="middle"
-        fill="#fff" font-family="Source Sans 3, sans-serif">${name}</text>
-</svg>`)}`
 
 /** One of the 64px integration tiles. */
 export function VendorTile({ name }: { name: string }) {

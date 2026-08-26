@@ -2,6 +2,7 @@ import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
 import { IconArrowRight } from '../icons'
 import { navIcon } from './nav-icons'
+import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
 
 /**
@@ -42,15 +43,30 @@ function menuOf(menu: NavMenu) {
         </MegaMenu.Columns>
 
         {menu.featured?.length ? (
-          <MegaMenu.Featured heading="Featured">
+          /*
+           * `wide` where the cards carry a thumbnail: the Resources rail in the file is landscape
+           * images beside their text, not a narrow list of links.
+           */
+          <MegaMenu.Featured
+            heading={menu.featuredHeading ?? 'Featured'}
+            wide={menu.featured.some((item) => item.hue !== undefined)}
+          >
             {menu.featured.map((item) => (
               <MegaMenu.FeaturedCard
                 key={item.title}
                 href={item.href}
+                thumbnail={
+                  item.hue === undefined ? undefined : (
+                    <img src={logoTile(item.title.split(/[\s']/)[0], item.hue)} alt="" />
+                  )
+                }
                 title={item.title}
                 description={item.description}
               />
             ))}
+            {menu.featuredMore ? (
+              <MegaMenu.More href={menu.featuredMore.href}>{menu.featuredMore.label}</MegaMenu.More>
+            ) : null}
           </MegaMenu.Featured>
         ) : null}
       </MegaMenu.Body>
