@@ -3,7 +3,7 @@ import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 import { Logo } from '../Logo'
-import { IconClose, IconDown, IconMenu } from '../../icons'
+import { IconArrowLeft, IconClose, IconDown, IconMenu, IconRight } from '../../icons'
 
 export interface HeaderNavItem {
   /** Identifies the item, and ties the trigger to its panel through `aria-controls`. */
@@ -15,6 +15,9 @@ export interface HeaderNavItem {
   /** For an item that navigates rather than opening a panel. */
   href?: string
 }
+
+/** What the mobile drawer is showing. `null` is the top-level section list. */
+type DrawerView = string | null
 
 export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   /** The brand, top left. */
@@ -91,6 +94,14 @@ export function Header({
 }: HeaderProps) {
   const [open, setOpen] = useState<string | null>(defaultOpen)
   const [drawer, setDrawer] = useState(false)
+  /*
+   * Which section the drawer has drilled into, separate from `open`.
+   *
+   * The drawer used to share `open` with the desktop menus, which meant opening a section on a phone
+   * also opened it behind the drawer, and closing the drawer left it open. They are different
+   * interactions — one expands in place, the other pushes a panel — so they get their own state.
+   */
+  const [view, setView] = useState<DrawerView>(null)
   const shellRef = useRef<HTMLElement>(null)
   const triggers = useRef(new Map<string, HTMLButtonElement | null>())
   const baseId = useId()
@@ -113,6 +124,7 @@ export function Header({
       change(null)
       trigger?.focus()
     }
+
 
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -238,7 +250,9 @@ export function Header({
               aria-label={drawer ? 'Close navigation' : 'Open navigation'}
               onClick={() => {
                 setDrawer((value) => {
-                  if (value) change(null)
+                  /* Always reopen at the section list rather than wherever it was left. */
+                  if (!value) setView(null)
+                  change(null)
                   return !value
                 })
               }}
@@ -271,45 +285,95 @@ export function Header({
       </div>
 
       {/*
-       * The narrow-viewport panel. It reuses the same `open` state as the desktop menus rather than
-       * introducing a second mechanism: the burger reveals the section list, and a section expands its
-       * own menu inline. One state machine, one set of aria wiring, and no portal to reason about.
+       * The narrow-viewport drawer.
+       *
+       * A drill-down rather than an accordion, which is what the mobile design asks for: the section
+       * list slides out to the left and the section's own panel comes in from the right, with the
+       * drawer's header carrying the way back. On a phone an accordion buries the thing you tapped
+       * under everything you did not, and the deeper a menu goes the worse that gets.
+       *
+       * Both levels stay mounted so the slide has something to animate and a screen reader can reach
+       * the panel; `inert` keeps the off-screen one out of the tab order, which `hidden` cannot do here
+       * because a hidden element cannot animate.
        */}
-      <div className={classes.headerMobile} data-open={drawer || undefined} hidden={!drawer}>
-        {items.map((item) => {
-          if (!item.menu) {
-            return (
-              <a key={item.value} className={classes.headerMobileItem} href={item.href}>
-                {item.label}
-              </a>
-            )
-          }
+      <div className={classes.headerDrawer} data-open={drawer || undefined} hidden={!drawer}>
+        {/*
+         * Only shown once drilled in, and it carries no close of its own.
+         *
+         * The bar in the band is already the toggle and already flips to a cross, so a second close in
+         * here was two controls doing one job — and at the top level this row had nothing in it at all,
+         * which is a strip of chrome earning nothing.
+         */}
+        {view ? (
+          <div className={classes.headerDrawerBar}>
+            <UnstyledButton
+              component="button"
+              type="button"
+              className={classes.headerDrawerBack}
+              onClick={() => setView(null)}
+            >
+              <IconArrowLeft aria-hidden />
+              <span className={classes.headerDrawerBackLabel}>Back</span>
+            </UnstyledButton>
 
-          const isOpen = open === item.value
+            <span className={classes.headerDrawerTitle}>
+              {items.find((item) => item.value === view)?.label}
+            </span>
 
-          return (
-            <div key={item.value} className={classes.headerMobileSection}>
-              <UnstyledButton
-                component="button"
-                type="button"
-                className={classes.headerMobileItem}
-                data-open={isOpen || undefined}
-                aria-expanded={isOpen}
-                aria-controls={`${baseId}-mobile-${item.value}`}
-                onClick={() => change(isOpen ? null : item.value)}
+            <span aria-hidden />
+          </div>
+        ) : null}
+
+        <div className={classes.headerDrawerPanels}>
+          <div
+            className={classes.headerDrawerPanel}
+            data-state={view ? 'behind' : 'active'}
+            inert={view ? true : undefined}
+          >
+            <div className={classes.headerDrawerList}>
+              {items.map((item) =>
+                item.menu ? (
+                  <UnstyledButton
+                    key={item.value}
+                    component="button"
+                    type="button"
+                    className={classes.headerDrawerRow}
+                    onClick={() => setView(item.value)}
+                  >
+                    <span>{item.label}</span>
+                    <span className={classes.headerDrawerChevron} aria-hidden>
+                      <IconRight />
+                    </span>
+                  </UnstyledButton>
+                ) : (
+                  <a key={item.value} className={classes.headerDrawerRow} href={item.href}>
+                    <span>{item.label}</span>
+                  </a>
+                ),
+              )}
+            </div>
+
+            {/*
+             * The actions live at the bottom of the list rather than in the bar, stacked and
+             * full-width. They are whatever the caller passed — a language picker, a log-in link, a
+             * button — so the drawer lays them out instead of rebuilding them.
+             */}
+            <div className={classes.headerDrawerActions}>{actions}</div>
+          </div>
+
+          {items
+            .filter((item) => item.menu)
+            .map((item) => (
+              <div
+                key={item.value}
+                className={classes.headerDrawerPanel}
+                data-state={view === item.value ? 'active' : 'ahead'}
+                inert={view === item.value ? undefined : true}
               >
-                {item.label}
-                <span className={classes.headerCaret} aria-hidden>
-                  <IconDown />
-                </span>
-              </UnstyledButton>
-              <div id={`${baseId}-mobile-${item.value}`} hidden={!isOpen}>
                 {item.menu}
               </div>
-            </div>
-          )
-        })}
-        <div className={classes.headerMobileActions}>{actions}</div>
+            ))}
+        </div>
       </div>
 
       {/* Only mounted while a panel is open: a click-catcher would otherwise eat every page click. */}

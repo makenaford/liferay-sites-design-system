@@ -2006,6 +2006,11 @@
 .headerShell {
   z-index: 200;
   width: 100%;
+  /*
+   * The bar's height, published so the mobile drawer can start exactly where the bar ends. It tracks
+   * the condense state below, which is why the drawer does not need its own copy of the number.
+   */
+  --sds-header-bar-height: 64px;
 }
 
 .headerShell[data-position='fixed'] {
@@ -2071,6 +2076,10 @@
 
 .headerShell[data-condense][data-scrolled] .headerBar {
   min-height: 56px;
+}
+
+.headerShell[data-condense][data-scrolled] {
+  --sds-header-bar-height: 56px;
 }
 
 /*
@@ -2719,85 +2728,193 @@
 }
 
 /*
- * The narrow-viewport panel: the same glass as the mega panel, full width under the band, with each
- * section a row that expands its own menu in place.
+ * The narrow-viewport drawer.
+ *
+ * A drill-down rather than an accordion: the section list slides left, the section's own panel comes in
+ * from the right, and the drawer's bar carries the way back. On a phone an accordion buries what you
+ * tapped under everything you did not.
+ *
+ * Fixed to the viewport under the band rather than sized to content, because a menu that is sometimes
+ * a sheet and sometimes a dropdown reads as two components.
  */
-.headerMobile {
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  padding: 8px clamp(16px, 4vw, 24px) 24px;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 92%, transparent);
+.headerDrawer {
+  position: fixed;
+  inset: var(--sds-header-bar-height, 64px) 0 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 96%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--sds-glass-line-to);
+  border-top: 1px solid var(--sds-glass-line-to);
 }
 
-.headerMobileSection {
+/* Back / title / close. The title names the level you are on, so it is empty at the top. */
+.headerDrawerBar {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 12px clamp(16px, 4vw, 24px);
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
-.headerMobileItem {
+.headerDrawerBack {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  min-height: 44px;
+  padding-inline: 4px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.headerDrawerBack > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.headerDrawerBackLabel {
+  line-height: 1;
+}
+
+.headerDrawerTitle {
+  justify-self: center;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.headerDrawerBack:focus-visible,
+.headerDrawerRow:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/*
+ * The stack. Both levels are absolutely positioned in the same box so they slide across each other;
+ * the container clips, and each panel scrolls on its own.
+ */
+.headerDrawerPanels {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.headerDrawerPanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px clamp(16px, 4vw, 24px) 24px;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerDrawerPanel[data-state='active'] {
+  transform: translateX(0);
+  z-index: 2;
+}
+
+/* Behind: pushed left, the way a pushed stack reads. Ahead: waiting off the right edge. */
+.headerDrawerPanel[data-state='behind'] {
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.headerDrawerPanel[data-state='ahead'] {
+  transform: translateX(100%);
+  z-index: 1;
+}
+
+.headerDrawerList {
+  display: flex;
+  flex-direction: column;
+}
+
+.headerDrawerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
+  min-height: 56px;
   padding: 14px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
   font-weight: 600;
+  text-align: start;
   text-decoration: none;
 }
 
-.headerMobileItem[data-open] {
-  color: var(--sds-action-link-active-link);
-}
-
-.headerMobileItem[data-open] .headerCaret {
-  transform: rotate(180deg);
-}
-
-.headerMobileItem:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.headerMobileActions {
+.headerDrawerChevron {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding-top: 20px;
+  flex: none;
+  color: var(--sds-surfaces-text-tertiary);
 }
 
-/* Inside the stacked panel the menu is one column and the rail loses its divider and gradient. */
-.headerMobile .megaColumns {
+.headerDrawerChevron > svg {
+  width: 18px;
+  height: 18px;
+}
+
+/*
+ * The actions, stacked full-width at the foot of the list. They are whatever the caller passed — a
+ * language picker, a log-in link, a button — so this lays them out rather than rebuilding them.
+ */
+.headerDrawerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.headerDrawerActions > * {
+  width: 100%;
+}
+
+/* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */
+.headerDrawerPanel .megaColumns {
   grid-template-columns: 1fr;
   padding: 0 0 16px;
   min-width: 0;
 }
 
-.headerMobile .megaFeatured {
+.headerDrawerPanel .megaFeatured {
   width: 100%;
   border-inline-start: none;
   padding: 8px 0 16px;
   background-image: none;
 }
 
-.headerMobile .megaCta {
+.headerDrawerPanel .megaCta {
   justify-content: flex-start;
   padding-inline: 0;
   background-color: transparent;
 }
 
-.headerMobile .megaBody {
+.headerDrawerPanel .megaBody {
   flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerDrawerPanel {
+    transition: none;
+  }
 }
 
 @media (min-width: 1200px) {
   .headerBurger,
-  .headerMobile {
+  .headerDrawer {
     display: none;
   }
 
