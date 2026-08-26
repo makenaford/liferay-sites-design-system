@@ -2369,6 +2369,28 @@
   min-width: 0;
 }
 
+/*
+ * The prompt over a panel's columns — "What are you looking to achieve?".
+ *
+ * `flex: 0 0 100%` because `.megaBody` is a wrapping flex row: at any narrower basis it lands beside
+ * the columns instead of over them. Its bottom padding is nothing, since `.megaColumns` brings its own.
+ */
+.megaHeading {
+  flex: 0 0 100%;
+  margin: 0;
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* With a prompt above them the columns start from it, not from the top of the panel. */
+.megaHeading + .megaColumns {
+  padding-top: 20px;
+}
+
 .megaColumns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -2494,18 +2516,6 @@
 }
 
 /*
- * The tile row: four across the width of the panel, and a full-width flex item so the columns wrap
- * beneath it rather than beside it. It collapses to two and then one as the panel narrows.
- */
-.megaTiles {
-  flex: 0 0 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: clamp(12px, 1.5vw, 16px);
-  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
-}
-
-/*
  * The Solutions layout's tile heading: the same glass treatment as the segmented control's selected
  * pill, at the card's radius, standing in for a column label that is also a destination.
  */
@@ -2514,6 +2524,8 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  /* The file's tile is 68px tall, so a one-line label keeps rank with a two-line one beside it. */
+  min-height: 68px;
   margin-bottom: 16px;
   padding: 10px 12px;
   border: 1px solid var(--sds-glass-line-from);
@@ -3094,35 +3106,15 @@
 }
 
 /*
- * The tile row stays in the drawer, but as compact full-width cards rather than the desktop's grid.
- *
- * I had hidden it, on the grounds that each tile label repeats the heading of the column beneath it.
- * That was wrong: the tile is the *destination* for the group — a link in its own right — and taking it
- * away removed the only way to reach it on a phone. What was actually wrong was the shape: a 250px-tall
- * box standing in front of the list it introduces.
+ * `flex: 0 0 100%` is a *row* basis. The drawer's `.megaBody` is a column, where it reads as full
+ * height instead and the prompt swallowed the panel, so here the prompt is just a line of text.
  */
-/*
- * The per-column tile is the drawer's, so it is off everywhere else. Its twin in the row above is what
- * the desktop panel draws.
- */
-.megaColumnTile {
-  display: none;
+.headerDrawerPanel .megaHeading {
+  flex: 0 0 auto;
+  padding: 0 0 12px;
 }
 
-/* In the drawer the pair swaps: the row goes, and each column is headed by its own tile. */
-.headerDrawerPanel .megaColumnTile {
-  display: flex;
-  margin-bottom: 4px;
-}
-
-.headerDrawerPanel .megaColumn:has(.megaColumnTile) > .megaColumnHeading {
-  display: none;
-}
-
-.headerDrawerPanel .megaTiles {
-  display: none;
-}
-
+/* Compact in the drawer, where a 250px-tall box would stand in front of the list it introduces. */
 .headerDrawerPanel .megaTile {
   min-height: 0;
   padding: 12px 14px;

@@ -1,7 +1,6 @@
 import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
 import { IconArrowRight } from '../icons'
-import classes from '../theme/components.module.css'
 import { navIcon } from './nav-icons'
 import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
@@ -17,23 +16,14 @@ function menuOf(menu: NavMenu) {
   return (
     <MegaMenu>
       <MegaMenu.Body>
-        {menu.tiles ? (
-          <MegaMenu.Tiles>
-            {menu.tiles.map((tile) => (
-              <MegaMenu.Tile key={tile.title} href={tile.href}>
-                {tile.title}
-              </MegaMenu.Tile>
-            ))}
-          </MegaMenu.Tiles>
-        ) : null}
+        {menu.heading ? <MegaMenu.Heading>{menu.heading}</MegaMenu.Heading> : null}
 
         <MegaMenu.Columns>
           {menu.columns.map((column, i) => (
             /*
-             * The tile goes in twice on a menu that has them: once in the row above, which is what the
-             * desktop panel draws, and once at the head of its own column, which is what the drawer
-             * shows instead of the heading. One of the two is always `display: none`, so nothing is
-             * announced twice — and it saves pairing tiles to columns in CSS, which is not expressible.
+             * A menu with tiles heads each column with its own, in place of the label: the tile is the
+             * group's destination, and pairing the two here rather than drawing a separate row above
+             * keeps a tile over the column it introduces at every width.
              */
             <MegaMenu.Column
               key={column.heading ?? i}
@@ -41,8 +31,8 @@ function menuOf(menu: NavMenu) {
               tile={
                 menu.tiles?.[i] ? (
                   <MegaMenu.Tile
-                    className={classes.megaColumnTile}
                     href={menu.tiles[i].href}
+                    icon={navIcon(menu.tiles[i].icon)}
                   >
                     {menu.tiles[i].title}
                   </MegaMenu.Tile>
@@ -64,12 +54,13 @@ function menuOf(menu: NavMenu) {
 
         {menu.featured?.length ? (
           /*
-           * `wide` where the cards carry a thumbnail: the Resources rail in the file is landscape
-           * images beside their text, not a narrow list of links.
+           * `wide` where the cards carry a thumbnail *beside* their text: the Resources rail in the
+           * file is landscape images in a wide rail. Solutions stacks instead — image over text in a
+           * narrow rail — which is also what leaves the columns room for four across.
            */
           <MegaMenu.Featured
             heading={menu.featuredHeading ?? 'Featured'}
-            wide={menu.featured.some((item) => item.hue !== undefined)}
+            wide={!menu.featuredStacked && menu.featured.some((item) => item.hue !== undefined)}
           >
             {menu.featured.map((item) => (
               <MegaMenu.FeaturedCard
@@ -80,6 +71,7 @@ function menuOf(menu: NavMenu) {
                     <img src={logoTile(item.title.split(/[\s']/)[0], item.hue)} alt="" />
                   )
                 }
+                stacked={menu.featuredStacked}
                 title={item.title}
                 description={item.description}
               />
