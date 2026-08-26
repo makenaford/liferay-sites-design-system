@@ -19,6 +19,37 @@ export interface HeaderNavItem {
 /** What the mobile drawer is showing. `null` is the top-level section list. */
 type DrawerView = string | null
 
+/** Which of the drawer's two control accordions is expanded. Only ever one. */
+type DrawerControl = 'language' | 'login' | null
+
+/**
+ * The controls at the foot of the mobile drawer.
+ *
+ * Supplied as data rather than as nodes, because the drawer draws them differently from the bar: the
+ * bar's language control is a combobox, and here it is an accordion that expands in place. Passing a
+ * rendered `LanguagePicker` down would mean a popover opening inside a panel that is itself sliding,
+ * which is a fight over stacking contexts for no gain.
+ *
+ * Omit it and the drawer falls back to laying out `actions` as-is.
+ */
+export interface HeaderDrawerControls {
+  language?: {
+    /** The collapsed label — the current language, usually. */
+    label: ReactNode
+    options: { value: string; label: ReactNode }[]
+    /** Marks the current option. */
+    value?: string
+    onChange?: (value: string) => void
+  }
+  login?: {
+    /** @default 'Log In' */
+    label?: ReactNode
+    items: { label: ReactNode; href?: string; onClick?: () => void }[]
+  }
+  /** The full-width call to action under them. */
+  cta?: ReactNode
+}
+
 export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   /** The brand, top left. */
   logo?: ReactNode
@@ -26,6 +57,13 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   items?: HeaderNavItem[]
   /** The right-hand side: language, account, a call to action. */
   actions?: ReactNode
+  /**
+   * The foot of the mobile drawer — language and log-in as accordions, and a call to action.
+   *
+   * Without it the drawer stacks `actions` instead, which works but gives a phone a combobox where an
+   * expanding list reads better.
+   */
+  drawerControls?: HeaderDrawerControls
   /**
    * Which menu is open on mount. The prototype opens Platform so the first section is visible
    * immediately; a real page almost always wants `null`.
@@ -85,6 +123,7 @@ export function Header({
   logo = <Logo height={54} title="" />,
   items = [],
   actions,
+  drawerControls,
   defaultOpen = null,
   onOpenChange,
   position = 'fixed',
@@ -102,6 +141,8 @@ export function Header({
    * interactions — one expands in place, the other pushes a panel — so they get their own state.
    */
   const [view, setView] = useState<DrawerView>(null)
+  /* One at a time: opening language closes log-in and the other way round. */
+  const [control, setControl] = useState<DrawerControl>(null)
   const shellRef = useRef<HTMLElement>(null)
   const triggers = useRef(new Map<string, HTMLButtonElement | null>())
   const baseId = useId()
@@ -256,6 +297,7 @@ export function Header({
                 setDrawer((value) => {
                   /* Always reopen at the section list rather than wherever it was left. */
                   if (!value) setView(null)
+                  setControl(null)
                   change(null)
                   return !value
                 })
@@ -372,11 +414,107 @@ export function Header({
             </div>
 
             {/*
-             * The actions live at the bottom of the list rather than in the bar, stacked and
-             * full-width. They are whatever the caller passed — a language picker, a log-in link, a
-             * button — so the drawer lays them out instead of rebuilding them.
+             * The foot of the list. With `drawerControls` the language and log-in become accordions
+             * that expand in place, which is what a phone wants; without it the drawer just stacks
+             * whatever `actions` holds, so existing callers keep working.
              */}
-            <div className={classes.headerDrawerActions}>{actions}</div>
+            {drawerControls ? (
+              <div className={classes.headerDrawerControls}>
+                {drawerControls.language ? (
+                  <div className={classes.headerDrawerControl}>
+                    <UnstyledButton
+                      component="button"
+                      type="button"
+                      className={classes.headerDrawerControlTrigger}
+                      data-open={control === 'language' || undefined}
+                      aria-expanded={control === 'language'}
+                      aria-controls={`${baseId}-drawer-language`}
+                      onClick={() =>
+                        setControl((value) => (value === 'language' ? null : 'language'))
+                      }
+                    >
+                      <span>{drawerControls.language.label}</span>
+                      <span className={classes.headerCaret} aria-hidden>
+                        <IconDown />
+                      </span>
+                    </UnstyledButton>
+                    <div
+                      id={`${baseId}-drawer-language`}
+                      className={classes.headerDrawerControlList}
+                      hidden={control !== 'language'}
+                    >
+                      {drawerControls.language.options.map((option) => (
+                        <UnstyledButton
+                          key={option.value}
+                          component="button"
+                          type="button"
+                          className={classes.headerDrawerControlItem}
+                          data-current={option.value === drawerControls.language?.value || undefined}
+                          aria-current={
+                            option.value === drawerControls.language?.value ? 'true' : undefined
+                          }
+                          onClick={() => drawerControls.language?.onChange?.(option.value)}
+                        >
+                          {option.label}
+                        </UnstyledButton>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {drawerControls.login ? (
+                  <div className={classes.headerDrawerControl}>
+                    <UnstyledButton
+                      component="button"
+                      type="button"
+                      className={classes.headerDrawerControlTrigger}
+                      data-open={control === 'login' || undefined}
+                      aria-expanded={control === 'login'}
+                      aria-controls={`${baseId}-drawer-login`}
+                      onClick={() => setControl((value) => (value === 'login' ? null : 'login'))}
+                    >
+                      <span>{drawerControls.login.label ?? 'Log In'}</span>
+                      <span className={classes.headerCaret} aria-hidden>
+                        <IconDown />
+                      </span>
+                    </UnstyledButton>
+                    <div
+                      id={`${baseId}-drawer-login`}
+                      className={classes.headerDrawerControlList}
+                      hidden={control !== 'login'}
+                    >
+                      {drawerControls.login.items.map((item, index) =>
+                        item.href ? (
+                          <a
+                            key={index}
+                            className={classes.headerDrawerControlItem}
+                            href={item.href}
+                          >
+                            {item.label}
+                          </a>
+                        ) : (
+                          <UnstyledButton
+                            key={index}
+                            component="button"
+                            type="button"
+                            className={classes.headerDrawerControlItem}
+                            onClick={item.onClick}
+                          >
+                            {item.label}
+                          </UnstyledButton>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+
+                {drawerControls.cta ? (
+                  <div className={classes.headerDrawerCta}>{drawerControls.cta}</div>
+                ) : null}
+              </div>
+            ) : (
+              <div className={classes.headerDrawerActions}>{actions}</div>
+            )}
           </div>
 
           {items

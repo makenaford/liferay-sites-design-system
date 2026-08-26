@@ -2738,12 +2738,19 @@
  * a sheet and sometimes a dropdown reads as two components.
  */
 /*
- * `display: flex` below beats the UA's `[hidden] { display: none }`, so the closed drawer stayed laid
- * out over the whole viewport and swallowed every click — including the burger's. An explicit rule
- * rather than swapping to a `data-open` selector, so `hidden` keeps doing the accessibility half of the
- * job too: out of the tab order and out of the accessibility tree.
+ * `hidden` has to be restored wherever this component sets `display`.
+ *
+ * A `display` of its own beats the UA's `[hidden] { display: none }`, so a `hidden` element stays laid
+ * out. That has now bitten twice: the closed drawer covered the viewport and swallowed every click
+ * including the burger's, and a collapsed control list stayed on screen while `aria-expanded` said it
+ * was shut — so the language options sat there under an open log-in menu.
+ *
+ * Hence one rule for every box in here that `hidden` is used on, rather than a `data-open` selector per
+ * case: `hidden` keeps doing the other half of its job at the same time, which is removal from the tab
+ * order and from the accessibility tree.
  */
-.headerDrawer[hidden] {
+.headerDrawer[hidden],
+.headerDrawerControlList[hidden] {
   display: none;
 }
 
@@ -2911,6 +2918,87 @@
 
 .headerDrawerActions > * {
   width: 100%;
+}
+
+/*
+ * The control accordions at the foot of the list.
+ *
+ * Pinned to the bottom the same way the plain actions are, so a short section list does not leave them
+ * floating in the middle of the sheet.
+ */
+.headerDrawerControls {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.headerDrawerControl {
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+.headerDrawerControlTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 4px;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Open reads as the active one, and the caret turns to say which way it goes. */
+.headerDrawerControlTrigger[data-open] {
+  color: var(--sds-action-link-active-link);
+}
+
+.headerDrawerControlTrigger[data-open] .headerCaret {
+  transform: rotate(180deg);
+}
+
+.headerDrawerControlList {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+}
+
+.headerDrawerControlItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 4px;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 15px;
+  text-align: start;
+  text-decoration: none;
+}
+
+.headerDrawerControlItem[data-current] {
+  color: var(--sds-action-link-active-link);
+  font-weight: 600;
+}
+
+/*
+ * Stretch rather than `width: 100%` on the child. Mantine's button root is a two-class rule, so a
+ * single-class `width` ties and loses; making this a stretching flex column sizes the child from the
+ * outside instead and stops the fight.
+ */
+.headerDrawerCta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 16px;
+}
+
+.headerDrawerControlTrigger:focus-visible,
+.headerDrawerControlItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
 }
 
 /* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */

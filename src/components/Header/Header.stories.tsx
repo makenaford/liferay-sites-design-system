@@ -302,6 +302,34 @@ const actions = (
   </>
 )
 
+/**
+ * The drawer's own controls. The same three things the bar holds, as data — so the drawer can draw the
+ * language and log-in as accordions rather than as a combobox and a link.
+ */
+const drawerControls = {
+  language: {
+    label: 'EN (US)',
+    value: 'en-US',
+    options: [
+      { value: 'en-US', label: 'EN (US)' },
+      { value: 'fr-FR', label: 'Français' },
+      { value: 'de-DE', label: 'Deutsch' },
+      { value: 'it-IT', label: 'Italiano' },
+      { value: 'pt-BR', label: 'Português (BR)' },
+      { value: 'es-ES', label: 'Español' },
+      { value: 'zh-CN', label: '中文' },
+      { value: 'ja-JP', label: '日本語' },
+    ],
+  },
+  login: {
+    items: [
+      { label: 'Create Account', href: '#' },
+      { label: 'Sign In', href: '#' },
+    ],
+  },
+  cta: <Button size="md">Contact Sales</Button>,
+}
+
 /** Page content, so the glass has something to blur and the fixed band has something to overlay. */
 function PageBelow() {
   return (
@@ -325,10 +353,11 @@ function PageBelow() {
 const meta = {
   title: 'Components/Header',
   component: Header,
-  args: { items, actions, logo: <Logo /> },
+  args: { items, actions, drawerControls, logo: <Logo /> },
   argTypes: {
     items: { control: false },
     actions: { control: false },
+    drawerControls: { control: false },
     logo: { control: false },
     position: { options: ['fixed', 'static'], control: 'inline-radio' },
   },
