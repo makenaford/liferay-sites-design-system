@@ -2447,6 +2447,18 @@
 }
 
 /*
+ * The tile row: four across the width of the panel, and a full-width flex item so the columns wrap
+ * beneath it rather than beside it. It collapses to two and then one as the panel narrows.
+ */
+.megaTiles {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(12px, 1.5vw, 16px);
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
+}
+
+/*
  * The Solutions layout's tile heading: the same glass treatment as the segmented control's selected
  * pill, at the card's radius, standing in for a column label that is also a destination.
  */

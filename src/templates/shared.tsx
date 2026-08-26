@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Box, Group, Stack, Text } from '@mantine/core'
 import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
-import { Header, MegaMenu } from '../components/Header'
+import { Header } from '../components/Header'
 import { Link } from '../components/Link'
 import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
@@ -17,6 +17,7 @@ import {
   IconUser1Filled,
   IconYoutube,
 } from '../icons'
+import { SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
 
 /*
  * What every page template shares.
@@ -111,43 +112,6 @@ export function Quotee({ name, title }: { name: string; title: string }) {
 
 /* ------------------------------------------------------------------ the chrome's content */
 
-const NAV = [
-  {
-    value: 'platform',
-    label: 'Platform',
-    columns: [
-      ['Compare', ['Liferay vs. Adobe', 'Liferay vs. Sitecore', 'Liferay vs. Optimizely', 'Liferay vs. SharePoint']],
-      ['New to Liferay?', ['What is a DXP?', 'SaaS vs PaaS', 'Web Portals Explained', 'Headless CMS Guide']],
-    ],
-  },
-  {
-    value: 'solutions',
-    label: 'Solutions',
-    columns: [
-      ['Digital Transformation', ['Financial Services', 'Public Sector', 'Healthcare', 'Manufacturing']],
-      ['More Industries', ['Insurance', 'Transport & Logistics', 'Education', 'Wealth Management']],
-    ],
-  },
-  {
-    value: 'ai-agents',
-    label: 'AI Agents',
-    columns: [['Agentic platform', ['AI Hub', 'Agent Studio', 'SEO Studio', 'Personalization']]],
-  },
-  {
-    value: 'resources',
-    label: 'Resources',
-    columns: [
-      ['See What’s Possible', ['16 Awesome Web Portal Examples', '8 Exceptional Customer Portal Examples']],
-      ['Developers', ['Developer Blog', 'Liferay Discuss', 'Download Liferay DXP', 'GitHub']],
-    ],
-  },
-  {
-    value: 'partners',
-    label: 'Partners',
-    columns: [['Partner with us', ['Find a partner', 'Become a partner', 'Partner Portal']]],
-  },
-] as const
-
 const FOOTER_LINKS: [string, string[]][] = [
   [
     'Getting Started',
@@ -223,63 +187,24 @@ const SOCIALS: [string, ReactNode][] = [
 /** `LRDC Primary Nav` — the same header on every template. */
 export function SiteHeader() {
   return (
-  <Header
-    position="static"
-    items={NAV.map((item) => ({
-      value: item.value,
-      label: item.label,
-      menu: (
-        <MegaMenu>
-          <MegaMenu.Body>
-            <MegaMenu.Columns>
-              {item.columns.map(([heading, links]) => (
-                <MegaMenu.Column key={heading} heading={heading}>
-                  {links.map((label) => (
-                    <MegaMenu.Item key={label} href="#" title={label} />
-                  ))}
-                </MegaMenu.Column>
-              ))}
-            </MegaMenu.Columns>
-          </MegaMenu.Body>
-        </MegaMenu>
-      ),
-    }))}
-    actions={
-      <>
-        <LanguagePicker
-          aria-label="Language"
-          /*
-           * No width override. `EN (US)` measures 53.3px at the drawn 14px/600, and the caret takes
-           * 18px — 71.3px, which the component's own 78px default clears with a little room. The 72px
-           * that used to be here was taken from the file's 65px label-plus-caret measurement, and it
-           * was 6px short of what the text actually renders at.
-           */
-          defaultValue="en-US"
-          data={[
-            { value: 'en-US', label: 'EN (US)' },
-            { value: 'de-DE', label: 'DE' },
-            { value: 'pt-BR', label: 'PT (BR)' },
-            { value: 'ja-JP', label: 'JA' },
-          ]}
-        />
-        {/*
-          * `Log In` is a menu trigger, not a link: the file draws a **filled** person glyph, the label,
-          * and the same small solid caret the nav items use. It was an outline glyph with no caret,
-          * which read as a plain link and gave no sign there was anything behind it.
-          */}
-        <Link
-          href="#"
-          /* 14px, matching the drawn label — `Log In` measures 39px across in the file, not 50. */
-          size="sm"
-          leftSection={<IconUser1Filled />}
-          rightSection={<IconDownSmallFilled />}
-        >
-          Log In
-        </Link>
-        <Button size="sm">Contact Sales</Button>
-      </>
-    }
-  />
+    <Header
+      position="static"
+      items={SITE_NAV_ITEMS}
+      drawerControls={SITE_DRAWER_CONTROLS}
+      actions={
+        <>
+          <LanguagePicker
+            aria-label="Language"
+            defaultValue="en-US"
+            data={SITE_DRAWER_CONTROLS.language.options}
+          />
+          <Link href="#" size="sm" leftSection={<IconUser1Filled />} rightSection={<IconDownSmallFilled />}>
+            Log In
+          </Link>
+          <Button size="sm">Contact Sales</Button>
+        </>
+      }
+    />
   )
 }
 

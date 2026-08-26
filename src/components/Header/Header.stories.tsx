@@ -1,31 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Box, Group, Stack, Text, Title } from '@mantine/core'
 import { Header } from './Header'
-import { MegaMenu } from './MegaMenu'
 import { Button } from '../Button'
 import { Link } from '../Link'
 import {
-  IconArrowRight,
-  IconBook2,
-  IconBox3,
-  IconBracketsAngle,
-  IconBulb,
-  IconChartLine,
-  IconCheck,
-  IconDepartment,
-  IconDocument2,
   IconDown,
-  IconInformation,
-  IconLayoutGrid,
-  IconMindMap,
-  IconPresentation1,
-  IconQuestion,
-  IconSearch,
-  IconShieldShape,
-  IconShoppingCart1,
-  IconUser1,
-  IconWeb,
 } from '../../icons'
+import { SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from '../../templates/site-nav-render'
 
 /** The prototype's logo: a 28px mark and the wordmark beside it. */
 function Logo() {
@@ -47,249 +28,6 @@ function Logo() {
  * Stands in for the customer-story imagery. The prototype uses colour blocks for the same reason: the
  * stories have to render offline.
  */
-function Thumb({ label, color }: { label: string; color: string }) {
-  return (
-    <Box bg={color} w="100%" h="100%" style={{ display: 'grid', placeItems: 'center' }}>
-      {label}
-    </Box>
-  )
-}
-
-/** Platform: four columns of links, closed by a CTA strip. */
-const platformMenu = (
-  <MegaMenu>
-    <MegaMenu.Body>
-      <MegaMenu.Columns>
-        <MegaMenu.Column heading="Digital Experience">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconLayoutGrid />}
-            title="Platform Overview"
-            description="Explore the complete digital experience platform."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconBulb />}
-            title="Content Marketing Platform"
-            description="Plan and deliver marketing campaigns."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconBox3 />}
-            title="Digital Asset Management"
-            description="Organize and publish assets in one place."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconWeb />}
-            title="Sites"
-            description="Build and manage on-brand websites fast."
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column heading="Content Management">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconDocument2 />}
-            title="CMS Overview"
-            description="Create and publish content with ease."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconDepartment />}
-            title="Intranet"
-            description="Keep employees informed and connected."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconSearch />}
-            title="AI Search & SEO"
-            description="Optimize content for AI and search."
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column heading="Digital Commerce">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconShoppingCart1 />}
-            title="Commerce Overview"
-            description="End-to-end commerce, built into your DXP."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconBox3 />}
-            title="Product Information Management"
-            description="Centralize product data for every channel."
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column heading="Developer">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconShieldShape />}
-            title="Security"
-            description="Enterprise-grade security, built in."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconMindMap />}
-            title="Integration"
-            description="Connect Liferay to your existing systems."
-          />
-        </MegaMenu.Column>
-      </MegaMenu.Columns>
-    </MegaMenu.Body>
-    <MegaMenu.Cta label="Ready to Evaluate?">
-      <Button variant="outline" size="sm" rightSection={<IconArrowRight />}>
-        See Subscription &amp; Deployment Options
-      </Button>
-    </MegaMenu.Cta>
-  </MegaMenu>
-)
-
-/** Solutions: the columns are headed by tiles that are themselves destinations, plus a featured rail. */
-const solutionsMenu = (
-  <MegaMenu>
-    <MegaMenu.Body>
-      <MegaMenu.Columns>
-        <MegaMenu.Column
-          tile={
-            <MegaMenu.Tile href="#" icon={<IconSearch />}>
-              Improve SEO &amp; AEO
-            </MegaMenu.Tile>
-          }
-        >
-          <MegaMenu.Item
-            href="#"
-            icon={<IconSearch />}
-            title="AI Search"
-            description="Get found and cited by AI search engines."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconChartLine />}
-            title="Audit"
-            description="Catch SEO and accessibility issues early."
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column
-          tile={
-            <MegaMenu.Tile href="#" icon={<IconInformation />}>
-              Build Portals &amp; Intranets
-            </MegaMenu.Tile>
-          }
-        >
-          <MegaMenu.Item
-            href="#"
-            icon={<IconUser1 />}
-            title="Customer Portals"
-            description="Help customers self-serve and succeed."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconDepartment />}
-            title="Intranets"
-            description="Give employees a connected digital home."
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column
-          tile={
-            <MegaMenu.Tile href="#" icon={<IconCheck />}>
-              Build Modern Websites
-            </MegaMenu.Tile>
-          }
-        >
-          <MegaMenu.Item
-            href="#"
-            icon={<IconWeb />}
-            title="Enterprise Websites"
-            description="Launch and manage websites at scale."
-          />
-        </MegaMenu.Column>
-      </MegaMenu.Columns>
-      <MegaMenu.Featured heading="Featured">
-        <MegaMenu.FeaturedCard
-          href="#"
-          stacked
-          thumbnail={<Thumb label="ŠKODA" color="#0e2f56" />}
-          title="Skoda Auto's Intranet Serves 40,000 Employees"
-          description="Inside Škoda's personalized employee experience."
-        />
-        <MegaMenu.FeaturedCard
-          href="#"
-          stacked
-          thumbnail={<Thumb label="CHECKLIST" color="#374151" />}
-          title="11 Building Blocks for a High-Performing Supplier Portal"
-          description="Automate workflows, boost efficiency."
-        />
-      </MegaMenu.Featured>
-    </MegaMenu.Body>
-  </MegaMenu>
-)
-
-/** Resources: two columns and a wide rail of customer stories. */
-const resourcesMenu = (
-  <MegaMenu>
-    <MegaMenu.Body>
-      <MegaMenu.Columns>
-        <MegaMenu.Column heading="Knowledge Center">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconBook2 />}
-            title="Resource Hub"
-            description="Explore guides, ebooks, and whitepapers."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconPresentation1 />}
-            title="Webinars & Events"
-            description="Save your seat, live or in person."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconDocument2 />}
-            title="Documentation"
-            description="Official guides for Liferay DXP."
-            external
-          />
-        </MegaMenu.Column>
-        <MegaMenu.Column heading="Technical Insights">
-          <MegaMenu.Item
-            href="#"
-            icon={<IconBracketsAngle />}
-            title="Headless CMS vs Traditional CMS"
-            description="Find the right fit for your team."
-          />
-          <MegaMenu.Item
-            href="#"
-            icon={<IconQuestion />}
-            title="DXP vs CMS: What's the Difference?"
-            description="One manages content. The other does a lot more."
-          />
-        </MegaMenu.Column>
-      </MegaMenu.Columns>
-      <MegaMenu.Featured heading="Customer Stories" wide>
-        <MegaMenu.FeaturedCard
-          href="#"
-          thumbnail={<Thumb label="UNILEVER" color="#0a2a63" />}
-          title="Unilever Achieves 133% Faster Go to Market"
-          description="How a platform overhaul sped up rollouts."
-        />
-        <MegaMenu.FeaturedCard
-          href="#"
-          thumbnail={<Thumb label="PETROBRAS" color="#0d3b2e" />}
-          title="Petrobras's New Digital Transformation"
-          description="Unified sites for 4M+ users."
-        />
-        <MegaMenu.More href="#">See All Customer Stories</MegaMenu.More>
-      </MegaMenu.Featured>
-    </MegaMenu.Body>
-  </MegaMenu>
-)
-
-const items = [
-  { value: 'platform', label: 'Platform', menu: platformMenu },
-  { value: 'solutions', label: 'Solutions', menu: solutionsMenu },
-  { value: 'resources', label: 'Resources', menu: resourcesMenu },
-]
-
 const actions = (
   <>
     <Link href="#" size="md" rightSection={<IconDown />}>
@@ -306,30 +44,6 @@ const actions = (
  * The drawer's own controls. The same three things the bar holds, as data — so the drawer can draw the
  * language and log-in as accordions rather than as a combobox and a link.
  */
-const drawerControls = {
-  language: {
-    label: 'EN (US)',
-    value: 'en-US',
-    options: [
-      { value: 'en-US', label: 'EN (US)' },
-      { value: 'fr-FR', label: 'Français' },
-      { value: 'de-DE', label: 'Deutsch' },
-      { value: 'it-IT', label: 'Italiano' },
-      { value: 'pt-BR', label: 'Português (BR)' },
-      { value: 'es-ES', label: 'Español' },
-      { value: 'zh-CN', label: '中文' },
-      { value: 'ja-JP', label: '日本語' },
-    ],
-  },
-  login: {
-    items: [
-      { label: 'Create Account', href: '#' },
-      { label: 'Sign In', href: '#' },
-    ],
-  },
-  cta: <Button size="md">Contact Sales</Button>,
-}
-
 /** Page content, so the glass has something to blur and the fixed band has something to overlay. */
 function PageBelow() {
   return (
@@ -353,7 +67,7 @@ function PageBelow() {
 const meta = {
   title: 'Components/Header',
   component: Header,
-  args: { items, actions, drawerControls, logo: <Logo /> },
+  args: { items: SITE_NAV_ITEMS, actions, drawerControls: SITE_DRAWER_CONTROLS, logo: <Logo /> },
   argTypes: {
     items: { control: false },
     actions: { control: false },

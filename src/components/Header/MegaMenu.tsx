@@ -67,6 +67,17 @@ export interface MegaTileProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 /** The Solutions layout's column head: a bordered, glass-filled tile that is itself a link. */
+/**
+ * The row of tiles across the top of a menu, above its columns.
+ *
+ * A block of its own rather than a `Columns` full of tiles: `.megaBody` wraps its flex children, so a
+ * second `Columns` sat *beside* the first instead of above it, and the four tiles the Solutions menu
+ * draws across the full width came out stacked in a narrow left-hand column.
+ */
+function Tiles({ children }: { children: ReactNode }) {
+  return <div className={classes.megaTiles}>{children}</div>
+}
+
 function Tile({ icon, children, ...props }: MegaTileProps) {
   return (
     <a className={classes.megaTile} {...props}>
@@ -182,6 +193,7 @@ export const MegaMenu = Object.assign(MegaMenuRoot, {
   Columns,
   Column,
   Tile,
+  Tiles,
   Item,
   Featured,
   FeaturedCard,

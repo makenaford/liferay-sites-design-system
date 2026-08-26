@@ -166,6 +166,23 @@ export function IconBracketsAngle(props: IconProps) {
   )
 }
 
+/** MingCute `briefcase` (regular, business). */
+export function IconBriefcase(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M8 7V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1M3 11h18m-9 0v2m-8 7h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `building_1` (regular, buildings). */
 export function IconBuilding1(props: IconProps) {
   return (
@@ -455,6 +472,23 @@ export function IconFacebook(props: IconProps) {
   )
 }
 
+/** MingCute `factory` (regular, buildings). */
+export function IconFactory(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 20h18m-6 0c-1.705-6.82-1.957-13.641-1.994-15.504A.506.506 0 0 0 12.5 4H7.532a.51.51 0 0 0-.51.53C7.082 6.44 7.12 13.22 5 20m8.25-11h3.184c.3 0 .54.264.53.565-.04 1.331.084 4.968 2.036 10.435"/>
+    </svg>
+  )
+}
+
 /** MingCute `file_search` (regular, files). */
 export function IconFileSearch(props: IconProps) {
   return (
@@ -502,6 +536,23 @@ export function IconGithub(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M3 16c1.5.5 1.5 3.5 5 3l1-.2m6 2.2v-3c0-.86-.363-1.636-.943-2.183a.01.01 0 0 1 .005-.018C17.48 15.117 20 12.78 20 10.001c0-1.262-.52-2.433-1.406-3.399a.01.01 0 0 1-.002-.01c.632-1.537.048-3.52-.096-3.591-.139-.07-1.957.288-3.45 1.445a.01.01 0 0 1-.009.002A10.3 10.3 0 0 0 12 4c-1.076 0-2.103.16-3.04.449a.01.01 0 0 1-.009-.002C7.458 3.29 5.64 2.931 5.5 3.001c-.144.072-.728 2.057-.095 3.593a.01.01 0 0 1-.002.01C4.518 7.57 4 8.74 4 10.002c0 2.779 2.52 5.116 5.938 5.798a.01.01 0 0 1 .005.018A3 3 0 0 0 9 18v3"/><path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M3 16c1.5.5 1.5 3.5 5 3l1-.2m6 2.2v-3c0-.86-.363-1.636-.943-2.183a.01.01 0 0 1 .005-.018C17.48 15.117 20 12.78 20 10.001c0-1.262-.52-2.433-1.406-3.399a.01.01 0 0 1-.002-.01c.632-1.537.048-3.52-.096-3.591-.139-.07-1.957.288-3.45 1.445a.01.01 0 0 1-.009.002A10.3 10.3 0 0 0 12 4c-1.076 0-2.103.16-3.04.449a.01.01 0 0 1-.009-.002C7.458 3.29 5.64 2.931 5.5 3.001c-.144.072-.728 2.057-.095 3.593a.01.01 0 0 1-.002.01C4.518 7.57 4 8.74 4 10.002c0 2.779 2.52 5.116 5.938 5.798a.01.01 0 0 1 .005.018A3 3 0 0 0 9 18v3"/>
+    </svg>
+  )
+}
+
+/** MingCute `government` (regular, buildings). */
+export function IconGovernment(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M9 12a1 1 0 1 0-2 0zm-2 8a1 1 0 1 0 2 0zm6-8a1 1 0 1 0-2 0zm-2 8a1 1 0 1 0 2 0zm6-8a1 1 0 1 0-2 0zm-2 8a1 1 0 1 0 2 0zM3 19a1 1 0 1 0 0 2zm18 2a1 1 0 1 0 0-2zM6 4a1 1 0 0 0 0 2zm12 2a1 1 0 1 0 0-2zM3 7a1 1 0 0 0 0 2zm18 2a1 1 0 1 0 0-2zM4 8H3v12h2V8zm4 4H7v8h2v-8zm4 0h-1v8h2v-8zm4 0h-1v8h2v-8zm4-4h-1v12h2V8zM3 20v1h18v-2H3zM6 5v1h12V4H6zM3 8v1h18V7H3z"/>
     </svg>
   )
 }
@@ -757,6 +808,23 @@ export function IconPlay(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeWidth="2" d="M6.661 4.88a.47.47 0 0 1 .656-.378c1.032.441 3.375 1.502 6.354 3.222s5.071 3.22 5.97 3.893a.468.468 0 0 1 0 .755c-.889.667-2.954 2.148-5.97 3.89-3.019 1.742-5.334 2.79-6.356 3.226a.468.468 0 0 1-.653-.378c-.135-1.11-.389-3.662-.389-7.116 0-3.452.254-6.003.388-7.115Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `plugin_2` (regular, devices). */
+export function IconPlugin2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M3 9a2 2 0 0 1 2-2h3.39a.068.068 0 0 0 .061-.098l-.162-.324C7.467 4.934 8.662 3 10.5 3s3.033 1.934 2.211 3.578l-.162.324a.067.067 0 0 0 .06.098H15a2 2 0 0 1 2 2v2.39c0 .051.053.084.098.061l.324-.162C19.066 10.467 21 11.662 21 13.5s-1.934 3.033-3.578 2.211l-.324-.162a.067.067 0 0 0-.098.06V19a2 2 0 0 1-2 2h-2.407a.06.06 0 0 1-.056-.085l.084-.198a2.308 2.308 0 1 0-4.242 0l.084.198a.06.06 0 0 1-.056.085H5a2 2 0 0 1-2-2v-3.407a.06.06 0 0 1 .085-.056l.198.084a2.308 2.308 0 1 0 0-4.242l-.198.084A.06.06 0 0 1 3 11.407z"/>
     </svg>
   )
 }
