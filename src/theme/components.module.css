@@ -2721,7 +2721,9 @@
 
 .megaCtaLabel {
   color: var(--sds-neutral-10);
-  font-size: 15px;
+  /* The paragraph default, rather than the 15px this was pinned to — no other text here is off-scale. */
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
   font-weight: 600;
 }
 
