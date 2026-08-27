@@ -1,6 +1,8 @@
 import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
-import { IconArrowRight } from '../icons'
+import { LanguagePicker } from '../components/Input'
+import { Link } from '../components/Link'
+import { IconArrowRight, IconDownSmallFilled, IconUser1Filled } from '../icons'
 import { navIcon } from './nav-icons'
 import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
@@ -127,3 +129,24 @@ export const SITE_DRAWER_CONTROLS = {
     <Button size="md">Contact Sales</Button>
   ),
 }
+
+/**
+ * The right-hand side of the bar: language, account, a call to action.
+ *
+ * Exported for the same reason the menus are. `SiteHeader` and the `Header` stories each built their
+ * own, so the stories showed two bare links where the templates showed the file's combobox and an
+ * account link with its person and its caret — and a fix to one never reached the other.
+ */
+export const SITE_ACTIONS = (
+  <>
+    <LanguagePicker
+      aria-label="Language"
+      defaultValue={SITE_DRAWER_CONTROLS.language.value}
+      data={SITE_DRAWER_CONTROLS.language.options}
+    />
+    <Link href="#" size="md" leftSection={<IconUser1Filled />} rightSection={<IconDownSmallFilled />}>
+      Log In
+    </Link>
+    <Button size="sm">Contact Sales</Button>
+  </>
+)

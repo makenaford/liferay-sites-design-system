@@ -1987,7 +1987,8 @@
   border-radius: 4px;
   background: transparent;
   color: var(--sds-neutral-10);
-  font-size: 14px;
+  /* 16px, level with the account link beside it — the two read as one row of controls or as neither. */
+  font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   cursor: pointer;
@@ -2265,6 +2266,19 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/*
+ * The bar's utility links sit on the nav's size, not the `Link` scale's.
+ *
+ * The file draws language and account level with the sections beside them — 16px — and the link scale
+ * goes 14 / 18 / 21, so neither `sm` nor `md` lands on it. Rather than invent a fourth size the Figma
+ * set does not have, the header states the size for the row it owns. `font-size` directly, because
+ * `--text-fz` is inline on the element and a stylesheet cannot outbid an inline custom property.
+ */
+.headerActions a {
+  font-size: 16px;
+  line-height: 24px;
 }
 
 /* ------------------------------------------------------------------------ the mega panel
