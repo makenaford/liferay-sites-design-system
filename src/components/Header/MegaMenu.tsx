@@ -1,3 +1,4 @@
+import { Children } from 'react'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
 import classes from '../../theme/components.module.css'
 import { IconArrowRight, IconExternalLink } from '../../icons'
@@ -36,9 +37,20 @@ function Body({ children }: { children: ReactNode }) {
   return <div className={classes.megaBody}>{children}</div>
 }
 
-/** The auto-fitting column grid: as many 190px columns as the panel has room for. */
+/**
+ * The column grid.
+ *
+ * `data-count` is the number of columns, because a desktop panel draws all of them on one row and
+ * `auto-fit` cannot promise that: Solutions' four came to 855.3px of track in an 856px box and wrapped
+ * the last one under the first, on a rounding difference no layout should turn on. Below the desktop
+ * breakpoint the count is ignored and `auto-fit` takes over, which is what a narrowing panel wants.
+ */
 function Columns({ children }: { children: ReactNode }) {
-  return <div className={classes.megaColumns}>{children}</div>
+  return (
+    <div className={classes.megaColumns} data-count={Children.count(children)}>
+      {children}
+    </div>
+  )
 }
 
 export interface MegaColumnProps {
