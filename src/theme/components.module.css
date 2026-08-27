@@ -2282,7 +2282,11 @@
 .headerMega {
   display: flex;
   flex-direction: column;
-  max-width: 1280px;
+  /*
+   * The file's `Mega Menu / Desktop` frame is 1440 wide — 1120 of columns and a 320 rail. The bar above
+   * it keeps its own 1280, which is the width the file gives the nav's content.
+   */
+  max-width: 1440px;
   margin: 0 auto;
   background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
@@ -2718,6 +2722,7 @@
 .megaCtaLabel {
   color: var(--sds-neutral-10);
   font-size: 15px;
+  font-weight: 600;
 }
 
 /* ---------------------------------------------------------------------------- the scrim
