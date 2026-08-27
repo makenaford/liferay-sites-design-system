@@ -359,8 +359,7 @@ function HomePage() {
           <Card
             surface="glass"
             padding="none"
-            /* A pill at the drawn width; once the row wraps on a narrow canvas, a pill is wrong. */
-            bdrs={{ base: 24, md: 30 }}
+            radius="pill"
             w="100%"
             maw={1000}
           >

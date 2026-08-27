@@ -624,6 +624,21 @@
   isolation: isolate;
 }
 
+/*
+ * `radius="pill"` — the hero's solution finder, a bar of controls rather than a card of content, so its
+ * corner follows its own height. Below the point where the row wraps the bar is tall and a pill is
+ * wrong, so it settles back to a large corner.
+ */
+.cardRoot[data-radius='pill'] {
+  border-radius: 24px;
+}
+
+@media (min-width: 62em) {
+  .cardRoot[data-radius='pill'] {
+    border-radius: 30px;
+  }
+}
+
 .cardRoot[data-align='vertical'] {
   flex-direction: column;
 }
