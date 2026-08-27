@@ -308,7 +308,7 @@ function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> })
       surface="glass"
       interactive={false}
       padding="none"
-      bdrs={{ base: 24, md: 30 }}
+      radius="pill"
       w="100%"
       maw={1000}
     >

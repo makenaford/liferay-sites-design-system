@@ -25,6 +25,7 @@ export type CardTone = 'blue' | 'purple'
 
 /** Figma `card-main` `Align`. */
 export type CardAlign = 'vertical' | 'horizontal'
+export type CardRadius = 'card' | 'pill'
 
 /**
  * Figma's `Padding` axis, plus the third case the file draws as a separate example.
@@ -71,6 +72,20 @@ export interface CardProps
   tone?: CardTone
   /** Figma `card-main` `Align`. @default 'vertical' */
   align?: CardAlign
+  /**
+   * The corner.
+   *
+   * `card` is the set's own — 8px, or the 16 a horizontal card draws. `pill` is the hero's solution
+   * finder: a bar of controls whose corner follows its own height rather than the card scale, and which
+   * stops being a pill once the row wraps and the bar is tall.
+   *
+   * A prop rather than a `bdrs` at the call site, because `bdrs` did not work: `.cardRoot[data-align]`
+   * outranks the class Mantine generates for a responsive style prop, so the finder asked for 30 and
+   * drew 8 in silence.
+   *
+   * @default 'card'
+   */
+  radius?: CardRadius
   /** Where the 20px goes. @default 'all' */
   padding?: CardPadding
 
@@ -129,6 +144,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
     surface = 'glass',
     tone = 'blue',
     align = 'vertical',
+    radius = 'card',
     padding = 'all',
     image,
     imageRatio = '3:2',
@@ -171,6 +187,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
       data-surface={surface}
       data-tone={surface === 'highlighted' ? tone : undefined}
       data-align={align}
+      data-radius={radius === 'card' ? undefined : radius}
       data-padding={padding}
       data-image={image ? true : undefined}
       data-interactive={clickable || undefined}
