@@ -3144,25 +3144,25 @@
 
 @media (min-width: 1200px) {
   /*
-   * A tiled menu keeps every column on one row.
+   * Every column of a desktop panel on one row.
    *
-   * Each tile heads the column beneath it, so a wrap does not just reflow the grid — it puts a heading
-   * under a list it does not belong to. `auto-fit` cannot promise the row: Solutions' four tracks asked
-   * 856px of an 855.3px box and the last one wrapped under the first, a layout turning on two thirds of
-   * a pixel. The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot.
+   * `auto-fit` cannot promise that: Solutions' four 190px tracks asked 856px of an 855.3px box, so the
+   * fourth wrapped under the first on two thirds of a pixel — and where a tile heads each column, a
+   * wrap does not merely reflow the grid, it puts a heading over a list it does not belong to. Partners
+   * wrapped for a plainer reason: its rail was the wide one, leaving room for three.
    *
-   * Only tiled menus. Elsewhere `auto-fit` still decides, which is right for a plain column of links:
-   * Partners would otherwise hold its four columns at 158px rather than wrapping to a readable three.
+   * The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot. The file
+   * draws these panels four across; a menu that wants fewer says so by having fewer columns.
    */
-  .megaColumns[data-count='2']:has(.megaTile) {
+  .megaColumns[data-count='2'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .megaColumns[data-count='3']:has(.megaTile) {
+  .megaColumns[data-count='3'] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .megaColumns[data-count='4']:has(.megaTile) {
+  .megaColumns[data-count='4'] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
