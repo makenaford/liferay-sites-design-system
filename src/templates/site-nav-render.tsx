@@ -2,7 +2,7 @@ import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
 import { LanguagePicker } from '../components/Input'
 import { Link } from '../components/Link'
-import { IconArrowRight, IconDownSmallFilled, IconUser1Filled } from '../icons'
+import { IconArrowRight, IconDown, IconUser1Filled } from '../icons'
 import { navIcon } from './nav-icons'
 import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
@@ -139,12 +139,18 @@ export const SITE_DRAWER_CONTROLS = {
  */
 export const SITE_ACTIONS = (
   <>
+    {/*
+     * Both carets are the nav's `IconDown`, not the field's small filled one: these sit in the same row
+     * as Platform and Solutions, and two different arrows across one bar reads as an oversight. The
+     * picker takes it as an override — its own default is right for a caret inside a form field.
+     */}
     <LanguagePicker
       aria-label="Language"
       defaultValue={SITE_DRAWER_CONTROLS.language.value}
       data={SITE_DRAWER_CONTROLS.language.options}
+      rightSection={<IconDown />}
     />
-    <Link href="#" size="md" leftSection={<IconUser1Filled />} rightSection={<IconDownSmallFilled />}>
+    <Link href="#" size="md" leftSection={<IconUser1Filled />} rightSection={<IconDown />}>
       Log In
     </Link>
     <Button size="sm">Contact Sales</Button>

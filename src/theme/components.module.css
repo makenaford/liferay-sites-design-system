@@ -2281,6 +2281,22 @@
   line-height: 24px;
 }
 
+/*
+ * And their glyphs sit at the nav's, too: a 14px mark at 70%, the same as `.headerCaret`. Left as the
+ * components drew them the row mixed a 16px caret on the language trigger with a 14px one on the
+ * sections beside it, which is the sort of difference you cannot name but can see.
+ */
+.headerActions [data-section] svg,
+.headerActions .fieldSection[data-position='right'] svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerActions [data-section],
+.headerActions .fieldSection[data-position='right'] {
+  opacity: 0.7;
+}
+
 /* ------------------------------------------------------------------------ the mega panel
  *
  * An inset floating box that drops out of the band: the same glass, one step more opaque, with the

@@ -120,7 +120,7 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
  * mobile variant: the column grid and the featured rail collapse to one column on their own.
  */
 export function Header({
-  logo = <Logo height={54} title="" />,
+  logo = <Logo height={48} title="" />,
   items = [],
   actions,
   drawerControls,
