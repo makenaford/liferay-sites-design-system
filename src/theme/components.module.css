@@ -2857,8 +2857,7 @@
  * case: `hidden` keeps doing the other half of its job at the same time, which is removal from the tab
  * order and from the accessibility tree.
  */
-.headerDrawer[hidden],
-.headerDrawerControlList[hidden] {
+.headerDrawer[hidden] {
   display: none;
 }
 
@@ -2877,6 +2876,16 @@
   -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
 
+/*
+ * The call to action in the bar, on a phone only. Above the breakpoint it is in `.headerActions` with
+ * the language and the account, and drawing both would put two Contact Sales in one row.
+ */
+.headerBarCta {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
 /* Back / title / close. The title names the level you are on, so it is empty at the top. */
 .headerDrawerBar {
   flex: none;
@@ -2890,25 +2899,31 @@
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
+.headerDrawerLogo {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+}
+
+/* The lockup is 48 in the band; in the drawer's bar it comes down a step so the row is not all logo. */
+.headerDrawerLogo svg {
+  height: 36px;
+  width: auto;
+}
+
 .headerDrawerBack {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   justify-self: start;
-  min-height: 44px;
-  padding-inline: 4px;
+  width: 44px;
+  height: 44px;
   color: var(--sds-surfaces-text-primary);
-  font-size: 15px;
-  font-weight: 600;
 }
 
 .headerDrawerBack > svg {
   width: 20px;
   height: 20px;
-}
-
-.headerDrawerBackLabel {
-  line-height: 1;
 }
 
 .headerDrawerClose {
@@ -2990,14 +3005,35 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  min-height: 56px;
-  padding: 14px 4px;
+  /* The file's rows are generous — this is a phone, and the row is the target. */
+  min-height: 64px;
+  padding: 18px 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
   font-weight: 600;
   text-align: start;
   text-decoration: none;
+}
+
+/* The globe sits with the label rather than in a slot of its own — one row, read as one thing. */
+.headerDrawerRowLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.headerDrawerRowLabel > svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.headerDrawerRow[data-current] {
+  color: var(--sds-action-link-active-link);
+  font-weight: 700;
 }
 
 .headerDrawerChevron {
@@ -3009,6 +3045,68 @@
 .headerDrawerChevron > svg {
   width: 18px;
   height: 18px;
+}
+
+/*
+ * Log in and create an account: two targets of the same weight, side by side, which is what the file
+ * draws and what a thumb wants. `margin-top: auto` pins the pair to the foot of a short list rather
+ * than leaving it floating under four rows.
+ */
+.headerDrawerLogin {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 32px;
+}
+
+.headerDrawerLoginItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  /* 8px, not 16: at half the drawer's width `Create an Account` wraps to two lines with any more. */
+  padding: 12px 8px;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .headerDrawerLoginItem:hover {
+    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+}
+
+.headerDrawerLoginItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+}
+
+/*
+ * The call to action, pinned to the foot of the drawer.
+ *
+ * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
+ * anything inside it scrolls away, and the file keeps this button on screen at every level.
+ */
+.headerDrawerFooter {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px clamp(16px, 4vw, 24px);
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+.headerDrawerFooter > * {
+  width: 100%;
 }
 
 /*
@@ -3029,68 +3127,6 @@
 }
 
 /*
- * The control accordions at the foot of the list.
- *
- * Pinned to the bottom the same way the plain actions are, so a short section list does not leave them
- * floating in the middle of the sheet.
- */
-.headerDrawerControls {
-  display: flex;
-  flex-direction: column;
-  margin-top: auto;
-  padding-top: 24px;
-}
-
-.headerDrawerControl {
-  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
-}
-
-.headerDrawerControlTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 4px;
-  color: var(--sds-surfaces-text-secondary);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* Open reads as the active one, and the caret turns to say which way it goes. */
-.headerDrawerControlTrigger[data-open] {
-  color: var(--sds-action-link-active-link);
-}
-
-.headerDrawerControlTrigger[data-open] .headerCaret {
-  transform: rotate(180deg);
-}
-
-.headerDrawerControlList {
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 8px;
-}
-
-.headerDrawerControlItem {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 4px;
-  color: var(--sds-surfaces-text-secondary);
-  font-size: 15px;
-  text-align: start;
-  text-decoration: none;
-}
-
-.headerDrawerControlItem[data-current] {
-  color: var(--sds-action-link-active-link);
-  font-weight: 600;
-}
-
-/*
  * Stretch rather than `width: 100%` on the child. Mantine's button root is a two-class rule, so a
  * single-class `width` ties and loses; making this a stretching flex column sizes the child from the
  * outside instead and stops the fight.
@@ -3102,8 +3138,7 @@
   padding-top: 16px;
 }
 
-.headerDrawerControlTrigger:focus-visible,
-.headerDrawerControlItem:focus-visible {
+.headerDrawerLoginItem:focus-visible {
   outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: -2px;
   border-radius: 6px;
@@ -3112,8 +3147,9 @@
 /* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */
 .headerDrawerPanel .megaColumns {
   grid-template-columns: 1fr;
-  gap: 20px;
-  padding: 0 0 16px;
+  /* The file sets its groups well apart on a phone; 20px ran them together into one long list. */
+  gap: 36px;
+  padding: 0 0 8px;
   min-width: 0;
 }
 
@@ -3204,6 +3240,7 @@
   }
 
   .headerBurger,
+  .headerBarCta,
   .headerDrawer {
     display: none;
   }
