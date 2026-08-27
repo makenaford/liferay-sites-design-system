@@ -39,12 +39,16 @@ export interface NavMenu {
   value: string
   label: string
   columns: NavColumn[]
-  /** Solutions leads with four tiles, each heading a column. */
+  /** The prompt across the top of the panel, above the columns. */
+  heading?: string
+  /** One tile per column, each heading the column it sits above in place of its label. */
   tiles?: NavLink[]
   /** The rail on the right. Cards with a `hue` draw a thumbnail. */
   featured?: NavLink[]
   /** The heading over the rail. @default 'Featured' */
   featuredHeading?: string
+  /** A narrow rail of cards with the thumbnail over the text rather than beside it. */
+  featuredStacked?: boolean
   /** The "see all" link that closes the rail. */
   featuredMore?: { label: string; href: string }
   /** The strip across the bottom of the Platform menu. */
@@ -106,18 +110,19 @@ export const SITE_NAV: NavMenu[] = [
   {
     value: 'solutions',
     label: 'Solutions',
+    heading: 'What are you looking to achieve?',
     tiles: [
-      { title: 'Improve SEO & AEO', href: 'https://www.liferay.com/capabilities/cms/seo', description: 'Manage every layer of SEO in one CMS. (for /capabilities/cms/seo)' },
-      { title: 'Build Portals & Intranets', href: 'https://www.liferay.com/enterprise-portals' },
-      { title: 'Build a Modern Digital Experience', href: 'https://www.liferay.com/solutions/build-modern-digital-experience', description: 'Attract more traffic with a modern site.' },
-      { title: 'Create Customized Experiences', href: 'https://www.liferay.com/industries', description: 'Tailored solutions for your industry.' },
+      { title: 'Improve SEO & AEO', href: 'https://www.liferay.com/capabilities/cms/seo', description: 'Manage every layer of SEO in one CMS.', icon: 'IconSearchAi' },
+      { title: 'Build Portals & Intranets', href: 'https://www.liferay.com/enterprise-portals', icon: 'IconWeb' },
+      { title: 'Centralize Systems', href: 'https://www.liferay.com/solutions/build-modern-digital-experience', description: 'Attract more traffic with a modern site.', icon: 'IconMindMap' },
+      { title: 'Customize Experiences', href: 'https://www.liferay.com/industries', description: 'Tailored solutions for your industry.', icon: 'IconUser1' },
     ],
     columns: [
       {
         heading: 'Improve SEO & AEO',
         links: [
           { title: 'AI Search', href: 'https://www.liferay.com/capabilities/cms/seo/ai-search', description: 'Get found and cited by AI search engines.', icon: 'IconSearchAi' },
-          { title: 'Technical', href: 'https://www.liferay.com/capabilities/cms/seo/technical-seo', description: 'Fix technical SEO, no developer needed.', icon: 'IconTool' },
+          { title: 'Technical & Events', href: 'https://www.liferay.com/capabilities/cms/seo/technical-seo', description: 'Fix technical SEO, no developer needed.', icon: 'IconTool' },
           { title: 'Multilingual', href: 'https://www.liferay.com/capabilities/cms/seo/multilingual', description: 'Reach global audiences in 50+ languages.', icon: 'IconTranslate2Ai' },
           { title: 'Audit', href: 'https://www.liferay.com/capabilities/cms/seo/audit', description: 'Catch SEO and accessibility issues early.', icon: 'IconFileSearch' },
         ],
@@ -126,32 +131,32 @@ export const SITE_NAV: NavMenu[] = [
         heading: 'Build Portals & Intranets',
         links: [
           { title: 'Customer Portals', href: 'https://www.liferay.com/solutions/customer-portals', description: 'Help customers self-serve and succeed.', icon: 'IconUser1' },
-          { title: 'Partner Portals', href: 'https://www.liferay.com/solutions/partner-portals', description: 'Simplify how partners work with you.', icon: 'IconBriefcase', standin: true },
-          { title: 'Supplied Portals', href: 'https://www.liferay.com/solutions/supplier-portals', description: 'Centralize supplier communication.', icon: 'IconTruck' },
-          { title: 'Intranets', href: 'https://www.liferay.com/solutions/intranets', description: 'Give employees a connected digital home.', icon: 'IconGroup3' },
+          { title: 'Partner Portals', href: 'https://www.liferay.com/solutions/partner-portals', description: 'Simplify how partners work with you.', icon: 'IconUser4' },
+          { title: 'Supplier Portals', href: 'https://www.liferay.com/solutions/supplier-portals', description: 'Centralize supplier communication.', icon: 'IconTruck' },
+          { title: 'Intranets', href: 'https://www.liferay.com/solutions/intranets', description: 'Give employees a connected digital home.', icon: 'IconDocument2' },
         ],
       },
       {
-        heading: 'Build a Modern Digital Experience',
+        heading: 'Centralize Systems',
         links: [
           { title: 'Enterprise Websites', href: 'https://www.liferay.com/solutions/enterprise-websites', description: 'Launch and manage websites at scale.', icon: 'IconBuilding1' },
-          { title: 'Integrate siloed enterprise applications', href: 'https://www.liferay.com/solutions/integrate-siloed-enterprise-applications', description: 'Unify your CRM, ERP, and legacy systems on one platform' },
-          { title: 'Modernize Legacy Infrastructure', href: 'https://www.liferay.com/solutions/modernize-legacy-digital-infrastructure-for-growth', description: 'Migrate on your terms while keeping the business running.' },
-          { title: 'Personalized experiences at scale', href: 'https://www.liferay.com/solutions/deliver-personalized-digital-experiences-at-scale', description: 'Personalize without IT delays, and prove it\'s working.' },
+          { title: 'Integrate siloed enterprise applications', href: 'https://www.liferay.com/solutions/integrate-siloed-enterprise-applications', description: 'Unify your CRM, ERP, and legacy systems on one platform', icon: 'IconSettings5' },
+          { title: 'Modernize Legacy Infrastructure', href: 'https://www.liferay.com/solutions/modernize-legacy-digital-infrastructure-for-growth', description: 'Migrate on your terms while keeping the business running.', icon: 'IconCube' },
+          { title: 'Personalized experiences at scale', href: 'https://www.liferay.com/solutions/deliver-personalized-digital-experiences-at-scale', description: 'Personalize without IT delays, and prove it\'s working.', icon: 'IconSettings2' },
         ],
       },
       {
-        heading: 'Create Customized Experiences',
+        heading: 'Customize Experiences',
         links: [
-          { title: 'Financial Services', href: 'https://www.liferay.com/industries/financial-services', description: 'Secure and compliant solutions for financial services.', icon: 'IconBank' },
+          { title: 'Financial Services', href: 'https://www.liferay.com/industries/financial-services', description: 'Secure and compliant solutions for financial services.', icon: 'IconBuilding1' },
           { title: 'Manufacturing', href: 'https://www.liferay.com/industries/manufacturing', description: 'Modernize operations and B2B buying./Drive revenue and reduce costs with digitized operations.', icon: 'IconFactory', standin: true },
           { title: 'Public Sector', href: 'https://www.liferay.com/industries/public-sector', description: 'Deliver secure digital citizen services.', icon: 'IconGovernment', standin: true },
           { title: 'Energy & Utilities', href: 'https://www.liferay.com/industries/energy-and-utilities', description: 'Offer intuitive and cost-effective customer experiences.', icon: 'IconHighVoltagePower' },
         ],
       },
     ],
+    featuredStacked: true,
     featured: [
-      { title: 'How to Win in AI Search Results', href: '#', hue: 190 },
       { title: 'Skoda Auto\'s Intranet Serves 40,000 Employees', href: 'https://www.liferay.com/web/guest/resources/case-studies/skoda-auto', description: 'Inside Škoda personalized employee experience', hue: 205 },
       { title: '11 Building Blocks for a High-Performing Supplier Portal', href: 'https://www.liferay.com/blog/business-partner-experience/-11-building-blocks-for-a-high-performing-supplier-portal', description: 'Checklist: Automate workflows, boost efficiency.', hue: 268 },
     ],

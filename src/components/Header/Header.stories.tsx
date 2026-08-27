@@ -123,8 +123,8 @@ export const PlatformOpen: Story = {
 }
 
 /**
- * **Solutions** — the columns are headed by tiles that are destinations in their own right, with a
- * featured rail of stacked cards beside them.
+ * **Solutions** — under one prompt, each column is headed by a tile that is a destination in its own
+ * right, with a narrow rail of stacked featured cards beside them.
  */
 export const SolutionsOpen: Story = {
   args: { defaultOpen: 'solutions' },
