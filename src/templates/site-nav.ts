@@ -179,17 +179,17 @@ export const SITE_NAV: NavMenu[] = [
       {
         heading: 'AI & Digital Strategy',
         links: [
-          { title: 'AI For Your Enterprise Needs', href: 'https://www.liferay.com/resources-hub/guide/ai-for-your-entire-organization', description: 'Purpose-built agents, grounded in your data.' },
-          { title: 'Operationalizing an AI Governance Framework', href: 'https://www.liferay.com/resource-hub/blogs/ai-governance-framework', description: 'AI governance: from strategy to execution.' },
-          { title: 'How the AI Governance Maturity Model Works', href: 'https://www.liferay.com/resource-hub/guides/ai-governance-maturity-model', description: 'The five levels of AI governance maturity.' },
+          { title: 'AI For Your Enterprise Needs', href: 'https://www.liferay.com/resources-hub/guide/ai-for-your-entire-organization', description: 'Purpose-built agents, grounded in your data.', icon: 'IconBuilding1' },
+          { title: 'Operationalizing an AI Governance Framework', href: 'https://www.liferay.com/resource-hub/blogs/ai-governance-framework', description: 'AI governance: from strategy to execution.', icon: 'IconShieldShape', standin: true },
+          { title: 'How the AI Governance Maturity Model Works', href: 'https://www.liferay.com/resource-hub/guides/ai-governance-maturity-model', description: 'The five levels of AI governance maturity.', icon: 'IconChartLine', standin: true },
         ],
       },
       {
         heading: 'Technical Insights',
         links: [
-          { title: 'Headless CMS vs Traditional CMS', href: 'https://www.liferay.com/blog/current-experiences/traditional-vs-headless-choosing-the-right-cms-architecture', description: 'Find the right fit for your team.' },
-          { title: 'DXP vs CMS: What\'s the Difference?', href: 'https://www.liferay.com/blog/current-experiences/what-s-the-difference-between-a-cms-portal-and-dxp-', description: 'One manages content. The other does a lot more.' },
-          { title: 'Composable Architecture Guide', href: '#' },
+          { title: 'Headless CMS vs Traditional CMS', href: 'https://www.liferay.com/blog/current-experiences/traditional-vs-headless-choosing-the-right-cms-architecture', description: 'Find the right fit for your team.', icon: 'IconLayoutGrid', standin: true },
+          { title: 'DXP vs CMS: What\'s the Difference?', href: 'https://www.liferay.com/blog/current-experiences/what-s-the-difference-between-a-cms-portal-and-dxp-', description: 'One manages content. The other does a lot more.', icon: 'IconCube' },
+          { title: 'Composable Architecture Guide', href: '#', icon: 'IconBracketsAngle', standin: true },
         ],
       },
     ],
