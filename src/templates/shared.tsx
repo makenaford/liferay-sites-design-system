@@ -7,22 +7,20 @@ import { Link } from '../components/Link'
 import { Logo } from '../components/Logo'
 import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
-import { LanguagePicker, TextInput } from '../components/Input'
+import { TextInput } from '../components/Input'
 import {
   IconFacebook,
   IconGithub,
   IconInstagram,
   IconLinkedin,
-  IconDownSmallFilled,
   IconSocialX,
-  IconUser1Filled,
   IconYoutube,
 } from '../icons'
 import { logoTile } from './logo-tile'
 
 /* Re-exported: it used to live here, and the templates import it from here. */
 export { logoTile }
-import { SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
+import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
 
 /*
  * What every page template shares.
@@ -184,19 +182,7 @@ export function SiteHeader() {
       position="static"
       items={SITE_NAV_ITEMS}
       drawerControls={SITE_DRAWER_CONTROLS}
-      actions={
-        <>
-          <LanguagePicker
-            aria-label="Language"
-            defaultValue="en-US"
-            data={SITE_DRAWER_CONTROLS.language.options}
-          />
-          <Link href="#" size="sm" leftSection={<IconUser1Filled />} rightSection={<IconDownSmallFilled />}>
-            Log In
-          </Link>
-          <Button size="sm">Contact Sales</Button>
-        </>
-      }
+      actions={SITE_ACTIONS}
     />
   )
 }

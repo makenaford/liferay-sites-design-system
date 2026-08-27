@@ -179,17 +179,17 @@ export const SITE_NAV: NavMenu[] = [
       {
         heading: 'AI & Digital Strategy',
         links: [
-          { title: 'AI For Your Enterprise Needs', href: 'https://www.liferay.com/resources-hub/guide/ai-for-your-entire-organization', description: 'Purpose-built agents, grounded in your data.' },
-          { title: 'Operationalizing an AI Governance Framework', href: 'https://www.liferay.com/resource-hub/blogs/ai-governance-framework', description: 'AI governance: from strategy to execution.' },
-          { title: 'How the AI Governance Maturity Model Works', href: 'https://www.liferay.com/resource-hub/guides/ai-governance-maturity-model', description: 'The five levels of AI governance maturity.' },
+          { title: 'AI For Your Enterprise Needs', href: 'https://www.liferay.com/resources-hub/guide/ai-for-your-entire-organization', description: 'Purpose-built agents, grounded in your data.', icon: 'IconBuilding1' },
+          { title: 'Operationalizing an AI Governance Framework', href: 'https://www.liferay.com/resource-hub/blogs/ai-governance-framework', description: 'AI governance: from strategy to execution.', icon: 'IconShieldShape', standin: true },
+          { title: 'How the AI Governance Maturity Model Works', href: 'https://www.liferay.com/resource-hub/guides/ai-governance-maturity-model', description: 'The five levels of AI governance maturity.', icon: 'IconChartLine', standin: true },
         ],
       },
       {
         heading: 'Technical Insights',
         links: [
-          { title: 'Headless CMS vs Traditional CMS', href: 'https://www.liferay.com/blog/current-experiences/traditional-vs-headless-choosing-the-right-cms-architecture', description: 'Find the right fit for your team.' },
-          { title: 'DXP vs CMS: What\'s the Difference?', href: 'https://www.liferay.com/blog/current-experiences/what-s-the-difference-between-a-cms-portal-and-dxp-', description: 'One manages content. The other does a lot more.' },
-          { title: 'Composable Architecture Guide', href: '#' },
+          { title: 'Headless CMS vs Traditional CMS', href: 'https://www.liferay.com/blog/current-experiences/traditional-vs-headless-choosing-the-right-cms-architecture', description: 'Find the right fit for your team.', icon: 'IconLayoutGrid', standin: true },
+          { title: 'DXP vs CMS: What\'s the Difference?', href: 'https://www.liferay.com/blog/current-experiences/what-s-the-difference-between-a-cms-portal-and-dxp-', description: 'One manages content. The other does a lot more.', icon: 'IconCube' },
+          { title: 'Composable Architecture Guide', href: '#', icon: 'IconBracketsAngle', standin: true },
         ],
       },
     ],
@@ -235,6 +235,7 @@ export const SITE_NAV: NavMenu[] = [
         ],
       },
     ],
+    featuredStacked: true,
     featured: [
       { title: 'Techem\'s Customer Portal Goes Live in 18 Countries', href: 'https://www.liferay.com/resources/case-studies/techem', description: 'tech', hue: 20 },
       { title: 'Maschio Gaspardo Builds a Single Source of Truth for Product Data', href: 'https://www.liferay.com/resources/case-studies/maschio-gaspardo', description: 'From 6,000 printed catalogs a year to just 100.', hue: 96 },

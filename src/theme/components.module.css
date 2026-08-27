@@ -1987,7 +1987,8 @@
   border-radius: 4px;
   background: transparent;
   color: var(--sds-neutral-10);
-  font-size: 14px;
+  /* 16px, level with the account link beside it — the two read as one row of controls or as neither. */
+  font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   cursor: pointer;
@@ -2267,6 +2268,35 @@
   flex-shrink: 0;
 }
 
+/*
+ * The bar's utility links sit on the nav's size, not the `Link` scale's.
+ *
+ * The file draws language and account level with the sections beside them — 16px — and the link scale
+ * goes 14 / 18 / 21, so neither `sm` nor `md` lands on it. Rather than invent a fourth size the Figma
+ * set does not have, the header states the size for the row it owns. `font-size` directly, because
+ * `--text-fz` is inline on the element and a stylesheet cannot outbid an inline custom property.
+ */
+.headerActions a {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/*
+ * And their glyphs sit at the nav's, too: a 14px mark at 70%, the same as `.headerCaret`. Left as the
+ * components drew them the row mixed a 16px caret on the language trigger with a 14px one on the
+ * sections beside it, which is the sort of difference you cannot name but can see.
+ */
+.headerActions [data-section] svg,
+.headerActions .fieldSection[data-position='right'] svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerActions [data-section],
+.headerActions .fieldSection[data-position='right'] {
+  opacity: 0.7;
+}
+
 /* ------------------------------------------------------------------------ the mega panel
  *
  * An inset floating box that drops out of the band: the same glass, one step more opaque, with the
@@ -2282,7 +2312,11 @@
 .headerMega {
   display: flex;
   flex-direction: column;
-  max-width: 1280px;
+  /*
+   * The file's `Mega Menu / Desktop` frame is 1440 wide — 1120 of columns and a 320 rail. The bar above
+   * it keeps its own 1280, which is the width the file gives the nav's content.
+   */
+  max-width: 1440px;
   margin: 0 auto;
   background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
@@ -2717,7 +2751,10 @@
 
 .megaCtaLabel {
   color: var(--sds-neutral-10);
-  font-size: 15px;
+  /* The paragraph default, rather than the 15px this was pinned to — no other text here is off-scale. */
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
+  font-weight: 600;
 }
 
 /* ---------------------------------------------------------------------------- the scrim
@@ -3143,6 +3180,29 @@
 }
 
 @media (min-width: 1200px) {
+  /*
+   * Every column of a desktop panel on one row.
+   *
+   * `auto-fit` cannot promise that: Solutions' four 190px tracks asked 856px of an 855.3px box, so the
+   * fourth wrapped under the first on two thirds of a pixel — and where a tile heads each column, a
+   * wrap does not merely reflow the grid, it puts a heading over a list it does not belong to. Partners
+   * wrapped for a plainer reason: its rail was the wide one, leaving room for three.
+   *
+   * The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot. The file
+   * draws these panels four across; a menu that wants fewer says so by having fewer columns.
+   */
+  .megaColumns[data-count='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .headerBurger,
   .headerDrawer {
     display: none;

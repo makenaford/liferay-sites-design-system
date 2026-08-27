@@ -2,48 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Box, Group, Stack, Text, Title } from '@mantine/core'
 import { Header } from './Header'
 import { Button } from '../Button'
-import { Link } from '../Link'
-import {
-  IconDown,
-} from '../../icons'
-import { SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from '../../templates/site-nav-render'
+import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from '../../templates/site-nav-render'
 
-/** The prototype's logo: a 28px mark and the wordmark beside it. */
-function Logo() {
-  return (
-    <>
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
-        <rect width="28" height="28" rx="6" fill="var(--sds-brand-primary-primary)" />
-        <rect x="5" y="5" width="7" height="7" rx="1.5" fill="#fff" />
-        <rect x="16" y="5" width="7" height="7" rx="1.5" fill="#fff" opacity=".55" />
-        <rect x="5" y="16" width="7" height="7" rx="1.5" fill="#fff" opacity=".55" />
-        <rect x="16" y="16" width="7" height="7" rx="1.5" fill="#fff" />
-      </svg>
-      <span>Liferay</span>
-    </>
-  )
-}
-
-/**
- * Stands in for the customer-story imagery. The prototype uses colour blocks for the same reason: the
- * stories have to render offline.
- */
-const actions = (
-  <>
-    <Link href="#" size="md" rightSection={<IconDown />}>
-      EN (US)
-    </Link>
-    <Link href="#" size="md">
-      Log In
-    </Link>
-    <Button size="sm">Contact Sales</Button>
-  </>
-)
-
-/**
- * The drawer's own controls. The same three things the bar holds, as data — so the drawer can draw the
- * language and log-in as accordions rather than as a combobox and a link.
- */
 /** Page content, so the glass has something to blur and the fixed band has something to overlay. */
 function PageBelow() {
   return (
@@ -67,7 +27,8 @@ function PageBelow() {
 const meta = {
   title: 'Components/Header',
   component: Header,
-  args: { items: SITE_NAV_ITEMS, actions, drawerControls: SITE_DRAWER_CONTROLS, logo: <Logo /> },
+  /* No `logo`: the default is the real lockup, which is what every surface should draw. */
+  args: { items: SITE_NAV_ITEMS, actions: SITE_ACTIONS, drawerControls: SITE_DRAWER_CONTROLS },
   argTypes: {
     items: { control: false },
     actions: { control: false },

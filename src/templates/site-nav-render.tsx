@@ -1,6 +1,8 @@
 import { Button } from '../components/Button'
 import { MegaMenu } from '../components/Header'
-import { IconArrowRight } from '../icons'
+import { LanguagePicker } from '../components/Input'
+import { Link } from '../components/Link'
+import { IconArrowRight, IconDown, IconUser1Filled } from '../icons'
 import { navIcon } from './nav-icons'
 import { logoTile } from './logo-tile'
 import { SITE_NAV, type NavMenu } from './site-nav'
@@ -85,7 +87,9 @@ function menuOf(menu: NavMenu) {
 
       {menu.cta ? (
         <MegaMenu.Cta label="Ready to Evaluate?">
-          <Button rightSection={<IconArrowRight />}>{menu.cta.label}</Button>
+          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+            {menu.cta.label}
+          </Button>
         </MegaMenu.Cta>
       ) : null}
     </MegaMenu>
@@ -125,3 +129,30 @@ export const SITE_DRAWER_CONTROLS = {
     <Button size="md">Contact Sales</Button>
   ),
 }
+
+/**
+ * The right-hand side of the bar: language, account, a call to action.
+ *
+ * Exported for the same reason the menus are. `SiteHeader` and the `Header` stories each built their
+ * own, so the stories showed two bare links where the templates showed the file's combobox and an
+ * account link with its person and its caret — and a fix to one never reached the other.
+ */
+export const SITE_ACTIONS = (
+  <>
+    {/*
+     * Both carets are the nav's `IconDown`, not the field's small filled one: these sit in the same row
+     * as Platform and Solutions, and two different arrows across one bar reads as an oversight. The
+     * picker takes it as an override — its own default is right for a caret inside a form field.
+     */}
+    <LanguagePicker
+      aria-label="Language"
+      defaultValue={SITE_DRAWER_CONTROLS.language.value}
+      data={SITE_DRAWER_CONTROLS.language.options}
+      rightSection={<IconDown />}
+    />
+    <Link href="#" size="md" leftSection={<IconUser1Filled />} rightSection={<IconDown />}>
+      Log In
+    </Link>
+    <Button size="sm">Contact Sales</Button>
+  </>
+)

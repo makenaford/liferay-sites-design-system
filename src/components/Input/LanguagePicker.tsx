@@ -112,7 +112,8 @@ export const LanguagePicker = forwardRef<HTMLInputElement, LanguagePickerProps>(
         rightSectionWidth={18}
         rightSectionPointerEvents="none"
         {...focusRing}
-        w={78}
+        /* Wide enough for `EN (US)` at the header's 16px, plus the 16px the caret slot reserves. */
+        w={92}
         comboboxProps={{ width: 220, position: 'bottom-start' }}
         {...props}
       />
