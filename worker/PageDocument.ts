@@ -22,7 +22,7 @@
  * of entries so a long editing session cannot grow without limit.
  */
 import { DurableObject } from 'cloudflare:workers'
-import { documentProblems, emptyDocument, type PageDocument as Page } from '../src/builder/document'
+import { documentProblems, emptyDocument, migrate, type PageDocument as Page } from '../src/builder/document'
 import type { AccessConfig } from './access'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
@@ -30,7 +30,10 @@ const HISTORY = 200
 
 export interface Env extends AccessConfig {
   PAGES: DurableObjectNamespace<PageDocument>
+  /** The built builder — the Worker's own files, not anything a designer uploaded. */
   ASSETS: Fetcher
+  /** Uploaded images. Named for what a designer does, to keep it apart from `ASSETS`. */
+  UPLOADS: R2Bucket
 }
 
 /** What a client is told after a write, and what a broadcast carries. */
@@ -136,9 +139,17 @@ export class PageDocument extends DurableObject<Env> {
     if (!row) return emptyDocument(this.name)
 
     const doc = JSON.parse(row.json) as Page
-    // The id travels with the document but the object's name is the truth, so a page that was copied
-    // from another one cannot lie about which page it is.
-    return { ...doc, id: this.name }
+    /*
+     * The id travels with the document but the object's name is the truth, so a page that was copied
+     * from another one cannot lie about which page it is.
+     *
+     * `migrate` is here rather than in a script over every page because there is no list of pages to
+     * run a script over — each one is its own object, reachable only by name. Reading is the moment a
+     * page is in memory and the moment its staleness would show, so it is the moment to fix it. The
+     * revision is deliberately *not* bumped: correcting a value nobody chose is not an edit somebody
+     * made, and it must not appear in the history as one. The next real save writes it down.
+     */
+    return migrate({ ...doc, id: this.name })
   }
 
   snapshot(): Snapshot {
@@ -174,12 +185,14 @@ export class PageDocument extends DurableObject<Env> {
     const problems = documentProblems(incoming)
     if (problems.length) throw new Error(`Invalid page: ${problems.join('; ')}`)
 
-    const doc: Page = {
+    // Migrated on the way in as well as on the way out: `restore` writes an old revision back, and an
+    // old revision is exactly where a value from before a rename still lives.
+    const doc: Page = migrate({
       ...(incoming as Page),
       id: this.name,
       rev: current.rev + 1,
       updatedAt: Date.now(),
-    }
+    })
     const json = JSON.stringify(doc)
 
     /*

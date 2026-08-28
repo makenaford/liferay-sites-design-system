@@ -106,7 +106,11 @@ const OVERRIDES: Record<string, PropSpec[]> = {
   Label: [{ name: 'children', kind: 'text', doc: 'The label.' }],
   Chip: [{ name: 'children', kind: 'text', doc: 'The label.' }],
   Image: [
-    { name: 'src', kind: 'text', doc: 'The file. A URL, or a path under the deployment.' },
+    {
+      name: 'src',
+      kind: 'image',
+      doc: 'The picture. Drop a file on it to upload one, or paste a URL.',
+    },
     { name: 'radius', kind: 'number', doc: 'Corner radius in pixels.' },
   ],
   Card: [
@@ -269,8 +273,21 @@ function generated(name: string): ComponentSpec {
   const extra = OVERRIDES[name] ?? []
   if (!base) return { name, props: extra }
 
-  const known = new Set(base.props.map((prop) => prop.name))
-  return { ...base, props: [...base.props, ...extra.filter((prop) => !known.has(prop.name))] }
+  /*
+   * An override with a name the generator already found **replaces the fields it names** rather than
+   * being dropped. That is the difference between "the generator missed this" and "the generator got
+   * this wrong", and `Image`'s `src` is the second: it is a string, but the story marks it
+   * `control: false`, which the generator can only read as a slot. Merging rather than replacing
+   * outright keeps the parts the generator does know — a default read off an `@default` tag.
+   */
+  const overridden = new Map(extra.map((prop) => [prop.name, prop]))
+  const props = base.props.map((prop) => {
+    const override = overridden.get(prop.name)
+    overridden.delete(prop.name)
+    return override ? { ...prop, ...override } : prop
+  })
+
+  return { ...base, props: [...props, ...overridden.values()] }
 }
 
 /**

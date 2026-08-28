@@ -6,8 +6,14 @@
  * does not have, and cannot miss one it does.
  */
 
-/** How the inspector draws a prop, and what the document is allowed to store for it. */
-export type ControlKind = 'enum' | 'text' | 'number' | 'boolean' | 'slot'
+/**
+ * How the inspector draws a prop, and what the document is allowed to store for it.
+ *
+ * `image` is never generated — nothing in a TypeScript type says "this string is a picture". It is
+ * asked for by hand in `registry.tsx`, and the control it draws accepts a dropped file as well as a
+ * URL. It lives in this union rather than beside that override so that a spec is one type everywhere.
+ */
+export type ControlKind = 'enum' | 'text' | 'number' | 'boolean' | 'slot' | 'image'
 
 export interface PropSpec {
   name: string
@@ -65,8 +71,10 @@ export const CATALOG: ComponentSpec[] = [
     name: "Card",
     doc: "Card — Figma `card-main` (node `16728:26513`), with `Surface` (`16953:109831`), `card-image`, `header-alignment` (`19097:9035`), `Card hero` (`17720:27408`) and `Content Text` (`20354:3820`).",
     props: [
-      { name: "surface", kind: "enum", options: ["glass", "no-bg", "grey", "gradient-blue", "gradient-purple"], doc: "Figma `Surface` `Style`." },
+      { name: "surface", kind: "enum", options: ["glass", "static", "highlighted", "none"], default: "glass", doc: "Which of the four kinds of card this is. See `CardSurface` — the choice carries the meaning, and for `static` and `highlighted` it also settles `interactive`." },
+      { name: "tone", kind: "enum", options: ["blue", "purple"], default: "blue", doc: "The gradient on a `highlighted` card. Ignored by the other three." },
       { name: "align", kind: "enum", options: ["vertical", "horizontal"], default: "vertical", doc: "Figma `card-main` `Align`." },
+      { name: "radius", kind: "enum", options: ["card", "pill"], default: "card", doc: "The corner." },
       { name: "padding", kind: "enum", options: ["all", "content", "full", "none"], default: "all", doc: "Where the 20px goes." },
       { name: "image", kind: "slot", doc: "`Show Image` — the `card-image` slot. Pass an `Image`, an `img`, a logo panel, anything. Present is shown and absent is hidden, which is what Figma's `Show Image` boolean does." },
       { name: "imageRatio", kind: "enum", options: ["3:2", "16:9"], default: "3:2", doc: "Figma's `Aspect Ratio` axis on `card-image`." },
@@ -79,7 +87,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "main", kind: "slot", doc: "`Show Main Content 1` — under the header. A `StatBar` in the wide card." },
       { name: "secondary", kind: "slot", doc: "`Show Main Content 2` — a second block under the first." },
       { name: "bottom", kind: "slot", doc: "`Show Bottom Content` — the last block, pushed to the bottom. Links, buttons, an attribution." },
-      { name: "interactive", kind: "boolean", default: "false", doc: "Turns on the hover and focus treatment. Only for a card that really is a link or a button — pass `component=\"a\" href=\"…\"` or an `onClick` with it." },
+      { name: "interactive", kind: "boolean", default: "false", doc: "Turns on the hover and focus treatment." },
       { name: "children", kind: "slot", doc: "Anything else, rendered where `main` sits." },
     ],
   },
@@ -169,6 +177,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "position", kind: "enum", options: ["fixed", "static"], doc: "`fixed` overlays the page, which is what the glass blur is for. `static` sits in the flow." },
       { name: "condense", kind: "boolean", default: "true", doc: "Condense on scroll: at the top of the page the band is transparent and part of the hero, and once the page moves it gains the glass, the hairline and a tighter bar." },
       { name: "items", kind: "slot", source: "story" },
+      { name: "drawerControls", kind: "slot", source: "story" },
     ],
     unsupported: ["onOpenChange"],
   },
@@ -177,9 +186,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Hero — Figma `Hero` component set (node `19110:9503`), with the slots the accompanying spreadsheet lists.",
     props: [
       { name: "background", kind: "enum", options: ["none", "full", "corner"], default: "corner", doc: "Figma's `Type` axis, and the spreadsheet's Background column: `full` is Bubble Full, `corner` is Corner Bubble, `none` is the plain surface." },
-      { name: "video", kind: "text", doc: "The bubble animation. `assets/bubbles/bubble_center.webm` goes with `background=\"full\"` and `bubble_corner.webm` with `background=\"corner\"`." },
-      { name: "videoPoster", kind: "text", doc: "A still for the video's first frame, shown while it loads." },
-      { name: "align", kind: "enum", options: ["left", "center"], default: "left", doc: "Figma's `Alignnemt` axis. `center` centres the column and its text." },
+      { name: "align", kind: "enum", options: ["left", "center"], default: "left", doc: "`center` centres the column and its text." },
       { name: "banner", kind: "slot", doc: "A full-width band above the content and the media, centred in the hero's own gutters. The Home page (node `24563:52720`) draws a solution finder there — a 1000px bar sitting over the bubble, above the heading and spanning both columns — which none of the content slots can hold, because every one of them lives inside the left column." },
       { name: "label", kind: "slot", doc: "Above the heading — a `Label`, an eyebrow, a breadcrumb." },
       { name: "title", kind: "slot", doc: "The heading. Pass a real `h1` — the hero does not choose a heading level for you, because only the page knows whether this is its first heading. Named `title` for the slot it fills, not the `title` attribute." },
@@ -189,7 +196,10 @@ export const CATALOG: ComponentSpec[] = [
       { name: "proof", kind: "slot", doc: "The Gartner logo and its tags, or any other proof that sits under the actions." },
       { name: "media", kind: "slot", doc: "Figma's `Image=Yes`: the media column beside the content. An image, a video card, anything." },
       { name: "children", kind: "slot" },
+      { name: "videoLight", kind: "slot", source: "story" },
+      { name: "videoPoster", kind: "slot", source: "story" },
     ],
+    unsupported: ["video"],
   },
   {
     name: "Image",
@@ -314,7 +324,6 @@ export const CATALOG: ComponentSpec[] = [
   },
   {
     name: "StatBar",
-    doc: "StatBar — Figma `Stats Bar` component set (node `16708:102931`).",
     props: [
       { name: "children", kind: "slot", doc: "The stats. Anything is accepted, but this is drawn for `Stat` children." },
       { name: "align", kind: "enum", options: ["left", "center"], doc: "Figma's `Align` axis — Left as drawn, or centred." },
@@ -335,7 +344,7 @@ export const CATALOG: ComponentSpec[] = [
     props: [
       { name: "floating", kind: "boolean", doc: "Figma's `Condensed=True` cell: the label sits inside the 48px box and shrinks up out of the way once the field has a value or focus, rather than sitting above it." },
       { name: "info", kind: "slot", doc: "Figma's `Info Button`: an explanation beside the label, in a tooltip." },
-      { name: "containedButton", kind: "slot", doc: "A button inside the field's right edge — a submit for a single-field form. Not drawn in Figma; composed from the drawn field and this library's `Button`. Use `size=\"sm\"`: that is 40px here, so it leaves 4px of air inside the 48px box. `size=\"md\"` is 48px and fills the field edge to edge." },
+      { name: "containedButton", kind: "slot", doc: "A button inside the field's right edge — a submit for a single-field form. Not drawn in Figma; composed from the drawn field and this library's `Button`." },
     ],
   },
   {

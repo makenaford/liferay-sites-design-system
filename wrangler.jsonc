@@ -30,6 +30,19 @@
    */
   "alias": { "#ssr": "./dist/ssr/server.js" },
 
+  /*
+   * Where uploaded images live.
+   *
+   * Not in the page's own Durable Object, which was the obvious place and the wrong one: a SQLite row
+   * caps at 2MB, so the object could only ever hold an image small enough to be a row, and every read
+   * of a photograph would have to wake the object that owns the document. A bucket has neither
+   * problem, and the bytes stay reachable while the object is busy.
+   *
+   * The gate has not moved. A key is `pages/<page>/<asset>` and the Worker is the only thing holding
+   * the binding, so an image is still readable exactly when its page is — see `worker/index.ts`.
+   */
+  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "liferay-sites-page-builder-assets" }],
+
   "durable_objects": {
     "bindings": [{ "name": "PAGES", "class_name": "PageDocument" }]
   },

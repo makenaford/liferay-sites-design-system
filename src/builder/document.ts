@@ -302,6 +302,78 @@ export function duplicate(doc: PageDocument, id: string): { doc: PageDocument; i
 /** Stamps a write. The revision itself is the Durable Object's to assign — see `worker/`. */
 const touch = (doc: PageDocument): PageDocument => ({ ...doc, updatedAt: Date.now() })
 
+/* ------------------------------------------------------------------ keeping old pages current */
+
+/**
+ * Prop values a component no longer understands, and what they became.
+ *
+ * ## Why this has to exist
+ *
+ * A page stores prop *values*; the catalogue lives in the code. So renaming a variant updates every
+ * page's **controls** the moment it deploys — the inspector reads the catalogue fresh — while leaving
+ * the **values** already saved untouched. A card saved as `surface="grey"` still says `grey`, and
+ * `Card` no longer has a `grey`: it renders with no fill and no rim, which is to say it stops looking
+ * like a card at all. Nothing warns anybody, because a document is JSON and JSON cannot be wrong.
+ *
+ * A general "drop anything the catalogue does not list" pass would be worse than this table. It
+ * cannot tell a renamed value from a prop the catalogue never described — `Hero`'s `video` takes a
+ * string the generator cannot classify, and a page is right to hold one — so it would quietly delete
+ * work. This is the narrow, reviewable alternative: the renames somebody actually made, written down.
+ *
+ * **Entries are never removed.** A page that has not been opened since before a rename is exactly the
+ * page this is for, and there is no deadline by which it must have been opened.
+ */
+const RENAMED: Record<string, (props: Record<string, PropValue>) => Record<string, PropValue> | null> = {
+  /*
+   * `Four kinds of card, with the rim carrying the meaning` (f792179) replaced a list of appearances
+   * with a list of kinds. The two gradient cells collapsed into one surface plus a `tone`, which is
+   * why this is a rewrite of the whole prop bag rather than a value-for-value map.
+   */
+  Card: (props) => {
+    const was = props.surface
+    switch (was) {
+      case 'grey':
+        return { ...props, surface: 'static' }
+      case 'no-bg':
+        return { ...props, surface: 'none' }
+      case 'gradient-blue':
+        return { ...props, surface: 'highlighted', tone: 'blue' }
+      case 'gradient-purple':
+        return { ...props, surface: 'highlighted', tone: 'purple' }
+      default:
+        return null
+    }
+  },
+}
+
+/**
+ * Brings a stored page up to date with the components as they are now.
+ *
+ * Applied where the page is **read** rather than as a one-off script over the stored pages, for two
+ * reasons: a Durable Object per page has no list to iterate in the first place, and a page that is
+ * never opened never needed migrating. Reading is also the moment it matters — the next save writes
+ * the corrected values back, so this converges without anything having to be scheduled.
+ *
+ * Returns the document **unchanged and identical** when there is nothing to do, which is the normal
+ * case and keeps this off the cost of an ordinary read.
+ */
+export function migrate(doc: PageDocument): PageDocument {
+  let changed = false
+  const nodes: Record<string, PageNode> = {}
+
+  for (const [id, node] of Object.entries(doc.nodes)) {
+    const rewrite = RENAMED[node.component]?.(node.props)
+    if (rewrite) {
+      changed = true
+      nodes[id] = { ...node, props: rewrite }
+    } else {
+      nodes[id] = node
+    }
+  }
+
+  return changed ? { ...doc, nodes } : doc
+}
+
 /* ------------------------------------------------------------------ integrity */
 
 /**

@@ -17,12 +17,14 @@
  * ones the components themselves take as props, which is the library saying they are a caller's
  * decision.
  */
+import { useRef, useState } from 'react'
 import {
   ActionIcon,
   Box,
   Button,
   Divider,
   Group,
+  Loader,
   Menu,
   NumberInput,
   Select,
@@ -37,6 +39,7 @@ import type { PageDocument, PropValue } from './document'
 import type { PropSpec } from './catalog.generated'
 import { allowedIn, entryFor, humanise, PALETTE, REGISTRY, slotsOf } from './registry'
 import { presetsFor } from './presets'
+import { uploadImage } from './upload'
 
 export interface InspectorProps {
   doc: PageDocument
@@ -70,15 +73,28 @@ const hint = (doc?: string) => {
 function Control({
   spec,
   value,
+  pageId,
   onChange,
 }: {
   spec: PropSpec
   value: PropValue | undefined
+  /** Which page an uploaded file belongs to. Only the `image` control uses it. */
+  pageId: string
   onChange: (value: PropValue | undefined) => void
 }) {
   const description = hint(spec.doc)
 
   switch (spec.kind) {
+    case 'image':
+      return (
+        <ImageField
+          spec={spec}
+          value={typeof value === 'string' ? value : undefined}
+          pageId={pageId}
+          onChange={onChange}
+        />
+      )
+
     case 'enum':
       return (
         <Select
@@ -141,6 +157,151 @@ function Control({
       )
     }
   }
+}
+
+/* ------------------------------------------------------------------ the image control */
+
+/**
+ * A picture, dropped or pasted.
+ *
+ * The only control here that stores something a designer *brought* rather than something the library
+ * offers, which is why it is the only one written by hand. A mock of a real page needs the client's
+ * real photographs, and the alternative — telling a designer to host the file somewhere and paste a
+ * URL — is the step at which people stop using the builder.
+ *
+ * Both ways in are kept. The dropzone is what anyone reaches for; the URL field underneath still
+ * takes a path to something already in the deployment, which is how the library's own artwork gets
+ * onto a page without being uploaded a second time.
+ */
+function ImageField({
+  spec,
+  value,
+  pageId,
+  onChange,
+}: {
+  spec: PropSpec
+  value: string | undefined
+  pageId: string
+  onChange: (value: PropValue | undefined) => void
+}) {
+  const input = useRef<HTMLInputElement>(null)
+  const [over, setOver] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
+
+  const take = async (file: File | undefined) => {
+    if (!file) return
+    setFailed(null)
+    setBusy(true)
+    try {
+      onChange(await uploadImage(pageId, file))
+    } catch (reason) {
+      setFailed((reason as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Box>
+      <Text size="xs" fw={500} mb={2}>
+        {label(spec.name)}
+      </Text>
+
+      <Box
+        role="button"
+        tabIndex={0}
+        aria-label="Upload an image"
+        onClick={() => input.current?.click()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            input.current?.click()
+          }
+        }}
+        /*
+         * `preventDefault` on drag-over is what tells the browser this element accepts a drop; without
+         * it the file is opened in the tab instead, which loses the page.
+         */
+        onDragOver={(event) => {
+          event.preventDefault()
+          setOver(true)
+        }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(event) => {
+          event.preventDefault()
+          setOver(false)
+          void take(event.dataTransfer.files[0])
+        }}
+        style={{
+          border: `1px dashed var(--mantine-color-${over ? 'blue' : 'dark'}-4)`,
+          borderRadius: 6,
+          background: over ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-dark-6)',
+          cursor: 'pointer',
+          overflow: 'hidden',
+        }}
+      >
+        {value && !busy ? (
+          /*
+           * The stored image itself, not a name. A page can hold a dozen of these and a designer picks
+           * the one they mean by looking at it — a list of `a3f9…` would be useless.
+           */
+          <Box
+            component="img"
+            src={value}
+            alt=""
+            display="block"
+            w="100%"
+            h={110}
+            style={{ objectFit: 'contain', background: 'var(--mantine-color-dark-7)' }}
+          />
+        ) : (
+          <Group justify="center" gap="xs" h={110}>
+            {busy ? <Loader size="xs" /> : null}
+            <Text size="xs" c="dimmed">
+              {busy ? 'Uploading…' : 'Drop an image, or click to choose'}
+            </Text>
+          </Group>
+        )}
+      </Box>
+
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
+        hidden
+        onChange={(event) => {
+          void take(event.currentTarget.files?.[0])
+          // Cleared so that choosing the same file twice in a row still fires a change.
+          event.currentTarget.value = ''
+        }}
+      />
+
+      {failed ? (
+        <Text size="10px" c="red" mt={4}>
+          {failed}
+        </Text>
+      ) : null}
+
+      <Group gap={4} mt={4} wrap="nowrap" align="flex-end">
+        <TextInput
+          size="xs"
+          style={{ flex: 1, minWidth: 0 }}
+          description={hint(spec.doc)}
+          placeholder="…or a URL"
+          value={value ?? ''}
+          onChange={(event) => onChange(event.currentTarget.value || undefined)}
+        />
+        {value ? (
+          <Tooltip label="Remove the image">
+            <ActionIcon size="md" variant="default" aria-label="Remove the image" onClick={() => onChange(undefined)}>
+              ×
+            </ActionIcon>
+          </Tooltip>
+        ) : null}
+      </Group>
+    </Box>
+  )
 }
 
 /* ------------------------------------------------------------------ the panel */
@@ -209,6 +370,7 @@ export function Inspector({
                 key={prop.name}
                 spec={prop}
                 value={node.props[prop.name]}
+                pageId={doc.id}
                 onChange={(value) => onProp(node.id, prop.name, value)}
               />
             ))

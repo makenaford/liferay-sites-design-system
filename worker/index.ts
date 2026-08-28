@@ -30,6 +30,8 @@
  * | `PUT /api/pages/:id` | Access |
  * | `DELETE /api/pages/:id` | Access |
  * | `GET /api/pages/:id/socket` | Access, or the code. Only Access may write over it |
+ * | `POST /api/pages/:id/assets` | Access. Stores an uploaded image |
+ * | `GET /api/pages/:id/assets/:asset` | Access, or the page's code |
  * | `GET /api/pages/:id/history` | Access |
  * | `POST /api/pages/:id/restore` | Access |
  * | `POST /api/pages/:id/share` | Access. `{ rotate: true }` replaces the code |
@@ -72,6 +74,52 @@ const newName = () =>
  * a 404 rather than an empty new page.
  */
 const VALID_ID = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/
+
+/** What `newAssetId` mints. Checked before the bucket is asked, so a junk path is a 404, not a read. */
+const VALID_ASSET = /^[a-f0-9]{32}$/
+
+/**
+ * The largest image the bucket will take.
+ *
+ * A bucket has no meaningful size limit, so this is a judgement rather than a constraint: 10MB is
+ * past anything a web page should be serving, and it is the point at which an accidental upload — a
+ * print export, a screen recording saved as a GIF — is better refused than quietly stored. The
+ * builder re-encodes before it gets here (see `src/builder/upload.ts`), so a photograph arrives well
+ * under it and this only ever catches the accident.
+ */
+const UPLOAD_LIMIT = 10 * 1024 * 1024
+
+/**
+ * What may be stored.
+ *
+ * An allowlist rather than a check for `image/`: this is what the Worker will later hand back with
+ * that same `Content-Type`, and a page must not become a way to serve arbitrary files from its own
+ * origin. SVG is on the list because the library's own artwork is vector; the response that serves
+ * it is what makes it safe.
+ */
+const IMAGE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/avif',
+  'image/gif',
+  'image/svg+xml',
+])
+
+/**
+ * Where a page's images live in the bucket.
+ *
+ * Keyed by page first so that everything one page owns shares a prefix — which is what makes
+ * deleting a page able to delete its images, a bucket having no equivalent of the Durable Object's
+ * `deleteAll`.
+ */
+const assetKey = (page: string, asset: string) => `pages/${page}/${asset}`
+
+/** 32 hex characters, which is what `VALID_ASSET` matches. */
+const newAssetId = (): string =>
+  Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('')
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -227,12 +275,12 @@ async function stylesheet(env: Env, url: URL): Promise<string> {
 /* ------------------------------------------------------------------ the api */
 
 async function api(request: Request, env: Env, url: URL, who: Identity): Promise<Response> {
-  const segments = url.pathname.split('/').filter(Boolean) // ['api', 'pages', id?, action?]
+  const segments = url.pathname.split('/').filter(Boolean) // ['api', 'pages', id?, action?, rest?]
 
   if (segments[1] === 'me') return json({ authed: who.authed, email: who.email ?? null })
   if (segments[1] !== 'pages') return oops('No such endpoint', 404)
 
-  const [, , id, action] = segments
+  const [, , id, action, rest] = segments
 
   // Creating a page is a signed-in act, and it happens at `/edit/new` so Access can prompt for it.
   if (!id) return oops('Create a page at /edit/new', 404)
@@ -259,6 +307,74 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
       const target = new URL('https://page/socket')
       if (who.authed) target.searchParams.set('write', '1')
       return page.fetch(new Request(target, request))
+    }
+
+    /*
+     * The images on this page.
+     *
+     * The two halves are gated differently on purpose, and this is the clearest case of why the
+     * Worker checks Access itself: **putting** an image on a page is editing it, while **seeing** one
+     * is reading it, so a share link that opens the page has to open its pictures too or a shared
+     * page arrives full of holes.
+     */
+    case 'assets': {
+      if (!rest) {
+        const refused = editorOnly()
+        if (refused) return refused
+        if (request.method !== 'POST') return oops('Method not allowed', 405)
+
+        const type = (request.headers.get('content-type') ?? '').split(';')[0].trim()
+        if (!IMAGE_TYPES.has(type)) return oops(`${type || 'That file'} is not an image`, 415)
+
+        const size = Number(request.headers.get('content-length') ?? 0)
+        if (size > UPLOAD_LIMIT) {
+          return oops(`That image is ${Math.round(size / 1024 / 1024)}MB; the limit is ${UPLOAD_LIMIT / 1024 / 1024}MB`, 413)
+        }
+
+        const bytes = await request.arrayBuffer()
+        if (!bytes.byteLength) return oops('No image in that upload', 400)
+        // Checked again against what actually arrived: `Content-Length` is the client's claim, and a
+        // chunked upload need not send one at all.
+        if (bytes.byteLength > UPLOAD_LIMIT) {
+          return oops(`That image is ${Math.round(bytes.byteLength / 1024 / 1024)}MB; the limit is ${UPLOAD_LIMIT / 1024 / 1024}MB`, 413)
+        }
+
+        const asset = newAssetId()
+        await env.UPLOADS.put(assetKey(id, asset), bytes, {
+          httpMetadata: { contentType: type },
+        })
+        return json({ id: asset, url: `/api/pages/${id}/assets/${asset}` }, 201)
+      }
+
+      if (request.method !== 'GET') return oops('Method not allowed', 405)
+      if (!VALID_ASSET.test(rest)) return oops('Not an image id', 404)
+
+      const read = await mayRead(request, env, url, id, who)
+      if (!read.ok) return oops('No access to this page', 403)
+
+      const stored = await env.UPLOADS.get(assetKey(id, rest))
+      if (!stored) return oops('No such image', 404)
+
+      /*
+       * `immutable`, because the id is random and the bytes behind it never change — so a page full
+       * of photographs is fetched once and then never again. `private`, because it is behind the same
+       * gate as the page: a shared cache holding it would be handing it to whoever asked next.
+       *
+       * The `Content-Security-Policy` is what makes SVG safe to accept. Script inside an SVG never
+       * runs when it is drawn by an `<img>`, but *navigating* to this URL renders it as a document on
+       * this origin, where it would run with the page's own privileges. The policy denies it
+       * everything, and `nosniff` stops the type from being reinterpreted on the way.
+       */
+      return new Response(stored.body, {
+        headers: {
+          'content-type': stored.httpMetadata?.contentType ?? 'application/octet-stream',
+          'content-length': String(stored.size),
+          etag: stored.httpEtag,
+          'cache-control': 'private, max-age=31536000, immutable',
+          'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:",
+          'x-content-type-options': 'nosniff',
+        },
+      })
     }
 
     case 'history':
@@ -324,12 +440,36 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
       if (refused) return refused
 
       await page.destroy()
+      // The images are the one thing the object cannot take with it: `deleteAll` empties its own
+      // storage, and the bucket is not its storage. Without this, deleting a page leaves its
+      // photographs behind, paid for and reachable by nobody.
+      await deleteAssets(env, id)
       return new Response(null, { status: 204 })
     }
 
     default:
       return oops('Method not allowed', 405)
   }
+}
+
+/**
+ * Removes every image a page owns.
+ *
+ * Listed and deleted in pages rather than in one call: a bucket lists a bounded number of keys at a
+ * time, and a page that has been worked on for months can hold more images than one listing returns.
+ * Stopping at the first batch would leave the rest orphaned, which is the failure that is invisible
+ * until a storage bill arrives.
+ */
+async function deleteAssets(env: Env, page: string): Promise<void> {
+  let cursor: string | undefined
+
+  do {
+    const listing = await env.UPLOADS.list({ prefix: `pages/${page}/`, cursor })
+    if (listing.objects.length) {
+      await env.UPLOADS.delete(listing.objects.map((object) => object.key))
+    }
+    cursor = listing.truncated ? listing.cursor : undefined
+  } while (cursor)
 }
 
 /**

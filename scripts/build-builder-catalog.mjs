@@ -446,8 +446,14 @@ const output = `/**
  * does not have, and cannot miss one it does.
  */
 
-/** How the inspector draws a prop, and what the document is allowed to store for it. */
-export type ControlKind = 'enum' | 'text' | 'number' | 'boolean' | 'slot'
+/**
+ * How the inspector draws a prop, and what the document is allowed to store for it.
+ *
+ * \`image\` is never generated — nothing in a TypeScript type says "this string is a picture". It is
+ * asked for by hand in \`registry.tsx\`, and the control it draws accepts a dropped file as well as a
+ * URL. It lives in this union rather than beside that override so that a spec is one type everywhere.
+ */
+export type ControlKind = 'enum' | 'text' | 'number' | 'boolean' | 'slot' | 'image'
 
 export interface PropSpec {
   name: string
