@@ -3580,24 +3580,24 @@
  * top right, so it is not stretched across the whole width.
  */
 /*
- * Pinned left, right and bottom — never cropped along the bottom.
+ * The frame is stretched to the hero, not fitted into it.
  *
- * This was `inset: 0` with `object-fit: cover`, which fills the box by overflowing whichever axis does
- * not fit: in a hero shorter than the artwork it ate the bottom of the bubble, which is the part that
- * reaches furthest into the page. Sizing by width with `height: auto` and anchoring the bottom means
- * the frame's own proportions decide the height, and anything that does not fit is taken off the top,
- * behind the content, where there is nothing to lose.
+ * `cover` was cropping the bottom — it fills a box by overflowing whichever axis does not fit, and in a
+ * hero shorter than the artwork the part that goes was the bottom of the bubble, which is the part that
+ * reaches furthest into the page. Sizing by width instead kept every edge but left gradient above the
+ * bubble in a tall hero, which is worse.
+ *
+ * So `fill`: both axes scale to the box, nothing is cropped on any edge, and the bubble tracks the
+ * window as it resizes. It distorts, and that is fine *here* and nowhere else — this is an abstract
+ * gradient with no figure, no text and no circle anyone can check. A photograph in this slot would need
+ * `cover` and a considered crop.
  */
 .heroVideo {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: 0;
   width: 100%;
-  /*
-   * `auto`, and no `object-fit`: the frame keeps its own ratio, so nothing is cropped on any of the
-   * three pinned edges. A hero taller than that simply has gradient above the bubble; a shorter one
-   * loses the top of the frame to `overflow: hidden`, which is the end with nothing in it.
-   */
-  height: auto;
+  height: 100%;
+  object-fit: fill;
   /*
    * The file is a bright sphere on a near-black ground, so `screen` drops the ground and keeps the
    * light. Its blacks are not pure, though, which leaves a faint rectangle where the frame ends — hence
@@ -3635,12 +3635,13 @@
 
 .hero[data-background='corner'] .heroVideo {
   /*
-   * The corner bubble keeps its top-right weight, but takes the same three edges: the full width, and
-   * the bottom. It used to be a 1105px box anchored top right, which is what cut its bottom away.
+   * The corner bubble fills the hero too. It used to be a 1105px box anchored top right, which is what
+   * cut its bottom away; the weight is in the artwork, so it stays in the corner without being boxed
+   * into one.
    */
-  inset: auto 0 0 0;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
   -webkit-mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
   mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
