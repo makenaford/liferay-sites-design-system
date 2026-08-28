@@ -88,7 +88,7 @@ function menuOf(menu: NavMenu) {
 
       {menu.cta ? (
         <MegaMenu.Cta label="Ready to Evaluate?">
-          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+          <Button variant="outline" size="sm" rightSection={<IconArrowRight />}>
             {menu.cta.label}
           </Button>
         </MegaMenu.Cta>

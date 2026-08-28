@@ -2704,7 +2704,8 @@
 .megaFeaturedTitle {
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
-  font-weight: 400;
+  /* Semibold, like every other link title in a menu — a card's heading is a heading either way. */
+  font-weight: 600;
   line-height: 1.25;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
