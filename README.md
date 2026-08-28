@@ -922,13 +922,29 @@ import { Button, Header, MegaMenu } from 'liferay-sites-design-system'
             </MegaMenu.Columns>
             <MegaMenu.Featured heading="Featured">…</MegaMenu.Featured>
           </MegaMenu.Body>
-          <MegaMenu.Cta label="Ready to Evaluate?">…</MegaMenu.Cta>
+          <MegaMenu.Cta
+            label="Ready to Evaluate?"
+            action={{ label: 'See subscription options', href: '/subscriptions' }}
+          >
+            <Button variant="outline" size="sm">See subscription options</Button>
+          </MegaMenu.Cta>
         </MegaMenu>
       ),
     },
   ]}
 />
 ```
+
+**The CTA strip is the one place the panel needs a mobile variant.** `MegaMenu.Cta` takes both a
+`children` action and an `action` prop, and the breakpoint chooses: the wide panel ends in the button,
+the drawer renders the link. On a phone the two stack, and stacked, a bordered button reads as the end
+of the drawer rather than as one more way on — so the file draws a link there. The prompt goes small
+caps with it, matching `.megaHeading` and every column heading in the menu, which were already 14/600
+at 0.06em uppercase while this one sat at paragraph size.
+
+Both are in the markup and `display: none` does the choosing, so whichever is off screen is out of the
+accessibility tree too — there is never a second copy for a screen reader to find. The desktop strip is
+unchanged.
 
 Every colour and measurement in the prototype's stylesheet is one of this library's tokens, so they are
 bound rather than copied: `Surfaces/Text/Primary` for the labels, `Action/Link/Active Link` for the open
