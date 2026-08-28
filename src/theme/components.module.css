@@ -2816,13 +2816,13 @@
 }
 
 /*
- * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and the drawer
- * breakpoint is where the nav stops being the desktop one, so it takes `Size=Small`. Height only: the
- * lockup keeps its own ratio.
+ * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and below the
+ * drawer breakpoint it takes 48: the 40 cell left the lockup small in a 64px band next to a 40px
+ * button, which is the one place on a phone the brand has to carry. Height only, so it keeps its ratio.
  */
 @media (max-width: 1199px) {
   .headerLogo > svg {
-    height: 40px;
+    height: 48px;
     width: auto;
   }
 }
@@ -2850,9 +2850,29 @@
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
+/*
+ * The burger turning into the close, and back.
+ *
+ * They are two glyphs in two different bars — the drawer's own bar covers the band — so there is no
+ * single element to morph. What sells it is that both land on the same spot and both arrive turning:
+ * the burger goes, the cross rotates in where it was, and closing runs the same move in reverse.
+ */
+@keyframes header-icon-turn-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
 .headerBurger > svg {
   width: 24px;
   height: 24px;
+  animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
 }
 
 @media (hover: hover) {
@@ -2907,6 +2927,27 @@
   display: none;
 }
 
+/*
+ * The sheet comes down from the band rather than appearing over it — 12px and a fade, once, on open.
+ * An animation and not a transition for the same reason the mega panel needs one: a closed drawer is
+ * `hidden`, and nothing transitions out of `display: none`.
+ */
+@keyframes header-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.headerDrawer[data-open] {
+  animation: header-drawer-in var(--sds-motion-medium) var(--sds-motion-ease-out) both;
+}
+
 .headerDrawer {
   position: fixed;
   /*
@@ -2952,9 +2993,19 @@
   justify-self: start;
 }
 
-/* The file's drawer lockup is 108x32 — a step down from the band's, so the row is not all logo. */
+/*
+ * `Surfaces/Text/Primary`, which the wordmark takes through `currentColor`.
+ *
+ * Without it the drawer inherited a dull #c9c9c9 from further up and the lockup came out greyer than
+ * every word beneath it — the mark keeps its brand blue either way, so only the wordmark moved.
+ */
+.headerDrawerLogo {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* A cell down from the band's 48, so the drawer's row is not all logo — but not the 32 it was. */
 .headerDrawerLogo svg {
-  height: 32px;
+  height: 40px;
   width: auto;
 }
 
@@ -2986,6 +3037,7 @@
 .headerDrawerClose > svg {
   width: 28px;
   height: 28px;
+  animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
 }
 
 .headerDrawerTitle {
@@ -3351,6 +3403,12 @@
 
   .headerMega[data-open] {
     transform: none;
+    animation: none;
+  }
+
+  .headerDrawer[data-open],
+  .headerBurger > svg,
+  .headerDrawerClose > svg {
     animation: none;
   }
 
