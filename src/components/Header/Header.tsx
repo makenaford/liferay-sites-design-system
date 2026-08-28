@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { Box, UnstyledButton } from '@mantine/core'
+import { Box, Button, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 import { Logo } from '../Logo'
-import { IconClose, IconDown, IconMenu } from '../../icons'
+import { IconArrowLeft, IconClose, IconDown, IconMenu, IconRight, IconWorld2 } from '../../icons'
 
 export interface HeaderNavItem {
   /** Identifies the item, and ties the trigger to its panel through `aria-controls`. */
@@ -16,6 +16,50 @@ export interface HeaderNavItem {
   href?: string
 }
 
+/**
+ * The drawer's language list, as a view of its own.
+ *
+ * The file draws `EN (US)` as a row with the same chevron the sections have, so it drills in like they
+ * do rather than expanding in place. A sentinel rather than another piece of state, so there is still
+ * exactly one thing saying which panel is on screen — and no `value` can collide with it, since a real
+ * one comes from `items`.
+ */
+const LANGUAGE_VIEW = '__language'
+
+/** What the mobile drawer is showing. `null` is the top-level section list. */
+type DrawerView = string | null
+
+/**
+ * The controls at the foot of the mobile drawer.
+ *
+ * Supplied as data rather than as nodes, because the drawer draws them differently from the bar: the
+ * bar's language control is a combobox, and here it is a row that drills into a list of its own.
+ * Passing a rendered `LanguagePicker` down would mean a popover opening inside a panel that is itself
+ * sliding, which is a fight over stacking contexts for no gain.
+ *
+ * Omit it and the drawer falls back to laying out `actions` as-is.
+ */
+export interface HeaderDrawerControls {
+  language?: {
+    /** The collapsed label — the current language, usually. */
+    label: ReactNode
+    options: { value: string; label: ReactNode }[]
+    /** Marks the current option. */
+    value?: string
+    onChange?: (value: string) => void
+  }
+  login?: {
+    /** @default 'Log In' */
+    label?: ReactNode
+    items: { label: ReactNode; href?: string; onClick?: () => void }[]
+  }
+  /**
+   * The call to action. Pinned to the foot of the drawer at every level, and drawn again in the bar
+   * beside the burger — one source, so a page cannot ship two different ones.
+   */
+  cta?: ReactNode
+}
+
 export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   /** The brand, top left. */
   logo?: ReactNode
@@ -23,6 +67,13 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   items?: HeaderNavItem[]
   /** The right-hand side: language, account, a call to action. */
   actions?: ReactNode
+  /**
+   * The foot of the mobile drawer — language and log-in as accordions, and a call to action.
+   *
+   * Without it the drawer stacks `actions` instead, which works but gives a phone a combobox where an
+   * expanding list reads better.
+   */
+  drawerControls?: HeaderDrawerControls
   /**
    * Which menu is open on mount. The prototype opens Platform so the first section is visible
    * immediately; a real page almost always wants `null`.
@@ -73,15 +124,21 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
  * take over the arrow keys, which in a page of links is wrong: Tab is what people expect. Escape closes
  * the panel and returns focus to its trigger, and a click outside the header closes it too.
  *
- * **Below 1200px the bar becomes a stacked panel.** The prototype is desktop-only — it says as much —
- * so the same `items` feed a burger and a full-width panel, where each section expands its own menu in
- * place. It reuses the desktop open state rather than adding a second one, and the menu content needs no
- * mobile variant: the column grid and the featured rail collapse to one column on their own.
+ * **Below 1200px the bar becomes a drawer.** The mobile file (node `7640:85120`) draws the call to
+ * action in the bar beside the burger, a drill-down for the sections *and* the language, log-in and
+ * create-an-account as a pair of buttons, and Contact Sales pinned to the foot of the sheet at every
+ * level. All of it runs on `drawerControls`, and the call to action has one source for both places.
+ *
+ * **The panel content needs no mobile variant.** The same `items` feed the bar and the drawer: the
+ * column grid and the featured rail collapse to one column on their own, and the drill-down keeps its
+ * own view state rather than sharing the bar's, because expanding in place and pushing a panel are
+ * different interactions.
  */
 export function Header({
-  logo = <Logo height={54} title="" />,
+  logo = <Logo height={48} title="" />,
   items = [],
   actions,
+  drawerControls,
   defaultOpen = null,
   onOpenChange,
   position = 'fixed',
@@ -91,6 +148,14 @@ export function Header({
 }: HeaderProps) {
   const [open, setOpen] = useState<string | null>(defaultOpen)
   const [drawer, setDrawer] = useState(false)
+  /*
+   * Which section the drawer has drilled into, separate from `open`.
+   *
+   * The drawer used to share `open` with the desktop menus, which meant opening a section on a phone
+   * also opened it behind the drawer, and closing the drawer left it open. They are different
+   * interactions — one expands in place, the other pushes a panel — so they get their own state.
+   */
+  const [view, setView] = useState<DrawerView>(null)
   const shellRef = useRef<HTMLElement>(null)
   const triggers = useRef(new Map<string, HTMLButtonElement | null>())
   const baseId = useId()
@@ -113,6 +178,7 @@ export function Header({
       change(null)
       trigger?.focus()
     }
+
 
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -178,7 +244,11 @@ export function Header({
       data-menu-open={openItem || drawer ? true : undefined}
       {...props}
     >
-      <div className={classes.headerBand}>
+      {/*
+       * `inert` while the drawer is open: the drawer covers the band completely on a phone, so the
+       * logo and the burger underneath it are invisible but would still take focus.
+       */}
+      <div className={classes.headerBand} inert={drawer ? true : undefined}>
         <div className={classes.headerInner}>
           <div className={classes.headerBar}>
             <div className={classes.headerLeft}>
@@ -230,6 +300,16 @@ export function Header({
              *
              * The label changes with the state; `aria-expanded` says which state it is in.
              */}
+            {/*
+             * The call to action rides in the bar on a phone, beside the burger, which is what the
+             * mobile file draws. It is `drawerControls.cta` rather than a prop of its own: the bar and
+             * the foot of the drawer are the same button, and giving it two sources would let a page
+             * ship two different ones.
+             */}
+            {drawerControls?.cta ? (
+              <div className={classes.headerBarCta}>{drawerControls.cta}</div>
+            ) : null}
+
             <UnstyledButton
               component="button"
               type="button"
@@ -238,7 +318,9 @@ export function Header({
               aria-label={drawer ? 'Close navigation' : 'Open navigation'}
               onClick={() => {
                 setDrawer((value) => {
-                  if (value) change(null)
+                  /* Always reopen at the section list rather than wherever it was left. */
+                  if (!value) setView(null)
+                  change(null)
                   return !value
                 })
               }}
@@ -271,45 +353,209 @@ export function Header({
       </div>
 
       {/*
-       * The narrow-viewport panel. It reuses the same `open` state as the desktop menus rather than
-       * introducing a second mechanism: the burger reveals the section list, and a section expands its
-       * own menu inline. One state machine, one set of aria wiring, and no portal to reason about.
+       * The narrow-viewport drawer.
+       *
+       * A drill-down rather than an accordion, which is what the mobile design asks for: the section
+       * list slides out to the left and the section's own panel comes in from the right, with the
+       * drawer's header carrying the way back. On a phone an accordion buries the thing you tapped
+       * under everything you did not, and the deeper a menu goes the worse that gets.
+       *
+       * Both levels stay mounted so the slide has something to animate and a screen reader can reach
+       * the panel; `inert` keeps the off-screen one out of the tab order, which `hidden` cannot do here
+       * because a hidden element cannot animate.
        */}
-      <div className={classes.headerMobile} data-open={drawer || undefined} hidden={!drawer}>
-        {items.map((item) => {
-          if (!item.menu) {
-            return (
-              <a key={item.value} className={classes.headerMobileItem} href={item.href}>
-                {item.label}
-              </a>
-            )
-          }
+      <div className={classes.headerDrawer} data-open={drawer || undefined} hidden={!drawer}>
+        {/*
+         * This bar *replaces* the header band rather than sitting under it: the drawer covers the
+         * viewport, so on a phone the logo and burger give way to where you are and the two ways out.
+         *
+         * Which is why the close lives here now. It was cut earlier as a duplicate of the burger, and
+         * that was right while the band stayed visible — with the band covered, the burger is behind
+         * the drawer and this is the only close there is.
+         */}
+        <div className={classes.headerDrawerBar}>
+          {/*
+           * The top level keeps the logo, so opening the drawer does not blank the one thing that says
+           * whose site this is; a section replaces it with the way back, because at that point the
+           * question is where you are rather than where you started.
+           */}
+          {view ? (
+            <UnstyledButton
+              component="button"
+              type="button"
+              className={classes.headerDrawerBack}
+              aria-label="Back"
+              onClick={() => setView(null)}
+            >
+              <IconArrowLeft aria-hidden />
+            </UnstyledButton>
+          ) : (
+            <div className={classes.headerDrawerLogo}>{logo}</div>
+          )}
 
-          const isOpen = open === item.value
+          <span className={classes.headerDrawerTitle}>
+            {view === LANGUAGE_VIEW
+              ? 'Language'
+              : view
+                ? items.find((item) => item.value === view)?.label
+                : null}
+          </span>
 
-          return (
-            <div key={item.value} className={classes.headerMobileSection}>
-              <UnstyledButton
-                component="button"
-                type="button"
-                className={classes.headerMobileItem}
-                data-open={isOpen || undefined}
-                aria-expanded={isOpen}
-                aria-controls={`${baseId}-mobile-${item.value}`}
-                onClick={() => change(isOpen ? null : item.value)}
+          <UnstyledButton
+            component="button"
+            type="button"
+            className={classes.headerDrawerClose}
+            aria-label="Close navigation"
+            onClick={() => {
+              setDrawer(false)
+              setView(null)
+            }}
+          >
+            <IconClose aria-hidden />
+          </UnstyledButton>
+        </div>
+
+        <div className={classes.headerDrawerPanels}>
+          <div
+            className={[classes.headerDrawerPanel, classes.headerDrawerRoot].join(' ')}
+            data-state={view ? 'behind' : 'active'}
+            inert={view ? true : undefined}
+          >
+            <div className={classes.headerDrawerList}>
+              {items.map((item) =>
+                item.menu ? (
+                  <UnstyledButton
+                    key={item.value}
+                    component="button"
+                    type="button"
+                    className={classes.headerDrawerRow}
+                    onClick={() => setView(item.value)}
+                  >
+                    <span>{item.label}</span>
+                    <span className={classes.headerDrawerChevron} aria-hidden>
+                      <IconRight />
+                    </span>
+                  </UnstyledButton>
+                ) : (
+                  <a key={item.value} className={classes.headerDrawerRow} href={item.href}>
+                    <span>{item.label}</span>
+                  </a>
+                ),
+              )}
+            </div>
+
+            {/*
+             * The foot of the list.
+             *
+             * The language is a row like the sections, and drills in like them — the file gives it the
+             * same chevron, and an accordion here would expand a list of eight under the four things
+             * you came for.
+             *
+             * Log in and the call to action are *not* here. They are the two buttons pinned to the
+             * foot of the drawer itself, below, so they stay put while this panel scrolls.
+             */}
+            {drawerControls?.language ? (
+              <div
+                className={[classes.headerDrawerList, classes.headerDrawerDivided].join(' ')}
               >
-                {item.label}
-                <span className={classes.headerCaret} aria-hidden>
-                  <IconDown />
-                </span>
-              </UnstyledButton>
-              <div id={`${baseId}-mobile-${item.value}`} hidden={!isOpen}>
-                {item.menu}
+                <UnstyledButton
+                  component="button"
+                  type="button"
+                  className={classes.headerDrawerRow}
+                  onClick={() => setView(LANGUAGE_VIEW)}
+                >
+                  <span className={classes.headerDrawerRowLabel}>
+                    <IconWorld2 aria-hidden />
+                    {drawerControls.language.label}
+                  </span>
+                  <span className={classes.headerDrawerChevron} aria-hidden>
+                    <IconRight />
+                  </span>
+                </UnstyledButton>
+              </div>
+            ) : null}
+
+            {/* No `drawerControls` at all: stack whatever `actions` holds, so old callers still work. */}
+            {drawerControls ? null : (
+              <div className={classes.headerDrawerActions}>{actions}</div>
+            )}
+          </div>
+
+          {/* The language list, a level in from the row above. */}
+          {drawerControls?.language ? (
+            <div
+              className={classes.headerDrawerPanel}
+              data-state={view === LANGUAGE_VIEW ? 'active' : 'ahead'}
+              inert={view === LANGUAGE_VIEW ? undefined : true}
+            >
+              <div className={[classes.headerDrawerList, classes.headerDrawerOptions].join(' ')}>
+                {drawerControls.language.options.map((option) => (
+                  <UnstyledButton
+                    key={option.value}
+                    component="button"
+                    type="button"
+                    className={classes.headerDrawerRow}
+                    data-current={option.value === drawerControls.language?.value || undefined}
+                    aria-current={
+                      option.value === drawerControls.language?.value ? 'true' : undefined
+                    }
+                    onClick={() => {
+                      drawerControls.language?.onChange?.(option.value)
+                      setView(null)
+                    }}
+                  >
+                    <span>{option.label}</span>
+                  </UnstyledButton>
+                ))}
               </div>
             </div>
-          )
-        })}
-        <div className={classes.headerMobileActions}>{actions}</div>
+          ) : null}
+
+          {items
+            .filter((item) => item.menu)
+            .map((item) => (
+              <div
+                key={item.value}
+                className={classes.headerDrawerPanel}
+                data-state={view === item.value ? 'active' : 'ahead'}
+                inert={view === item.value ? undefined : true}
+              >
+                {item.menu}
+              </div>
+            ))}
+        </div>
+
+        {/*
+         * Pinned to the foot of the drawer rather than to the end of a panel, so it holds its place
+         * while the list behind it scrolls and it is still there a level in — which is what the file
+         * draws on every one of its mobile frames. Outside `.headerDrawerPanels`, because that box
+         * clips and scrolls.
+         */}
+        {drawerControls?.cta || drawerControls?.login?.items.length ? (
+          <div className={classes.headerDrawerFooter}>
+            {/*
+             * The library's outline button, not a hand-rolled box that looked like one. It sat beside a
+             * real `Button` and drew its own border, radius and hover — three chances to drift from the
+             * thing it was imitating, and no way to pick up a change to it.
+             *
+             * Mantine's `Button` rather than this library's wrapper, because a log-in is a link and the
+             * wrapper is not polymorphic — which is what its own docs say to do here. The theme styles
+             * both the same, so `variant="outline"` is the set's outline either way.
+             */}
+            {drawerControls?.login?.items.map((item, index) =>
+              item.href ? (
+                <Button key={index} component="a" href={item.href} variant="outline" size="md">
+                  {item.label}
+                </Button>
+              ) : (
+                <Button key={index} variant="outline" size="md" onClick={item.onClick}>
+                  {item.label}
+                </Button>
+              ),
+            )}
+            {drawerControls?.cta}
+          </div>
+        ) : null}
       </div>
 
       {/* Only mounted while a panel is open: a click-catcher would otherwise eat every page click. */}

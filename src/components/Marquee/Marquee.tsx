@@ -124,7 +124,7 @@ export function Marquee({
   label,
   size = 'lg',
   gap = 60,
-  logoWidth = 109,
+  logoWidth = 200,
   speed = 60,
   direction = 'left',
   fade = true,

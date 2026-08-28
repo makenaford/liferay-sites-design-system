@@ -9,6 +9,7 @@ import {
   Tabs,
   Textarea,
   TextInput,
+  type MantineTheme,
   type MantineThemeComponents,
 } from '@mantine/core'
 import classes from './components.module.css'
@@ -135,6 +136,21 @@ const INPUT_VARS = {
   '--input-bd': 'none',
   '--input-bg': 'transparent',
 } as const
+
+/**
+ * The field variables, less the radius when the call site states one.
+ *
+ * Mantine merges a component's *theme* `vars` after its own resolver, so `--input-radius` here was
+ * overwriting the `radius` prop rather than defaulting it: the hero's solution finder asked its selects
+ * for `radius="xl"` and silently got the set's 8px, and so would anything else that ever asked. Dropping
+ * the key when `radius` is given leaves Mantine's own value standing, and leaves the Figma default in
+ * place everywhere that says nothing.
+ */
+const inputVars = (_theme: MantineTheme, props: { radius?: unknown }) => {
+  if (props.radius === undefined) return { wrapper: INPUT_VARS }
+  const { '--input-radius': _radius, ...rest } = INPUT_VARS
+  return { wrapper: rest }
+}
 
 /**
  * Figma puts the help text *below* the box; Mantine's default order puts the description above it. The
@@ -319,7 +335,7 @@ export const componentTheme: MantineThemeComponents = {
       error: classes.fieldError,
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   Textarea: Textarea.extend({
@@ -334,7 +350,7 @@ export const componentTheme: MantineThemeComponents = {
       error: classes.fieldError,
     },
     defaultProps: { size: 'md', autosize: true, minRows: 3, inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   Select: Select.extend({
@@ -355,7 +371,7 @@ export const componentTheme: MantineThemeComponents = {
       empty: classes.fieldEmpty,
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   /**

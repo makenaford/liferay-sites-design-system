@@ -47,7 +47,7 @@ const body = instance.getEnum('Type', {
   'Card Grid': '<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">{/* Card */}</SimpleGrid>',
   'Card Grid- Non Clickable':
     '<SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="24">{/* Card, no href */}</SimpleGrid>',
-  Resources: '<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">{/* Card surface="no-bg" */}</SimpleGrid>',
+  Resources: '<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">{/* Card surface="none" */}</SimpleGrid>',
   'Content Left Image': '<ContentMedia mediaSide="left" media={/* … */} title="…" />',
   'Content- Right Image': '<ContentMedia mediaSide="right" media={/* … */} title="…" />',
   FAQ: '<Accordion size="lg" order={3}>{/* Accordion.Item */}</Accordion>',

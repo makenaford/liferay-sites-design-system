@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
@@ -10,6 +10,8 @@ import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
+import bubbleFull from '../../assets/bubbles/bubble_center.webm'
+import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
@@ -17,6 +19,7 @@ import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
   IconArrowDown,
+  IconArrowUp,
   IconArrowRight,
   IconBracketsAngle,
   IconBuilding2,
@@ -109,7 +112,14 @@ function renderStat(stat: StatSpec, align?: 'center') {
         </>
       }
       label={stat.label}
-      leftSection={stat.trend === 'down' ? <IconArrowDown /> : undefined}
+      /* A win points up regardless of which way the number went; see `sentiment` in the schema. */
+      leftSection={
+        stat.sentiment === 'negative' ? (
+          <IconArrowDown />
+        ) : stat.sentiment === 'positive' ? (
+          <IconArrowUp />
+        ) : undefined
+      }
     />
   )
 }
@@ -136,7 +146,14 @@ function HeroMedia({ media }: { media: ImageRef }) {
   const showStill = !isVideo(media.src) || (failed && media.poster)
 
   if (showStill) {
-    return <Image src={failed ? media.poster! : media.src} alt={media.alt} ratio="4:3" radius="md" />
+    return (
+      <Image
+        src={failed ? media.poster! : media.src}
+        alt={media.alt}
+        ratio={media.ratio ?? '4:3'}
+        radius="md"
+      />
+    )
   }
 
   return (
@@ -157,9 +174,16 @@ function HeroMedia({ media }: { media: ImageRef }) {
 }
 
 function renderHero(hero: HeroSpec) {
+  const background = hero.background ?? 'corner'
+
   return (
     <Hero
-      background={hero.background ?? 'corner'}
+      /*
+       * The bubble that goes with the background. A page says which shape it wants; which file that is
+       * is not a page's business.
+       */
+      background={background}
+      video={background === 'full' ? bubbleFull : bubbleCorner}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       title={
         <h1>
@@ -194,7 +218,8 @@ function renderHero(hero: HeroSpec) {
             type="email"
             placeholder={hero.form.placeholder}
             containedButton={
-              <Button size="md" rightSection={<IconArrowRight />}>
+              /* Small, so the label and padding suit the 32px the field's 8px inset leaves. */
+              <Button size="sm" rightSection={<IconArrowRight />}>
                 {hero.form.submit}
               </Button>
             }
@@ -202,10 +227,31 @@ function renderHero(hero: HeroSpec) {
         ) : undefined
       }
       actions={
-        hero.action ? (
-          <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
-            {hero.action.label}
-          </Link>
+        hero.buttons?.length || hero.action ? (
+          <>
+            {hero.buttons?.map((button) => (
+              /*
+               * Mantine's `Button` rather than the library's, on its own advice: the wrapper is
+               * deliberately non-polymorphic, and a hero CTA has to be an anchor. The theme keys on
+               * `Button`, so the appearance is identical either way.
+               */
+              <MantineButton
+                key={button.label}
+                component="a"
+                href={button.href}
+                /* The file draws Medium in every hero, so this is the type's, not the page's. */
+                size="md"
+                variant={button.variant === 'outline' ? 'outline' : 'filled'}
+              >
+                {button.label}
+              </MantineButton>
+            ))}
+            {hero.action ? (
+              <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
+                {hero.action.label}
+              </Link>
+            ) : null}
+          </>
         ) : undefined
       }
       proof={hero.proof ? renderProof(hero.proof) : undefined}
@@ -262,7 +308,19 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
  */
 function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> }) {
   return (
-    <Card surface="glass" padding="none" bdrs={{ base: 24, md: 30 }} w="100%" maw={1000}>
+    /*
+     * Not interactive: this card is a container for the selects and button inside it. With the default
+     * on, a hover lift and focus ring would fire on the bar itself while the real controls sit within
+     * it — an affordance pointing at nothing, wrapped around things that have their own.
+     */
+    <Card
+      surface="glass"
+      interactive={false}
+      padding="none"
+      radius="pill"
+      w="100%"
+      maw={1000}
+    >
       <Group gap={16} px={16} py={8} align="center">
         <Text fz="lg" fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
           {banner.label}
@@ -302,7 +360,12 @@ function GridCard({ card }: { card: CardSpec }) {
     <Card
       component={card.href ? 'a' : 'div'}
       href={card.href}
-      interactive={Boolean(card.href)}
+      /*
+       * The link decides the kind of card. With one, it is a target and wears glass; without, it is a
+       * panel and wears `static`. Previously both were glass and only the hover differed, so a card
+       * with nowhere to go looked exactly like one that had somewhere.
+       */
+      surface={card.href ? 'glass' : 'static'}
       padding={card.image ? 'all' : undefined}
       image={
         card.image ? (
@@ -395,6 +458,8 @@ const logoTile = (name: string) => {
 function StoryCard({ story }: { story: StorySpec }) {
   return (
     <Card
+      /* A quote is content, not a destination. */
+      surface="static"
       image={<Image src={logoTile(story.customer)} alt={story.customer} ratio="3:2" radius="sm" />}
       top={
         <Stat
@@ -556,6 +621,8 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
     >
       <Card
         align="horizontal"
+        /* Its links do the work — see the nested-interactive note in Card's docs. */
+        interactive={false}
         titleSize="full"
         hero={spec.card.icon ? GLASS[spec.card.icon](48) : undefined}
         title={fill(spec.card.title)}

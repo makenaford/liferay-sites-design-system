@@ -617,11 +617,26 @@
   min-width: 0;
   /* `Surface`'s radius. Every card instance in the file draws 8; the set itself says 9. */
   border-radius: 8px;
-  /* Set per surface below; `no-bg` leaves it transparent. */
+  /* Set per surface below; `none` leaves it transparent. */
   background-color: transparent;
   color: var(--sds-surfaces-text-primary);
   text-decoration: none;
   isolation: isolate;
+}
+
+/*
+ * `radius="pill"` — the hero's solution finder, a bar of controls rather than a card of content, so its
+ * corner follows its own height. Below the point where the row wraps the bar is tall and a pill is
+ * wrong, so it settles back to a large corner.
+ */
+.cardRoot[data-radius='pill'] {
+  border-radius: 24px;
+}
+
+@media (min-width: 62em) {
+  .cardRoot[data-radius='pill'] {
+    border-radius: 30px;
+  }
 }
 
 .cardRoot[data-align='vertical'] {
@@ -913,12 +928,29 @@
     var(--sds-glass-step-02) 100%
   );
   backdrop-filter: blur(var(--sds-glass-blur));
-  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  /*
+   * A lit top edge, not a shadow.
+   *
+   * Figma's `glass effect card` shadow is `#000 @8%`, which over a #070b13 page is black on near-black
+   * and does nothing — the card had no elevation cue at all on the canvas it is mostly used on. Dark
+   * interfaces raise a surface by catching light on its top edge instead, so that is what carries it
+   * here. The shadow is kept for the light canvas, where it does read.
+   */
+  box-shadow:
+    inset 0 1px 0 var(--sds-card-lit-edge),
+    var(--sds-card-cast-shadow);
 }
 
-/* `Style=Grey` — a flat `Surfaces/Card BG/Grey`, no hairline, no shadow. The non-clickable surface. */
-.cardRoot[data-align][data-surface='grey'] {
+/*
+ * `static` — a flat fill, and nothing else. No rim, no shadow, no lit edge.
+ *
+ * The absence is the point. A rim is what this system uses to say *you can touch this*, so the one kind
+ * of card that cannot be touched is the one kind that must not have one. It reads as a region of the
+ * page rather than an object sitting on it.
+ */
+.cardRoot[data-align][data-surface='static'] {
   background-color: var(--sds-surfaces-card-bg-grey);
+  border: 1px solid var(--sds-card-static-line);
 }
 
 /*
@@ -926,13 +958,12 @@
  * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
  * transform is a shallow diagonal, reproduced at the same angle.
  */
-.cardRoot[data-align][data-surface='gradient-blue'],
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'] {
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-align][data-surface='gradient-blue'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -941,7 +972,7 @@
   );
 }
 
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='purple'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -950,8 +981,8 @@
   );
 }
 
-/* `Style=no-bg` — the box and its content with nothing drawn. The Resource card. */
-.cardRoot[data-align][data-surface='no-bg'] {
+/* `Style=none` — the box and its content with nothing drawn. The Resource card. */
+.cardRoot[data-align][data-surface='none'] {
   background: none;
   box-shadow: none;
 }
@@ -961,7 +992,7 @@
  * pseudo-element because glass's is a gradient and a border cannot be one — the same construction the
  * Label's outline ring uses.
  */
-.cardRoot[data-align]:where([data-surface='glass'], [data-surface='grey'])::before {
+.cardRoot[data-align][data-surface='glass']::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -983,24 +1014,6 @@
   );
 }
 
-/*
- * Grey: a flat hairline, and the only thing giving a static card an edge.
- *
- * `Surfaces/Card BG/Grey` is 1.05:1 against the light page and 1.06:1 against the dark one — the fill alone
- * does not read as a surface, and glass's hairline is not available to a card that cannot be clicked. So the
- * edge is `Neutral/05`, the lowest step on the scale that is unambiguously visible against both the fill and
- * the page in **both** modes:
- *
- *   light   2.75:1 against the card, 2.90:1 against the page
- *   dark    3.46:1 against the card, 3.67:1 against the page
- *
- * `Neutral/04` was the alternative: fine on dark at 2.82/2.99, but only 1.59/1.67 in light, which is the mode
- * the problem was in. `Neutral/06` clears 3:1 everywhere at 4.6+, but on a barely-tinted fill a line that
- * dark reads as a table rule rather than a card edge. Not a Figma value — the file draws no edge here.
- */
-.cardRoot[data-align][data-surface='grey']::before {
-  background-color: var(--sds-neutral-05);
-}
 
 /* ---------------------------------------------------------------------- interaction
  *
@@ -1050,7 +1063,7 @@
   /*
    * The ring on hover belongs to the **padded** card only. A full-bleed card is clickable across its
    * whole area — the root is the anchor — but nothing about the card reacts: only the image does. A ring
-   * drawn around a `no-bg` card outlines a box that has no edge at rest, which reads as a border
+   * drawn around a `none` card outlines a box that has no edge at rest, which reads as a border
    * appearing out of nowhere rather than as the image lighting up.
    *
    * Focus is the exception, below: a focus ring has to be visible wherever the focus is, so it stays on
@@ -1132,7 +1145,7 @@
 
 @media (forced-colors: active) {
   /* A masked gradient is invisible in forced colours, so the hairline becomes a real border. */
-  .cardRoot[data-align]:not([data-surface='no-bg']) {
+  .cardRoot[data-align]:not([data-surface='none']) {
     border: 1px solid CanvasText;
   }
 
@@ -1247,6 +1260,53 @@
   flex-direction: column;
   gap: 16px;
   align-items: stretch;
+}
+
+/*
+ * The reveal: each figure rises and fades in, a beat after the one before it.
+ *
+ * The stagger is what makes it read as figures arriving rather than a block appearing, and 60ms is
+ * enough to notice without becoming a queue. `data-revealed` is set once, by the bar, the first time it
+ * is scrolled into view.
+ *
+ * Note what is *not* animated: nothing here moves layout. The rise is a transform, so a figure landing
+ * cannot nudge what is beside it, and the bar occupies its final space from the start.
+ */
+.statBar > :not(.statBarDivider) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity var(--sds-motion-slow) var(--sds-motion-ease-out),
+    transform var(--sds-motion-slow) var(--sds-motion-ease-out);
+}
+
+.statBar[data-revealed] > :not(.statBarDivider) {
+  opacity: 1;
+  transform: none;
+}
+
+.statBar[data-revealed] > :nth-child(3) {
+  transition-delay: 60ms;
+}
+
+.statBar[data-revealed] > :nth-child(5) {
+  transition-delay: 120ms;
+}
+
+.statBar[data-revealed] > :nth-child(7) {
+  transition-delay: 180ms;
+}
+
+/*
+ * Reduced motion: the bar starts revealed, since the hook seeds its state from this same query. This
+ * only guards a transition still running if the preference changes mid-session.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .statBar > :not(.statBarDivider) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .statBar[data-align='center'] {
@@ -1796,15 +1856,49 @@
  * 48px box. `md` is itself 48px and would fill the field edge to edge.
  */
 /* `padding/8` — the button sits 8 in from the field's edge, not 4. */
+/*
+ * Stop the value before the button: its measured width plus the 8px of inset on either side of it.
+ * `TextInput` sets the variable; the fallback keeps the field sane for the frame before it measures.
+ */
 .fieldRoot[data-contained-button] .fieldInput {
-  padding-inline-end: 8px;
+  padding-inline-end: calc(var(--sds-contained-button-width, 0px) + 16px);
+}
+
+/* The measured element. It is the button's box; the button fills it. */
+.containedButtonSlot {
+  display: flex;
+  height: 100%;
 }
 
 .fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
   inset-inline-end: 8px;
+  /*
+   * The same 8px on the other three sides, so the button sits in an even inset rather than filling the
+   * field's full height with a gap only on one edge.
+   *
+   * `inset-block` is what makes it even: the section stretched the full 48px, so the button did too
+   * and the top and bottom gaps were zero. Insetting the *section* keeps the button centred without
+   * anyone having to know its height.
+   */
+  inset-block: 8px;
   width: auto;
   /* The generic icon inset would push the button 16px off the border. */
   padding-inline-end: 0;
+}
+
+/*
+ * The button fills what the inset leaves — 32px in the drawn 48px field.
+ *
+ * A height rather than a size: 32px is not a step on the button scale (40 / 48 / 56), and adding one
+ * for a single context would put a size in the system that Figma does not draw. The call site asks for
+ * the small *style* — 14px label, 12px padding — and the field decides the height.
+ *
+ * `min-height` has to go too, or `--button-height` holds the floor at 40px.
+ */
+.fieldRoot[data-contained-button] .fieldSection[data-position='right'] > *,
+.fieldRoot[data-contained-button] .containedButtonSlot > * {
+  height: 100%;
+  min-height: 0;
 }
 
 /* ------------------------------------------------------------------------ the dropdown menu
@@ -1869,6 +1963,34 @@
  * was overridden entirely: the trigger kept the field's `12px 40px 12px 16px`, which is 56px of padding
  * in a 92px box — so `EN (US)` came out clipped to `EN (I`.
  */
+/*
+ * No gradient border on the nav trigger.
+ *
+ * `.fieldWrapper::after` is the field's focus treatment — a 1px gradient border drawn as a masked
+ * pseudo-element, sized to an input box. This trigger is not an input box: it is bare text and a
+ * caret sitting in the nav, with no padding on its leading edge. The ring therefore drew a rounded
+ * rectangle hard against the `E`, which read both as an outline that should not be there and as the
+ * label being boxed in.
+ *
+ * It also appeared on *mouse* clicks, not just keyboard: a text input matches `:focus-visible`
+ * whenever it is focused, whatever the input modality, so clicking the trigger left the box behind.
+ */
+.fieldWrapper:has(.langPicker)::after {
+  content: none;
+}
+
+/*
+ * The caret needs the whole slot, because this trigger has no padding to sit inside.
+ *
+ * A field's right section is pinned 16px in from the box's padding edge — Figma's icon inset. This
+ * trigger's slot is 18px wide (see `LanguagePicker`), so that 16px left 2px for a 16px glyph and the
+ * flex row shrank it to a 2px sliver: the caret was still rendered, still `visible`, and effectively
+ * gone. Its leading edge is the text, so there is no padding for it to be inset from.
+ */
+.fieldWrapper:has(.langPicker) .fieldSection[data-position='right'] {
+  padding-inline-end: 0;
+}
+
 .fieldWrapper .langPicker {
   display: inline-flex;
   align-items: center;
@@ -1880,13 +2002,24 @@
   border-radius: 4px;
   background: transparent;
   color: var(--sds-neutral-10);
-  font-size: 14px;
+  /* 16px, level with the account link beside it — the two read as one row of controls or as neither. */
+  font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   cursor: pointer;
 }
 
-.langPicker:focus-visible {
+/*
+ * Which leaves this as the only focus indicator, so it has to actually apply — qualified with
+ * `.fieldWrapper` because the rule it competes with is `.fieldWrapper .fieldInput`, and a bare class
+ * ties on specificity and loses on order. Unqualified, this never drew at all: `outline-style`
+ * computed to `none` while the gradient ring did the work.
+ *
+ * Gated on `data-keyboard-focus`, which the component sets from the real input modality. Without it
+ * the ring appears on mouse clicks too — `:focus-visible` always matches a focused text input — and a
+ * box in the nav after every click is exactly what this was meant to remove.
+ */
+.fieldWrapper .langPicker[data-keyboard-focus]:focus-visible {
   outline: 2px solid var(--sds-action-primary-hover);
   outline-offset: 2px;
 }
@@ -1936,6 +2069,11 @@
 .headerShell {
   z-index: 200;
   width: 100%;
+  /*
+   * The bar's height, published so the mobile drawer can start exactly where the bar ends. It tracks
+   * the condense state below, which is why the drawer does not need its own copy of the number.
+   */
+  --sds-header-bar-height: 64px;
 }
 
 .headerShell[data-position='fixed'] {
@@ -2001,6 +2139,10 @@
 
 .headerShell[data-condense][data-scrolled] .headerBar {
   min-height: 56px;
+}
+
+.headerShell[data-condense][data-scrolled] {
+  --sds-header-bar-height: 56px;
 }
 
 /*
@@ -2106,10 +2248,18 @@
   transform: scaleX(1);
 }
 
+/*
+ * `Neutral/08` for every glyph in the header — the carets, the burger, the drawer's controls, a row's
+ * icon. It is a colour rather than the text ink at an opacity, which is what these were: an opacity
+ * makes a glyph a faded version of the words beside it, where the file gives icons their own step on
+ * the neutral scale. The token inverts with the scheme, so it stays a mid grey in both.
+ */
 .headerCaret {
   display: flex;
-  opacity: 0.7;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+  color: var(--sds-neutral-08);
+  transition:
+    color var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 .headerCaret > svg {
@@ -2118,7 +2268,8 @@
 }
 
 .headerNav .headerItem[data-open] .headerCaret {
-  opacity: 1;
+  /* The open section's caret goes with its label rather than staying grey. */
+  color: inherit;
   transform: rotate(180deg);
 }
 
@@ -2141,6 +2292,35 @@
   flex-shrink: 0;
 }
 
+/*
+ * The bar's utility links sit on the nav's size, not the `Link` scale's.
+ *
+ * The file draws language and account level with the sections beside them — 16px — and the link scale
+ * goes 14 / 18 / 21, so neither `sm` nor `md` lands on it. Rather than invent a fourth size the Figma
+ * set does not have, the header states the size for the row it owns. `font-size` directly, because
+ * `--text-fz` is inline on the element and a stylesheet cannot outbid an inline custom property.
+ */
+.headerActions a {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/*
+ * And their glyphs sit at the nav's, too: a 14px mark at 70%, the same as `.headerCaret`. Left as the
+ * components drew them the row mixed a 16px caret on the language trigger with a 14px one on the
+ * sections beside it, which is the sort of difference you cannot name but can see.
+ */
+.headerActions [data-section] svg,
+.headerActions .fieldSection[data-position='right'] svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerActions [data-section],
+.headerActions .fieldSection[data-position='right'] {
+  color: var(--sds-neutral-08);
+}
+
 /* ------------------------------------------------------------------------ the mega panel
  *
  * An inset floating box that drops out of the band: the same glass, one step more opaque, with the
@@ -2156,7 +2336,11 @@
 .headerMega {
   display: flex;
   flex-direction: column;
-  max-width: 1280px;
+  /*
+   * The file's `Mega Menu / Desktop` frame is 1440 wide — 1120 of columns and a 320 rail. The bar above
+   * it keeps its own 1280, which is the width the file gives the nav's content.
+   */
+  max-width: 1440px;
   margin: 0 auto;
   background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
@@ -2179,6 +2363,28 @@
     transform var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
+/*
+ * The panel's own arrival.
+ *
+ * An animation rather than the transition above, which never played: a closed panel is `hidden`, and a
+ * transition cannot run on an element that was `display: none` a frame ago — so the box appeared at
+ * full size and only its columns moved. The keyframes run on render, which is the whole point of them.
+ *
+ * Subtle on purpose. It drops 6px and fades over one `medium`, under the columns that follow it, and
+ * the closing stays instant because a closed panel goes back to `hidden`.
+ */
+@keyframes header-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .headerMega[data-open] {
   /* Never taller than the viewport under the band, and scrollable when the content is longer. */
   max-height: calc(100vh - 84px);
@@ -2186,6 +2392,7 @@
   overflow-x: hidden;
   opacity: 1;
   transform: translateY(0);
+  animation: header-panel-in var(--sds-motion-medium) var(--sds-motion-ease-out) both;
 }
 
 /*
@@ -2243,6 +2450,28 @@
   min-width: 0;
 }
 
+/*
+ * The prompt over a panel's columns — "What are you looking to achieve?".
+ *
+ * `flex: 0 0 100%` because `.megaBody` is a wrapping flex row: at any narrower basis it lands beside
+ * the columns instead of over them. Its bottom padding is nothing, since `.megaColumns` brings its own.
+ */
+.megaHeading {
+  flex: 0 0 100%;
+  margin: 0;
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* With a prompt above them the columns start from it, not from the top of the panel. */
+.megaHeading + .megaColumns {
+  padding-top: 20px;
+}
+
 .megaColumns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -2292,9 +2521,18 @@
   width: 20px;
   height: 20px;
   margin-top: 1px;
-  color: var(--sds-surfaces-text-primary);
-  opacity: 0.9;
+  color: var(--sds-neutral-08);
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * Figma's `nav icon` wrapper: a 20px box holding a 16.667px glyph, so 1.667px of padding. The icons are
+ * MingCute outlines at `1em`, which is why nothing passes a size — the box sizes the glyph, and the
+ * glyph takes its colour from `currentColor`. That is the whole difference from the glass icons this
+ * replaced: those were 48px full-colour artwork forced down to 20, and they carried their own palette.
+ */
+.megaItemIcon {
+  padding: 1.667px;
 }
 
 .megaItemIcon > svg {
@@ -2363,11 +2601,20 @@
  */
 .megaTile {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  /*
+   * Icon over label, not beside it. The file's `Nav Item 01` puts the 20px glyph at y=0 and its content
+   * at y=24 inside a 12px inset — a column, four pixels apart — and it is what makes the tile read as a
+   * heading for the list below rather than as one more row of it.
+   */
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
   width: 100%;
+  /* The file's tile is 68px tall, so a one-line label keeps rank with a two-line one beside it. */
+  min-height: 68px;
   margin-bottom: 16px;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--sds-glass-line-from);
   border-radius: 8px;
   /*
@@ -2394,6 +2641,7 @@
   flex-shrink: 0;
   width: 18px;
   height: 18px;
+  color: var(--sds-neutral-08);
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
@@ -2495,7 +2743,8 @@
 .megaFeaturedTitle {
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
-  font-weight: 400;
+  /* Semibold, like every other link title in a menu — a card's heading is a heading either way. */
+  font-weight: 600;
   line-height: 1.25;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
@@ -2557,7 +2806,10 @@
 
 .megaCtaLabel {
   color: var(--sds-neutral-10);
-  font-size: 15px;
+  /* The paragraph default, rather than the 15px this was pinned to — no other text here is off-scale. */
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
+  font-weight: 600;
 }
 
 /* ---------------------------------------------------------------------------- the scrim
@@ -2573,13 +2825,13 @@
 }
 
 /*
- * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and the drawer
- * breakpoint is where the nav stops being the desktop one, so it takes `Size=Small`. Height only: the
- * lockup keeps its own ratio.
+ * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and below the
+ * drawer breakpoint it takes 48: the 40 cell left the lockup small in a 64px band next to a 40px
+ * button, which is the one place on a phone the brand has to carry. Height only, so it keeps its ratio.
  */
 @media (max-width: 1199px) {
   .headerLogo > svg {
-    height: 40px;
+    height: 48px;
     width: auto;
   }
 }
@@ -2595,21 +2847,46 @@
  * The narrow-viewport menu button. A UI icon in a 44px target — the size every other icon-only control in
  * this library uses — with the standard focus ring, where Mantine's `Burger` brought its own everything.
  */
-.headerBurger {
+/*
+ * Qualified, like the drawer's rows: `UnstyledButton`'s root sets `color: inherit` on a single class,
+ * which ties on specificity and wins on order — so a bare `.headerBurger` colour was silently dropped
+ * and the glyph took the bar's text ink instead.
+ */
+.headerBar .headerBurger {
   display: grid;
   place-items: center;
   flex: none;
   width: 44px;
   height: 44px;
   border-radius: 1000px;
-  color: var(--sds-surfaces-text-primary);
+  color: var(--sds-neutral-08);
   cursor: pointer;
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.headerBurger > svg {
+/*
+ * The burger turning into the close, and back.
+ *
+ * They are two glyphs in two different bars — the drawer's own bar covers the band — so there is no
+ * single element to morph. What sells it is that both land on the same spot and both arrive turning:
+ * the burger goes, the cross rotates in where it was, and closing runs the same move in reverse.
+ */
+@keyframes header-icon-turn-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+.headerBar .headerBurger > svg {
   width: 24px;
   height: 24px;
+  animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
 }
 
 @media (hover: hover) {
@@ -2639,85 +2916,526 @@
 }
 
 /*
- * The narrow-viewport panel: the same glass as the mega panel, full width under the band, with each
- * section a row that expands its own menu in place.
+ * The narrow-viewport drawer.
+ *
+ * A drill-down rather than an accordion: the section list slides left, the section's own panel comes in
+ * from the right, and the drawer's bar carries the way back. On a phone an accordion buries what you
+ * tapped under everything you did not.
+ *
+ * Fixed to the viewport under the band rather than sized to content, because a menu that is sometimes
+ * a sheet and sometimes a dropdown reads as two components.
  */
-.headerMobile {
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  padding: 8px clamp(16px, 4vw, 24px) 24px;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 92%, transparent);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--sds-glass-line-to);
+/*
+ * `hidden` has to be restored wherever this component sets `display`.
+ *
+ * A `display` of its own beats the UA's `[hidden] { display: none }`, so a `hidden` element stays laid
+ * out. That has now bitten twice: the closed drawer covered the viewport and swallowed every click
+ * including the burger's, and a collapsed control list stayed on screen while `aria-expanded` said it
+ * was shut — so the language options sat there under an open log-in menu.
+ *
+ * Hence one rule for every box in here that `hidden` is used on, rather than a `data-open` selector per
+ * case: `hidden` keeps doing the other half of its job at the same time, which is removal from the tab
+ * order and from the accessibility tree.
+ */
+.headerDrawer[hidden] {
+  display: none;
 }
 
-.headerMobileSection {
+/*
+ * The sheet comes down from the band rather than appearing over it — 12px and a fade, once, on open.
+ * An animation and not a transition for the same reason the mega panel needs one: a closed drawer is
+ * `hidden`, and nothing transitions out of `display: none`.
+ */
+@keyframes header-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.headerDrawer[data-open] {
+  animation: header-drawer-in var(--sds-motion-medium) var(--sds-motion-ease-out) both;
+}
+
+.headerDrawer {
+  position: fixed;
+  /*
+   * The whole viewport, band included. The drawer's own bar takes the band's place, so the offset that
+   * used to sit under it is gone — and with it the alignment problem of two bars of different heights.
+   */
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 96%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+/*
+ * The call to action in the bar, on a phone only. Above the breakpoint it is in `.headerActions` with
+ * the language and the account, and drawing both would put two Contact Sales in one row.
+ */
+.headerBarCta {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+/* Back / title / close. The title names the level you are on, so it is empty at the top. */
+.headerDrawerBar {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  /* The band's own height, so the row lands where the logo was rather than a few pixels off it. */
+  min-height: var(--sds-header-bar-height, 64px);
+  /* 24 flat, matching the panel below: the file puts the logo at x=24 and the close 24 off the right. */
+  padding: 8px 24px;
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
-.headerMobileItem {
+.headerDrawerLogo {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+}
+
+/*
+ * `Surfaces/Text/Primary`, which the wordmark takes through `currentColor`.
+ *
+ * Without it the drawer inherited a dull #c9c9c9 from further up and the lockup came out greyer than
+ * every word beneath it — the mark keeps its brand blue either way, so only the wordmark moved.
+ */
+.headerDrawerLogo {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* A cell down from the band's 48, so the drawer's row is not all logo — but not the 32 it was. */
+.headerDrawerLogo svg {
+  height: 40px;
+  width: auto;
+}
+
+.headerDrawerBar .headerDrawerBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  width: 44px;
+  height: 44px;
+  color: var(--sds-neutral-08);
+}
+
+.headerDrawerBar .headerDrawerBack > svg {
+  width: 28px;
+  height: 28px;
+}
+
+.headerDrawerBar .headerDrawerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+  color: var(--sds-neutral-08);
+}
+
+.headerDrawerBar .headerDrawerClose > svg {
+  width: 28px;
+  height: 28px;
+  animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
+}
+
+.headerDrawerTitle {
+  justify-self: center;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.headerDrawerBack:focus-visible,
+.headerDrawerClose:focus-visible,
+.headerDrawerRow:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/*
+ * The stack. Both levels are absolutely positioned in the same box so they slide across each other;
+ * the container clips, and each panel scrolls on its own.
+ */
+.headerDrawerPanels {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.headerDrawerPanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 24 at the top, so the first row clears the bar by the same air the groups are set apart with. */
+  padding: 24px 24px;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* The file gives the first level 16 above its rows, where a section gets the 24 the groups want. */
+.headerDrawerRoot {
+  padding-top: 16px;
+}
+
+.headerDrawerPanel[data-state='active'] {
+  transform: translateX(0);
+  z-index: 2;
+}
+
+/* Behind: pushed left, the way a pushed stack reads. Ahead: waiting off the right edge. */
+.headerDrawerPanel[data-state='behind'] {
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.headerDrawerPanel[data-state='ahead'] {
+  transform: translateX(100%);
+  z-index: 1;
+}
+
+.headerDrawerList {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Two classes, because Mantine's `UnstyledButton` root sets a font size of its own and ties on
+ * specificity — a single class here lost the 21px to its 16 depending on sheet order.
+ */
+.headerDrawerList .headerDrawerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  padding: 14px 4px;
+  /* The file's row is 60 tall and its label 21px — a phone row is the target, and reads like one. */
+  min-height: 60px;
+  /* No trailing padding: the chevron's 44px box is what reaches the edge, like the close button's. */
+  padding: 16px 0;
   color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
+  font-size: 21px;
+  line-height: 28px;
   font-weight: 600;
+  text-align: start;
   text-decoration: none;
 }
 
-.headerMobileItem[data-open] {
-  color: var(--sds-action-link-active-link);
+/*
+ * The one rule in the list, above the language selector.
+ *
+ * The file draws a divider there and nowhere else: the four sections are one group and the language is
+ * another, so the line marks the break between them rather than fencing off every row.
+ */
+.headerDrawerDivided {
+  /*
+   * 16 above the rule as well as below it, so the line sits in its own air rather than tight under
+   * Partners — the sections' last row only contributed its own 16px of padding before.
+   */
+  margin-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+  padding-bottom: 16px;
 }
 
-.headerMobileItem[data-open] .headerCaret {
-  transform: rotate(180deg);
+/*
+ * The options are a list to read, not four destinations to weigh: 16px and a shorter row, where the
+ * first level's 21 is sized for a thumb picking one of four.
+ */
+.headerDrawerOptions .headerDrawerRow {
+  min-height: 48px;
+  padding: 10px 0;
+  font-size: 16px;
+  line-height: 24px;
 }
 
-.headerMobileItem:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.headerMobileActions {
+/* The globe sits with the label rather than in a slot of its own — one row, read as one thing. */
+.headerDrawerRowLabel {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding-top: 20px;
-}
-
-/* Inside the stacked panel the menu is one column and the rail loses its divider and gradient. */
-.headerMobile .megaColumns {
-  grid-template-columns: 1fr;
-  padding: 0 0 16px;
+  gap: 10px;
   min-width: 0;
 }
 
-.headerMobile .megaFeatured {
-  width: 100%;
-  border-inline-start: none;
-  padding: 8px 0 16px;
-  background-image: none;
+.headerDrawerRowLabel > svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--sds-neutral-08);
 }
 
-.headerMobile .megaCta {
-  justify-content: flex-start;
-  padding-inline: 0;
+.headerDrawerRow[data-current] {
+  color: var(--sds-action-link-active-link);
+  font-weight: 700;
+}
+
+/*
+ * The chevron sits in the close button's box, not at the row's edge.
+ *
+ * Both are 44 wide and both end at the same inset, so the glyph lands on the same centre line as the
+ * bar's close — a row's affordance and the way out of the sheet reading as one column rather than as
+ * two things a few pixels apart.
+ */
+.headerDrawerChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  color: var(--sds-neutral-08);
+}
+
+.headerDrawerChevron > svg {
+  width: 24px;
+  height: 24px;
+}
+
+/*
+ * The call to action, pinned to the foot of the drawer.
+ *
+ * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
+ * anything inside it scrolls away, and the file keeps this button on screen at every level.
+ */
+.headerDrawerFooter {
+  flex: none;
+  display: grid;
+  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+.headerDrawerFooter > * {
+  width: 100%;
+}
+
+/*
+ * The actions, stacked full-width at the foot of the list. They are whatever the caller passed — a
+ * language picker, a log-in link, a button — so this lays them out rather than rebuilding them.
+ */
+.headerDrawerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.headerDrawerActions > * {
+  width: 100%;
+}
+
+/*
+ * Stretch rather than `width: 100%` on the child. Mantine's button root is a two-class rule, so a
+ * single-class `width` ties and loses; making this a stretching flex column sizes the child from the
+ * outside instead and stops the fight.
+ */
+.headerDrawerCta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 16px;
+}
+
+.headerDrawerLoginItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */
+.headerDrawerPanel .megaColumns {
+  grid-template-columns: 1fr;
+  /* The file sets its groups well apart on a phone; 20px ran them together into one long list. */
+  gap: 32px;
+  padding: 0;
+  min-width: 0;
+}
+
+/*
+ * The gradient the file puts behind a featured panel:
+ *
+ *   linear-gradient(178deg, Components/Gradient Card/03 63.85%, Components/Gradient Card/blue 84.95%)
+ *
+ * `Gradient Card/03` is **not exported** — the token pipeline brings across only the blue and purple
+ * stops, on the grounds that the other three are all `Surfaces/Card BG/Grey`. So that is what stands in
+ * here, at the file's own 15%, which is also what the desktop rail already does. The two differ by
+ * #0F131B against Figma's #0A0E17, which at 15% alpha is not a difference anyone can see — but it is a
+ * stand-in, and it is written down as one.
+ */
+.headerDrawerPanel .megaFeatured,
+.headerDrawerPanel .megaCta {
+  background-image: linear-gradient(
+    178deg,
+    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 15%, transparent) 63.85%,
+    color-mix(in srgb, var(--sds-gradient-card-blue) 15%, transparent) 84.95%
+  );
+}
+
+.headerDrawerPanel .megaFeatured {
+  /* `100%` is the panel's *content* box, which the negative margins then hang outside of — so the
+   * gradient stopped 24px short of the right edge while the strip below it reached both. */
+  width: calc(100% + 48px);
+  border-inline-start: none;
+  /*
+   * The rail is another group, so it is set off by the gap the groups use rather than by a padding of
+   * its own — Featured was landing flush against the last column while every other heading had the
+   * gap above it. The 24 either side is the panel's, given back: the gradient needs to reach the edges
+   * of the sheet, so the rail cancels the panel's inset and re-applies it as its own padding.
+   */
+  margin-inline: -24px;
+  /*
+   * `margin-bottom` cancels the panel's own 24 at the foot. The rail is the last thing in every panel
+   * that has one, so that padding was a band of bare sheet between the gradient and the footer above
+   * it — the panel ended, and then the drawer did, 24px later.
+   */
+  margin-bottom: -24px;
+  padding: 32px 24px 24px;
+}
+
+/*
+ * Horizontal, whatever the desktop rail does.
+ *
+ * `stacked` is the narrow rail's answer to a 320px column: the image goes over the text because there
+ * is no room beside it. A drawer is the full width of the phone, and there is — so the card keeps the
+ * thumbnail beside its title, which is both what the file draws and what fits three of them on screen.
+ */
+.headerDrawerPanel .megaFeaturedCard[data-stacked] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.headerDrawerPanel .megaFeaturedCard[data-stacked] .megaFeaturedThumb {
+  width: 96px;
+  height: 64px;
+}
+
+/*
+ * The strip is one more section, and reads like one.
+ *
+ * On the desktop panel it is a bar across the foot, so it has a rule above it and its action on the
+ * right. In the drawer there is no bar to close — it follows a list the way Featured does — so it takes
+ * the rail's own box exactly: 32 above the label, 24 at the sides and below, the gradient across all of
+ * it, and no rule. That rule was the only hard line left in a sheet that separates by space everywhere
+ * else.
+ *
+ * Its parts stack, because a label over a full-width button is what a phone has room for; the desktop's
+ * right-aligned pairing needs a width neither of them has here.
+ */
+.headerDrawerPanel .megaCta {
+  flex-direction: column;
+  align-items: stretch;
+  /* 24, like the padding around it — the strip uses one number throughout. */
+  gap: 24px;
+  margin-inline: -24px;
+  /* The strip closes a Platform panel, so nothing follows it — not even the panel's own padding. */
+  margin-bottom: -24px;
+  padding: 32px 24px 24px;
+  border-top: none;
   background-color: transparent;
 }
 
-.headerMobile .megaBody {
+.headerDrawerPanel .megaBody {
   flex-direction: column;
+  /*
+   * `nowrap`, or the panel spills sideways.
+   *
+   * `.megaBody` wraps by default, and a *column* flex container with a definite height — which this is,
+   * being an absolutely positioned scroll panel — wraps into extra **columns**. So the Solutions menu
+   * filled column one with its tiles and pushed everything else off the right edge.
+   */
+  flex-wrap: nowrap;
+}
+
+/*
+ * `flex: 0 0 100%` is a *row* basis. The drawer's `.megaBody` is a column, where it reads as full
+ * height instead and the prompt swallowed the panel, so here the prompt is just a line of text.
+ */
+.headerDrawerPanel .megaHeading {
+  flex: 0 0 auto;
+  /* 8, like every other heading-to-items gap in the drawer. */
+  padding: 0 0 8px;
+}
+
+/* Compact in the drawer, where a 250px-tall box would stand in front of the list it introduces. */
+.headerDrawerPanel .megaTile {
+  min-height: 0;
+  padding: 12px;
+  /* The tile *is* the column's heading here, so it sits 8 above its list like the labels do. */
+  margin-bottom: 8px;
+}
+
+/*
+ * Tighter than the desktop panel, which has four columns to fill and a whole viewport to do it in. Here
+ * everything is one column and the only cost of air is scrolling.
+ */
+.headerDrawerPanel .megaColumn {
+  gap: 10px;
+}
+
+.headerDrawerPanel .megaItem {
+  padding-block: 2px;
+}
+
+.headerDrawerPanel .megaColumnHeading {
+  margin-bottom: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerDrawerPanel {
+    transition: none;
+  }
 }
 
 @media (min-width: 1200px) {
+  /*
+   * Every column of a desktop panel on one row.
+   *
+   * `auto-fit` cannot promise that: Solutions' four 190px tracks asked 856px of an 855.3px box, so the
+   * fourth wrapped under the first on two thirds of a pixel — and where a tile heads each column, a
+   * wrap does not merely reflow the grid, it puts a heading over a list it does not belong to. Partners
+   * wrapped for a plainer reason: its rail was the wide one, leaving room for three.
+   *
+   * The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot. The file
+   * draws these panels four across; a menu that wants fewer says so by having fewer columns.
+   */
+  .megaColumns[data-count='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .headerBurger,
-  .headerMobile {
+  .headerBarCta,
+  .headerDrawer {
     display: none;
   }
 
@@ -2747,6 +3465,13 @@
 
   .headerMega[data-open] {
     transform: none;
+    animation: none;
+  }
+
+  .headerDrawer[data-open],
+  .headerBurger > svg,
+  .headerDrawerClose > svg {
+    animation: none;
   }
 
   .headerMega[data-open] .megaColumn,
@@ -2798,7 +3523,16 @@
   container-type: inline-size;
   container-name: sds-hero;
   isolation: isolate;
-  overflow: hidden;
+  /*
+   * Not clipped, so the bubble can run past the foot of the hero.
+   *
+   * The animation is 1200x866 and a hero is far wider than that — 1216x474 at a 1280 window. Fitting
+   * the frame inside it meant choosing which edge to lose; letting it out means losing none, and the
+   * mask on the video dissolves whatever hangs below rather than ruling a line across the page. The
+   * bubble is `z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers nor
+   * catches.
+   */
+  overflow: visible;
   background-color: var(--sds-surfaces-page-bg-base-default);
   color: var(--sds-surfaces-text-primary);
 }
@@ -2812,6 +3546,18 @@
  * Both treatments are built from the brand ramp and the product accent, which is what the animation
  * itself is made of: `Brand/Primary/*` blues bleeding into `Accent/Product Accent` purple.
  */
+/*
+ * One background at a time.
+ *
+ * The gradient is the fallback — it is what shows under `prefers-reduced-motion`, on the light canvas,
+ * and whenever no file is passed. When the animation *is* playing it covers the same ground with the
+ * same colours, so drawing both stacked a second glow under the first for no one's benefit.
+ */
+.hero[data-video][data-background] .heroBubble {
+  /* Two attributes, so this outranks the per-background gradients below rather than tying and losing. */
+  background-image: none;
+}
+
 .heroBubble {
   position: absolute;
   inset: 0;
@@ -2854,46 +3600,68 @@
  * 1440x648 hero, i.e. edge to edge; `Corner Bubble` is 1105 wide against the same frame, anchored to the
  * top right, so it is not stretched across the whole width.
  */
+/*
+ * The animation: stretched, top-aligned, and taller than the hero it sits in.
+ *
+ * Three things it has to do at once, and `object-fit` alone does none of them. It fills the hero edge
+ * to edge, which means stretching — fine here and nowhere else, since this is an abstract gradient with
+ * no figure, no text and no circle anyone can check against. It is taller than the hero, so the artwork
+ * has somewhere to go rather than being squeezed into a band. And it is pinned to the top, so what
+ * spills is the bottom — which the hero does not clip (see `.hero`) and the mask dissolves.
+ *
+ * It starts at the container's top edge and is fully opaque there — no top fade. It used to start a
+ * bar's height higher, to run up behind the header, and that bought nothing: the header band is a
+ * 60%-alpha wash, so what sat behind it came out dimmed and the wash's own foot read as the very line
+ * the offset was meant to remove.
+ *
+ * **No blend.** It used to be composited with `screen`, which drops a near-black ground and keeps the
+ * light — and which is exactly why the frame's edges were so hard to hide: over blacks that are not
+ * pure, `screen` leaves a rectangle, and a mask shaped like a gradient cannot fully answer a blend.
+ * Painted plainly, the mask is ordinary alpha, and alpha fades to nothing.
+ */
 .heroVideo {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 180%;
+  object-fit: fill;
   /*
-   * The file is a bright sphere on a near-black ground, so `screen` drops the ground and keeps the
-   * light. Its blacks are not pure, though, which leaves a faint rectangle where the frame ends — hence
-   * the mask below, which fades the edges the sphere does not reach.
-   */
-  mix-blend-mode: screen;
-  /*
-   * Two mask layers, intersected. The radial one softens the frame's corners; the linear one dissolves
-   * the bottom, where the asset's own gradient ends in a faceted edge that `screen` would otherwise
-   * reveal as a shape. Neither is decoration for its own sake — they hide that the light source is a
-   * rectangle.
+   * Two fades, intersected: one down the box and one across it, so no side of the rectangle survives as
+   * a straight edge. The bottom half of the vertical fade is the long one — that is the part hanging
+   * below the hero, and it has to arrive at nothing before it meets whatever follows.
+   *
+   * This was a radial at 115%, which is why the edges showed at all: sized larger than the box, its
+   * transparent end fell outside it and never reached them. Percentages, so they hold at any size.
    */
   -webkit-mask-image:
-    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
-    linear-gradient(to bottom, #000 42%, transparent 88%);
+    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
   mask-image:
-    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
-    linear-gradient(to bottom, #000 42%, transparent 88%);
+    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 }
 
+/*
+ * The layer that is not the one being shown — the poster behind the animation, or the animation behind
+ * its poster. Both keep playing: a video that is `display: none` is not reliably allowed to autoplay,
+ * and the stand-in has to already be running when the swap happens or it appears as a frozen frame.
+ */
+.heroVideo[data-idle] {
+  opacity: 0;
+}
+
 .hero[data-background='corner'] .heroVideo {
-  inset: auto 0 auto auto;
-  width: min(1105px, 100%);
-  height: 100%;
-  object-position: top right;
-  /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
+  /* The corner bubble's weight is in the artwork, so it stays in the corner without being boxed in. */
   -webkit-mask-image:
-    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
-    linear-gradient(to bottom, #000 52%, transparent 94%);
+    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
   mask-image:
-    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
-    linear-gradient(to bottom, #000 52%, transparent 94%);
+    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
 }
 
 /* ------------------------------------------------------------------------------- the layout */
@@ -4057,8 +4825,23 @@
   container-name: sds-marquee;
 }
 
+/*
+ * A narrow strip steps *down one size*, rather than jumping to the smallest.
+ *
+ * This used to set 24px flat, which meant an explicit `size="lg"` silently became `sm` — skipping
+ * `md` entirely and overriding the caller rather than adapting to it. A responsive step is right; a
+ * responsive override that ignores what was asked for is not, and it is why the logo carousel did
+ * not look large even where it was told to be.
+ *
+ * `sm` is already the floor, so it is left alone.
+ */
 @container sds-marquee (max-width: 768px) {
   .marqueeViewport {
+    --sds-marquee-logo: 49px;
+  }
+
+  .marqueeRoot[data-size='md'] .marqueeViewport,
+  .marqueeRoot[data-size='sm'] .marqueeViewport {
     --sds-marquee-logo: 24px;
   }
 }
@@ -5262,6 +6045,74 @@
   background-color: var(--sds-footer-ground);
   color: var(--sds-action-neutral-inverted);
   isolation: isolate;
+  /*
+   * Clips the mesh. Without it the gradient layer widened the document by 243px on every page with a
+   * footer — and it did so invisibly, because a `::after` is not in `querySelectorAll`, so an element
+   * sweep for overflow finds nothing. Only the document-width check caught it.
+   */
+  overflow: hidden;
+}
+
+/*
+ * The mesh gradient, on by default.
+ *
+ * Three wide radial blooms in the brand hues, drifting slowly past each other. It sits under the
+ * vignette and over the ground, so it reads as light in the band rather than as a pattern on top of it —
+ * which is what the file draws: a purple bloom low-left and a blue one to the right of centre.
+ *
+ * A pseudo-element rather than a `background-image` on `.footerBase`, because the drift animates
+ * `background-position` and the band's own background is a flat colour that should not move with it.
+ *
+ * It is drawn whether or not `backdrop` is passed: with artwork it sits behind it, and the artwork's
+ * `object-fit: cover` covers it. Without, it is the whole of the interest in the band.
+ */
+.footerBase::after {
+  content: '';
+  position: absolute;
+  /*
+   * `inset: 0` and the travel comes from `background-size` being larger than the box, not from the box
+   * being larger than the band. Same drift, nothing outside the footer.
+   */
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(38% 44% at 22% 78%, var(--sds-footer-mesh-1) 0%, transparent 68%),
+    radial-gradient(42% 38% at 74% 42%, var(--sds-footer-mesh-2) 0%, transparent 70%),
+    radial-gradient(34% 40% at 52% 96%, var(--sds-footer-mesh-3) 0%, transparent 66%);
+  background-size: 180% 180%, 165% 165%, 190% 190%;
+  /*
+   * 48 seconds and three different offsets, so the blooms never line up into an obvious loop. Slow
+   * enough that it reads as light shifting rather than as something moving.
+   */
+  animation: sds-footer-mesh 48s ease-in-out infinite alternate;
+}
+
+@keyframes sds-footer-mesh {
+  from {
+    background-position:
+      0% 100%,
+      100% 0%,
+      50% 100%;
+  }
+  to {
+    background-position:
+      30% 70%,
+      64% 34%,
+      22% 72%;
+  }
+}
+
+/*
+ * Reduced motion keeps the gradient and drops the drift. The mesh is the band's colour, not an effect
+ * layered on it, so removing it would change the design rather than calm it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .footerBase::after {
+    animation: none;
+  }
 }
 
 /* The backdrop artwork, behind everything and decorative. */

@@ -150,7 +150,7 @@ const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', '
 
 export const HOME_PAGE: PageSpec = {
   hero: {
-    background: 'corner',
+    background: 'full',
     banner: {
       kind: 'solutionFinder',
       label: 'Explore customized solutions',
@@ -185,7 +185,7 @@ export const HOME_PAGE: PageSpec = {
     action: { label: 'Request a Demo', href: '#' },
     proof: {
       rating: { score: '4.6', outOf: 5, source: 'Source: Gartner Peer Insights™' },
-      marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'],
+      marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
     },
     media: {
       src: heroAnimation,
@@ -355,8 +355,8 @@ export const HOME_PAGE: PageSpec = {
         ],
         stats: [
           { value: '45', suffix: '%', label: 'Faster loading time' },
-          { value: '96', suffix: '%', label: 'Less consulting time', trend: 'down' },
-          { value: '845', suffix: '%', label: 'Less data entry time*', trend: 'down' },
+          { value: '96', suffix: '%', label: 'Less consulting time', sentiment: 'positive' },
+          { value: '845', suffix: '%', label: 'Less data entry time*', sentiment: 'positive' },
         ],
         media: { src: industryMedia, alt: 'Someone signing in to their account from a phone' },
       },

@@ -1,8 +1,65 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Box, useComputedColorScheme } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import { useReducedMotion } from '@mantine/hooks'
 import classes from '../../theme/components.module.css'
+
+/**
+ * What the hero will take for an animation or its poster.
+ *
+ * A URL, or a file — so a builder can hand over what someone just picked from disk without first
+ * uploading it somewhere and passing back a string. `readonly (…)[]` is there because a file input
+ * hands you a list, and taking the first of it here saves every call site the same unwrapping.
+ */
+export type HeroMediaSource = string | File | Blob | readonly (string | File | Blob)[]
+
+/** A list from a file input collapses to its first entry; everything else is already one thing. */
+const first = (source?: HeroMediaSource) =>
+  (Array.isArray(source) ? source[0] : source) as string | File | Blob | undefined
+
+/**
+ * Whether a source points at something that moves.
+ *
+ * A file says so itself, in its MIME type. A URL is judged by its extension — the same rule
+ * `page-schema.ts` uses for its media refs, inferred rather than declared, so swapping a still for a
+ * motion version stays a one-field change. An object URL has no extension, which is why the file's own
+ * type has to be asked first.
+ */
+function isMotion(source?: HeroMediaSource) {
+  const value = first(source)
+  if (!value) return false
+  if (typeof value !== 'string') return value.type.startsWith('video/')
+  return /\.(webm|mp4)(\?|#|$)/i.test(value)
+}
+
+/**
+ * A source as something `src` will take.
+ *
+ * A string passes through. A file becomes an object URL, revoked when it changes or the hero unmounts —
+ * without that every re-pick leaks the last one, and a video file is not a small thing to leak.
+ */
+function useMediaUrl(source?: HeroMediaSource) {
+  const value = first(source)
+  const [url, setUrl] = useState(typeof value === 'string' ? value : undefined)
+
+  useEffect(() => {
+    if (!value) {
+      setUrl(undefined)
+      return undefined
+    }
+
+    if (typeof value === 'string') {
+      setUrl(value)
+      return undefined
+    }
+
+    const objectUrl = URL.createObjectURL(value)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [value])
+
+  return url
+}
 
 export type HeroBackground = 'none' | 'full' | 'corner'
 export type HeroAlign = 'left' | 'center'
@@ -24,10 +81,23 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * Deliberately not bundled: it is 2MB, and a component library should not put that inside anyone's
    * JavaScript. Import it with your bundler or serve it from your public directory, and pass the URL.
    */
-  video?: string
-  /** A still for the video's first frame, shown while it loads. */
-  videoPoster?: string
-  /** Figma's `Alignnemt` axis. `center` centres the column and its text. */
+  video?: HeroMediaSource
+  /**
+   * What stands in for the animation until it can play — and if it never can.
+   *
+   * An image *or* a video. HTML's own `poster` attribute takes an image only, so a moving poster is
+   * rendered as a second video behind the first and swapped out on `canplay`; a still goes on the
+   * attribute as before. Which one you passed is inferred from the extension.
+   */
+  videoPoster?: HeroMediaSource
+  /**
+   * `center` centres the column and its text.
+   *
+   * **The file no longer draws this.** `Alignnemt` was Left / Center; every cell in the set is now
+   * `Left`, so `center` is a capability the design does not currently exercise — kept because it works,
+   * is a common hero shape, and removing it would break callers to satisfy an axis that may well come
+   * back. Code Connect does not offer it. Recorded in README.md.
+   */
   align?: HeroAlign
   /**
    * A full-width band above the content and the media, centred in the hero's own gutters. The Home
@@ -69,8 +139,8 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  *
  * | Source | Prop |
  * | --- | --- |
- * | `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
- * | `Alignnemt` — Left / Center | `align` |
+ * | `Type` — Default / Minimal / Corner Bubble / Full Bubble / Form | `background`, and the slots each cell fills |
+ * | `Alignnemt` — Left only, since `Center` was dropped | `align`, which still supports `center` |
  * | `Image` — Yes / No | `media` |
  * | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
  * | `Theme` — Dark / Light | the colour scheme, not a prop |
@@ -93,8 +163,10 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * />
  * ```
  *
- * Figma's `Form` and `Guide` cells are compositions rather than variants — a hero with a form instead of
- * buttons, and a hero with no media — so they are stories, the same way the Card's five types are.
+ * Figma's `Form` and `Minimal` cells are compositions rather than variants — a hero with a form instead
+ * of buttons, and a hero with a corner bubble and nothing but a heading and a line of text — so they are
+ * stories, the same way the Card's five types are. (`Minimal` is the cell that used to be called `Guide`;
+ * its placeholder still says so.)
  *
  * ## The bubble
  *
@@ -106,10 +178,12 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * The video is decorative: `aria-hidden`, muted, `playsinline`, and outside the tab order. Nothing in it
  * carries meaning, so there is nothing to caption.
  *
- * It also only plays on the **dark** canvas. The two files that ship are dark-canvas assets — Figma
- * names the component `Dark Bubble Animation` — and on a light page they read as a dark blob rather than
- * a light source. Light mode gets the gradient. A light-theme export would close that gap; see
- * README.md.
+ * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
+ * Animation` — a bright sphere on near-black, composited with `screen`. `videoLight` is its inverse, a
+ * coloured bubble on white, composited with `multiply`. Neither substitutes for the other: the dark
+ * asset over a light page reads as a dark blob rather than a light source, which is why light mode had
+ * only the gradient until there was an export drawn for it. A scheme with no file still gets the
+ * gradient, which is built from the same tokens.
  */
 export function Hero({
   background = 'none',
@@ -129,22 +203,55 @@ export function Hero({
   ...props
 }: HeroProps) {
   const reducedMotion = useReducedMotion()
+  /*
+   * One file, drawn as it is.
+   *
+   * It used to be two — a bright sphere on near-black composited with `screen`, and a light-canvas
+   * export composited with `multiply` — because a blend was what dropped each one's ground. That is
+   * also what made the frame's edges so hard to hide: `screen` over impure blacks leaves a rectangle,
+   * and no mask shaped like a gradient can fully answer a blend. Painted plainly, the mask is just
+   * alpha, and alpha fades to nothing.
+   */
+  const source = useMediaUrl(video)
+  const poster = useMediaUrl(videoPoster)
   const scheme = useComputedColorScheme('dark')
-  /**
-   * Three conditions, each for its own reason. There has to be a file. The background has to be a
-   * bubble. Nobody has asked for less motion. And the canvas has to be the dark one: Figma calls the
-   * component `Dark Bubble Animation`, and it is — a bright sphere on a near-black ground, which over a
-   * light page paints a dark blob with a visible frame edge instead of a light source. Light mode gets
+  /*
+   * And only on the dark canvas.
+   *
+   * Without a blend the file is painted as it is, and as it is it is a bright sphere on a near-black
+   * ground — over a light page that is a black rectangle across the hero with the headline inside it.
+   * Verified in the browser, which is the only way this kind of thing is ever caught. Light mode gets
    * the gradient, which is built from the same tokens and reads correctly there.
    */
   const showVideo =
-    Boolean(video) && background !== 'none' && !reducedMotion && scheme === 'dark'
+    Boolean(source) && background !== 'none' && !reducedMotion && scheme === 'dark'
+
+  /*
+   * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
+   * So it becomes a second video *behind* the first, and the first is transparent until it can play.
+   *
+   * `ready` is what swaps them and `failed` is what stops the swap ever happening: the animation is the
+   * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
+   * hole. Both reset when the source changes, which is what a scheme flip does.
+   */
+  const motionPoster = isMotion(videoPoster)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setReady(false)
+    setFailed(false)
+  }, [source])
+
+  const showPoster = motionPoster && (!ready || failed)
 
   return (
     <Box
       component="section"
       className={[classes.hero, className].filter(Boolean).join(' ')}
       data-background={background === 'none' ? undefined : background}
+      /* Tells the stylesheet to drop the gradient: the animation is standing in its place. */
+      data-video={showVideo || undefined}
       data-align={align === 'center' ? 'center' : undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
@@ -152,17 +259,41 @@ export function Hero({
     >
       {background === 'none' ? null : (
         <div className={classes.heroBubble} aria-hidden>
-          {showVideo ? (
+          {showVideo && motionPoster ? (
             <video
               className={classes.heroVideo}
-              src={video}
-              poster={videoPoster}
+              src={poster}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
               tabIndex={-1}
+              /*
+               * Faded rather than `hidden`: a `display: none` video is not reliably allowed to autoplay,
+               * and this one has to be running before it is seen or the swap shows a frozen frame.
+               */
+              data-idle={!showPoster || undefined}
+              key={`poster-${poster}`}
+            />
+          ) : null}
+
+          {showVideo && !failed ? (
+            <video
+              className={classes.heroVideo}
+              src={source}
+              poster={motionPoster ? undefined : poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+              data-idle={showPoster || undefined}
+              onCanPlay={() => setReady(true)}
+              onError={() => setFailed(true)}
+              /* Remount on a source change: a `src` swap alone leaves the old frames on screen. */
+              key={source}
             />
           ) : null}
         </div>

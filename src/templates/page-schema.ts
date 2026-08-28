@@ -20,6 +20,8 @@
  * through a registry at render time.
  */
 
+import type { ImageRatio } from '../components/Image/Image'
+
 /* ------------------------------------------------------------------ shared shapes */
 
 /** A named icon from the `UI Icon` set. Resolved in `PageRenderer`. */
@@ -53,6 +55,15 @@ export interface ImageRef {
    * enhancement; the still is the page. Without this a deployed Storybook would show an empty hero.
    */
   poster?: string
+  /**
+   * From Figma's `Aspect Ratio` set, which is the component the file wraps every hero and card image
+   * in. A *named* choice the design sanctions — the same category as `mediaSide`, not the same as a
+   * gap — so it belongs in the data: the Home hero's image is drawn 4:3 and the Industry hero's 3:2,
+   * and no property of "a hero" decides which.
+   *
+   * Omitted means `4:3`, which is what every image in the file used before the Industry page.
+   */
+  ratio?: ImageRatio
 }
 
 /** Whether a media ref points at something that moves. */
@@ -102,6 +113,17 @@ export interface HeroSpec {
   description: { text: string; emphasis?: string }
   /** The email capture: a field with a contained button. */
   form?: { placeholder: string; submit: string }
+  /**
+   * The button row — Figma's `Bottom` slot on the hero's content block. The Industry hero (node
+   * `24223:209534`) draws two: `Book a Demo` solid and `Contact Sales` outline.
+   *
+   * `outline` is the file's `Style=Outline` cell. Size is not a choice: the file draws Medium in every
+   * hero, so the renderer sets it.
+   *
+   * Separate from `action` because they are different slots, not two spellings of one. A hero can draw
+   * both — a form with a link under it *and* a button row — though no cell in the file currently does.
+   */
+  buttons?: { label: string; href: string; variant?: 'solid' | 'outline' }[]
   /** The secondary call to action under the form. */
   action?: LinkRef
   /** The Gartner rating and the compliance marks. */
@@ -134,13 +156,25 @@ export interface CardSpec {
   href?: string
 }
 
-/** A figure and its unit — `140` + `%`, `+` + `100M`. `trend` draws the arrow the file puts on a fall. */
+/** A figure and its unit — `140` + `%`, `+` + `100M`. */
 export interface StatSpec {
   value: string
   prefix?: string
   suffix?: string
   label: string
-  trend?: 'down' | 'up'
+  /**
+   * Which way to *feel* about the figure, not which way the figure moved.
+   *
+   * These two come apart whenever the metric is a cost. `96% less consulting time` is a fall in the
+   * number and a win for the reader, and the old `trend: 'down'` drew a falling arrow on it — the
+   * prop encoded the direction of the figure, and every reader decoded it as the direction of the
+   * outcome. The copy already says which way it went (“less”, “faster”, “+”), so the arrow's only
+   * job is telling you whether that is good.
+   *
+   * Figma has no axis for this: `Stat Icon` offers Arrow-Down / Arrow-Up / Percent / Plus as an
+   * icon swap, and choosing between them is exactly the judgement this prop makes explicit.
+   */
+  sentiment?: 'positive' | 'negative'
 }
 
 export interface StorySpec {

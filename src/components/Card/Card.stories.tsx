@@ -14,7 +14,7 @@ import {
   IconGlassMail,
 } from '../../icons'
 
-const SURFACES = ['glass', 'no-bg', 'grey', 'gradient-blue', 'gradient-purple'] as const
+const SURFACES = ['glass', 'static', 'highlighted', 'none'] as const
 
 /** Stands in for a photograph: the stories have to render offline, so no remote images. */
 const PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -146,7 +146,7 @@ export const Resource: Story = {
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
@@ -170,10 +170,10 @@ export const CustomerQuote: Story = {
       <Card
         {...args}
         image={<CustomerThumb name="Advanced Energy" />}
-        top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
+        top={<Stat size="md" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
         description="Liferay’s out-of-the-box features let us stand up eleven regional sites in a single quarter, on one codebase."
         bottom={
-          <Stack gap="4">
+          <Stack gap="0">
             <Text fz="16" fw={600} c="var(--sds-surfaces-text-primary)">
               Anne Anderson
             </Text>
@@ -182,6 +182,7 @@ export const CustomerQuote: Story = {
               fw={600}
               c="var(--sds-surfaces-text-secondary)"
               tt="uppercase"
+              line-height={1.5}
               style={{ letterSpacing: '0.04em' }}
             >
               VP of Experience and Change Management
@@ -255,7 +256,7 @@ export const CardExamples: Story = {
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
@@ -318,7 +319,7 @@ export const Padding: Story = {
           <Card
             {...args}
             padding={padding}
-            surface={padding === 'none' ? 'no-bg' : 'glass'}
+            surface={padding === 'none' ? 'none' : 'glass'}
             interactive
             component="a"
             href="#"
@@ -344,9 +345,10 @@ export const Surfaces: Story = {
           {...args}
           key={surface}
           surface={surface}
-          interactive={surface === 'glass' || surface === 'no-bg'}
-          component={surface === 'glass' || surface === 'no-bg' ? 'a' : 'div'}
-          href={surface === 'glass' || surface === 'no-bg' ? '#' : undefined}
+          /* The two kinds that can be targets; `static` and `highlighted` refuse it anyway. */
+          component={surface === 'glass' || surface === 'none' ? 'a' : 'div'}
+          href={surface === 'glass' || surface === 'none' ? '#' : undefined}
+          interactive={surface === 'glass' || surface === 'none'}
           hero={
             <Label size="sm" variant="gradient">
               {surface}
@@ -404,7 +406,7 @@ export const NonClickableSurfaces: Story = {
         </Text>
         <Card
           {...args}
-          surface="grey"
+          surface="static"
           hero={<IconGlassMail width={40} height={40} />}
           title="Not clickable"
           description="Grey is the only static surface; setting it changes nothing."
@@ -459,7 +461,7 @@ export const Hover: Story = {
           component="a"
           href="#"
           interactive
-          surface="no-bg"
+          surface="none"
           padding="none"
           image={<Cover />}
           hero={

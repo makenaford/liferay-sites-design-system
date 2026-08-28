@@ -7,6 +7,7 @@ import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
+import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
@@ -354,13 +355,13 @@ function HomePage() {
 
       {/* 1. Left Hero — the solution finder above the fold, the form in the content column. */}
       <Hero
-        background="corner"
+        background="full"
+        video={bubbleFull}
         banner={
           <Card
             surface="glass"
             padding="none"
-            /* A pill at the drawn width; once the row wraps on a narrow canvas, a pill is wrong. */
-            bdrs={{ base: 24, md: 30 }}
+            radius="pill"
             w="100%"
             maw={1000}
           >
@@ -431,7 +432,7 @@ function HomePage() {
             type="email"
             placeholder="Enter Your Email"
             containedButton={
-              <Button size="md" rightSection={<IconArrowRight />}>
+              <Button size="sm" rightSection={<IconArrowRight />}>
                 Start Free Trial
               </Button>
             }
@@ -467,7 +468,7 @@ function HomePage() {
               Source: Gartner Peer Insights&trade;
             </Text>
             <Group gap={8} wrap="wrap">
-              {['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPPA', 'CSTAR'].map((mark) => (
+              {['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'].map((mark) => (
                 <Label key={mark} variant="glass" size="sm" radius="sm">
                   {mark}
                 </Label>

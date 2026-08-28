@@ -36,6 +36,64 @@ if (!TOKEN) {
 
 /* ------------------------------------------------------------------ reading the mappings */
 
+
+/**
+ * The keys of an object literal, given the index of its opening brace.
+ *
+ * Written as a scan rather than a regex because both shapes appear in these files, and because the
+ * values are not simple: `CommonCards` maps each cell to a multi-line template string full of JSX,
+ * braces and colons, any of which a naive pattern reads as another key.
+ *
+ * The first version of this matched keys only at the start of a line, so a single-line
+ * `{ Yes: true, No: false }` reported `No` as unmapped — and four of the six findings on the first run
+ * were that bug rather than real drift. A check nobody trusts is worse than no check, so this one
+ * tracks depth and string state and only takes keys at the top level of the object.
+ */
+function optionKeys(source, braceIndex) {
+  const keys = []
+  let depth = 0
+  let quote = null
+  let i = braceIndex
+
+  for (; i < source.length; i += 1) {
+    const char = source[i]
+
+    if (quote) {
+      if (char === '\\') i += 1
+      else if (char === quote) quote = null
+      continue
+    }
+
+    if (char === "'" || char === '"' || char === '`') {
+      /* A key opens a string too, so record it before treating this as a value. */
+      if (depth === 1) {
+        const key = source.slice(i).match(/^(['"`])((?:\\.|(?!\1).)*)\1\s*:/)
+        if (key) {
+          keys.push(key[2])
+          i += key[0].length - 1
+          continue
+        }
+      }
+      quote = char
+      continue
+    }
+
+    if (char === '{' || char === '[' || char === '(') depth += 1
+    else if (char === '}' || char === ']' || char === ')') {
+      depth -= 1
+      if (depth === 0) break
+    } else if (depth === 1 && /[A-Za-z_$]/.test(char)) {
+      const key = source.slice(i).match(/^([A-Za-z_$][\w$]*)\s*:/)
+      if (key) {
+        keys.push(key[1])
+        i += key[0].length - 1
+      }
+    }
+  }
+
+  return keys
+}
+
 /**
  * What a mapping file claims about its Figma node.
  *
@@ -49,13 +107,9 @@ function readMapping(file) {
   const node = source.match(/node-id=([\d]+[-:][\d]+)/)?.[1]?.replace('-', ':')
   const fileKey = source.match(/figma\.com\/design\/([0-9a-zA-Z]{22,128})\//)?.[1]
 
-  /** `instance.getEnum('Style', { Filled: …, 'On content': … })` — the axis and the cells it names. */
   const enums = []
-  for (const match of source.matchAll(/getEnum\(\s*'([^']+)'\s*,\s*\{([\s\S]*?)\}\s*\)/g)) {
-    const options = [...match[2].matchAll(/(?:^|\n)\s*(?:'([^']+)'|([A-Za-z_$][\w$]*))\s*:/g)].map(
-      (option) => option[1] ?? option[2],
-    )
-    enums.push({ axis: match[1], options })
+  for (const match of source.matchAll(/getEnum\(\s*'([^']+)'\s*,\s*\{/g)) {
+    enums.push({ axis: match[1], options: optionKeys(source, match.index + match[0].length - 1) })
   }
 
   /** Everything else the mapping names by string: text, booleans, swaps, slots. */

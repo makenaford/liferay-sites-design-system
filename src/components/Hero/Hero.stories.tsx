@@ -84,7 +84,24 @@ const meta = {
       description: "Figma's `Type`: Default, Full Bubble, Corner Bubble.",
     },
     align: { options: ['left', 'center'], control: 'inline-radio' },
-    video: { control: false },
+    /*
+     * Uploads, not URLs. Each takes a file straight from disk — pick one and the hero swaps to it —
+     * because that is what a person has when they want to try an animation, and making them host it
+     * first to get a string is a step that proves nothing.
+     *
+     * The descriptions are not decoration: `video` and `videoPoster` say nothing about *when* each is
+     * on screen, and the answer is a loading state apart.
+     */
+    video: {
+      control: { type: 'file', accept: 'video/*' },
+      description:
+        'The bubble animation, drawn as it is — no blend, so what you upload is what shows. One file for both colour schemes.',
+    },
+    videoPoster: {
+      control: { type: 'file', accept: 'video/*,image/*' },
+      description:
+        'What stands in for `video` until it can play — and if it never can, so a missing file leaves a hero rather than a hole. An image or a video: HTML takes only an image on its own `poster` attribute, so a moving one is rendered behind the animation and swapped on `canplay`.',
+    },
     label: { control: false },
     title: { control: false },
     actions: { control: false },
@@ -102,7 +119,9 @@ const meta = {
           '',
           "The background is **a gradient in CSS with the webm on top**. The gradient needs no network, survives a blocked file, and is what shows under `prefers-reduced-motion` — where the video is not rendered at all, so it is never fetched. An autoplaying 2MB loop is exactly what that preference is for.",
           '',
-          'The video is not bundled: pass its URL. These stories import it from `assets/bubbles/`, which is where the two files live.',
+          'The video is not bundled: pass its URL, **or a file**. Both `video` and `videoPoster` take a `File` as readily as a string, so a builder can hand over what someone just picked from disk without hosting it first — the hero makes the object URL and revokes it when the file changes. The controls below are file pickers for exactly that; drop a webm on `video` and watch the background change.',
+          '',
+          '**One file, no blend.** The animation used to be composited with `screen`, and a second light-canvas export with `multiply`, because a blend was what dropped each ground. That is also what made the frame so hard to hide — `screen` over impure blacks leaves a rectangle no gradient-shaped mask can fully answer. Drawn plainly, the mask is ordinary alpha, and alpha fades to nothing.',
         ].join('\n'),
       },
     },
@@ -130,6 +149,41 @@ export const FullBubble: Story = {
 /** **Default** — no bubble at all, just the page surface. */
 export const Default: Story = {
   args: { background: 'none', media: <Shot /> },
+}
+
+/**
+ * **A moving poster.** `videoPoster` takes a video as readily as an image.
+ *
+ * HTML's own `poster` attribute takes an image and nothing else, so a motion poster is rendered as a
+ * second video behind the animation and swapped out when the animation can play. Both keep running
+ * while they wait — a paused stand-in shows as a frozen frame the moment it is revealed.
+ *
+ * It earns its keep where the animation is the heavy file and the poster is a light loop of the same
+ * artwork: the hero moves from the first frame rather than sitting still until the download lands. Here
+ * the corner bubble stands in for the centre one, which is the pairing you can see happen.
+ */
+export const MotionPoster: Story = {
+  args: {
+    background: 'full',
+    video: bubbleFull,
+    videoPoster: bubbleCorner,
+    media: <Shot />,
+  },
+}
+
+/**
+ * **A poster that is all there is.** The animation's URL is broken, so the poster stays up.
+ *
+ * The animation is the enhancement and the poster is the page: a file that 404s leaves the stand-in
+ * running rather than a hole where the hero was.
+ */
+export const PosterWhenTheVideoFails: Story = {
+  args: {
+    background: 'full',
+    video: '/does-not-exist.webm',
+    videoPoster: bubbleCorner,
+    media: <Shot />,
+  },
 }
 
 /** Centre aligned, with no media: Figma's `Alignnemt=Center, Image=No`. */
@@ -169,30 +223,25 @@ export const Form: Story = {
 }
 
 /**
- * **Guide** — Figma's `Type=Guide`: no media, a longer description, and the proof row under the
- * actions.
+ * **Minimal** — Figma's `Type=Minimal`, the cell that used to be called `Guide`; its placeholder in the
+ * file still reads *"This Is An Example Of A Guide Title"*.
+ *
+ * A heading, one line under it, and the corner bubble. Nothing else: no label, no actions, no media. It
+ * is the shortest hero in the set — a section header for a page whose content starts immediately — which
+ * is why it is the one cell where `background` matters on its own.
+ *
+ * This story used to render a label, two actions and the Gartner proof row over a plain surface, which
+ * was neither the old cell nor this one. `pnpm figma:drift` caught the rename; the drawing was wrong
+ * independently of it.
  */
-export const Guide: Story = {
+export const Minimal: Story = {
   args: {
-    background: 'none',
+    background: 'corner',
     media: undefined,
-    label: (
-      <Label size="sm" variant="gradient">
-        Guide
-      </Label>
-    ),
-    title: <h1>The composable enterprise</h1>,
-    description:
-      'What changes when every team ships on the same platform — and the twelve decisions that make or break the first year.',
-    actions: (
-      <>
-        <Button rightSection={<IconArrowRight />}>Download the guide</Button>
-        <Link href="#" size="md">
-          Read the summary
-        </Link>
-      </>
-    ),
-    proof: <GartnerProof />,
+    label: undefined,
+    title: <h1>This is an example of a guide title</h1>,
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    actions: undefined,
   },
 }
 

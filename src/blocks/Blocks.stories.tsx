@@ -138,7 +138,7 @@ export const CardGridNonClickable: Story = {
   ),
 }
 
-/** **`Type=Resources`** — Resource cards: `surface="no-bg"`, `padding="none"`, hover on the image. */
+/** **`Type=Resources`** — Resource cards: `surface="none"`, `padding="none"`, hover on the image. */
 export const Resources: Story = {
   render: () => (
     <Section
@@ -161,7 +161,7 @@ export const Resources: Story = {
             component="a"
             href="#"
             interactive
-            surface="no-bg"
+            surface="none"
             padding="none"
             image={<Cover />}
             hero={

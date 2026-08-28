@@ -992,8 +992,8 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 
 | Source | Prop |
 | --- | --- |
-| `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
-| `Alignnemt` — Left / Center | `align` |
+| `Type` — Default / Minimal / Corner Bubble / Full Bubble / Form | `background`, and the slots each cell fills |
+| `Alignnemt` — Left only | `align`, which still supports `center` — see below |
 | `Image` — Yes / No | the `media` slot |
 | A band above both columns | the `banner` slot |
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
@@ -1048,14 +1048,65 @@ with a visible frame edge instead of a light source — verified in the browser 
 the video plays on the dark canvas only, and light mode gets the gradient, which is built from the same
 tokens and reads correctly there.
 
-A light-theme export of the two animations would close this. Until then the light hero is a gradient, not
-an animation.
+**One file, drawn plainly.** The blend is gone. `screen` is what dropped the near-black ground and kept
+the light, and it is also why the frame was so hard to hide: over blacks that are not pure it leaves a
+rectangle, and no mask shaped like a gradient fully answers a blend. Painted as it is, the mask is
+ordinary alpha — two linear fades, one down the frame and one across it — and alpha fades to nothing.
+
+Which means the video is **dark-canvas only** again. Without the blend the file is what it is: a bright
+sphere on near-black, which over a light page is a black rectangle across the hero with the headline
+inside it. Light mode gets the gradient, as it did before. The light exports in `assets/bubbles/` are
+unused for now; they are there if a light treatment comes back.
+
+**Stretched, top-aligned, taller than the hero, and behind the header.** The animation is 1200x866 and
+a hero is far wider, so fitting the frame inside meant losing an edge — `cover` cropped the bottom or
+the top, `contain` shrank it to a band. It is stretched instead (`object-fit: fill`), which is fine here
+and nowhere else: an abstract gradient has no figure, no text and no circle anyone can check against.
+
+It is 180% of the hero's height so the artwork has somewhere to go rather than being squeezed into a
+band, and pinned to the hero's top edge so what spills is the bottom. The hero does not clip
+(`overflow: visible`), so the bottom is never cut; the mask dissolves it instead. The bubble is
+`z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers nor catches.
+
+It briefly started a bar's height *above* the hero, to run up behind the header. That bought nothing:
+the header band is a 60%-alpha wash, so what sat behind it came out dimmed and the wash's own foot read
+as the very line the offset was meant to remove. Top edge to top edge, fully opaque there, no top fade.
+
+**A file, not only a URL.** `video` and `videoPoster` each take a `File` as readily as a string, so a
+builder can hand over what someone just picked from disk without hosting it first to get a URL back.
+The hero makes the object URL and revokes it when the file changes or the hero unmounts — without that
+every re-pick leaks the last one, and a video is not a small thing to leak. A file input hands you a
+list rather than a file, so a list is accepted too and the first entry taken. Whether a source moves is
+read from a file's MIME type rather than its extension, because an object URL has no extension to read.
+
+**The poster may move.** `videoPoster` takes a video as readily as an image, which matters where the
+animation is the heavy file and the poster is a light loop of the same artwork: the hero moves from the
+first frame rather than sitting still until the download lands. HTML's own `poster` attribute takes an
+image and nothing else, so a motion poster is rendered as a second video behind the animation and
+swapped on `canplay`. Both keep playing while they wait — a paused stand-in shows as a frozen frame the
+moment it is revealed — and a `display: none` video is not reliably allowed to autoplay, so the one not
+being shown is faded rather than hidden. If the animation 404s the poster simply stays: the animation is
+the enhancement, the poster is the page.
 
 ## Header and MegaMenu
 
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
 set: a fixed band over the page, an inset panel that drops out of it, and a staggered reveal of the
 columns inside.
+
+### The set has drifted, and two things came out of it
+
+Found by `pnpm figma:drift` (see below), then confirmed against the set:
+
+**`Type=Guide` was renamed to `Minimal`, not deleted.** Its placeholder still reads *"This Is An Example
+Of A Guide Title"*. It also draws a corner bubble, which the old `Guide: 'none'` mapping did not
+reflect — so the mapping was both naming a dead cell *and* describing it wrongly. Now `Minimal:
+'corner'`.
+
+**`Alignnemt` has lost `Center`.** Every cell in the set is `Left`. `align="center"` is therefore a
+capability the design does not currently exercise. It is kept — it works, a centred hero is a common
+shape, and removing it would break callers to satisfy an axis that may well come back — but Code
+Connect no longer offers it, because a snippet should only produce something a designer can select.
 
 ### It condenses on scroll
 
@@ -2831,6 +2882,27 @@ Two smaller things in that export:
   `Premium Security 5`, `Out of the box3`) look like iterations that were never pruned. Nothing breaks —
   the manifest takes an `as` name — but the set would be easier to search with one name per icon.
 
+### The glass card's rim is deliberately under 3:1
+
+`glass` is the clickable card, and WCAG 1.4.11 asks 3:1 of the visual boundary that *identifies* an
+interactive component. Its rim measures 1.42–1.63:1 against its own fill. That is a decision, not an
+oversight, and it is written down here so nobody has to rediscover the reasoning.
+
+The rim was briefly taken to 3.5–4:1 to satisfy the rule outright. It measured correctly and looked
+wrong — glass stopped reading as a material and became a grey card with a bright edge, which is the
+one thing the surface exists to avoid.
+
+What makes it defensible is that the rim is not the only signal. Glass sits about twice as far
+forward of the page as `static` does, carries a lit top edge and a cast shadow that `static` has
+none of, and moves on hover. `static` is not rimless either — it has one at roughly a third the
+strength — so the two are told apart by *degree* across four properties rather than by one boundary
+doing all the work.
+
+What is still missing is a **non-tonal** cue. Every signal above is contrast, and contrast is what a
+dimmed laptop, a projector or low vision takes away first. A clickable card should carry something
+structural — a link-styled title, or an arrow in a corner — and until it does, this gap is real
+rather than theoretical.
+
 ### A card that is a link cannot contain links
 
 `<a>` inside `<a>` is invalid, and browsers unnest it into markup neither element controls. So an
@@ -2854,11 +2926,11 @@ The `Hero` set's axis is `Alignnemt`, not `Alignment`. Harmless until someone wr
 variant names — the Code Connect mapping has to spell it Figma's way, which is worth fixing at the source
 rather than in every consumer.
 
-### The light hero has no animation
+### The light hero has no animation — fixed
 
-The two bubble files are dark-canvas assets and are gated to dark mode, so a light hero shows the
-gradient alone. Not a bug, but a gap in the asset set rather than in the code: a light-theme export of
-`Dark Bubble Animation` (which would presumably stop being called that) is all it needs.
+Was: the two bubble files were dark-canvas assets gated to dark mode, so a light hero showed the gradient
+alone. There is a light export of each now, taken by `Hero`'s `videoLight` and composited with
+`multiply`. See the Hero section.
 
 ### Smaller things
 

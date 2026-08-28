@@ -30,3 +30,6 @@ trustPolicyIgnoreAfter: 131040
 allowBuilds:
   esbuild: true
   workerd: true
+
+minimumReleaseAgeExclude:
+  - '@figma/code-connect@2.0.0'

@@ -2,21 +2,25 @@ import type { ReactNode } from 'react'
 import { Box, Group, Stack, Text } from '@mantine/core'
 import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
-import { Header, MegaMenu } from '../components/Header'
+import { Header } from '../components/Header'
 import { Link } from '../components/Link'
+import { Logo } from '../components/Logo'
 import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
-import { LanguagePicker, TextInput } from '../components/Input'
+import { TextInput } from '../components/Input'
 import {
   IconFacebook,
   IconGithub,
   IconInstagram,
   IconLinkedin,
-  IconDownSmallFilled,
   IconSocialX,
-  IconUser1Filled,
   IconYoutube,
 } from '../icons'
+import { logoTile } from './logo-tile'
+
+/* Re-exported: it used to live here, and the templates import it from here. */
+export { logoTile }
+import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
 
 /*
  * What every page template shares.
@@ -57,18 +61,6 @@ export function Wordmark({ name }: { name: string }) {
   )
 }
 
-/** The 270×180 logo tile a customer-story card carries, drawn as a brand-coloured field. */
-export const logoTile = (name: string, hue: number) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="540" height="360" viewBox="0 0 540 360">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="hsl(${hue} 70% 34%)"/>
-    <stop offset="1" stop-color="hsl(${hue} 80% 12%)"/>
-  </linearGradient></defs>
-  <rect width="540" height="360" fill="url(#g)"/>
-  <text x="270" y="196" font-size="46" font-weight="700" text-anchor="middle"
-        fill="#fff" font-family="Source Sans 3, sans-serif">${name}</text>
-</svg>`)}`
 
 /** One of the 64px integration tiles. */
 export function VendorTile({ name }: { name: string }) {
@@ -110,43 +102,6 @@ export function Quotee({ name, title }: { name: string; title: string }) {
 }
 
 /* ------------------------------------------------------------------ the chrome's content */
-
-const NAV = [
-  {
-    value: 'platform',
-    label: 'Platform',
-    columns: [
-      ['Compare', ['Liferay vs. Adobe', 'Liferay vs. Sitecore', 'Liferay vs. Optimizely', 'Liferay vs. SharePoint']],
-      ['New to Liferay?', ['What is a DXP?', 'SaaS vs PaaS', 'Web Portals Explained', 'Headless CMS Guide']],
-    ],
-  },
-  {
-    value: 'solutions',
-    label: 'Solutions',
-    columns: [
-      ['Digital Transformation', ['Financial Services', 'Public Sector', 'Healthcare', 'Manufacturing']],
-      ['More Industries', ['Insurance', 'Transport & Logistics', 'Education', 'Wealth Management']],
-    ],
-  },
-  {
-    value: 'ai-agents',
-    label: 'AI Agents',
-    columns: [['Agentic platform', ['AI Hub', 'Agent Studio', 'SEO Studio', 'Personalization']]],
-  },
-  {
-    value: 'resources',
-    label: 'Resources',
-    columns: [
-      ['See What’s Possible', ['16 Awesome Web Portal Examples', '8 Exceptional Customer Portal Examples']],
-      ['Developers', ['Developer Blog', 'Liferay Discuss', 'Download Liferay DXP', 'GitHub']],
-    ],
-  },
-  {
-    value: 'partners',
-    label: 'Partners',
-    columns: [['Partner with us', ['Find a partner', 'Become a partner', 'Partner Portal']]],
-  },
-] as const
 
 const FOOTER_LINKS: [string, string[]][] = [
   [
@@ -223,59 +178,12 @@ const SOCIALS: [string, ReactNode][] = [
 /** `LRDC Primary Nav` — the same header on every template. */
 export function SiteHeader() {
   return (
-  <Header
-    position="static"
-    items={NAV.map((item) => ({
-      value: item.value,
-      label: item.label,
-      menu: (
-        <MegaMenu>
-          <MegaMenu.Body>
-            <MegaMenu.Columns>
-              {item.columns.map(([heading, links]) => (
-                <MegaMenu.Column key={heading} heading={heading}>
-                  {links.map((label) => (
-                    <MegaMenu.Item key={label} href="#" title={label} />
-                  ))}
-                </MegaMenu.Column>
-              ))}
-            </MegaMenu.Columns>
-          </MegaMenu.Body>
-        </MegaMenu>
-      ),
-    }))}
-    actions={
-      <>
-        <LanguagePicker
-          aria-label="Language"
-          /* `EN (US)` and its caret measure 65px across in the file. */
-          w={72}
-          defaultValue="en-US"
-          data={[
-            { value: 'en-US', label: 'EN (US)' },
-            { value: 'de-DE', label: 'DE' },
-            { value: 'pt-BR', label: 'PT (BR)' },
-            { value: 'ja-JP', label: 'JA' },
-          ]}
-        />
-        {/*
-          * `Log In` is a menu trigger, not a link: the file draws a **filled** person glyph, the label,
-          * and the same small solid caret the nav items use. It was an outline glyph with no caret,
-          * which read as a plain link and gave no sign there was anything behind it.
-          */}
-        <Link
-          href="#"
-          /* 14px, matching the drawn label — `Log In` measures 39px across in the file, not 50. */
-          size="sm"
-          leftSection={<IconUser1Filled />}
-          rightSection={<IconDownSmallFilled />}
-        >
-          Log In
-        </Link>
-        <Button size="sm">Contact Sales</Button>
-      </>
-    }
-  />
+    <Header
+      position="static"
+      items={SITE_NAV_ITEMS}
+      drawerControls={SITE_DRAWER_CONTROLS}
+      actions={SITE_ACTIONS}
+    />
   )
 }
 
@@ -289,15 +197,23 @@ export function SiteFooter() {
           <SectionTitle
             align="center"
             order={2}
+            /*
+             * The gradient runs on the second clause only, which is how the file draws it: the question
+             * is asked in plain white and the answer is what lights up. Wrapping the whole line made it
+             * one long gradient with nothing to contrast against.
+             */
             title={
-              <Text
-                span
-                inherit
-                variant="gradient"
-                gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
-              >
-                Ready for the future? Let&apos;s Get There Together.
-              </Text>
+              <>
+                Ready for the future?{' '}
+                <Text
+                  span
+                  inherit
+                  variant="gradient"
+                  gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
+                >
+                  Let&apos;s get there together.
+                </Text>
+              </>
             }
             description="Join thousands of organizations transforming their digital experiences with Liferay. Start your free trial today."
           />
@@ -327,7 +243,7 @@ export function SiteFooter() {
           </Box>
           <Group gap={16} justify="center">
             <Button variant="outline" size="md">
-              Book a Demo
+              Start Free Trial
             </Button>
             <Button variant="outline" size="md">
               Contact Sales
@@ -395,7 +311,9 @@ export function SiteFooter() {
      * is the sixth child rather than the `brand` prop, which would put it first.
      */}
     <Footer.Brand
-        address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
+      /* The file heads the brand block with the lockup; it was the one slot left empty. */
+      logo={<Logo height={40} />}
+      address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
       social={SOCIALS.map(([name, icon]) => (
         <a key={name} href="#" aria-label={name}>
           {icon}

@@ -24,7 +24,7 @@ const example = instance.getEnum('Type', {
       component="a"
       href="/resource"
       interactive
-      surface="no-bg"
+      surface="none"
       padding="none"
       image={<Image src={cover} alt="" ratio="3:2" radius={0} />}
       hero={<Label size="sm" variant="gradient">Guide</Label>}

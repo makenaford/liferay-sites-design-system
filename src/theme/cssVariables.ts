@@ -72,7 +72,12 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      * `Components/Glass Card/Glass Step 01` / `02` — the two stops of the glass card's fill, and the
      * three of its hover sheen (which reuses `02` at both ends).
      */
-    'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+    /*
+     * Back to the drawn 5% / 3%. The 9% I had tried made glass read as a grey card with a bright edge
+     * rather than as a material, and it was solving the wrong problem: glass does not need a heavy fill
+     * once the static card is sitting where it belongs.
+     */
+    'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.055)',
     'glass-step-02': 'rgba(140, 150, 169, 0.03)',
     /**
      * `Components/Gradient Card/blue` / `purple` — the coloured stop of a gradient card. Its other
@@ -81,10 +86,41 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'gradient-card-blue': scheme === 'light' ? color['brand-primary-lighten-4'] : '#0117ae',
     'gradient-card-purple': scheme === 'light' ? color['accent-product-accent'] : '#7414ff',
 
+    /**
+     * The lit top edge that raises a glass card on the dark canvas. Not a Figma value.
+     *
+     * Light mode takes nothing here — its own shadow does the work.
+     */
+    'card-lit-edge': scheme === 'light' ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+    /**
+     * The cast shadow, also not a Figma value.
+     *
+     * I had claimed a black shadow does nothing on a near-black page. That is only true of the *flat*
+     * one the file draws — `0 0 6px 1px #000 @8%`, no offset, which lands symmetrically and cancels
+     * itself out. An offset, blurred shadow darkens the ground beneath the card and reads perfectly
+     * well on dark, which is what the reference uses and what is reproduced here.
+     */
+    'card-cast-shadow':
+      scheme === 'light'
+        ? '0 8px 20px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.06)'
+        : '0 8px 20px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.22)',
+    /** The static card's edge: present, but a third of the strength of glass's. */
+    'card-static-line': scheme === 'light' ? 'rgba(16, 24, 40, 0.06)' : 'rgba(255, 255, 255, 0.05)',
+
     /** `Components/Glass Line/01` / `02` — the two stops of the container's hairline. */
     'glass-line-from':
-      scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)',
-    'glass-line-to': scheme === 'light' ? 'rgba(111, 160, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
+      scheme === 'light' ? 'rgba(111, 160, 255, 0.6)' : 'rgba(255, 255, 255, 0.16)',
+    /*
+     * 16% into 12% — a mean of 14%, which is the flat rim the reference draws, kept as a gradient
+     * because that is the shape Figma draws.
+     *
+     * This is well under the 3:1 that WCAG 1.4.11 asks of a boundary *identifying* an interactive
+     * component, and that is a deliberate call rather than an oversight. The rim is not carrying the
+     * distinction alone: glass sits slightly forward of the static card, has a lit top edge and a real
+     * shadow, and moves on hover. A clickable card should still carry something non-tonal — a
+     * link-styled title, an arrow — for the boundary not to be the only signal. Recorded in README.md.
+     */
+    'glass-line-to': scheme === 'light' ? 'rgba(111, 160, 255, 0.4)' : 'rgba(255, 255, 255, 0.12)',
   }
 }
 
@@ -117,6 +153,14 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
      */
     '--sds-footer-ground': '#070b13',
     '--sds-footer-vignette': 'rgba(7, 11, 19, 0.5)',
+    /*
+     * The mesh blooms. Brand blue, the product accent purple, and a deeper indigo between them — the
+     * three the file's gradient runs through. Mode-independent like the rest of the band: it is dark in
+     * both colour modes, so a mode-aware hue would turn it inside out in light mode.
+     */
+    '--sds-footer-mesh-1': 'rgba(116, 20, 255, 0.55)',
+    '--sds-footer-mesh-2': 'rgba(11, 95, 255, 0.45)',
+    '--sds-footer-mesh-3': 'rgba(1, 23, 174, 0.5)',
     /*
      * And the text on it, for the same reason. `Surfaces/Text/Primary` and `Action/Link/Hover Link` are
      * mode-aware, which is right on a page and wrong on a band that is dark in both modes — in light mode
