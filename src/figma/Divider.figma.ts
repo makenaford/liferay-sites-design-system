@@ -23,7 +23,7 @@ const orientation = instance.getEnum('Property 2', {
 
 export default {
   example: figma.code`<Divider tone="${tone}" orientation="${orientation}" />`,
-  imports: ['import { Divider } from "scratch"'],
+  imports: ['import { Divider } from "liferay-sites-design-system"'],
   id: 'divider',
   metadata: { nestable: true },
 }

@@ -52,6 +52,16 @@ export function StoryFrame({
       bg="var(--mantine-color-body)"
       p={fullBleed ? 'xl' : 'md'}
       mih={fullBleed ? '100vh' : undefined}
+      /*
+       * Full width, so the inner `maxWidth: 100%` has something real to resolve against.
+       *
+       * Storybook's default `layout: 'centered'` wraps the story in a shrink-to-fit flex box, so
+       * without this the outer box took its width *from* the fixed-width story inside it — and then
+       * `100%` of that was the fixed width, clamping nothing. Every `frame: { width: N }` story
+       * overflowed a phone viewport by design that had never worked. Caught by the Playwright
+       * overflow check, which reported ~40 stories at 375 all with the same shape.
+       */
+      w="100%"
     >
       <Box w={width} maw={maxWidth} mx={isCentered ? 'auto' : undefined}>
         {children}

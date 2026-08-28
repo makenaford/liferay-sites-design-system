@@ -1,4 +1,4 @@
-# scratch
+# Liferay Sites Design System
 
 A React component library whose single source of truth is the Figma library
 **Solutions Library- 2026** (file key `KihJKyGA20stc2SSjAlxYU`). Components are
@@ -31,7 +31,7 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm figma:publish` | Publish the Code Connect mappings to Figma |
 
 Pushing to `main` builds Storybook and publishes it to GitHub Pages at
-**https://makenaford.github.io/scratch/** (`.github/workflows/deploy-storybook.yml`). That workflow
+**https://makenaford.github.io/liferay-sites-design-system/** (`.github/workflows/deploy-storybook.yml`). That workflow
 also fails the build if the generated token files have drifted from `tokens/figma/`, so a hand-edited
 `*.generated.*` file cannot land quietly.
 
@@ -75,13 +75,13 @@ three are emitted as media-queried variables, so the type scale follows the view
 From the Figma `Button` component set (node `16123:189647`).
 
 ```tsx
-import { Button, IconArrowRight, IconRefresh, ScratchProvider } from 'scratch'
+import { Button, IconArrowRight, IconRefresh, LiferaySitesProvider } from 'liferay-sites-design-system'
 
-<ScratchProvider>
+<LiferaySitesProvider>
   <Button variant="filled" size="lg" leftSection={<IconRefresh />} rightSection={<IconArrowRight />}>
     Continue
   </Button>
-</ScratchProvider>
+</LiferaySitesProvider>
 ```
 
 Figma spreads the appearance over two axes, Color and Style. Those are collapsed into Mantine's single
@@ -170,7 +170,7 @@ From the Figma `Link` component set. A themed Mantine `Anchor` — an inline row
 icons with a 4px gap.
 
 ```tsx
-import { IconArrowForward, Link } from 'scratch'
+import { IconArrowForward, Link } from 'liferay-sites-design-system'
 
 <Link href="/pricing" variant="default" size="lg" rightSection={<IconArrowForward />}>
   CTA Link
@@ -265,72 +265,110 @@ temporarily unavailable is a `Button`.
 Renders an `<a>`. For a router link pass `component={NavLink}`; for an action that is not navigation,
 use `Button`.
 
-## Label
+## Chip
 
-From the Figma `Label CTA` component set (node `15121:237267`). A themed Mantine `Badge` — a static
-row of optional icon and text with a 4px gap.
+Figma `Chip` component set (node `16858:51126`), on Mantine's `Chip`.
+
+A **removable filter chip** — it toggles, it takes focus, and every drawn cell carries a close glyph on
+the right. For a read-only tag (the pill over a card, the `CMS Trends` marker) use `Label`, which is
+Figma's separate set.
 
 ```tsx
-import { IconCheck, Label } from 'scratch'
-
-<Label variant="light" size="lg" leftSection={<IconCheck />}>
-  Available now
-</Label>
+<Chip defaultChecked leftSection={<IconSearch />} rightSection={<IconClose />}>
+  Financial Services
+</Chip>
 ```
 
-Figma's Style axis maps onto Mantine's `variant` names one for one:
-
-| Figma Style | `variant` | What it is |
-| --- | --- | --- |
-| Tonal | `light` (default) | flat `Components/Label/lab-tonal-bg` fill |
-| Gradient | `filled` | two-stop `lab-grad-bg-step-01` → `-02` fill |
-| Outline | `outline` | gradient stroke, no fill |
-
-| Figma axis | Prop |
+| Figma | Prop |
 | --- | --- |
-| Size — Large / Medium / Small | `size="lg" \| "md" \| "sm"` (default `lg`) |
-| `Show Icon` + its instance swap | `leftSection` |
-| Text | `children` |
+| `Label` | `children` |
+| `Left Icon` + `↳ Left Icon` | `leftSection` |
+| `Right Icon` + `↳ Right Icon` | `rightSection` |
+| `State=Default` | the resting pill |
+| `State=Selected` | `checked` / `defaultChecked` |
+| `State=Focused` | `:focus-visible`, a real state |
+| `State=Disabled` | `disabled` |
+| `State=Dragged` | `dragging` |
 
-Measurements, all taken from the component:
+One drawn size (90×30), so there is no size axis: 8px of horizontal padding, 6px vertical, an 8px gap,
+`Border Radius/medium`, and `Paragraph/X-Small/Semi Bold`.
 
-| | Height | Padding X | Gap | Label | Icon | Border | Radius |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `lg` | 40px | 16px | 4px | 16/24px | 20px | 2px | `round` (pill) |
-| `md` | 32px | 8px | 4px | 16/24px | 20px | 1.5px | 8px |
-| `sm` | 22px | 8px | 4px | `Paragraph/Small` (13/20) | 16px | 1px | 4px |
+**Three of the five states are not props.** Focus and disabled are real CSS states, so they are
+`:focus-visible` and `:disabled` — the same treatment `Button`, `Link` and `Card` get. That leaves
+`Selected`, which is the checkbox, and `Dragged`, which is a styling hook: dragging is the page's job,
+because a chip cannot know it is being reordered.
 
-Large and Medium share one text style (`Paragraph/Base/Heavy`); only Small steps down, and it steps down
-to the **`Paragraph/Small` token** (13/20) rather than the 14px its Figma text style is set at — that
-style is named `Paragraph/X-Small/Semi Bold` and matches neither the X-Small variable (11px) nor Small
-(13px), so the token is the one unambiguous value in the set. The border weight only shows on `outline`,
-and Figma varies it per size.
+### The label is 14px, not 11
 
-**Radius comes with the size.** Figma binds it to the Size axis — `Border Radius/round` at Large,
-`/medium` at Medium, `/small` at Small — so `radius` is only for deviating from the design:
-`radius="round"` is the 1000px pill and `radius="sm"` the 4px corner, on any size. The **Radius**
-story shows all three rows.
+`Paragraph/X-Small/Semi Bold` — the text style the chip is drawn with — is **14px**. The variable
+`Size/Paragraph/X-Small` is **11px**, in all three typography modes. The same split `Button` and `Link`
+have between their `Action/*` text styles and their `Size/*` variables, and resolved the same way: the
+text style wins, because it is what the component is drawn with. The height settles it — 14 at 1.25 is
+17.5, plus 6 and 6 of padding, which is the drawn 30. At 11 the pill would come out 28.
 
-A label is not a control: the design draws no hover, focus or pressed state, and this renders a plain
-`<div>`. For something clickable use `Button`; for navigation, `Link`. Because the variant carries no
-meaning a screen reader can reach, put anything the label is actually communicating in its text.
+### Selected loses the hairline
 
-Mantine's Badge is uppercase, bold and letter-spaced by default; Figma's label is none of those, so
-the theme resets all three (text case as authored, Source Sans 3 SemiBold, no tracking).
+`State=Default` has a gradient stroke — `Components/Button Outline/line-stp-01` into `-02`, white into
+`Accent/Primary Blue Accent` — drawn with the same masked pseudo-element the card and the tab bar use, so
+all three hairlines are built alike. `State=Selected` binds **no** outline token at all: the stroke is
+what goes when `Surfaces/Card BG/Blue` arrives. Verified against the variant's own variables rather than
+inferred from the set's.
 
-The `outline` stroke is a gradient — `Brand/Primary/Primary` held to the halfway point, then out to
-`Accent/Product Accent`. CSS cannot paint a gradient border directly (`border-image` ignores
-`border-radius`, which would square off the pill), so it is a masked background on a pseudo-element.
-The mask has to live on the pseudo-element rather than the label: a mask applies to everything an
-element renders, so on the root it takes the text and icon with it.
+**The selected fill is very weak.** `Surfaces/Card BG/Blue` is `#6399ff0d` — 5% alpha — so on the dark
+canvas a picked chip is only just distinguishable from a resting one. It is reproduced as drawn; a filter
+row where selection is the whole point wants more separation than that.
 
-Contrast, measured in the browser against each variant's own background:
+### No check mark, and no built-in remove
 
-| | light | dark |
+Mantine puts a tick inside a checked chip and reflows the label around it. Figma does not, so the tick is
+hidden and the padding is held constant — otherwise picking a chip would resize it and shove every chip
+after it along the row.
+
+`rightSection` renders inside the chip's own `<label>`, which wraps a checkbox — so a `<button>` cannot go
+in it, and clicking the glyph toggles the chip like clicking anywhere else. **A row that needs real
+removal must put the close control beside the chip** and give it its own accessible name. Figma draws the
+close glyph as part of the chip, which cannot work as a second control; that is a gap in the design.
+
+## Label
+
+Figma `Label CTA` (node `15121:237267`). Its `Style` axis maps onto `variant` and `Size` onto `size`.
+
+| Figma | Prop |
+| --- | --- |
+| `Style=Filled` | `variant="filled"` — a flat `Components/Label/lab-tonal-bg` under white text |
+| `Style=Glass` | `variant="glass"` — `Surfaces/Card BG/Translucent` with the `glass effect card` blur and shadow |
+| `Style=Gradient` | `variant="gradient"` — no fill, a `Brand/Primary` → `Accent/Product Accent` stroke |
+| `Size=Large / Medium / Small` | `size="lg" \| "md" \| "sm"` — 40 / 32 / 22 tall |
+| `Show Icon` + `Instance` | `leftSection` / `rightSection` |
+
+Defaults are `Style=Filled, Size=Large`, the first cell the set draws.
+
+Size carries the radius with it, because Figma binds it that way: `round` at Large (a pill), `medium`
+at Medium, `small` at Small. A snippet never needs to pass `radius`.
+
+### The set was restyled
+
+`Style` used to be **Gradient / Tonal / Outline**. It is now **Filled / Glass / Gradient**, and two of
+the three survived under new names:
+
+| Was | Is | Note |
 | --- | --- | --- |
-| `light` (tonal) | 12.3 | 11.6 |
-| `filled` (both gradient stops) | 13.8 / 12.4 | 6.1 / 6.2 |
-| `outline` (against the page) | 13.7 | 17.5 |
+| `Tonal` → `variant="light"` | `Filled` → `variant="filled"` | same flat fill, new name |
+| `Outline` → `variant="outline"` | `Gradient` → `variant="gradient"` | same gradient stroke, new name |
+| `Gradient` → `variant="filled"` | — | the gradient *background* has no cell any more |
+| — | `Glass` | new |
+
+The 24 call sites that said `variant="outline"` now say `variant="gradient"`.
+
+**One judgement call worth knowing.** The Home hero's compliance marks (`SOC 2 Type 2`, `ISO/IEC
+27001`…) are drawn as plain subtle chips, and the restyled set has no plain-outline cell — a mechanical
+rename would have given them a blue ring they do not have in the file. They use `glass` instead. The
+report tags on `Our Latest Research & Data` *are* ringed in the file, and keep `gradient`.
+
+CSS cannot paint a gradient *border* directly — `border-image` ignores `border-radius`, which would
+square off the pill — so the ring is a background with its interior masked out on a pseudo-element.
+The mask sits on the pseudo-element rather than the root because a mask applies to everything an
+element renders, text and icon included.
 
 ## Card
 
@@ -484,7 +522,7 @@ From the Figma `Stats Item` set (node `15121:237366`), with `StatBar` from `Stat
 (`16708:102931`) and its gradient `divider` (`16290:53873`).
 
 ```tsx
-import { IconArrowUp, Stat, StatBar } from 'scratch'
+import { IconArrowUp, Stat, StatBar } from 'liferay-sites-design-system'
 
 <StatBar>
   <Stat value="845" label="Months to launch" leftSection={<IconArrowUp />} />
@@ -540,7 +578,7 @@ segmented control is a radio group, where the choice itself is the outcome; when
 `Radio.Group` or a `Select` is the honest control rather than a tab bar wearing its clothes.
 
 ```tsx
-import { Tabs } from 'scratch'
+import { Tabs } from 'liferay-sites-design-system'
 
 <Tabs defaultValue="websites">
   <Tabs.List>
@@ -684,9 +722,10 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 
 | Source | Prop |
 | --- | --- |
-| `Type` — Default / Full Bubble / Corner Bubble | `background="none" \| "full" \| "corner"` |
-| `Alignnemt` — Left / Center | `align` |
+| `Type` — Default / Minimal / Corner Bubble / Full Bubble / Form | `background`, and the slots each cell fills |
+| `Alignnemt` — Left only | `align`, which still supports `center` — see below |
 | `Image` — Yes / No | the `media` slot |
+| A band above both columns | the `banner` slot |
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
 | `Theme` — Dark / Light | the colour scheme, not a prop |
 | Label / Header / Description / Button(s) / Link | `label`, `title`, `description`, `actions` |
@@ -699,6 +738,12 @@ the media, and 24px inside the content stack. The content and media columns are 
 
 `Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
 and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
+
+`banner` is the one slot with no cell on the set. Every other slot lives inside the left column; the Home
+page (node `24563:52720`) puts a 1000px solution finder across the top of the hero, above the heading and
+spanning both columns, and there was nowhere to hang it. It renders as a full-width band inside the hero's
+own gutters — 40px above it, 64px below — and it is the hero's first child in the reading order, so what
+goes in it should introduce the page rather than trail it.
 
 The heading element is the caller's: `title` takes whatever node you pass and only styles it. A hero
 cannot know whether it holds the page's `h1`.
@@ -739,11 +784,47 @@ an animation.
 ## Header and MegaMenu
 
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component
-set: a fixed glass band over the page, an inset panel that drops out of it, and a staggered reveal of
-the columns inside.
+set: a fixed band over the page, an inset panel that drops out of it, and a staggered reveal of the
+columns inside.
+
+### The set has drifted, and two things came out of it
+
+Found by `pnpm figma:drift` (see below), then confirmed against the set:
+
+**`Type=Guide` was renamed to `Minimal`, not deleted.** Its placeholder still reads *"This Is An Example
+Of A Guide Title"*. It also draws a corner bubble, which the old `Guide: 'none'` mapping did not
+reflect — so the mapping was both naming a dead cell *and* describing it wrongly. Now `Minimal:
+'corner'`.
+
+**`Alignnemt` has lost `Center`.** Every cell in the set is `Left`. `align="center"` is therefore a
+capability the design does not currently exercise. It is kept — it works, a centred hero is a common
+shape, and removing it would break callers to satisfy an axis that may well come back — but Code
+Connect no longer offers it, because a snippet should only produce something a designer can select.
+
+### It condenses on scroll
+
+**At the top of the page the band is nothing** — no fill, no blur, no hairline, no shadow — so it sits
+on the hero and reads as part of it, which is what the file draws: the nav lives *inside* the
+`Left Hero` frame, over the bubble. Past 24px of scroll the glass arrives and the bar tightens from 64
+to 56.
+
+This corrected a real problem rather than adding polish. The band used to carry the blur, the hairline
+**and** a 30px drop shadow at all times, so a header at the top of an unscrolled page cast a shadow
+separating itself from content that had not arrived yet.
+
+| | |
+| --- | --- |
+| `condense` | On by default. Only meaningful with `position="fixed"` — a static header scrolls away, so there is nothing to condense. |
+| An open menu | Takes the glass whatever the scroll position. Without that the bar is transparent while a panel hangs off it, and the two read as unrelated things rather than one surface. |
+| `prefers-reduced-motion` | The state still changes and simply arrives immediately. The separation is the point; the fade is not. |
+
+It reads `window.scrollY` behind a `requestAnimationFrame` guard rather than watching a sentinel with
+an `IntersectionObserver`, because the sentinel would have to live outside the header in page markup
+this component does not own. One boolean flip near the top of the page is cheap, and the guard means a
+fast scroll cannot queue more than one read per frame.
 
 ```tsx
-import { Button, Header, MegaMenu } from 'scratch'
+import { Button, Header, MegaMenu } from 'liferay-sites-design-system'
 
 <Header
   logo={<Logo />}
@@ -815,6 +896,48 @@ stagger.
   `Surfaces/Page BG base/Default`. If the design file ever publishes the glass surfaces as their own
   variables, these become plain token references.
 
+## Logo
+
+The Liferay lockup, built from the supplied `Liferay Logo.svg` (152×48). The `Home` template uses it twice
+— the header at the top of the hero, and the footer's brand block.
+
+```tsx
+<Logo />                          // mark + wordmark, 48px tall
+<Logo height={32} />              // in a header bar
+<Logo variant="mark" height={24} />
+<Logo title="" />                 // decorative, beside a visible name
+```
+
+| Prop | |
+| --- | --- |
+| `variant` — `full` / `mark` | the lockup, or the glyph alone |
+| `height` | the rendered height; width follows the artwork's ratio |
+| `title` | the accessible name, `Liferay` by default; `''` when decorative |
+
+It is pinned by **height**, not width — that is what makes it sit level with the text beside it.
+
+### The wordmark follows `currentColor`, the mark does not
+
+The source file hardcodes the wordmark to `#F0F1F5`, a near-white that only works on a dark ground and
+would have been **invisible on a light page** — the same trap several tokens in this library already fall
+into, because the components are only ever drawn on the dark canvas. Here it is `currentColor`, so it takes
+`Surfaces/Text/Primary` on a page and the pinned inverted white on the footer's band.
+
+The **mark keeps its `#0B5FFF`**. That is `Brand/Primary/Primary`, and a brand mark is the one thing on a
+page that should *not* change with the colour scheme — it is the same blue on every surface, which is what
+makes it recognisable. It is a literal rather than a token for exactly that reason: it must not be re-themed.
+
+### Two gaps
+
+**There is no Figma component behind it, so it has no Code Connect mapping** — the only component here
+without one. The Solutions Library file has no logo set; a library search turns up `Liferay` in *Customer
+Logos* and `Logo / Desktop / Default` in *liferay-marketing*, both in other files. Mapping across file keys
+is a decision rather than a detail, so it is not guessed at here.
+
+**There is no inverse lockup.** On a brand-blue ground the mark is the same blue and disappears into it,
+leaving only the wordmark — see the `On surfaces` story, which shows it rather than hiding it. A logo that
+has to sit on the brand colour needs a single-colour version, and the supplied artwork does not include one.
+
 ## Fields — TextInput, Textarea, Select, LanguagePicker
 
 From the Figma `Input` set (node `16166:23969`), laid out in the `input` section `24397:77217`, with the
@@ -864,6 +987,15 @@ pair `floating` with a `placeholder` that says the same thing.
 Mantine renders the label as a *sibling* of the input's wrapper, so the float is driven from the root
 with `:focus-within` and `:has()` — a sibling selector cannot reach backwards from the input to its
 label.
+
+**`Select` takes `floating` too.** Every field in the `Form` set is `Condensed=True`, dropdowns included, so
+a form built from the file needs both or it looks misaligned — floating labels on the text fields and
+stacked labels on the selects. Verified in both states: empty, the label sits inside at 18px Regular,
+identical to a text field's; with an option chosen it is at 14px SemiBold on the border, `translateY(-32px)`.
+
+It needs no extra wiring because the mechanism is `:placeholder-shown`, which a select stops matching the
+moment an option is picked — so it also drops back on its own when a `clearable` select is cleared, and it
+floats while someone types in a `searchable` one.
 
 ### The info tooltip
 
@@ -976,7 +1108,8 @@ row opens.
 | `Size=Condensed` | `size="sm"` |
 | `Expand` — Closed / Expanded | `value` / `defaultValue`, or the user clicking |
 | `Header` text | `<Accordion.Control>` children |
-| `divider` `Property 1=normal` | the closed row's rule — 1px `Neutral/02` |
+| The header's `UI Icon` | a chevron rather than Figma's arrow — see below |
+| `divider` `Property 1=normal` | the closed row's rule — 1px `Neutral/03`, see the gaps list |
 | `divider` `Property 1=gradient` | the open row's rule — `Neutral/06` → `Brand/Primary/Lighten/3` |
 | The panel's placeholder frame | `<Accordion.Panel>` children |
 
@@ -1006,6 +1139,16 @@ The row height comes from the **arrow, not the text**: 32 + 24 = 56 and 24 + 16 
 from the label alone gives 50px and 39px, neither of which is what Figma draws.
 
 Figma gives the header no horizontal padding, so the rule and the text share an edge; that is kept.
+
+### A chevron, not an arrow
+
+Figma's header draws `UI Icon Name=arrow/arrow_down` — a full arrow with a shaft. This uses `arrow/down`,
+the chevron.
+
+An arrow means **go**: it is what the `Link` and the `Button` in this same library use, on things that
+navigate. A chevron means **there is more of this here**, which is what a disclosure does. Sharing one glyph
+between the two makes an accordion look like it will take you somewhere. The `UI Icon` set has both, so this
+is a swap the file can adopt rather than an invention.
 
 ### The rule is the state
 
@@ -1357,6 +1500,7 @@ forward slots would add API surface and no capability, so the fourteen live as *
 | Figma | Prop |
 | --- | --- |
 | `padding` 80 at 1440, 20 at 390 | fluid, no prop |
+| `card-image` `Ratio` on the media column | `mediaRatio="3:2" \| "16:9" \| "auto"` |
 | The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
 | `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
 | `Section Title` | `title` |
@@ -1469,6 +1613,10 @@ Figma `divider` component set (node `16290:53873`) on Mantine's `Divider`.
 All four cells are 1px, verified: 720×1 with a single top border on the horizontal ones, 1×60 with a single
 inline-start border on the vertical ones.
 
+**The normal tone is `Neutral/03` on both axes.** Figma draws it as `Neutral/02` horizontally and
+`Neutral/03` vertically; matching them on the stronger value is the one deviation this component makes — see
+the gaps list.
+
 `size`, `color` and Mantine's `dashed` / `dotted` line styles are deliberately not exposed. Every cell in
 the file is 1px solid and the colour is the `tone` axis, so a width scale and three line styles would all be
 inventions.
@@ -1482,6 +1630,420 @@ inventions.
 - `Accordion`'s rule **crossfades** between the flat and the gradient tone as a row opens, which needs two
   stacked layers on one element. A single `Divider` cannot animate between its own tones.
 
+## Form
+
+Figma `Form` component set (node `21405:74359`) — a glass card holding a heading, rows of fields, the terms
+line and a submit button. The `Type=Form` hero template (`24263:171716`) is this card beside a content
+block; that composition is the `FormSection` story in `Blocks`.
+
+| Figma | Prop |
+| --- | --- |
+| `Content Text` title + description | `title`, `description` |
+| `Slot 1`–`Slot 5`, `Slot 8` | `Form.Row`, one per row |
+| `Description/Terms` | `terms` |
+| `Action section` `Type=Button` | `submit` |
+| The second `Description Card` | `footnote` |
+| `Size` — Desktop / Mobile | a container query on the card's own width |
+| `Format` — Short | the only cell; nothing to switch on |
+
+It renders a real `<form>`, so `onSubmit` fires, Enter submits, and `required` fields report themselves with
+no JavaScript.
+
+### Measured
+
+| | Figma Desktop | Verified | Figma Mobile | Verified |
+| --- | --- | --- | --- | --- |
+| Padding | 40 | 40 | 16 | 16 |
+| Card gap | 40 | 40 | 24 | 24 |
+| Fields gap | 24 | 24 | 16 | 16 |
+| Row gap | 16 | 16 | 16 | 16 |
+| Title | 28 semibold | 28 w600 | 23 | 23 |
+| Two-up pair at 600 wide | 252 + 252 | **252 + 252** | single column | single column |
+
+### The numbered slots are not the API
+
+Figma's slots are `Slot 1`, `2`, `3`, `4`, `5` and `8` — not in visual order, with no 6 or 7, and whether a
+given one holds one field or two is set per instance. That is how Figma's slot system works, not a
+description of a form. `Form.Row` is one repeatable thing instead, and the order you write is the order it
+renders.
+
+### Terms above the button
+
+`terms` renders **above** `submit`, which is where the file puts it and the only defensible order: text you
+agree to by pressing a button has to be readable before the button, not underneath it.
+
+### A container cannot style itself
+
+The mobile cell is a container query on the card's own width, because this card lives in a hero column — it
+is narrow while the window is not, which is exactly the case a viewport query gets wrong.
+
+Getting there took a fix worth recording. With `container-type` on the `<form>` itself, the padding and gap
+rules inside the query **silently never applied** — a container cannot be styled by its own query — so the
+rows collapsed while the padding stayed at 40. The container is now a wrapper with no padding, so its inline
+size is the card's outer width, and all four mobile values land. Verified switching at exactly 520px.
+
+## Footer
+
+Figma `LRDC footer` component set (node `16288:12662`) — three stacked bands the file draws as one
+component.
+
+| Figma | Prop | What it is |
+| --- | --- | --- |
+| `Page Action Section` | `cta` | A grey band with a heading and a signup field |
+| `Number Footer` | `stats` | A blue strip of figures |
+| `Footer LRDC Base` | `brand`, children, `legal` | The dark footer proper |
+| Its bubble artwork | `backdrop` | Not bundled; pass the asset |
+| `Property 1` — Desktop / Mobile | **responsive**, no prop | |
+
+```tsx
+<Footer brand={<Footer.Brand logo={<Logo />} address="…" social={icons} />} legal={…}>
+  <Footer.Column title="Getting Started">
+    <Footer.Link href="/trial">Start a trial</Footer.Link>
+  </Footer.Column>
+</Footer>
+```
+
+**The top two bands are slots, not built in.** They are separate sections that happen to sit above a footer:
+the CTA is a `Section` with a `Form`, the strip is a `StatBar`. Building them in would mean a second, worse
+copy of two components that already exist — and plenty of pages want the footer without either.
+
+### The columns reflow without a breakpoint
+
+Figma has a nine-column Desktop cell and a Mobile cell **4,828px tall** with everything stacked. Rather than
+switch between those two, the columns are a grid of `minmax(214px, 1fr)` tracks — 214px being Figma's own
+column width — so the count follows the space, and Figma's cells are the two ends of that range. Measured:
+
+| Footer width | Columns | Track | Gutter | Content |
+| --- | --- | --- | --- | --- |
+| 1440 | **5** | **214px** | **80** | **1200** |
+| 1280 | 4 | 261px | 71 | 1138 |
+| 1024 | 3 | 283px | 56 | 912 |
+| 768 | 2 | 326px | 42 | 685 |
+| 414 | 1 | 371px | 21 | 371 |
+
+1440 lands on Figma's Desktop numbers exactly.
+
+### The dark band is dark in both colour modes
+
+It carries the dark bubble artwork and white text, so its ground, its vignette and its text are all
+**mode-independent** — pinned to their dark-canvas values rather than read from mode-aware tokens.
+
+This is also the one place `Action/Neutral/Inverted` is the *right* token. That token is `#ffffff` in both
+modes, which is what made the `neutral` button and the `secondary` link invisible in light mode; on a band
+that is always dark it is exactly correct, and the column titles and address use it at 19.69:1.
+
+### Mode-aware links inverted the wrong way on it
+
+A bug worth recording, because it is the mirror image of one already in this list. `Link variant="secondary"`
+was **made** mode-aware to fix it being white-on-white in light mode. On this band that is wrong: the band is
+dark in both modes, so in light mode a mode-aware link resolves to dark ink on a dark ground —
+**1.4:1**, measured, for every link in the footer.
+
+Fixed by pinning the band's links to their dark-canvas values alongside its ground:
+`Surfaces/Text/Primary`'s dark value for the resting colour and `Action/Link/Hover Link`'s for hover. Now
+**17.45:1 in both modes**, verified in each.
+
+The general lesson for the design file: a surface that ignores the colour mode cannot use tokens that follow
+it. Any always-dark band needs its own pinned set, not the page's.
+
+### Semantics
+
+A real `<footer>`, each column's links in a `<ul>` — a screen reader announcing "list, 7 items" is how
+someone knows how much a column holds before reading it. The address is an `<address>` with the browser's
+default italic removed, since Figma's is upright. Column headings are real headings, `h3` by default.
+
+Every link is `Link variant="secondary" size="md"`, which is what the file draws, and neither is exposed: a
+footer link in another style is a mistake rather than a choice.
+
+The social row's icons are **not bundled** — brand marks are trademarked assets belonging to the application
+rather than to a design system. `Footer.Brand`'s `social` slot lays them out and gives each a 44px target
+around Figma's 24px glyph, which is inferred; the file draws no target.
+
+## What the Home template needed
+
+The `Home` page (node `24563:52720`) — a 1440×8559 frame — is built in `src/templates/Home.stories.tsx`
+from the library, as an interactive prototype rather than a picture: the header opens its mega menus, three
+separate pill sets swap the panel below them, the industry tabs retitle the card, the carousel snaps, the
+marquee runs, the accordion expands and both forms validate. All of it verified by driving it at 1440 and at
+375, not by looking at it.
+
+It carries the file's **own** content — the headline and its gradient half, the Gartner rating, the four
+goal-card titles, the four customer quotes with their figures and attributions, the accordion's first panel,
+the industry stats, the six capability cells, the two report tags, the whole footer taxonomy and the Gartner
+disclaimer. Where the file has not been written yet, that is said below rather than papered over with
+invented copy.
+
+### What is committed, and what is not
+
+The product screenshots and the platform diagram are the design's own assets and are committed under
+`assets/home/` (2.3MB, exported at the drawn size or 2×). **Customer and vendor logos are not** — Airbus,
+Sky, Broadcom, Unilever, Stadt Wien, Carrefour, Petrobras, OpenAI, Asana and the rest are other companies'
+trademarks rather than design-system assets, so the marquee, the carousel tiles and the integration row use
+stand-ins at the drawn size. The Gartner "Leader / Summer 2026" shield is omitted for the same reason; the
+rating, the stars and the attribution line are real.
+
+### Fixed here — the components the page changed
+
+**`Hero` gained a `banner` slot.** The page opens with a 1000×60 glass bar — a label, two selects and a
+`Continue` button — centred *above* both columns. Every other hero slot lives inside the left column, so
+there was nowhere to put it. `banner` is a full-width band in the hero's own gutters, 40px below the nav and
+64px above the heading, and it is the hero's first child in the reading order.
+
+**`ContentMedia` gained `mediaRatio="auto"`.** `Different Teams. One Platform.` puts a screenshot *and* a
+row of three stats in its right column. The figure was a fixed `aspect-ratio` with `overflow: hidden`, so
+the stat row was clipped away entirely — present in the DOM, invisible on the page. `auto` takes the ratio
+off and lets the column be as tall as what is in it.
+
+**A `Button` label longer than its container now wraps instead of overflowing.** Mantine's button is a fixed
+height with a `nowrap` label, so `Explore our integration capabilities` ran straight out through the gutter
+at 375px. The root is now `height: auto; min-height: var(--button-height)` and the label wraps — the drawn
+height is the floor, so every button that fits on one line is unchanged.
+
+**A pill bar with more cells than fit now scrolls.** `Every Capability Your Enterprise Needs` is six cells;
+at the desktop cell they want ~1460px inside a 1280 column, and the bar was running off the page. The list
+scrolls at both sizes now, as the Mobile cell already did. See the note on `Segmented Control Bar` below for
+why six cells do not fit in the first place.
+
+### Needs a decision
+
+**`Tabs variant="pills"` cannot size itself to its content.** Its root declares
+`container: sds-tabs / inline-size` so the bar can switch to the Mobile cell on *its own* width rather than
+the window's — which is the right call, and it also means the root contributes nothing to a content-based
+measurement. Put the bar in any flex row that sizes to content (a `SectionTitle` action, a centred `Stack`)
+and it collapses to **zero width**. The page hits this twice, and both call sites pass the drawn width
+explicitly:
+
+| Where | Width |
+| --- | --- |
+| `What Teams Can Achieve with Liferay`, in `SectionTitle`'s `actions` | 520 |
+| `Different Teams. One Platform.`, in a centred `Stack` | 776 |
+
+That works, but a component that silently disappears in a flex row is a trap. Either the container moves to
+an element the caller does not own, or `Tabs` needs a `compact` prop so the cell is asked for rather than
+inferred from a width.
+
+**Figma's `Segmented Control Bar` is not `Tabs Pill Menu`.** `SegmentedControl` was removed from this library
+because Figma's set is named `Tabs Pill Menu`, which became `variant="pills"`. But section 8 uses a
+*different* set — `Segmented Control Bar` (`24247:69863`) — and it packs six cells into 1280 with tighter
+padding than the pill menu has. The mapping is lossy: `variant="pills"` needs ~1460px for the same six
+labels. Worth deciding whether the two sets are really one component.
+
+**`Stat` has no unit slot.** Every figure on this page carries one — `140%`, `+100M`, `45%`, `1,200+`,
+`17+` — drawn smaller than the figure and set tight against it. There is no prop for it, so the template
+passes a `Text` into `value`. Five instances of the same shape is an axis, not a one-off.
+
+**`Stat size="sm"` drops the small caps that the page still wants.** The small cell sets
+`text-transform: none`, which is right for the footer's `Enterprise Customers` and wrong for the industry
+card, where the file draws a 32px figure over `FASTER LOADING TIME`. The template uses `size="md"` there and
+takes the 40px figure, because the label's case matters more than eight pixels.
+
+**`Form` is Figma's glass *form card*, not a field row.** It is a 40px-padded glass surface, which is correct
+for the set it was built from and wrong for the footer's action band, where the file draws the field and the
+button straight onto the page. The band uses a bare `<form>` with a `Group`. If a plain field row is a
+recurring shape, `Form` needs a surface-less cell.
+
+**`LRDC Primary Nav` (`22775:43617`) is still not what `Header` was built from.** `Header` and `MegaMenu`
+came from `liferay-nav-desktop_12.html`. This set has a `Breakpoint` axis of four values —
+`1200+ Dynamic Width`, `Desktop 1200+`, `Tablet 600+`, `Mobile 0+` — against the single 1200px breakpoint the
+implementation uses. The page's header looks right at both widths, but the two have never been reconciled.
+
+**`Tabs Menu Logo` `Type=Logo`** — section 6 uses the text cell, which is implemented. The logo cell puts
+customer logos in the tabs instead of labels, and `Tabs.Tab` has no logo mode.
+
+### Fixed in the Code Connect mappings
+
+**`CS- Quote` promised a component that has never existed.** The `Common Cards` mapping wrote its
+attribution as `<Quotee name="…" title="…" />` — so a designer copying that snippet out of Dev Mode got code
+that does not compile. It is now the two lines of type the file actually draws: the name at
+`Paragraph/Small/Semi Bold` over the role in small caps. The template has the same shape as a local helper.
+If it turns up a third time it should be a component.
+
+### Where the file is not written yet
+
+Reproduced as drawn rather than filled in with invented copy:
+
+| Section | State in the file |
+| --- | --- |
+| `Trending Now` | Six cards, every one of them `Card Title` and a line of lorem |
+| `Audience Specific Goals`, second tab | Drawn hidden and empty — the four IT/Developer titles here are **authored**, and marked as such in the source |
+| `Different Teams. One Platform.` | Only the first accordion panel has body copy; the other four bodies and the other two pills are **authored** |
+| `CAROUSEL` | Six cards, of which the first and last are 74px slivers with no readable content. The four full stories are implemented |
+
+A tab that changes nothing is worse than a tab with a stated guess, which is why the authored copy exists
+rather than duplicate panels. Every one of those strings is a comment away from the real thing.
+
+### Two off-axis card paddings
+
+Both are `card-main` instances at padding values **not on the `Padding` axis**, so the template sizes them by
+hand and the component cannot help:
+
+- the hero's **1000×60 solution finder** at padding 8/16 — a label, two selects and a rounded button
+- the integrations **64×64 tile** at padding 12
+
+Two off-axis instances is a pattern rather than an accident. Either the axis needs those values, or these are
+two components of their own — a solution finder and an icon tile. The file does not say which, and guessing
+would put an invented cell in a published mapping.
+
+### Still true from the first pass
+
+`Hero`'s 1280 content column, 80px padding and 80px row gap; `Card`'s `Padding=Full` gap of 20; the logo
+strip at `Size=Size3` (64px) in a `spacing="none"` band; per-section gaps of 32/24/24/24/40/32/24/24; and the
+integrations band as a `List` of 64px glass tiles rather than a marquee. All re-verified against the file at
+1440.
+
+### No component yet
+
+| Figma set | What it is | Status in the prototype |
+| --- | --- | --- |
+| `Call to Action` (`16276:63170`) | A button/link group, Align × Size × Primary/Secondary | Hidden in the file; composed inline where needed |
+| `Logo Container` (`19660:24292`) | A logo box in four sizes | Hidden; the marquee lays logos out itself |
+| `Page Action Section` (`22502:27194`) | The footer's CTA band, now its own set | Composed as `Footer`'s `cta` slot |
+
+`Chip` **has since been built** — see above. Worth knowing how little that was driven by demand: it is
+hidden in every instance on the Home page *and* in all three Detail Page templates, so nothing visible in
+the file uses it yet. It was built because it is a real interactive control with five states that no other
+component covers, not because a page needed it.
+
+## What the Detail Page templates need
+
+`Detail Pages` (node `24223:174319`) holds three templates — **Product Info**, **Industry**, **Solution**
+— two variants each, 4,900–5,900px tall, four to seven sections apiece. Not built yet; this is the
+coverage read, taken from the node tree rather than by eye.
+
+The library covers almost all of it: `Hero`, `Section`, `SectionTitle`, `Card` (as `card-main` /
+`Common Cards` / `card-image` / `header-alignment` / `Content Text`), `Carousel`, `StatBar` (`Stats Bar`),
+`ContentMedia` (`Content Block`), `Tabs` in both variants, `List`, `Link`, `Button`, `Image`
+(`Aspect Ratio`), `Marquee` (`Logos scrolling section`), `Header` (`LRDC Primary Nav`) and `Footer`.
+
+**Two components are genuinely missing**, counting only instances that are actually visible:
+
+| Missing | Product Info | Industry | Solution |
+| --- | --- | --- | --- |
+| `2 Button` | 1 | 1 | 1 |
+| `Label CTA` | 1 | 1 | — |
+
+`Chip` and `Call to Action` are drawn in these templates but **every instance is hidden**, exactly as on
+the Home page — so neither blocks the work. That is worth stating plainly because a first pass over the
+tree that ignores visibility counts `Chip` three times in each template and reaches the opposite
+conclusion.
+
+### Query an instance, not a variant
+
+`get_design_context` on a component **variant** returns something that looks like a broken mapping and
+is not one. On a `Chip` variant it comes back as
+
+```
+import Chip from "src/components/Chip.tsx"
+<Chip />
+```
+
+— a file that does not exist here, wrapped around auto-generated Tailwind. Two separate things cause
+that, and neither is a stale mapping:
+
+1. **`figma.selectedInstance` has no property values on a variant.** A variant is the component
+   definition, not a use of it, so every `getString` / `getEnum` / `getSlot` in a template returns
+   undefined and the snippet renders empty. Figma fills the gap with its own generated code.
+2. **`src/components/<Name>.tsx` is a placeholder Figma synthesises for a component it has no mapping
+   for** — a guess at where the code would live, not a published connection. Proof: before `Chip` was
+   mapped here that node reported `source: src/components/Chip.tsx`; after publishing, the same node
+   reports `source: src/index.ts` and the real template.
+
+So `figma connect unpublish` answering `No Code Connect CLI mapping found for this component` was
+correct — there was nothing to unpublish. **Always point design-to-code at an instance**: a card on a
+page, not a cell in the component set. Verified on a live `card-main` instance, where the mapping returns
+the real customer quote and renders the nested `Stat` through that component's own snippet.
+
+`Surface` is the same story from the other end. It has no mapping here and should not have one: it is a
+design-side resource that carries the card's states and background fills, which this library expresses as
+`Card`'s `surface` prop. A component that exists only to hold fills in Figma has no code counterpart to
+connect.
+
+### Two repos publish to the same Figma file
+
+`solutions-design-system` — the older sibling — still declares Code Connect for `Badge`, `Button`, `Chip`
+and `TextInput` against **this same file key**. Its `Chip.figma.ts` maps the same node as
+`src/figma/Chip.figma.ts` here, so the two repos compete for that component and whichever published last
+wins.
+
+Worth settling deliberately rather than by accident. And if those mappings should go, they have to be
+unpublished **from that repo** — `figma connect unpublish` only knows what the local files declare, so
+deleting the repo would remove the only way to remove them.
+
+## Where assets live
+
+**Committed, under 4MB a file.** The deployed Storybook is the reference the designers work from, so it
+has to render on every branch and every preview with no configuration — which means the assets have to
+be in the repo. Hosting them elsewhere would add something that can be misconfigured or expire, and
+when it breaks every page looks broken.
+
+What makes that affordable is compression, not restraint. A raw 1200×800 alpha webm out of a design
+tool is 15MB; the same clip at CRF 33 is **2.1MB at 0.995 SSIM** — the size of the bubble animations
+that have been committed here all along.
+
+`pnpm assets:check` runs in the build and fails at **4MB per file**, with the ffmpeg recipe in the
+error. The failure mode it exists for is not "too many files", it is one raw export committed because
+compressing was a step too many — and git keeps that forever, even after it is deleted.
+
+Anything that genuinely cannot come down goes in the git-ignored `media/` folder, served at `/media`
+and referenced by URL through `mediaUrl()`, with `poster` as the fallback when the file is not there.
+See `media/README.md` for that path and for the alpha-channel trap.
+
+## Layout tests
+
+`pnpm test` runs Playwright over **every story in the library**, at 375, 768 and 1440, in both colour
+schemes, plus a pass that fails on anything thrown while rendering. The story list comes from
+Storybook's own `index.json`, so a new component is covered the moment it has a story — there is no
+register to keep in sync, which is how a suite like this usually rots.
+
+It is deliberately **not** visual regression. There are no reference images to approve and nothing to
+re-baseline when a colour moves. It asks one structural question — *does this story drag the page
+sideways?* — because every real defect found while building the Home page was that question:
+
+| Bug | How it showed up |
+| --- | --- |
+| Pill tabs in a flex row | collapsed to 0px |
+| `ContentMedia` at a fixed 3:2 | silently clipped the stat row |
+| A long button label | ran out through the gutter at 375 |
+| Industry tabs in `sectionFooter` | 823px wide inside 311 |
+
+All four were found by hand, and none needed a screenshot to detect.
+
+Scrollers are exempt by construction: a carousel track, a scrolling tab bar and a marquee are all
+*meant* to be wider than their box, so the check ignores anything clipped by an ancestor and only
+counts overflow that reaches the document.
+
+Stories tagged `desktop-only` are exempt below 1200. Only the two authoring tools carry it — a builder
+is a rail beside a live preview, which has no phone form. The tag sits on the story that claims it
+rather than in a skip list inside the test.
+
+### What it found on its first run
+
+Three bugs, none of them in a component:
+
+- **`Logo` set `width="auto"` as an SVG attribute**, which is not a valid SVG length. Every render
+  logged an error. It is a CSS `auto`, and it is now in `style`.
+- **`StoryFrame`'s `maxWidth: '100%'` had never worked.** `layout: 'centered'` makes `<body>` a flex
+  container and `#storybook-root` a flex item, whose default `min-width: auto` refuses to shrink below
+  its content — so a fixed-width story stretched the root and `100%` clamped against a box the story
+  had already widened. `#storybook-root { min-width: 0 }` in `preview-head.html` fixes it, and about
+  forty stories stopped overflowing a phone.
+- **Fixed-width demos did not shrink.** `w={360}` with no upper bound overflows at 375; the component
+  stories now pair it with `maw="100%"`, which is what the frame's own doc comment always claimed.
+
+There was also a **false pass**: `load` fires before Storybook has rendered a story it is compiling on
+demand, so some runs measured an empty document and reported it as fine. The suite now waits for the
+root to have children before it measures.
+
+### CI runs it against the build, not a dev server
+
+Locally `pnpm test` starts `storybook dev`, which is right for iterating. CI serves the **built**
+Storybook with `vite preview` instead, because on-demand compilation is what made the first CI attempt
+time out: a two-core runner spent the whole budget compiling stories. Since the workflow builds
+Storybook for Pages anyway, the tests reuse that output — no second build, and nothing to compile.
+
+The difference is not marginal. Same suite, same machine: **1m 25s per test against the dev server,
+11s against the build.**
+
 ## Icons
 
 Icons come from [MingCute](https://mingcute.com) — Apache-2.0, ~1,660 icons on a 24×24 grid with a 2px
@@ -1493,7 +2055,7 @@ same categories, drawn the same way. Depending on the package keeps both sides o
 re-exporting each glyph from Figma by hand.
 
 ```tsx
-import { Button, IconArrowRight } from 'scratch'
+import { Button, IconArrowRight } from 'liferay-sites-design-system'
 
 <Button rightSection={<IconArrowRight />}>Continue</Button>
 ```
@@ -1524,7 +2086,7 @@ pipeline — `scripts/build-glass-icons.mjs`, `src/icons/glass-manifest.json`, `
 rather than a second style in the first one.
 
 ```tsx
-import { Card, IconGlassMail } from 'scratch'
+import { Card, IconGlassMail } from 'liferay-sites-design-system'
 
 <Card variant="glass">
   <IconGlassMail />
@@ -1578,6 +2140,54 @@ Two conventions worth knowing before you touch the CSS:
   `.storybook/StoryFrame.tsx`; a story asks for what it needs with
   `parameters: { frame: { width: 400 } }`.
 
+## Checking the mappings still describe the file
+
+`pnpm figma:drift` compares what every `src/figma/*.figma.ts` asserts against what the Figma file
+actually has, using the same token `figma connect publish` uses.
+
+It exists because two sets have been restyled underneath the mappings without anything noticing:
+
+- **`card-main`'s `Padding`** went from two cells to four. `On content` and `Full` produced no snippet
+  at all, so a designer selecting either got nothing in Dev Mode.
+- **`Label CTA`'s `Style`** went from Gradient / Tonal / Outline to Filled / Glass / Gradient. The
+  mapping kept emitting `variant="light"` and `variant="outline"` for cells that no longer existed.
+
+Both were found by hand, months apart, while doing something else.
+
+The check reads the node id and the asserted axes out of the mapping files themselves, so there is no
+second list to keep in sync — which is how a check like this normally rots. It reports four things:
+
+| | Means |
+| --- | --- |
+| **Node is gone** | The set was deleted or moved to another file |
+| **Axis renamed or removed** | `getEnum('X')` names a property the set no longer has |
+| **Mapping names cells the file no longer has** | The snippet is for a variant nobody can select |
+| **File has cells the mapping does not name** | Selecting that cell in Dev Mode yields no snippet |
+
+A fifth, **property not declared on the set**, is the weakest signal and will always fire for a mapping
+that reaches into a nested instance — `Card` reads `Title` off a `Content Text` two levels down.
+
+**It is not part of `pnpm build`.** It needs a token and a network round trip, and a design file moves
+for reasons that have nothing to do with whether the code compiles. Blocking a deploy because a
+designer renamed a cell would train everyone to ignore it. It runs weekly instead, and a red run is
+the notification.
+
+Confirm anything it reports against `get_context_for_code_connect` before editing — that is the
+authority; this is a smoke alarm.
+
+### What it found on its first run
+
+The `Hero` set has drifted and the code has not followed:
+
+- `Type=Guide` **no longer exists**, and the mapping still emits a snippet for it.
+- `Alignnemt` has lost `Center` — every cell is now `Left`. `Hero`'s `align="center"` prop therefore
+  implements a cell the file does not have.
+- `Type=Minimal` is **new** and unmapped.
+- `Image=No` exists and is unmapped.
+
+Also unmapped: `Form`'s `Size=Mobile`, `Input`'s `Condensed=False`, `ListItem`'s `Padding=No`. None of
+these are broken, but each is a Dev Mode selection that produces nothing.
+
 ## Connecting to Figma
 
 `src/figma/Button.figma.ts` maps the Figma component set to this library's code, so selecting a
@@ -1596,6 +2206,28 @@ repo and stay valid — they just won't appear in Figma until the plan supports 
 These are places where the Figma library is ambiguous, inconsistent, or incomplete. Each is
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
+
+### `Content Text`'s description has no text property
+
+`Content Text` — the heading block inside both `card-main` and `Section Title` — exposes its title as a
+TEXT property (`Title Card#308:0`) but exposes **nothing** for the description. Only its visibility is a
+property (`Show description#21373:0`); the characters are unreachable.
+
+That matters for Code Connect: a bound property is how a snippet gets the real copy. Card and Section Title
+work around it by reading the layer directly with `findText('Description')`, which works but depends on the
+layer keeping its name. **Adding a TEXT property to the description layer** would make both mappings
+simpler and sturdier, and it is a one-field change in Figma.
+
+### `Quotee` is a Figma frame with no code counterpart
+
+The `CS- Quote` card's attribution is a frame named `Quotee`, holding `Name` and `Position` text layers.
+The Code Connect snippet used to write it as `<Quotee name="…" title="…" />` — a component this library has
+never exported, so the snippet did not compile. The name was not invented: it is the layer's.
+
+It is now bound as a slot, so the mapping renders whatever is actually in it. But the shape recurs — four
+times on the Home page alone, plus the template's own local helper — and a frame that has a name in Figma
+and no component in code is a gap in one direction or the other. Either `Quotee` becomes a real export, or
+the Figma frame should stop looking like a component.
 
 ### A static card had no edge, and now has one
 
@@ -1633,6 +2265,15 @@ grey's 1.05:1. It was a second option that looked like the first, so `grey` is t
 Worth having as a distinct surface if the token moves far enough from grey to be seen; until then it is one
 choice presented as two.
 
+### The Accordion's header uses a navigation arrow
+
+`Accordion`'s header draws `UI Icon Name=arrow/arrow_down`, the arrow with a shaft — the same glyph the
+`Link` and `Button` use for actions that navigate. A disclosure does not navigate; it reveals. The `UI Icon`
+set already contains `arrow/down`, the chevron, which is the conventional glyph for this and is what the
+implementation uses.
+
+A one-instance swap in the file, and worth making so the two meanings stay separate.
+
 ### The divider's two axes use different neutrals
 
 `divider`'s four cells are 1px each, and the normal tone is not the same colour on both axes:
@@ -1642,14 +2283,20 @@ choice presented as two.
 | normal | `Neutral/02` | `Neutral/03` |
 | gradient | `Neutral/06` → `Brand/Primary/Lighten/3` | same |
 
-Nothing about turning a line 90° should change its weight, so this reads as drift rather than intent. Both
-are reproduced as drawn — the `Divider` docs and its `TheAsymmetry` story put the two side by side, where the
-vertical is visibly the stronger of the pair.
+Nothing about turning a line 90° should change its weight, so this reads as drift rather than intent.
 
-It compounds the contrast problem already recorded for the Accordion: `Neutral/02` is **1.24:1 against the
-light page** and `Neutral/03` is 1.42:1, so a normal divider is close to invisible in light mode either way.
-`Neutral/05` is the step that reads in both modes, which is what the Card's static surface hairline settled
-on. One value for both axes, at a step that can be seen, would fix the asymmetry and the visibility together.
+**Fixed by using `Neutral/03` for both** — the stronger of the pair, and the value every other flat rule in
+this library already uses (`StatBar`'s stat divider, the underline tab bar's rule). Two places changed: the
+`Divider` component's horizontal cell, and the `Accordion`'s closed-row rule, which is the same Figma cell
+and would otherwise have recreated the inconsistency inside the library.
+
+One value for both axes is the fix to take back to the file.
+
+**What this does not fix.** `Neutral/03` is **1.42:1 against the light page** and 2.23:1 on dark. It is the
+stronger of Figma's two values, not a strong line, so a normal divider is still faint in light mode — the
+same flat end of the neutral scale that the Card's static surface ran into, where `Neutral/05` was what
+finally read in both modes. If dividers are meant to be *seen* rather than merely be present, that is the
+step, and it would want deciding for the `divider` component in Figma rather than per use here.
 
 ### The Accordion set is in an error state, from a duplicated variant name
 
@@ -1927,6 +2574,27 @@ Two smaller things in that export:
   `Global Services` each exist twice, and the `2`/`3`/`4` suffixes elsewhere (`Notifications 2`,
   `Premium Security 5`, `Out of the box3`) look like iterations that were never pruned. Nothing breaks —
   the manifest takes an `as` name — but the set would be easier to search with one name per icon.
+
+### The glass card's rim is deliberately under 3:1
+
+`glass` is the clickable card, and WCAG 1.4.11 asks 3:1 of the visual boundary that *identifies* an
+interactive component. Its rim measures 1.42–1.63:1 against its own fill. That is a decision, not an
+oversight, and it is written down here so nobody has to rediscover the reasoning.
+
+The rim was briefly taken to 3.5–4:1 to satisfy the rule outright. It measured correctly and looked
+wrong — glass stopped reading as a material and became a grey card with a bright edge, which is the
+one thing the surface exists to avoid.
+
+What makes it defensible is that the rim is not the only signal. Glass sits about twice as far
+forward of the page as `static` does, carries a lit top edge and a cast shadow that `static` has
+none of, and moves on hover. `static` is not rimless either — it has one at roughly a third the
+strength — so the two are told apart by *degree* across four properties rather than by one boundary
+doing all the work.
+
+What is still missing is a **non-tonal** cue. Every signal above is contrast, and contrast is what a
+dimmed laptop, a projector or low vision takes away first. A clickable card should carry something
+structural — a link-styled title, or an arrow in a corner — and until it does, this gap is real
+rather than theoretical.
 
 ### A card that is a link cannot contain links
 

@@ -3,7 +3,7 @@
     "parser": "react",
     "include": ["src/figma/**/*.figma.ts"],
     "importPaths": {
-      "src/components/*": "scratch"
+      "src/components/*": "liferay-sites-design-system"
     }
   }
 }

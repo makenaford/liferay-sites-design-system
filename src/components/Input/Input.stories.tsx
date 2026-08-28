@@ -8,6 +8,8 @@ import { LanguagePicker } from './LanguagePicker'
 import { Button } from '../Button'
 import { IconArrowRight, IconSearch } from '../../icons'
 
+const INDUSTRIES = ['Technology', 'Financial Services', 'Healthcare', 'Public Sector', 'Retail']
+
 const meta = {
   title: 'Components/Input',
   component: TextInput,
@@ -69,6 +71,41 @@ export const FloatingLabel: Story = {
     <Stack gap="24">
       <TextInput {...args} />
       <TextInput {...args} label="Already filled" defaultValue="User Input" />
+    </Stack>
+  ),
+}
+
+/**
+ * **`floating` on a dropdown.** Figma's `Form` set makes every field `Condensed=True`, dropdowns included,
+ * so `Select` takes the same prop as `TextInput` — without it a form built from the file would have
+ * floating labels on its text fields and stacked labels on its selects.
+ *
+ * Pick an option in the first one and the label rises: 18px Regular inside the box while empty, 14px
+ * SemiBold above it once there is a value. It is driven by `:placeholder-shown`, which a select stops
+ * matching the moment an option is chosen — so it needs no extra wiring and it drops back if the value is
+ * cleared.
+ */
+export const FloatingDropdown: Story = {
+  render: () => (
+    <Stack gap="24">
+      <Select floating label="Industry" required data={INDUSTRIES} />
+      <Select floating label="Already chosen" data={INDUSTRIES} defaultValue={INDUSTRIES[0]} />
+      <Select floating label="Clearable" data={INDUSTRIES} defaultValue={INDUSTRIES[1]} clearable />
+      <Select floating label="Searchable" data={INDUSTRIES} searchable />
+    </Stack>
+  ),
+}
+
+/**
+ * A text field and a dropdown side by side, both `floating` and both empty. They have to be
+ * indistinguishable at rest, or a form mixing the two looks misaligned — which is exactly what happened
+ * before `Select` took the prop.
+ */
+export const FloatingParity: Story = {
+  render: () => (
+    <Stack gap="24">
+      <TextInput floating label="Work Email" required type="email" />
+      <Select floating label="Industry" required data={INDUSTRIES} />
     </Stack>
   ),
 }

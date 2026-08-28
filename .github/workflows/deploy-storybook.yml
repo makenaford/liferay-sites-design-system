@@ -1,4 +1,4 @@
-# Builds Storybook and publishes it to GitHub Pages at https://makenaford.github.io/scratch/
+# Builds Storybook and publishes it to GitHub Pages at https://makenaford.github.io/liferay-sites-design-system/
 #
 # Ported from the workflow that shipped with the previous plain-React library in this repo, with
 # three changes: the package is now at the repo root rather than in a design-system/ subdirectory,
@@ -28,13 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Matches the "engines" field in package.json.
           node-version: '22'
@@ -62,11 +62,28 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # Page assets are committed and capped at 4MB a file, so the deployed reference renders with no
+      # configuration. See README.md, "Where assets live".
+      - name: Check asset sizes
+        run: pnpm assets:check
+
       - name: Build Storybook
         run: pnpm build-storybook
 
+      # Browsers are not in the lockfile — they live in a shared cache and are fetched on demand.
+      # `--with-deps` pulls the system libraries a headless Chromium needs on a bare runner.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Structural checks over every story: no horizontal overflow at 375/768/1440 in both colour
+      # schemes, and nothing throwing while it renders. Runs against the build above rather than a dev
+      # server — on-demand compilation is what made the first attempt time out here — and before the
+      # upload, so a layout regression fails the run rather than shipping to Pages.
+      - name: Layout tests
+        run: pnpm test
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./storybook-static
 
@@ -79,4 +96,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

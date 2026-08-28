@@ -1,3 +1,4 @@
+import { Children } from 'react'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
 import classes from '../../theme/components.module.css'
 import { IconArrowRight, IconExternalLink } from '../../icons'
@@ -8,12 +9,13 @@ export interface MegaMenuProps {
 
 /**
  * The mega menu panel's content. Composed rather than configured, the same way `Card` is: the
- * prototype has three different layouts — columns with headings, columns under tiles, and columns
- * beside a featured rail — and they are compositions of the same handful of parts.
+ * prototype has three different layouts — columns with headings, columns headed by tiles under a
+ * prompt, and columns beside a featured rail — and they are compositions of the same handful of parts.
  *
  * ```tsx
  * <MegaMenu>
  *   <MegaMenu.Body>
+ *     <MegaMenu.Heading>What are you looking to achieve?</MegaMenu.Heading>
  *     <MegaMenu.Columns>
  *       <MegaMenu.Column heading="Digital Experience">
  *         <MegaMenu.Item href="/platform" icon={<IconGlassComposable />} title="Platform Overview"
@@ -35,9 +37,20 @@ function Body({ children }: { children: ReactNode }) {
   return <div className={classes.megaBody}>{children}</div>
 }
 
-/** The auto-fitting column grid: as many 190px columns as the panel has room for. */
+/**
+ * The column grid.
+ *
+ * `data-count` is the number of columns, because a desktop panel draws all of them on one row and
+ * `auto-fit` cannot promise that: Solutions' four came to 855.3px of track in an 856px box and wrapped
+ * the last one under the first, on a rounding difference no layout should turn on. Below the desktop
+ * breakpoint the count is ignored and `auto-fit` takes over, which is what a narrowing panel wants.
+ */
 function Columns({ children }: { children: ReactNode }) {
-  return <div className={classes.megaColumns}>{children}</div>
+  return (
+    <div className={classes.megaColumns} data-count={Children.count(children)}>
+      {children}
+    </div>
+  )
 }
 
 export interface MegaColumnProps {
@@ -54,8 +67,12 @@ export interface MegaColumnProps {
 function Column({ heading, tile, children }: MegaColumnProps) {
   return (
     <div className={classes.megaColumn}>
-      {tile}
-      {heading ? <p className={classes.megaColumnHeading}>{heading}</p> : null}
+      {/*
+       * The tile *is* the heading where a column has one, rather than sitting above a label that
+       * repeats it: the Solutions menu heads each column with the group's own destination, and drawing
+       * both put the same four phrases on screen twice.
+       */}
+      {tile ?? (heading ? <p className={classes.megaColumnHeading}>{heading}</p> : null)}
       <div className={classes.megaColumnItems}>{children}</div>
     </div>
   )
@@ -66,10 +83,25 @@ export interface MegaTileProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   children: ReactNode
 }
 
-/** The Solutions layout's column head: a bordered, glass-filled tile that is itself a link. */
-function Tile({ icon, children, ...props }: MegaTileProps) {
+/**
+ * A prompt across the top of a panel, above everything else in it — "What are you looking to
+ * achieve?" over the Solutions columns.
+ *
+ * A full-width flex item, because `.megaBody` wraps: anything narrower would sit *beside* the columns
+ * rather than above them.
+ */
+function Heading({ children }: { children: ReactNode }) {
+  return <p className={classes.megaHeading}>{children}</p>
+}
+
+/**
+ * A column's head, where the group is a destination of its own: a bordered, glass-filled tile that is
+ * itself a link. Pass it to `MegaMenu.Column` as `tile`, in place of a `heading`.
+ */
+function Tile({ icon, children, className, ...props }: MegaTileProps) {
   return (
-    <a className={classes.megaTile} {...props}>
+    /* Merged, not replaced: a caller's class marks *which* tile this is, it does not restyle it. */
+    <a className={[classes.megaTile, className].filter(Boolean).join(' ')} {...props}>
       {icon ? <span className={classes.megaTileIcon}>{icon}</span> : null}
       <span>{children}</span>
     </a>
@@ -181,6 +213,7 @@ export const MegaMenu = Object.assign(MegaMenuRoot, {
   Body,
   Columns,
   Column,
+  Heading,
   Tile,
   Item,
   Featured,

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { SimpleGrid, Stack, Text } from '@mantine/core'
+import { SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
@@ -10,6 +10,8 @@ import { Link } from '../components/Link'
 import { List } from '../components/List'
 import { Marquee } from '../components/Marquee'
 import { Tabs } from '../components/Tabs'
+import { Form } from '../components/Form'
+import { Select, TextInput } from '../components/Input'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import {
@@ -136,7 +138,7 @@ export const CardGridNonClickable: Story = {
   ),
 }
 
-/** **`Type=Resources`** — Resource cards: `surface="no-bg"`, `padding="none"`, hover on the image. */
+/** **`Type=Resources`** — Resource cards: `surface="none"`, `padding="none"`, hover on the image. */
 export const Resources: Story = {
   render: () => (
     <Section
@@ -159,11 +161,11 @@ export const Resources: Story = {
             component="a"
             href="#"
             interactive
-            surface="no-bg"
+            surface="none"
             padding="none"
             image={<Cover />}
             hero={
-              <Label size="sm" variant="outline">
+              <Label size="sm" variant="gradient">
                 {kind}
               </Label>
             }
@@ -183,7 +185,7 @@ export const ContentLeftImage: Story = {
         mediaSide="left"
         media={<Cover />}
         eyebrow={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Platform
           </Label>
         }
@@ -498,6 +500,96 @@ export const QuickLinks: Story = {
           />
         ))}
       </Stack>
+    </Section>
+  ),
+}
+
+
+/**
+ * **A form section** — the `Type=Form` hero template (node `24263:171716`): a content block on the left and
+ * the `Form` card on the right, 80px apart inside the section's own gutter.
+ *
+ * The two columns share the width and stack below 900px, and the form's fields go single-column on their own
+ * once the card is narrower than 520px — a container query, so it happens because the *card* got narrow
+ * rather than because the window did. That matters here: the card is only ever half the section.
+ */
+export const FormSection: Story = {
+  render: () => (
+    <Section>
+      <div
+        style={{
+          display: 'flex',
+          gap: 80,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        <Stack gap="24" style={{ flex: '1 1 min(100%, 28rem)', minWidth: 0 }}>
+          <Label size="sm" variant="gradient">
+            Free trial
+          </Label>
+          <Title order={2} fz="clamp(32px, 2.57cqi, 37px)" lh={1.24} m={0}>
+            Try the whole platform for thirty days
+          </Title>
+          <Text fz="clamp(18px, 1.46cqi, 21px)" c="var(--sds-surfaces-text-primary)">
+            Content, commerce, search and portals on one deployment. Nothing installs on your machine, and
+            the sandbox is yours to keep for a month.
+          </Text>
+          <List marker="check" size="sm" spacing={12}>
+            <List.Item>Every capability switched on.</List.Item>
+            <List.Item>Your own content, imported for you.</List.Item>
+            <List.Item>A named engineer for the first week.</List.Item>
+          </List>
+        </Stack>
+
+        <div style={{ flex: '1 1 min(100%, 28rem)', minWidth: 0 }}>
+          <Form
+            title="Start your free 30 day trial"
+            description="No credit card required."
+            terms={
+              <>
+                This site is protected by reCAPTCHA and the Google{' '}
+                <Link href="#" size="sm" underline="always">
+                  Privacy Policy
+                </Link>{' '}
+                applies.
+              </>
+            }
+            submit={
+              <Button type="submit" size="md" fullWidth>
+                Start the trial
+              </Button>
+            }
+            footnote={
+              <>
+                Already have a trial?{' '}
+                <Link href="#" size="sm" underline="always">
+                  Renew here
+                </Link>
+                .
+              </>
+            }
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <Form.Row>
+              <TextInput floating label="Work Email" type="email" required />
+            </Form.Row>
+            <Form.Row>
+              <TextInput floating label="First Name" required />
+              <TextInput floating label="Last Name" required />
+            </Form.Row>
+            <Form.Row>
+              <Select
+                floating
+                label="Industry"
+                required
+                data={['Technology', 'Financial Services', 'Healthcare', 'Public Sector']}
+              />
+              <TextInput floating label="Company" required />
+            </Form.Row>
+          </Form>
+        </div>
+      </div>
     </Section>
   ),
 }

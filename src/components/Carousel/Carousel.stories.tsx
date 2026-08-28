@@ -147,7 +147,7 @@ export const ImageCards: Story = {
           padding="content"
           image={<Cover />}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               Story
             </Label>
           }
@@ -187,7 +187,7 @@ export const StatSlides: Story = {
         ['4d', 'To first launch'],
         ['1', 'Codebase'],
       ].map(([value, labelText]) => (
-        <Card key={labelText} surface="grey" main={<Stat value={value} label={labelText} leftSection={<IconArrowUp />} />} />
+        <Card key={labelText} surface="static" main={<Stat value={value} label={labelText} leftSection={<IconArrowUp />} />} />
       ))}
     </Carousel>
   ),

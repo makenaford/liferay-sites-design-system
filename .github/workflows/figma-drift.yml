@@ -1,0 +1,65 @@
+# Asks Figma whether the Code Connect mappings still describe the file.
+#
+# Two component sets have been restyled underneath these mappings without anything noticing —
+# `card-main`'s Padding axis went from two cells to four, and `Label CTA`'s Style axis was replaced
+# outright. Both were found by hand, months apart, while doing something else.
+#
+# Runs on a schedule rather than on push, and never gates a deploy: a design file moves for reasons
+# that have nothing to do with whether the code compiles, and blocking a release because a designer
+# renamed a cell would train everyone to ignore this.
+name: Figma drift
+
+on:
+  schedule:
+    # Mondays, 08:00 UTC — a report waiting at the start of the week rather than mid-flow.
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+# Nothing here writes; it only reads the file through the REST API.
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for drift
+        env:
+          FIGMA_ACCESS_TOKEN: ${{ secrets.FIGMA_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$FIGMA_ACCESS_TOKEN" ]; then
+            echo '::warning::FIGMA_ACCESS_TOKEN is not set — skipping. Add it under Settings > Secrets and variables > Actions.'
+            exit 0
+          fi
+          # The script exits 1 on any drift. That is the point of the run: a red schedule is the
+          # notification. It is summarised into the run page so the report can be read without
+          # opening the logs.
+          set +e
+          pnpm figma:drift | tee drift.txt
+          status=${PIPESTATUS[0]}
+          set -e
+
+          {
+            echo '## Figma drift'
+            echo
+            echo '```'
+            cat drift.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit $status

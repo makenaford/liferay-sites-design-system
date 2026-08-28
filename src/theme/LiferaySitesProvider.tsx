@@ -5,7 +5,7 @@ import { theme } from './theme'
 import '@mantine/core/styles.css'
 import './typography.generated.css'
 
-export interface ScratchProviderProps
+export interface LiferaySitesProviderProps
   extends Omit<MantineProviderProps, 'theme' | 'cssVariablesResolver'> {
   /** Optional overrides, merged on top of the design system theme rather than replacing it. */
   theme?: MantineProviderProps['theme']
@@ -18,12 +18,12 @@ export interface ScratchProviderProps
  * Defaults to the dark colour scheme, which is the mode the Figma library is drawn in; pass
  * `defaultColorScheme="light"` or `"auto"` to change that.
  */
-export function ScratchProvider({
+export function LiferaySitesProvider({
   children,
   defaultColorScheme = 'dark',
   theme: themeOverride,
   ...props
-}: ScratchProviderProps) {
+}: LiferaySitesProviderProps) {
   return (
     <MantineProvider
       theme={themeOverride ? mergeThemeOverrides(theme, themeOverride) : theme}

@@ -14,7 +14,7 @@ import {
   IconGlassMail,
 } from '../../icons'
 
-const SURFACES = ['glass', 'no-bg', 'grey', 'gradient-blue', 'gradient-purple'] as const
+const SURFACES = ['glass', 'static', 'highlighted', 'none'] as const
 
 /** Stands in for a photograph: the stories have to render offline, so no remote images. */
 const PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -109,7 +109,7 @@ export const Playground: Story = {
   args: {
     image: <Cover />,
     hero: (
-      <Label size="sm" variant="outline">
+      <Label size="sm" variant="gradient">
         Label
       </Label>
     ),
@@ -122,7 +122,7 @@ export const Playground: Story = {
     ),
   },
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card {...args} />
     </Box>
   ),
@@ -140,17 +140,17 @@ export const Playground: Story = {
  */
 export const Resource: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Guide
           </Label>
         }
@@ -166,7 +166,7 @@ export const Resource: Story = {
  */
 export const CustomerQuote: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         image={<CustomerThumb name="Advanced Energy" />}
@@ -196,7 +196,7 @@ export const CustomerQuote: Story = {
 /** **`Type=CS- Details`** — the same padded shape with a title and a description, and no slots. */
 export const CustomerStory: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         component="a"
@@ -216,7 +216,7 @@ export const CustomerStory: Story = {
  */
 export const IconLeft: Story = {
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         hero={<IconGlassComposable width={40} height={40} />}
@@ -229,8 +229,13 @@ export const IconLeft: Story = {
 
 /** **`Type=Icon-Center`** — the same card with `header-alignment Align=Center`: centred, gap 20, no description. */
 export const IconCenter: Story = {
+  args: {
+    interactive: true,
+    surface: "glass"
+  },
+
   render: (args) => (
-    <Box w={320}>
+    <Box w={320} maw="100%">
       <Card
         {...args}
         headerAlign="center"
@@ -238,7 +243,7 @@ export const IconCenter: Story = {
         title="Card Title"
       />
     </Box>
-  ),
+  )
 }
 
 /** The five cards from `Card Examples`, side by side. */
@@ -250,11 +255,11 @@ export const CardExamples: Story = {
         component="a"
         href="#"
         interactive
-        surface="no-bg"
+        surface="none"
         padding="none"
         image={<Cover />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             Guide
           </Label>
         }
@@ -313,7 +318,7 @@ export const Padding: Story = {
           <Card
             {...args}
             padding={padding}
-            surface={padding === 'none' ? 'no-bg' : 'glass'}
+            surface={padding === 'none' ? 'none' : 'glass'}
             interactive
             component="a"
             href="#"
@@ -339,11 +344,12 @@ export const Surfaces: Story = {
           {...args}
           key={surface}
           surface={surface}
-          interactive={surface === 'glass' || surface === 'no-bg'}
-          component={surface === 'glass' || surface === 'no-bg' ? 'a' : 'div'}
-          href={surface === 'glass' || surface === 'no-bg' ? '#' : undefined}
+          /* The two kinds that can be targets; `static` and `highlighted` refuse it anyway. */
+          component={surface === 'glass' || surface === 'none' ? 'a' : 'div'}
+          href={surface === 'glass' || surface === 'none' ? '#' : undefined}
+          interactive={surface === 'glass' || surface === 'none'}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               {surface}
             </Label>
           }
@@ -399,7 +405,7 @@ export const NonClickableSurfaces: Story = {
         </Text>
         <Card
           {...args}
-          surface="grey"
+          surface="static"
           hero={<IconGlassMail width={40} height={40} />}
           title="Not clickable"
           description="Grey is the only static surface; setting it changes nothing."
@@ -454,11 +460,11 @@ export const Hover: Story = {
           component="a"
           href="#"
           interactive
-          surface="no-bg"
+          surface="none"
           padding="none"
           image={<Cover />}
           hero={
-            <Label size="sm" variant="outline">
+            <Label size="sm" variant="gradient">
               Guide
             </Label>
           }
@@ -508,13 +514,13 @@ export const Horizontal: Story = {
 /** Every slot at once, labelled, so the order is legible. */
 export const Slots: Story = {
   render: (args) => (
-    <Box w={360}>
+    <Box w={360} maw="100%">
       <Card
         {...args}
         image={<Cover />}
         top={<Label size="sm" variant="filled">top</Label>}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             hero
           </Label>
         }
@@ -535,7 +541,7 @@ export const Slots: Story = {
 /** Buttons rather than a link in the bottom slot, in a card that is not itself clickable. */
 export const WithButtons: Story = {
   render: (args) => (
-    <Box w={360}>
+    <Box w={360} maw="100%">
       <Card
         {...args}
         hero={<IconGlassMail width={40} height={40} />}

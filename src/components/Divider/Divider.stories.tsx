@@ -25,9 +25,9 @@ const meta = {
         component: [
           'Figma `divider` component set (node `16290:53873`) on Mantine’s `Divider`. Four cells: `Property 1` of normal or gradient, `Property 2` of horizontal or vertical.',
           '',
-          '**The neutrals are not symmetric between the axes.** A normal horizontal rule is `Neutral/02` and a normal vertical one is `Neutral/03` — nothing about turning a line 90° should change its weight, so this looks like drift rather than intent. Both are reproduced as drawn and it is in the README’s gaps list.',
+          '**One value for both axes.** Figma draws the normal tone as `Neutral/02` horizontally and `Neutral/03` vertically; nothing about turning a line 90° should change its weight, so both use `Neutral/03` here — the stronger of the pair, and what every other flat rule in the library already uses. Recorded in the README as a deviation.',
           '',
-          'That matters: `Neutral/02` is **1.24:1 against the light page**, so a normal horizontal divider is close to invisible in light mode. If a rule has to be *seen* rather than merely be present, `Neutral/05` is the step that reads in both modes.',
+          'What that does not fix: `Neutral/03` is 1.42:1 against the light page and 2.23:1 on dark. It is the stronger of Figma’s two values, not a strong line. A rule whose job is to be *seen* wants `Neutral/05`.',
           '',
           '`size`, `color` and Mantine’s dashed/dotted line styles are deliberately not exposed: every cell in the file is 1px solid, and the colour is the `tone` axis.',
         ].join('\n'),
@@ -77,14 +77,14 @@ export const Cells: Story = {
 }
 
 /**
- * The asymmetry, side by side. The horizontal rule is `Neutral/02` and the vertical one `Neutral/03` — the
- * vertical is visibly the stronger of the two, which is the drift the docs describe.
+ * Both axes, side by side, on the same `Neutral/03`. Figma draws the horizontal one a step lighter at
+ * `Neutral/02`; matching them is the one deviation this component makes.
  */
-export const TheAsymmetry: Story = {
+export const BothAxes: Story = {
   render: () => (
     <Stack gap="16">
       <Text fz="sm" c="var(--sds-surfaces-text-secondary)">
-        Both are <code>tone=&quot;normal&quot;</code>. Only the axis differs.
+        Both are <code>tone=&quot;normal&quot;</code> and both are <code>Neutral/03</code>.
       </Text>
       <Group gap="40" align="stretch" h={80}>
         <Box style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -110,7 +110,7 @@ export const WithLabel: Story = {
 /** In a card, separating two blocks of content. */
 export const InACard: Story = {
   render: () => (
-    <Card w={420} title="Plan details" description="What is included at this tier.">
+    <Card w={420} maw="100%" title="Plan details" description="What is included at this tier.">
       <Stack gap="16">
         <Divider />
         <StatBar>
@@ -127,7 +127,7 @@ export const InACard: Story = {
  */
 export const GradientAsAccent: Story = {
   render: () => (
-    <Stack gap="12" w={420}>
+    <Stack gap="12" w={420} maw="100%">
       <Text fz="var(--sds-size-heading-f4)" fw={700}>
         Where is my data hosted?
       </Text>

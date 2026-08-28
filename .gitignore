@@ -6,3 +6,15 @@ storybook-static/
 .env
 .env.*
 !.env.example
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# media/ is the pressure valve for oversized or raw footage — git-ignored on purpose. Compressed page
+# assets live in assets/ and ARE committed, so the deployed Storybook is self-contained. See
+# media/README.md for which is which.
+/media/*
+!/media/README.md

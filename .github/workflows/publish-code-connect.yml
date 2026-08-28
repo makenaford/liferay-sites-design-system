@@ -1,0 +1,90 @@
+# Publishes Code Connect mappings to Figma, so Dev Mode never shows a stale snippet.
+#
+# Why this exists: the mappings in src/figma/ are generated from the component API, and nothing else
+# notices when they drift. A prop rename, or the package rename this repo went through, leaves Dev Mode
+# handing developers code that no longer compiles — and the only symptom is a designer copying something
+# that does not work.
+#
+# On a pull request this validates without publishing. On main it publishes.
+name: Publish Code Connect
+
+on:
+  push:
+    branches: [main]
+    # Only the things that can change a published snippet: the mappings themselves, the config that maps
+    # source paths to the package name, and package.json, which is where that name lives. A component's
+    # internals do not appear in a snippet, so a component-only change does not need a publish.
+    paths:
+      - 'src/figma/**'
+      - 'figma.config.json'
+      - 'package.json'
+      - '.github/workflows/publish-code-connect.yml'
+  pull_request:
+    paths:
+      - 'src/figma/**'
+      - 'figma.config.json'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Two runs publishing at once would race for the same documents. Unlike the Storybook deploy this does
+# not cancel in progress: a half-finished publish is worse than a slow one.
+concurrency:
+  group: publish-code-connect
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          # Matches the "engines" field in package.json.
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The secrets context is not available in a job-level `if`, so the check is a step that the later
+      # ones read. A missing secret warns rather than fails: the workflow should be able to land before
+      # the secret does, and a red X on every push teaches people to ignore red Xs.
+      - name: Check for the Figma token
+        id: guard
+        env:
+          FIGMA_ACCESS_TOKEN: ${{ secrets.FIGMA_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$FIGMA_ACCESS_TOKEN" ]; then
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::FIGMA_ACCESS_TOKEN is not set — skipping. Add it under Settings > Secrets and variables > Actions.'
+          else
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      # Parses every mapping and checks each node still exists in the file. This is what catches a node
+      # that was renamed or deleted in Figma, which no local typecheck can see.
+      # --exit-on-unreadable-files is the CLI's own CI recommendation: fail on a file it cannot parse
+      # rather than quietly publishing the rest.
+      - name: Validate mappings
+        if: steps.guard.outputs.present == 'true'
+        env:
+          FIGMA_ACCESS_TOKEN: ${{ secrets.FIGMA_ACCESS_TOKEN }}
+        run: pnpm exec figma connect publish --dry-run --exit-on-unreadable-files --skip-update-check
+
+      # --force overwrites mappings created through Figma's own UI when they collide with these files.
+      # An older sample codebase left several of those behind; without this they win and the snippet is a
+      # bare filename with no code in it.
+      - name: Publish
+        if: github.event_name != 'pull_request' && steps.guard.outputs.present == 'true'
+        env:
+          FIGMA_ACCESS_TOKEN: ${{ secrets.FIGMA_ACCESS_TOKEN }}
+        run: pnpm exec figma connect publish --force --exit-on-unreadable-files --skip-update-check

@@ -1,5 +1,5 @@
 {
-  "name": "scratch",
+  "name": "liferay-sites-design-system",
   "version": "0.1.0",
   "description": "React + Mantine component library generated from the Figma \"Solutions Library- 2026\" design library.",
   "type": "module",
@@ -10,20 +10,24 @@
     "node": ">=22.13"
   },
   "scripts": {
+    "assets:check": "node scripts/check-asset-size.mjs",
+    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && pnpm assets:check && tsc --noEmit && vite build",
+    "build-storybook": "storybook build",
     "dev": "vite",
-    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && tsc --noEmit && vite build",
-    "tokens": "node scripts/build-tokens.mjs",
-    "tokens:check": "node scripts/build-tokens.mjs --check",
-    "icons": "node scripts/build-icons.mjs",
-    "icons:check": "node scripts/build-icons.mjs --check",
+    "figma:drift": "node scripts/check-figma-drift.mjs",
+    "figma:publish": "figma connect publish",
+    "figma:unpublish": "figma connect unpublish",
     "glass-icons": "node scripts/build-glass-icons.mjs",
     "glass-icons:check": "node scripts/build-glass-icons.mjs --check",
-    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/build-icons.mjs",
+    "icons:check": "node scripts/build-icons.mjs --check",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:6007": "storybook dev -p 6007 --no-open",
-    "build-storybook": "storybook build",
-    "figma:publish": "figma connect publish",
-    "figma:unpublish": "figma connect unpublish"
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "tokens": "node scripts/build-tokens.mjs",
+    "tokens:check": "node scripts/build-tokens.mjs --check",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@mantine/core": "^9.5.1",
@@ -35,10 +39,11 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@figma/code-connect": "^2.0.0",
+    "@figma/code-connect": "^1.5.2",
     "@mantine/core": "9.5.1",
     "@mantine/hooks": "9.5.1",
     "@mingcute/svg": "3.0.2",
+    "@playwright/test": "^1.62.1",
     "@storybook/addon-docs": "^10.5.7",
     "@storybook/react-vite": "^10.5.7",
     "@types/react": "^19.2.18",

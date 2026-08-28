@@ -139,7 +139,7 @@ export const Fill: Story = {
     <Box pos="relative" h={280} style={{ borderRadius: 8, overflow: 'hidden' }}>
       <Image {...args} fill radius={0} />
       <Stack gap="8" pos="relative" p="32" justify="flex-end" h="100%">
-        <Label size="sm" variant="outline">
+        <Label size="sm" variant="gradient">
           Behind the content
         </Label>
         <Text fz="var(--sds-size-heading-f4)" fw={700} c="var(--sds-action-neutral-inverted)">
@@ -164,7 +164,7 @@ export const InACard: Story = {
         padding="content"
         image={<Image {...args} ratio="3:2" radius={0} alt="" />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             3:2
           </Label>
         }
@@ -177,7 +177,7 @@ export const InACard: Story = {
         padding="content"
         image={<Image {...args} ratio="16:9" radius={0} alt="" />}
         hero={
-          <Label size="sm" variant="outline">
+          <Label size="sm" variant="gradient">
             16:9
           </Label>
         }

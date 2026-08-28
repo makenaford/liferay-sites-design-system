@@ -4,7 +4,7 @@ import { Label } from './Label'
 import { IconCheck, IconInformation } from '../../icons'
 
 /** The three Figma styles, in the order the component set enumerates them. */
-const VARIANTS = ['filled', 'light', 'outline'] as const
+const VARIANTS = ['filled', 'glass', 'gradient'] as const
 const SIZES = ['lg', 'md', 'sm'] as const
 
 const SIZE_LABELS: Record<(typeof SIZES)[number], string> = {
@@ -13,10 +13,11 @@ const SIZE_LABELS: Record<(typeof SIZES)[number], string> = {
   sm: 'Small',
 }
 
+/** Figma's own cell names, so a story lines up with the file it came from. */
 const VARIANT_LABELS: Record<(typeof VARIANTS)[number], string> = {
-  filled: 'Gradient',
-  light: 'Tonal',
-  outline: 'Outline',
+  filled: 'Filled',
+  glass: 'Glass',
+  gradient: 'Gradient',
 }
 
 const meta = {
@@ -24,7 +25,7 @@ const meta = {
   component: Label,
   args: {
     children: 'Label',
-    variant: 'light',
+    variant: 'filled',
     size: 'lg',
   },
   argTypes: {
@@ -53,7 +54,9 @@ const meta = {
         component: [
           'Mantine `Badge` themed to the Figma `Label CTA` component set (node `15121:237267`).',
           '',
-          "Figma's Style axis (Gradient | Tonal | Outline) maps onto Mantine's `variant` names — `filled`, `light`, `outline` — and Size onto `size`. There are no interaction states: a label is not a control, so it renders a plain `<div>`.",
+          "Figma `Label CTA` (node `15121:237267`). Its `Style` axis — **Filled | Glass | Gradient** — maps onto `variant`, and `Size` onto `size`. There are no interaction states: a label is not a control, so it renders a plain `<div>`.",
+          '',
+          '**The set was restyled.** It used to be Gradient / Tonal / Outline. Two of the three survived under new names — Tonal’s flat fill is now `filled`, and Outline’s gradient stroke is now `gradient` — while the old Gradient *background* has no cell any more, and `glass` is new. Call sites that said `variant="outline"` say `variant="gradient"`.',
           '',
           'The corner radius is part of the size in Figma (pill at Large, 8px at Medium, 4px at Small), so pass `radius` only to deviate from the design.',
         ].join('\n'),
@@ -118,7 +121,7 @@ export const WithIcon: Story = {
           <Label {...args} size={size} variant="filled" leftSection={<IconInformation />}>
             Gradient
           </Label>
-          <Label {...args} size={size} variant="outline" rightSection={<IconCheck />}>
+          <Label {...args} size={size} variant="gradient" rightSection={<IconCheck />}>
             Trailing
           </Label>
         </Group>

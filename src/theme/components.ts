@@ -2,12 +2,14 @@ import {
   Accordion,
   Anchor,
   Badge,
+  Chip as MantineChipComponent,
   List,
   Button,
   Select,
   Tabs,
   Textarea,
   TextInput,
+  type MantineTheme,
   type MantineThemeComponents,
 } from '@mantine/core'
 import classes from './components.module.css'
@@ -98,12 +100,12 @@ export type LabelThemeSize = keyof typeof LABEL_SIZES
 
 /** The label colour per variant. Constant across sizes in Figma. */
 const LABEL_TEXT_COLOR = {
-  /** Figma `Style=Gradient`. The one label colour Figma leaves untokenised — see `cssVariables.ts`. */
-  filled: 'var(--sds-label-grad-text)',
-  /** Figma `Style=Tonal` — `Components/Label/lab-tonal-text`. */
-  light: 'var(--sds-label-tonal-text)',
-  /** Figma `Style=Outline` — `Surfaces/Text/Primary`. */
-  outline: 'var(--sds-surfaces-text-primary)',
+  /** `Style=Filled` — `Components/Label/lab-tonal-text`, white on the flat fill. */
+  filled: 'var(--sds-label-tonal-text)',
+  /** `Style=Glass` — `Surfaces/Text/Primary`. */
+  glass: 'var(--sds-surfaces-text-primary)',
+  /** `Style=Gradient` — `Surfaces/Text/Primary`, inside the gradient ring. */
+  gradient: 'var(--sds-surfaces-text-primary)',
 } as const
 
 /**
@@ -134,6 +136,21 @@ const INPUT_VARS = {
   '--input-bd': 'none',
   '--input-bg': 'transparent',
 } as const
+
+/**
+ * The field variables, less the radius when the call site states one.
+ *
+ * Mantine merges a component's *theme* `vars` after its own resolver, so `--input-radius` here was
+ * overwriting the `radius` prop rather than defaulting it: the hero's solution finder asked its selects
+ * for `radius="xl"` and silently got the set's 8px, and so would anything else that ever asked. Dropping
+ * the key when `radius` is given leaves Mantine's own value standing, and leaves the Figma default in
+ * place everywhere that says nothing.
+ */
+const inputVars = (_theme: MantineTheme, props: { radius?: unknown }) => {
+  if (props.radius === undefined) return { wrapper: INPUT_VARS }
+  const { '--input-radius': _radius, ...rest } = INPUT_VARS
+  return { wrapper: rest }
+}
 
 /**
  * Figma puts the help text *below* the box; Mantine's default order puts the description above it. The
@@ -210,6 +227,34 @@ export const componentTheme: MantineThemeComponents = {
     },
   }),
 
+  /**
+   * Chip — Figma `Chip` (`16858:51126`). One drawn size, so there is no size axis: 30px tall, 8px of
+   * horizontal padding, 6px vertical, an 8px gap, `Border Radius/medium` and
+   * `Paragraph/X-Small/Semi Bold`. The fills, the gradient hairline and the states live in
+   * `components.module.css`, which is also where Mantine's tick is hidden.
+   */
+  Chip: MantineChipComponent.extend({
+    classNames: {
+      root: classes.chipWrapper,
+      label: classes.chipLabel,
+      input: classes.chipInput,
+      iconWrapper: classes.chipIconWrapper,
+    },
+
+    vars: () => ({
+      root: {
+        '--chip-fz': 'var(--sds-size-paragraph-x-small)',
+        '--chip-size': '30px',
+        '--chip-padding': '8px',
+        /* Figma keeps the padding identical when selected; Mantine narrows it to make room for a tick. */
+        '--chip-checked-padding': '8px',
+        '--chip-icon-size': '0px',
+        /* `gap/8` — the icon-to-label gap. Mantine uses this for the label's own flex gap. */
+        '--chip-spacing': '8px',
+      },
+    }),
+  }),
+
   Badge: Badge.extend({
     classNames: {
       root: classes.labelRoot,
@@ -218,8 +263,8 @@ export const componentTheme: MantineThemeComponents = {
     },
 
     defaultProps: {
-      /** Figma's default cell: Style Tonal, Size Large. */
-      variant: 'light',
+      /** Figma's default cell: `Style=Filled, Size=Large`, the first one the set draws. */
+      variant: 'filled',
       size: 'lg',
     },
 
@@ -235,8 +280,8 @@ export const componentTheme: MantineThemeComponents = {
     vars: (_theme, props) => {
       const size = (props.size ?? 'lg') as LabelThemeSize
       const spec = LABEL_SIZES[size] ?? LABEL_SIZES.lg
-      const variant = (props.variant ?? 'light') as keyof typeof LABEL_TEXT_COLOR
-      const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.light
+      const variant = (props.variant ?? 'filled') as keyof typeof LABEL_TEXT_COLOR
+      const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.filled
 
       return {
         root: {
@@ -290,7 +335,7 @@ export const componentTheme: MantineThemeComponents = {
       error: classes.fieldError,
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   Textarea: Textarea.extend({
@@ -305,7 +350,7 @@ export const componentTheme: MantineThemeComponents = {
       error: classes.fieldError,
     },
     defaultProps: { size: 'md', autosize: true, minRows: 3, inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   Select: Select.extend({
@@ -326,7 +371,7 @@ export const componentTheme: MantineThemeComponents = {
       empty: classes.fieldEmpty,
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
-    vars: () => ({ wrapper: INPUT_VARS }),
+    vars: inputVars,
   }),
 
   /**
@@ -407,6 +452,7 @@ export const componentTheme: MantineThemeComponents = {
       root: classes.tabsRoot,
       list: classes.tabsList,
       tab: classes.tabsTab,
+      tabSection: classes.tabsTabSection,
       tabLabel: classes.tabsTabLabel,
       panel: classes.tabsPanel,
     },

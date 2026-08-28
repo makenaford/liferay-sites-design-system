@@ -26,7 +26,7 @@ export default {
   example: hasIcon
     ? figma.code`<Tabs.Tab value="websites" leftSection={${iconCode}}>Enterprise Websites</Tabs.Tab>`
     : figma.code`<Tabs.Tab value="websites">Enterprise Websites</Tabs.Tab>`,
-  imports: ['import { Tabs } from "scratch"'],
+  imports: ['import { Tabs } from "liferay-sites-design-system"'],
   id: 'tabs-pill',
   metadata: { nestable: true },
 }

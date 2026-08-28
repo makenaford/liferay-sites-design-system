@@ -32,7 +32,7 @@ export default {
       ${hasIconRight ? 'rightSection={<IconArrowUp />}' : ''}
     />
   `,
-  imports: ['import { Stat } from "scratch"'],
+  imports: ['import { Stat } from "liferay-sites-design-system"'],
   id: 'stat',
   metadata: { nestable: true },
 }

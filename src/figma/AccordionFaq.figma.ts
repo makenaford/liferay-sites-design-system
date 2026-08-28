@@ -40,7 +40,7 @@ export default {
       </Accordion.Item>
     </Accordion>
   `,
-  imports: ['import { Accordion } from "scratch"'],
+  imports: ['import { Accordion } from "liferay-sites-design-system"'],
   id: 'accordion-faq',
   metadata: { nestable: false },
 }

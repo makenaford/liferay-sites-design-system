@@ -26,7 +26,7 @@ export default {
       <List.Item title="Key Point Main List">Short description here</List.Item>
     </List>
   `,
-  imports: ['import { List } from "scratch"'],
+  imports: ['import { List } from "liferay-sites-design-system"'],
   id: 'list',
   metadata: { nestable: false },
 }

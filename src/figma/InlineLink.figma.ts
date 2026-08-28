@@ -34,7 +34,7 @@ export default {
       ${text}
     </Link>
   `,
-  imports: ['import { Link } from "scratch"'],
+  imports: ['import { Link } from "liferay-sites-design-system"'],
   id: 'inline-link',
   metadata: { nestable: true },
 }

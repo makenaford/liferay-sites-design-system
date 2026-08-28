@@ -30,10 +30,29 @@
   /* Figma's label style is Source Sans 3 SemiBold across all three sizes. */
   font-weight: 600;
 
+  /*
+   * A label longer than the space it is given wraps and the button grows, instead of running out of
+   * its container. Mantine's button is a fixed height with a `nowrap` label, so a long call to
+   * action — the Home page's `Explore our integration capabilities` — overflows the gutter on a
+   * phone rather than reflowing. The drawn height is the floor, so every button that does fit on one
+   * line is unchanged.
+   */
+  height: auto;
+  min-height: var(--button-height);
+
   transition:
     background-image var(--sds-motion-fast) var(--sds-motion-ease),
     border-color var(--sds-motion-fast) var(--sds-motion-ease),
     box-shadow var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * Qualified with `.root` for the reason the rest of this stylesheet does it: Mantine declares the
+ * label's `nowrap` in a single-class rule that ties with a bare class and wins on stylesheet order.
+ */
+.root .label {
+  white-space: normal;
+  text-align: center;
 }
 
 /*
@@ -460,26 +479,25 @@
   justify-content: center;
 }
 
-/* `Style=Tonal` — a flat fill under the tonal text colour. */
-.labelRoot[data-variant='light'] {
+/* `Style=Filled` — a flat `Components/Label/lab-tonal-bg` under white text. */
+.labelRoot[data-variant='filled'] {
   background-color: var(--sds-label-tonal-bg);
 }
 
 /*
- * `Style=Gradient` — `lab-grad-bg-step-01` into `-02`. Figma's gradient transform is the identity
- * matrix, i.e. a plain left-to-right sweep across the label box.
+ * `Style=Glass` — `Surfaces/Card BG/Translucent` under the `glass effect card` effect: a background
+ * blur and the ambient shadow. No hairline; the set binds no stroke to this cell, and the edge you can
+ * see in the file is the translucent fill against the dark ground rather than a border.
  */
-.labelRoot[data-variant='filled'] {
-  background-color: transparent;
-  background-image: linear-gradient(
-    to right,
-    var(--sds-label-grad-from) 0%,
-    var(--sds-label-grad-to) 100%
-  );
+.labelRoot[data-variant='glass'] {
+  background-color: var(--sds-surfaces-card-bg-translucent);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
 /*
- * `Style=Outline` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
+ * `Style=Gradient` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
  * held to the halfway point, then out to `Accent/Product Accent`. Its weight comes from the size
  * (2px / 1.5px / 1px).
  *
@@ -492,14 +510,14 @@
  * pseudo-element covers the border box (hence the negative inset, and `overflow: visible` so it is
  * not clipped away), and its own padding is what the mask cuts back to, leaving just the ring.
  */
-.labelRoot[data-variant='outline'] {
+.labelRoot[data-variant='gradient'] {
   position: relative;
   overflow: visible;
   background-color: transparent;
   background-image: none;
 }
 
-.labelRoot[data-variant='outline']::before {
+.labelRoot[data-variant='gradient']::before {
   content: '';
   position: absolute;
   inset: calc(-1 * var(--badge-border-width));
@@ -559,11 +577,11 @@
  * Handing the border back to the system colour keeps the shape visible.
  */
 @media (forced-colors: active) {
-  .labelRoot[data-variant='outline'] {
+  .labelRoot[data-variant='gradient'] {
     border-color: CanvasText;
   }
 
-  .labelRoot[data-variant='outline']::before {
+  .labelRoot[data-variant='gradient']::before {
     content: none;
   }
 }
@@ -599,11 +617,26 @@
   min-width: 0;
   /* `Surface`'s radius. Every card instance in the file draws 8; the set itself says 9. */
   border-radius: 8px;
-  /* Set per surface below; `no-bg` leaves it transparent. */
+  /* Set per surface below; `none` leaves it transparent. */
   background-color: transparent;
   color: var(--sds-surfaces-text-primary);
   text-decoration: none;
   isolation: isolate;
+}
+
+/*
+ * `radius="pill"` — the hero's solution finder, a bar of controls rather than a card of content, so its
+ * corner follows its own height. Below the point where the row wraps the bar is tall and a pill is
+ * wrong, so it settles back to a large corner.
+ */
+.cardRoot[data-radius='pill'] {
+  border-radius: 24px;
+}
+
+@media (min-width: 62em) {
+  .cardRoot[data-radius='pill'] {
+    border-radius: 30px;
+  }
 }
 
 .cardRoot[data-align='vertical'] {
@@ -647,6 +680,28 @@
 
 .cardRoot[data-align='vertical'][data-padding='content'] > .cardBody {
   padding: 20px;
+}
+
+/*
+ * `Padding=Full` — `all` on the card *and* 20px again on the content, so the image is inset 20 from the
+ * card's edge and the text 40. The home template's `Audience Specific Goals` cards are drawn this way.
+ */
+.cardRoot[data-align='vertical'][data-padding='full'] {
+  padding: 20px;
+  /*
+   * `V p[20] g20`. The gap rule above is "16 with an image, 20 without", read off the five `Card Examples`
+   * cards — and the `Padding=Full` cell breaks it: it has an image *and* a 20px gap. So it says so here
+   * rather than being folded into a rule it does not follow.
+   */
+  gap: 20px;
+}
+
+.cardRoot[data-align='vertical'][data-padding='full'] > .cardBody {
+  padding: 20px;
+}
+
+.cardRoot[data-align='horizontal'][data-padding='full'] {
+  padding: 24px 40px;
 }
 
 .cardRoot[data-align='horizontal'][data-padding='all'],
@@ -721,7 +776,8 @@
   border-radius: inherit;
 }
 
-.cardRoot[data-padding='all'] > .cardImage {
+.cardRoot[data-padding='all'] > .cardImage,
+.cardRoot[data-padding='full'] > .cardImage {
   /* Inside the padding, the image gets its own smaller corner. */
   border-radius: 4px;
 }
@@ -872,12 +928,29 @@
     var(--sds-glass-step-02) 100%
   );
   backdrop-filter: blur(var(--sds-glass-blur));
-  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  /*
+   * A lit top edge, not a shadow.
+   *
+   * Figma's `glass effect card` shadow is `#000 @8%`, which over a #070b13 page is black on near-black
+   * and does nothing — the card had no elevation cue at all on the canvas it is mostly used on. Dark
+   * interfaces raise a surface by catching light on its top edge instead, so that is what carries it
+   * here. The shadow is kept for the light canvas, where it does read.
+   */
+  box-shadow:
+    inset 0 1px 0 var(--sds-card-lit-edge),
+    var(--sds-card-cast-shadow);
 }
 
-/* `Style=Grey` — a flat `Surfaces/Card BG/Grey`, no hairline, no shadow. The non-clickable surface. */
-.cardRoot[data-align][data-surface='grey'] {
+/*
+ * `static` — a flat fill, and nothing else. No rim, no shadow, no lit edge.
+ *
+ * The absence is the point. A rim is what this system uses to say *you can touch this*, so the one kind
+ * of card that cannot be touched is the one kind that must not have one. It reads as a region of the
+ * page rather than an object sitting on it.
+ */
+.cardRoot[data-align][data-surface='static'] {
   background-color: var(--sds-surfaces-card-bg-grey);
+  border: 1px solid var(--sds-card-static-line);
 }
 
 /*
@@ -885,13 +958,12 @@
  * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
  * transform is a shallow diagonal, reproduced at the same angle.
  */
-.cardRoot[data-align][data-surface='gradient-blue'],
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'] {
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-align][data-surface='gradient-blue'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -900,7 +972,7 @@
   );
 }
 
-.cardRoot[data-align][data-surface='gradient-purple'] {
+.cardRoot[data-align][data-surface='highlighted'][data-tone='purple'] {
   background-image: linear-gradient(
     134deg,
     var(--sds-surfaces-card-bg-grey) 0%,
@@ -909,8 +981,8 @@
   );
 }
 
-/* `Style=no-bg` — the box and its content with nothing drawn. The Resource card. */
-.cardRoot[data-align][data-surface='no-bg'] {
+/* `Style=none` — the box and its content with nothing drawn. The Resource card. */
+.cardRoot[data-align][data-surface='none'] {
   background: none;
   box-shadow: none;
 }
@@ -920,7 +992,7 @@
  * pseudo-element because glass's is a gradient and a border cannot be one — the same construction the
  * Label's outline ring uses.
  */
-.cardRoot[data-align]:where([data-surface='glass'], [data-surface='grey'])::before {
+.cardRoot[data-align][data-surface='glass']::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -942,24 +1014,6 @@
   );
 }
 
-/*
- * Grey: a flat hairline, and the only thing giving a static card an edge.
- *
- * `Surfaces/Card BG/Grey` is 1.05:1 against the light page and 1.06:1 against the dark one — the fill alone
- * does not read as a surface, and glass's hairline is not available to a card that cannot be clicked. So the
- * edge is `Neutral/05`, the lowest step on the scale that is unambiguously visible against both the fill and
- * the page in **both** modes:
- *
- *   light   2.75:1 against the card, 2.90:1 against the page
- *   dark    3.46:1 against the card, 3.67:1 against the page
- *
- * `Neutral/04` was the alternative: fine on dark at 2.82/2.99, but only 1.59/1.67 in light, which is the mode
- * the problem was in. `Neutral/06` clears 3:1 everywhere at 4.6+, but on a barely-tinted fill a line that
- * dark reads as a table rule rather than a card edge. Not a Figma value — the file draws no edge here.
- */
-.cardRoot[data-align][data-surface='grey']::before {
-  background-color: var(--sds-neutral-05);
-}
 
 /* ---------------------------------------------------------------------- interaction
  *
@@ -1009,7 +1063,7 @@
   /*
    * The ring on hover belongs to the **padded** card only. A full-bleed card is clickable across its
    * whole area — the root is the anchor — but nothing about the card reacts: only the image does. A ring
-   * drawn around a `no-bg` card outlines a box that has no edge at rest, which reads as a border
+   * drawn around a `none` card outlines a box that has no edge at rest, which reads as a border
    * appearing out of nowhere rather than as the image lighting up.
    *
    * Focus is the exception, below: a focus ring has to be visible wherever the focus is, so it stays on
@@ -1091,7 +1145,7 @@
 
 @media (forced-colors: active) {
   /* A masked gradient is invisible in forced colours, so the hairline becomes a real border. */
-  .cardRoot[data-align]:not([data-surface='no-bg']) {
+  .cardRoot[data-align]:not([data-surface='none']) {
     border: 1px solid CanvasText;
   }
 
@@ -1206,6 +1260,53 @@
   flex-direction: column;
   gap: 16px;
   align-items: stretch;
+}
+
+/*
+ * The reveal: each figure rises and fades in, a beat after the one before it.
+ *
+ * The stagger is what makes it read as figures arriving rather than a block appearing, and 60ms is
+ * enough to notice without becoming a queue. `data-revealed` is set once, by the bar, the first time it
+ * is scrolled into view.
+ *
+ * Note what is *not* animated: nothing here moves layout. The rise is a transform, so a figure landing
+ * cannot nudge what is beside it, and the bar occupies its final space from the start.
+ */
+.statBar > :not(.statBarDivider) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity var(--sds-motion-slow) var(--sds-motion-ease-out),
+    transform var(--sds-motion-slow) var(--sds-motion-ease-out);
+}
+
+.statBar[data-revealed] > :not(.statBarDivider) {
+  opacity: 1;
+  transform: none;
+}
+
+.statBar[data-revealed] > :nth-child(3) {
+  transition-delay: 60ms;
+}
+
+.statBar[data-revealed] > :nth-child(5) {
+  transition-delay: 120ms;
+}
+
+.statBar[data-revealed] > :nth-child(7) {
+  transition-delay: 180ms;
+}
+
+/*
+ * Reduced motion: the bar starts revealed, since the hook seeds its state from this same query. This
+ * only guards a transition still running if the preference changes mid-session.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .statBar > :not(.statBarDivider) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .statBar[data-align='center'] {
@@ -1754,15 +1855,50 @@
  * The button wants `size="sm"` — 40px in this library, which leaves 4px above and below inside the
  * 48px box. `md` is itself 48px and would fill the field edge to edge.
  */
+/* `padding/8` — the button sits 8 in from the field's edge, not 4. */
+/*
+ * Stop the value before the button: its measured width plus the 8px of inset on either side of it.
+ * `TextInput` sets the variable; the fallback keeps the field sane for the frame before it measures.
+ */
 .fieldRoot[data-contained-button] .fieldInput {
-  padding-inline-end: 4px;
+  padding-inline-end: calc(var(--sds-contained-button-width, 0px) + 16px);
+}
+
+/* The measured element. It is the button's box; the button fills it. */
+.containedButtonSlot {
+  display: flex;
+  height: 100%;
 }
 
 .fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
-  inset-inline-end: 4px;
+  inset-inline-end: 8px;
+  /*
+   * The same 8px on the other three sides, so the button sits in an even inset rather than filling the
+   * field's full height with a gap only on one edge.
+   *
+   * `inset-block` is what makes it even: the section stretched the full 48px, so the button did too
+   * and the top and bottom gaps were zero. Insetting the *section* keeps the button centred without
+   * anyone having to know its height.
+   */
+  inset-block: 8px;
   width: auto;
   /* The generic icon inset would push the button 16px off the border. */
   padding-inline-end: 0;
+}
+
+/*
+ * The button fills what the inset leaves — 32px in the drawn 48px field.
+ *
+ * A height rather than a size: 32px is not a step on the button scale (40 / 48 / 56), and adding one
+ * for a single context would put a size in the system that Figma does not draw. The call site asks for
+ * the small *style* — 14px label, 12px padding — and the field decides the height.
+ *
+ * `min-height` has to go too, or `--button-height` holds the floor at 40px.
+ */
+.fieldRoot[data-contained-button] .fieldSection[data-position='right'] > *,
+.fieldRoot[data-contained-button] .containedButtonSlot > * {
+  height: 100%;
+  min-height: 0;
 }
 
 /* ------------------------------------------------------------------------ the dropdown menu
@@ -1819,28 +1955,71 @@
  * with a 4px corner. The flags come from a `Flags` component set that is not part of either icon
  * pipeline, so the code renders the language code and takes a flag as an optional node — see README.md.
  */
-.langPicker {
+/*
+ * The nav's language trigger is text and a caret, not a field.
+ *
+ * Qualified with `.fieldWrapper` because that is how the field's own rule is written
+ * (`.fieldWrapper .fieldInput`), and a bare class ties with nothing and loses. Unqualified, this rule
+ * was overridden entirely: the trigger kept the field's `12px 40px 12px 16px`, which is 56px of padding
+ * in a 92px box — so `EN (US)` came out clipped to `EN (I`.
+ */
+/*
+ * No gradient border on the nav trigger.
+ *
+ * `.fieldWrapper::after` is the field's focus treatment — a 1px gradient border drawn as a masked
+ * pseudo-element, sized to an input box. This trigger is not an input box: it is bare text and a
+ * caret sitting in the nav, with no padding on its leading edge. The ring therefore drew a rounded
+ * rectangle hard against the `E`, which read both as an outline that should not be there and as the
+ * label being boxed in.
+ *
+ * It also appeared on *mouse* clicks, not just keyboard: a text input matches `:focus-visible`
+ * whenever it is focused, whatever the input modality, so clicking the trigger left the box behind.
+ */
+.fieldWrapper:has(.langPicker)::after {
+  content: none;
+}
+
+/*
+ * The caret needs the whole slot, because this trigger has no padding to sit inside.
+ *
+ * A field's right section is pinned 16px in from the box's padding edge — Figma's icon inset. This
+ * trigger's slot is 18px wide (see `LanguagePicker`), so that 16px left 2px for a 16px glyph and the
+ * flex row shrank it to a 2px sliver: the caret was still rendered, still `visible`, and effectively
+ * gone. Its leading edge is the text, so there is no padding for it to be inset from.
+ */
+.fieldWrapper:has(.langPicker) .fieldSection[data-position='right'] {
+  padding-inline-end: 0;
+}
+
+.fieldWrapper .langPicker {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 0 4px;
+  height: 32px;
+  min-height: 0;
+  /* No leading padding: the trigger's text is the leading edge, as the file draws it. */
+  padding: 0 16px 0 0;
   border: none;
   border-radius: 4px;
   background: transparent;
   color: var(--sds-neutral-10);
-  font-size: 14px;
+  /* 16px, level with the account link beside it — the two read as one row of controls or as neither. */
+  font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   cursor: pointer;
 }
 
-.langPicker > svg {
-  width: 16px;
-  height: 16px;
-  color: var(--sds-surfaces-text-secondary);
-}
-
-.langPicker:focus-visible {
+/*
+ * Which leaves this as the only focus indicator, so it has to actually apply — qualified with
+ * `.fieldWrapper` because the rule it competes with is `.fieldWrapper .fieldInput`, and a bare class
+ * ties on specificity and loses on order. Unqualified, this never drew at all: `outline-style`
+ * computed to `none` while the gradient ring did the work.
+ *
+ * Gated on `data-keyboard-focus`, which the component sets from the real input modality. Without it
+ * the ring appears on mouse clicks too — `:focus-visible` always matches a focused text input — and a
+ * box in the nav after every click is exactly what this was meant to remove.
+ */
+.fieldWrapper .langPicker[data-keyboard-focus]:focus-visible {
   outline: 2px solid var(--sds-action-primary-hover);
   outline-offset: 2px;
 }
@@ -1890,6 +2069,11 @@
 .headerShell {
   z-index: 200;
   width: 100%;
+  /*
+   * The bar's height, published so the mobile drawer can start exactly where the bar ends. It tracks
+   * the condense state below, which is why the drawer does not need its own copy of the number.
+   */
+  --sds-header-bar-height: 64px;
 }
 
 .headerShell[data-position='fixed'] {
@@ -1913,9 +2097,81 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
+/* -------------------------------------------------------------- condense on scroll
+ *
+ * At rest the band is **nothing**: no fill, no blur, no hairline, no shadow. It sits on the hero and
+ * reads as part of it, which is what the file draws — the nav is inside the `Left Hero` frame, over the
+ * bubble. The glass was previously on at all times, so a header at the top of an unscrolled page cast a
+ * 30px shadow separating it from content that had not arrived yet.
+ *
+ * Once the page moves, the whole treatment arrives at once and the bar tightens by 8px. Only the fixed
+ * header does this: a static one scrolls away, so there is nothing to condense.
+ */
+.headerShell[data-condense] .headerBand {
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  transition:
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    border-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * An open menu takes the glass whatever the scroll position. Without this the bar is transparent while
+ * a panel hangs off it, and the two read as unrelated things rather than one surface.
+ */
+.headerShell[data-condense][data-scrolled] .headerBand,
+.headerShell[data-condense][data-menu-open] .headerBand {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom-color: var(--sds-glass-line-to);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* 64 -> 56. Small enough to feel like settling rather than a jump, and it is the only thing that moves. */
+.headerShell[data-condense] .headerBar {
+  transition: min-height var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerShell[data-condense][data-scrolled] .headerBar {
+  min-height: 56px;
+}
+
+.headerShell[data-condense][data-scrolled] {
+  --sds-header-bar-height: 56px;
+}
+
+/*
+ * The state still changes — the glass still arrives, the bar is still 56 — it just arrives immediately.
+ * Someone who has asked for less motion still needs the header to separate from the content under it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .headerShell[data-condense] .headerBand,
+  .headerShell[data-condense] .headerBar {
+    transition: none;
+  }
+}
+
+/*
+ * The gutter lives here, not on the bar.
+ *
+ * It used to be `max-width: 1280` centred *and* 48px of padding on the bar inside it, which is a
+ * double gutter: at 1440 the logo landed at 128 where the file draws it at 80, and the button's right
+ * edge at 1312 rather than 1360 — so the nav did not line up with the section below it, which is the
+ * one thing a nav must do.
+ *
+ * Same two-point interpolation `Section` uses — 20 at 390, 80 at 1440 — in `vw` rather than `cqi`,
+ * because the header spans the window rather than a column.
+ */
 .headerInner {
-  max-width: 1280px;
+  --sds-header-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
+  max-width: calc(1280px + 2 * var(--sds-header-gutter));
   margin: 0 auto;
+  padding-inline: var(--sds-header-gutter);
 }
 
 .headerBar {
@@ -1924,7 +2180,6 @@
   justify-content: space-between;
   gap: 10px;
   min-height: 64px;
-  padding-inline: clamp(20px, 4vw, 48px);
 }
 
 .headerLeft {
@@ -2028,6 +2283,35 @@
   flex-shrink: 0;
 }
 
+/*
+ * The bar's utility links sit on the nav's size, not the `Link` scale's.
+ *
+ * The file draws language and account level with the sections beside them — 16px — and the link scale
+ * goes 14 / 18 / 21, so neither `sm` nor `md` lands on it. Rather than invent a fourth size the Figma
+ * set does not have, the header states the size for the row it owns. `font-size` directly, because
+ * `--text-fz` is inline on the element and a stylesheet cannot outbid an inline custom property.
+ */
+.headerActions a {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/*
+ * And their glyphs sit at the nav's, too: a 14px mark at 70%, the same as `.headerCaret`. Left as the
+ * components drew them the row mixed a 16px caret on the language trigger with a 14px one on the
+ * sections beside it, which is the sort of difference you cannot name but can see.
+ */
+.headerActions [data-section] svg,
+.headerActions .fieldSection[data-position='right'] svg {
+  width: 14px;
+  height: 14px;
+}
+
+.headerActions [data-section],
+.headerActions .fieldSection[data-position='right'] {
+  opacity: 0.7;
+}
+
 /* ------------------------------------------------------------------------ the mega panel
  *
  * An inset floating box that drops out of the band: the same glass, one step more opaque, with the
@@ -2043,7 +2327,11 @@
 .headerMega {
   display: flex;
   flex-direction: column;
-  max-width: 1280px;
+  /*
+   * The file's `Mega Menu / Desktop` frame is 1440 wide — 1120 of columns and a 320 rail. The bar above
+   * it keeps its own 1280, which is the width the file gives the nav's content.
+   */
+  max-width: 1440px;
   margin: 0 auto;
   background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
@@ -2130,6 +2418,28 @@
   min-width: 0;
 }
 
+/*
+ * The prompt over a panel's columns — "What are you looking to achieve?".
+ *
+ * `flex: 0 0 100%` because `.megaBody` is a wrapping flex row: at any narrower basis it lands beside
+ * the columns instead of over them. Its bottom padding is nothing, since `.megaColumns` brings its own.
+ */
+.megaHeading {
+  flex: 0 0 100%;
+  margin: 0;
+  padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* With a prompt above them the columns start from it, not from the top of the panel. */
+.megaHeading + .megaColumns {
+  padding-top: 20px;
+}
+
 .megaColumns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -2182,6 +2492,16 @@
   color: var(--sds-surfaces-text-primary);
   opacity: 0.9;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * Figma's `nav icon` wrapper: a 20px box holding a 16.667px glyph, so 1.667px of padding. The icons are
+ * MingCute outlines at `1em`, which is why nothing passes a size — the box sizes the glyph, and the
+ * glyph takes its colour from `currentColor`. That is the whole difference from the glass icons this
+ * replaced: those were 48px full-colour artwork forced down to 20, and they carried their own palette.
+ */
+.megaItemIcon {
+  padding: 1.667px;
 }
 
 .megaItemIcon > svg {
@@ -2253,6 +2573,8 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  /* The file's tile is 68px tall, so a one-line label keeps rank with a two-line one beside it. */
+  min-height: 68px;
   margin-bottom: 16px;
   padding: 10px 12px;
   border: 1px solid var(--sds-glass-line-from);
@@ -2382,7 +2704,8 @@
 .megaFeaturedTitle {
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
-  font-weight: 400;
+  /* Semibold, like every other link title in a menu — a card's heading is a heading either way. */
+  font-weight: 600;
   line-height: 1.25;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
@@ -2444,7 +2767,10 @@
 
 .megaCtaLabel {
   color: var(--sds-neutral-10);
-  font-size: 15px;
+  /* The paragraph default, rather than the 15px this was pinned to — no other text here is off-scale. */
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
+  font-weight: 600;
 }
 
 /* ---------------------------------------------------------------------------- the scrim
@@ -2459,6 +2785,18 @@
   z-index: -1;
 }
 
+/*
+ * The logo comes down with the bar. `Logo Container` has four cells — 80, 54, 48 and 40 — and the drawer
+ * breakpoint is where the nav stops being the desktop one, so it takes `Size=Small`. Height only: the
+ * lockup keeps its own ratio.
+ */
+@media (max-width: 1199px) {
+  .headerLogo > svg {
+    height: 40px;
+    width: auto;
+  }
+}
+
 /* -------------------------------------------------------------- below 1200px: bar becomes drawer
  *
  * The prototype is desktop-only and says so. The same `items` drive a burger and a drawer here, with
@@ -2466,8 +2804,42 @@
  * collapse to a single column, so the content itself needs no second version.
  */
 
+/*
+ * The narrow-viewport menu button. A UI icon in a 44px target — the size every other icon-only control in
+ * this library uses — with the standard focus ring, where Mantine's `Burger` brought its own everything.
+ */
 .headerBurger {
-  display: block;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 1000px;
+  color: var(--sds-surfaces-text-primary);
+  cursor: pointer;
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.headerBurger > svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (hover: hover) {
+  .headerBurger:hover {
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+}
+
+.headerBurger:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerBurger {
+    transition: none;
+  }
 }
 
 .headerNav,
@@ -2480,85 +2852,436 @@
 }
 
 /*
- * The narrow-viewport panel: the same glass as the mega panel, full width under the band, with each
- * section a row that expands its own menu in place.
+ * The narrow-viewport drawer.
+ *
+ * A drill-down rather than an accordion: the section list slides left, the section's own panel comes in
+ * from the right, and the drawer's bar carries the way back. On a phone an accordion buries what you
+ * tapped under everything you did not.
+ *
+ * Fixed to the viewport under the band rather than sized to content, because a menu that is sometimes
+ * a sheet and sometimes a dropdown reads as two components.
  */
-.headerMobile {
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  padding: 8px clamp(16px, 4vw, 24px) 24px;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 92%, transparent);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--sds-glass-line-to);
+/*
+ * `hidden` has to be restored wherever this component sets `display`.
+ *
+ * A `display` of its own beats the UA's `[hidden] { display: none }`, so a `hidden` element stays laid
+ * out. That has now bitten twice: the closed drawer covered the viewport and swallowed every click
+ * including the burger's, and a collapsed control list stayed on screen while `aria-expanded` said it
+ * was shut — so the language options sat there under an open log-in menu.
+ *
+ * Hence one rule for every box in here that `hidden` is used on, rather than a `data-open` selector per
+ * case: `hidden` keeps doing the other half of its job at the same time, which is removal from the tab
+ * order and from the accessibility tree.
+ */
+.headerDrawer[hidden] {
+  display: none;
 }
 
-.headerMobileSection {
+.headerDrawer {
+  position: fixed;
+  /*
+   * The whole viewport, band included. The drawer's own bar takes the band's place, so the offset that
+   * used to sit under it is gone — and with it the alignment problem of two bars of different heights.
+   */
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 96%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+/*
+ * The call to action in the bar, on a phone only. Above the breakpoint it is in `.headerActions` with
+ * the language and the account, and drawing both would put two Contact Sales in one row.
+ */
+.headerBarCta {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+/* Back / title / close. The title names the level you are on, so it is empty at the top. */
+.headerDrawerBar {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  /* The band's own height, so the row lands where the logo was rather than a few pixels off it. */
+  min-height: var(--sds-header-bar-height, 64px);
+  padding: 8px clamp(16px, 4vw, 24px);
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
-.headerMobileItem {
+.headerDrawerLogo {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+}
+
+/* The file's drawer lockup is 108x32 — a step down from the band's, so the row is not all logo. */
+.headerDrawerLogo svg {
+  height: 32px;
+  width: auto;
+}
+
+.headerDrawerBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  width: 44px;
+  height: 44px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.headerDrawerBack > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.headerDrawerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.headerDrawerClose > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.headerDrawerTitle {
+  justify-self: center;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.headerDrawerBack:focus-visible,
+.headerDrawerClose:focus-visible,
+.headerDrawerRow:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/*
+ * The stack. Both levels are absolutely positioned in the same box so they slide across each other;
+ * the container clips, and each panel scrolls on its own.
+ */
+.headerDrawerPanels {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.headerDrawerPanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 24 at the top, so the first row clears the bar by the same air the groups are set apart with. */
+  padding: 24px 24px;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.headerDrawerPanel[data-state='active'] {
+  transform: translateX(0);
+  z-index: 2;
+}
+
+/* Behind: pushed left, the way a pushed stack reads. Ahead: waiting off the right edge. */
+.headerDrawerPanel[data-state='behind'] {
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.headerDrawerPanel[data-state='ahead'] {
+  transform: translateX(100%);
+  z-index: 1;
+}
+
+.headerDrawerList {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Two classes, because Mantine's `UnstyledButton` root sets a font size of its own and ties on
+ * specificity — a single class here lost the 21px to its 16 depending on sheet order.
+ */
+.headerDrawerList .headerDrawerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  padding: 14px 4px;
+  /* The file's row is 60 tall and its label 21px — a phone row is the target, and reads like one. */
+  min-height: 60px;
+  padding: 16px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
+  font-size: 21px;
+  line-height: 28px;
   font-weight: 600;
+  text-align: start;
   text-decoration: none;
 }
 
-.headerMobileItem[data-open] {
-  color: var(--sds-action-link-active-link);
-}
-
-.headerMobileItem[data-open] .headerCaret {
-  transform: rotate(180deg);
-}
-
-.headerMobileItem:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.headerMobileActions {
+/* The globe sits with the label rather than in a slot of its own — one row, read as one thing. */
+.headerDrawerRowLabel {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding-top: 20px;
-}
-
-/* Inside the stacked panel the menu is one column and the rail loses its divider and gradient. */
-.headerMobile .megaColumns {
-  grid-template-columns: 1fr;
-  padding: 0 0 16px;
+  gap: 10px;
   min-width: 0;
 }
 
-.headerMobile .megaFeatured {
+.headerDrawerRowLabel > svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.headerDrawerRow[data-current] {
+  color: var(--sds-action-link-active-link);
+  font-weight: 700;
+}
+
+.headerDrawerChevron {
+  display: flex;
+  flex: none;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.headerDrawerChevron > svg {
+  width: 18px;
+  height: 18px;
+}
+
+/*
+ * The call to action, pinned to the foot of the drawer.
+ *
+ * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
+ * anything inside it scrolls away, and the file keeps this button on screen at every level.
+ */
+.headerDrawerFooter {
+  flex: none;
+  display: grid;
+  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+/*
+ * Both halves are 48 in the file. The call to action is `sm` because the *bar* draws it too and 48
+ * there would crowd a 64px band; `min-height` grows it here without a second source for the button.
+ */
+.headerDrawerFooter > * {
+  width: 100%;
+  min-height: 48px;
+}
+
+/* The log-in half: an outline button beside the filled call to action, both 48 tall. */
+.headerDrawerFooterLogin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 48 exactly, level with the call to action beside it. */
+  height: 48px;
+  padding: 0 16px;
+  line-height: 1;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .headerDrawerFooterLogin:hover {
+    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+}
+
+.headerDrawerFooterLogin:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+}
+
+/*
+ * The actions, stacked full-width at the foot of the list. They are whatever the caller passed — a
+ * language picker, a log-in link, a button — so this lays them out rather than rebuilding them.
+ */
+.headerDrawerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.headerDrawerActions > * {
+  width: 100%;
+}
+
+/*
+ * Stretch rather than `width: 100%` on the child. Mantine's button root is a two-class rule, so a
+ * single-class `width` ties and loses; making this a stretching flex column sizes the child from the
+ * outside instead and stops the fight.
+ */
+.headerDrawerCta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 16px;
+}
+
+.headerDrawerLoginItem:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/* Inside a drawer panel the menu is one column and the rail loses its divider and gradient. */
+.headerDrawerPanel .megaColumns {
+  grid-template-columns: 1fr;
+  /* The file sets its groups well apart on a phone; 20px ran them together into one long list. */
+  gap: 32px;
+  padding: 0;
+  min-width: 0;
+}
+
+.headerDrawerPanel .megaFeatured {
   width: 100%;
   border-inline-start: none;
-  padding: 8px 0 16px;
+  /*
+   * The rail is another group, so it is set off by the gap the groups use rather than by a padding of
+   * its own — Featured was landing flush against the last column while every other heading had the
+   * gap above it.
+   */
+  padding: 32px 0 0;
   background-image: none;
 }
 
-.headerMobile .megaCta {
+/*
+ * Horizontal, whatever the desktop rail does.
+ *
+ * `stacked` is the narrow rail's answer to a 320px column: the image goes over the text because there
+ * is no room beside it. A drawer is the full width of the phone, and there is — so the card keeps the
+ * thumbnail beside its title, which is both what the file draws and what fits three of them on screen.
+ */
+.headerDrawerPanel .megaFeaturedCard[data-stacked] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.headerDrawerPanel .megaFeaturedCard[data-stacked] .megaFeaturedThumb {
+  width: 96px;
+  height: 64px;
+}
+
+.headerDrawerPanel .megaCta {
   justify-content: flex-start;
   padding-inline: 0;
   background-color: transparent;
 }
 
-.headerMobile .megaBody {
+.headerDrawerPanel .megaBody {
   flex-direction: column;
+  /*
+   * `nowrap`, or the panel spills sideways.
+   *
+   * `.megaBody` wraps by default, and a *column* flex container with a definite height — which this is,
+   * being an absolutely positioned scroll panel — wraps into extra **columns**. So the Solutions menu
+   * filled column one with its tiles and pushed everything else off the right edge.
+   */
+  flex-wrap: nowrap;
+}
+
+/*
+ * `flex: 0 0 100%` is a *row* basis. The drawer's `.megaBody` is a column, where it reads as full
+ * height instead and the prompt swallowed the panel, so here the prompt is just a line of text.
+ */
+.headerDrawerPanel .megaHeading {
+  flex: 0 0 auto;
+  padding: 0 0 12px;
+}
+
+/* Compact in the drawer, where a 250px-tall box would stand in front of the list it introduces. */
+.headerDrawerPanel .megaTile {
+  min-height: 0;
+  padding: 12px 14px;
+}
+
+/*
+ * Tighter than the desktop panel, which has four columns to fill and a whole viewport to do it in. Here
+ * everything is one column and the only cost of air is scrolling.
+ */
+.headerDrawerPanel .megaColumn {
+  gap: 10px;
+}
+
+.headerDrawerPanel .megaItem {
+  padding-block: 2px;
+}
+
+.headerDrawerPanel .megaColumnHeading {
+  margin-bottom: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerDrawerPanel {
+    transition: none;
+  }
 }
 
 @media (min-width: 1200px) {
+  /*
+   * Every column of a desktop panel on one row.
+   *
+   * `auto-fit` cannot promise that: Solutions' four 190px tracks asked 856px of an 855.3px box, so the
+   * fourth wrapped under the first on two thirds of a pixel — and where a tile heads each column, a
+   * wrap does not merely reflow the grid, it puts a heading over a list it does not belong to. Partners
+   * wrapped for a plainer reason: its rail was the wide one, leaving room for three.
+   *
+   * The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot. The file
+   * draws these panels four across; a menu that wants fewer says so by having fewer columns.
+   */
+  .megaColumns[data-count='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .megaColumns[data-count='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .headerBurger,
-  .headerMobile {
+  .headerBarCta,
+  .headerDrawer {
     display: none;
   }
 
@@ -2636,6 +3359,8 @@
 
 .hero {
   position: relative;
+  container-type: inline-size;
+  container-name: sds-hero;
   isolation: isolate;
   overflow: hidden;
   background-color: var(--sds-surfaces-page-bg-base-default);
@@ -2737,14 +3462,48 @@
 
 /* ------------------------------------------------------------------------------- the layout */
 
+/*
+ * `Hero` frame: padding 80, the row `5051` at 1280 wide with **gap 80** and two 600px columns.
+ *
+ * The content column was 1440 here and should be **1280**, the same as every other section — a hero whose
+ * text starts 80px further out than the section below it is the one thing on the page that does not line up.
+ *
+ * Padding is the same two-point interpolation `Section` uses, in `cqi` rather than `vw`: it passes through
+ * 80 at 1440 and 20 at 390 exactly, and it measures the hero's own width rather than the window's, which is
+ * what the rest of the library now does.
+ */
+/*
+ * `banner` — the full-width band above both columns. The Home page draws a 1000px solution finder
+ * there, 40px below the nav and 64px above the heading, centred across the 1280 inner rather than
+ * inside the content column. It shares the hero's gutters so it lines up with everything below it,
+ * and it never stretches past the width it is given.
+ */
+.heroBanner {
+  display: flex;
+  justify-content: center;
+  max-width: calc(1280px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+  margin: 0 auto;
+  padding-block-start: 40px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+}
+
+.heroBanner > * {
+  min-width: 0;
+}
+
+/* The banner has already paid for the space above, so the columns start from the drawn 64px gap. */
+.hero[data-with-banner] .heroInner {
+  padding-block-start: 64px;
+}
+
 .heroInner {
   display: flex;
   align-items: center;
   gap: 80px;
-  max-width: 1440px;
+  max-width: calc(1280px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
   margin: 0 auto;
-  /* Figma's 80px, easing off on narrow viewports where 80px is most of the screen. */
-  padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 80px);
+  padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
 }
 
 .heroContent {
@@ -2789,6 +3548,23 @@
   width: 100%;
   height: auto;
   border-radius: var(--mantine-radius-md);
+}
+
+/*
+ * A hero video carrying an alpha channel needs something behind it.
+ *
+ * The LRDC hero animation is fully transparent at its corners and only ~70% opaque at its centre, so
+ * dropped straight onto the page it reads as a hole rather than as a panel. The backdrop blurs the
+ * bubble gradient it is sitting on, which gives the animation softened light to float on and keeps
+ * the transparency doing something instead of fighting the background.
+ *
+ * `:has()` rather than a prop: the treatment is only ever right for a video, and the media slot
+ * already knows whether it holds one.
+ */
+.heroMedia:has(> video) {
+  border-radius: var(--mantine-radius-md);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
 }
 
 /* ------------------------------------------------------------------------------ the content */
@@ -2845,10 +3621,13 @@
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
  *
- * Figma draws a Mobile cell of the hero; the difference that matters is that the two columns stop being
- * columns. The padding and type already scale with the viewport.
+ * Figma draws a Mobile cell; the difference that matters is that the two columns stop being columns.
+ *
+ * A **container** query, like the rest of the library: a hero inside a narrower shell is the narrow case
+ * while the window is not, and a viewport query cannot tell the difference. It also makes the breakpoint
+ * measurable, which a `vw`-based one is not in a zero-width preview.
  */
-@media (max-width: 1199px) {
+@container sds-hero (max-width: 1199px) {
   .heroInner {
     flex-direction: column;
     align-items: flex-start;
@@ -2929,8 +3708,12 @@
  * ===================================================================================== */
 
 .accRoot[data-size] {
-  /* `divider` `Property 1=normal, Property 2=horizontal` — 1px `Neutral/02`. */
-  --sds-acc-rule: var(--sds-neutral-02);
+  /*
+   * `divider` `Property 1=normal, Property 2=horizontal`. Figma binds that cell to `Neutral/02`; this uses
+   * `Neutral/03`, because it is the same divider component and the normal tone is one value on both axes
+   * here rather than two. See the Divider block and README.md.
+   */
+  --sds-acc-rule: var(--sds-neutral-03);
   /* `Property 1=gradient` — `Neutral/06` -> `Brand/Primary/Lighten/3`, left to right. */
   --sds-acc-rule-grad: linear-gradient(
     90deg,
@@ -3052,8 +3835,13 @@
  * The arrow. Its box is the full 32px (or 24px) Figma draws, which is also the hover disc and a
  * comfortable target; the glyph fills it.
  *
- * Rotation is Mantine's `[data-rotate]` — Figma's `arrow/down` becoming `arrow/up` — retimed from
- * Mantine's `200ms ease` to this library's medium duration and easing so it settles instead of stopping.
+ * The glyph is `arrow/down`, the **chevron**, where Figma draws `arrow/arrow_down`, a full arrow with a
+ * shaft. An arrow means "go" on the Link and the Button here; a chevron means "there is more of this",
+ * which is what a disclosure does. Recorded in README.md.
+ *
+ * Rotation is Mantine's `[data-rotate]` — Figma flips its glyph between down and up, and 180° of the
+ * chevron is the same gesture — retimed from Mantine's `200ms ease` to this library's medium duration and
+ * easing so it settles instead of stopping.
  */
 .accRoot[data-size] .accChevron {
   position: relative;
@@ -3833,8 +4621,23 @@
   container-name: sds-marquee;
 }
 
+/*
+ * A narrow strip steps *down one size*, rather than jumping to the smallest.
+ *
+ * This used to set 24px flat, which meant an explicit `size="lg"` silently became `sm` — skipping
+ * `md` entirely and overriding the caller rather than adapting to it. A responsive step is right; a
+ * responsive override that ignores what was asked for is not, and it is why the logo carousel did
+ * not look large even where it was told to be.
+ *
+ * `sm` is already the floor, so it is left alone.
+ */
 @container sds-marquee (max-width: 768px) {
   .marqueeViewport {
+    --sds-marquee-logo: 49px;
+  }
+
+  .marqueeRoot[data-size='md'] .marqueeViewport,
+  .marqueeRoot[data-size='sm'] .marqueeViewport {
     --sds-marquee-logo: 24px;
   }
 }
@@ -4101,6 +4904,11 @@
   container: sds-section / inline-size;
 }
 
+/* Flush against its neighbour — the logo strip under the home template's hero. */
+.sectionRoot[data-spacing='none'] {
+  --sds-section-block: 0px;
+}
+
 /* `Quote` and `Highlight Text` — the same formula halved: 40 at 1440, 20 at 390. */
 .sectionRoot[data-spacing='tight'] {
   /* 20 -> 40: (40 - 20) / 1050 = 0.019048 */
@@ -4257,11 +5065,25 @@
   aspect-ratio: 16 / 9;
 }
 
-.contentMediaFigure > :where(img, picture, video, svg, div, span) {
+/*
+ * `auto` — no ratio and no clip, so the column is as tall as what is in it. For media that is not a
+ * single image: the Home page puts a screenshot and a stat row in one column, and a fixed box cuts
+ * the stats off.
+ */
+.contentMediaFigure[data-ratio='auto'] {
+  overflow: visible;
+}
+
+.contentMediaFigure:not([data-ratio='auto']) > :where(img, picture, video, svg, div, span) {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.contentMediaFigure[data-ratio='auto'] > :where(img, picture, video, svg, div, span) {
+  display: block;
+  width: 100%;
 }
 
 /* `Type=Content- Right Image` — the same DOM, reordered, so the markup keeps the media first. */
@@ -4399,6 +5221,20 @@
   /* 48 + 8 + 8 = the drawn 64. The hairline is a pseudo-element so it cannot add to that. */
   box-shadow: inset 2px 2px 8px var(--sds-tab-shadow);
   isolation: isolate;
+  /*
+   * A bar with more cells than fit scrolls rather than running off the page. Figma's `Segmented
+   * Control Bar` packs six cells into 1280 with tighter padding than `Tabs Pill Menu` does, and the
+   * Home page's `Every Capability Your Enterprise Needs` is exactly that bar — so at the desktop
+   * cell the six labels want ~1460px. Every label stays readable and the section keeps its gutters.
+   * The Mobile cell already scrolled; this makes it true at both sizes. See README.
+   */
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.tabsRoot[data-pills] .tabsList[role='tablist']::-webkit-scrollbar {
+  display: none;
 }
 
 /* The container hairline — `Glass Line/01` into `02` at 225deg, 1px, inside. */
@@ -4524,6 +5360,15 @@
   font-weight: 600;
 }
 
+/*
+ * The icon sits against the label. Mantine gives the section an 8px margin *and* the tab an 8px flex
+ * gap, which compounded to 16 — the icon floated away from the word it belongs to. The gap owns the
+ * spacing; the margin is zeroed.
+ */
+.tabsRoot[data-pills] .tabsTabSection {
+  margin: 0;
+}
+
 .tabsRoot[data-pills] .tabsTab :where(svg) {
   width: var(--sds-pill-icon);
   height: var(--sds-pill-icon);
@@ -4574,8 +5419,15 @@
  *
  * Figma's Mobile cell: a 44px pill with 12px of padding all round, 12px between pills, a 16px icon, and a
  * container that scrolls — its `Tab bar` is 762px wide inside a 366px frame.
+ *
+ * **The threshold is 480, not 1200.** This is a query on the *bar's own* width, and almost no pill bar is
+ * 1200px wide — so at 1200 every real bar was the Mobile cell. The Home page's two bars are drawn 520 and
+ * 776 wide and are plainly the Desktop cell in the file, yet both came out with 44px pills and 16px
+ * labels. 480 separates them from a phone's, where the bar is the column width (~311 at 375). The page
+ * breakpoint is 1200 because that is where a *layout* stops being desktop; a component that measures
+ * itself needs its own number.
  */
-@container sds-tabs (max-width: 1199px) {
+@container sds-tabs (max-width: 479px) {
   /*
    * On the list rather than the root: the root is the query container, and a container cannot be restyled
    * by a query against itself. Everything downstream inherits from here.
@@ -4658,14 +5510,14 @@
 /* =====================================================================================
  * Divider — Figma `divider` component set (node `16290:53873`)
  *
- * Four cells, all 1px, and the neutrals are **not** symmetric between the axes:
+ * Four cells, all 1px:
  *
- *   normal   horizontal  `Neutral/02`
- *   normal   vertical    `Neutral/03`
- *   gradient both        `Neutral/06` -> `Brand/Primary/Lighten/3`, left to right
+ *   normal   both axes   `Neutral/03`   (Figma draws `Neutral/02` horizontally — see below)
+ *   gradient both axes   `Neutral/06` -> `Brand/Primary/Lighten/3`, left to right
  *
- * A horizontal rule and a vertical one using different neutrals looks like drift rather than intent.
- * Both are reproduced as drawn and it is recorded in README.md.
+ * Figma's normal tone is `Neutral/02` horizontally and `Neutral/03` vertically. Turning a line 90° should
+ * not change its weight, so **both axes use `Neutral/03`** here — the stronger of the two, and the same
+ * value every other flat rule in this library already uses. Recorded in README.md.
  *
  * The gradient transform is the identity matrix, which inverts to a plain left-to-right ramp — 90deg for
  * the horizontal cell. The vertical cell reuses the same paint, so it runs top to bottom there.
@@ -4682,11 +5534,12 @@
   --divider-size: 1px;
 }
 
-.divider[data-tone='normal'][data-orientation='horizontal'] {
-  --divider-color: var(--sds-neutral-02);
-}
-
-.divider[data-tone='normal'][data-orientation='vertical'] {
+/*
+ * **Restructured, one value for both axes.** Figma draws the normal tone as `Neutral/02` horizontally and
+ * `Neutral/03` vertically, and nothing about turning a line 90° should change its weight. `Neutral/03` is
+ * the stronger of the pair and now serves both. Recorded in README.md.
+ */
+.divider[data-tone='normal'] {
   --divider-color: var(--sds-neutral-03);
 }
 
@@ -4741,5 +5594,681 @@
   .divider[data-tone='gradient'][data-orientation='vertical'] {
     width: 0;
     border-inline-start: 1px solid CanvasText;
+  }
+}
+
+/* =====================================================================================
+ * Form — Figma `Form` component set (node `21405:74359`)
+ *
+ *   Desktop   600 wide, V, padding 40, gap 40, on a `Surface Style=Glass`
+ *             heading block gap 8 — title 28/35 semibold `Desktop/Heading/H5/Semi Bold`,
+ *             description 18 regular
+ *             the fields frame V gap 24; each slot is H gap 16 holding one or two inputs
+ *             `Description/Terms` 16px, then the action frame at gap 8:
+ *             a full-width `Size=Medium` button and a 16px footnote
+ *   Mobile    padding 16, gap 24, fields gap 16, title 23 `Mobile/Heading/H6/Semibold`,
+ *             and every row collapses to a single column
+ *
+ * The surface is the same glass the Card uses — radial `Glass Step 01`/`02`, the `Glass Line` hairline at
+ * 225°, the 100-radius background blur and the `#000 @0.08` glow — so it is expressed with the same tokens
+ * rather than a second set of values.
+ *
+ * Responsive by container query, not viewport: this card is dropped into a hero column, a section, or a
+ * modal, and how wide *it* is has nothing to do with how wide the window is.
+ * ===================================================================================== */
+
+/*
+ * The container is this wrapper, not the card. A container cannot be styled by its own query, so with
+ * `container-type` on the form the padding and gap rules below silently never applied — the rows collapsed
+ * while the padding stayed at 40. The wrapper has no padding of its own, so its inline size is the card's
+ * outer width, which is the number the breakpoint should be about.
+ */
+.formShell {
+  container-type: inline-size;
+  container-name: sds-form;
+}
+
+.formRoot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 40px;
+  border-radius: 8px;
+  /* `Surface Style=Glass`, the same construction as the Card's glass surface. */
+  background-image: radial-gradient(
+    circle at 0% 0%,
+    var(--sds-glass-step-01) 0%,
+    var(--sds-glass-step-02) 100%
+  );
+  backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The glass hairline — a masked ring, since a gradient cannot be a border. */
+.formRoot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  /* `header-alignment` gap 8. */
+  gap: 8px;
+}
+
+/*
+ * `Desktop/Heading/H5/Semi Bold` at 28px down to `Mobile/Heading/H6/Semibold` at 23px. A `<p>` rather than a
+ * heading tag on purpose: a form's own title is rarely the right level for the page it sits on, and the
+ * caller can pass a real heading as `title` when it is.
+ */
+.formTitle {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.formDescription {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.28;
+  font-weight: 400;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The fields frame — `Form` V gap 24. */
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* One numbered slot: a row of one or two fields, 16px apart, each sharing the width. */
+.formRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.formRow > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* `Description/Terms` — 16px, and above the button, which is where the file puts it. */
+.formTerms {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* The action frame, gap 8: a full-width button and the footnote under it. */
+.formActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formFootnote {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/*
+ * Figma's `Size=Mobile` cell. A container query rather than a media query: this card lives in a hero column
+ * or a section, so its own width is the thing that decides, not the window's.
+ */
+/*
+ * Figma's `Size=Mobile` cell. 520px is the card's own outer width: below it, the two 252px fields a two-up
+ * row is drawn with no longer fit beside each other inside the 40px padding.
+ */
+@container sds-form (max-width: 520px) {
+  .formRoot {
+    gap: 24px;
+    padding: 16px;
+  }
+
+  .formFields {
+    gap: 16px;
+  }
+
+  .formTitle {
+    font-size: 23px;
+  }
+
+  /* Every two-up row becomes a single column, as the Mobile cell draws it. */
+  .formRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .formRow > * {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .formRoot {
+    border: 1px solid CanvasText;
+  }
+
+  .formRoot::before {
+    display: none;
+  }
+}
+
+/* =====================================================================================
+ * Footer — Figma `LRDC footer` component set (node `16288:12662`)
+ *
+ * Three bands in one component. Measured from the Desktop cell:
+ *
+ *   Page Action Section  V, padding 80, gap 32, `Surfaces/Page Background/Grey`
+ *   Number Footer        V, padding 24/80, gap 24, `Surfaces/Page Background/Blue`
+ *   Footer LRDC Base     the dark band: a bubble image under a radial overlay from
+ *                        `Components/Overlay Carousel/Dark/02` to `#070b13`
+ *                        Container V, padding 40, gap 40, content 1200 in 1280
+ *                        column rows H gap 32, each column 214 wide and growing
+ *                        column V gap 24 — title, then a links list at gap 16
+ *                        Subfooter H, padding 3/0, gap 80
+ *
+ *   Column title  18px bold `Paragraph/Default/Heavier`, `Action/Neutral/Inverted`
+ *   Links         `Link Style=Secondary, Size=Medium`
+ *   Address       18px regular, `Action/Neutral/Inverted`
+ *   Social row    six 24px icons, gap 16
+ *
+ * `Action/Neutral/Inverted` is white in both colour modes, which broke the `neutral` button and the
+ * `secondary` link elsewhere. Here it is right: this band is dark in both modes by design.
+ * ===================================================================================== */
+
+.footerRoot {
+  display: block;
+  width: 100%;
+}
+
+/* `Page Action Section` — the grey band. Padding is the page gutter, so it is fluid like `Section`'s. */
+.footerCta {
+  padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  background-color: var(--sds-surfaces-card-bg-grey);
+  container-type: inline-size;
+}
+
+/* `Number Footer` — the blue strip. 24px of block padding rather than the gutter's. */
+.footerStats {
+  padding-block: 24px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  background-color: var(--sds-surfaces-card-bg-blue);
+  container-type: inline-size;
+}
+
+/*
+ * The dark band.
+ *
+ * Figma layers a bubble image with a radial overlay on top — and that overlay is a **vignette**, not the
+ * ground: it runs from `rgba(7, 11, 19, 0)` at the centre to `rgba(7, 11, 19, 0.5)` at the edges, darkening
+ * the corners so the white text holds over the artwork. It is not the band's background, which was worth
+ * measuring rather than assuming.
+ *
+ * The artwork itself is not bundled — it is the same 2MB asset the Hero declines to put inside anyone's
+ * CSS — so `backdrop` is a slot and this ground shows when nothing is passed.
+ *
+ * Both colours are mode-independent by design. The band is dark and its text is white in *both* colour
+ * modes, so a mode-aware page colour would turn it inside out in light mode. It is also the one place
+ * `Action/Neutral/Inverted` is the right token rather than a bug.
+ */
+.footerBase {
+  position: relative;
+  container-type: inline-size;
+  background-color: var(--sds-footer-ground);
+  color: var(--sds-action-neutral-inverted);
+  isolation: isolate;
+  /*
+   * Clips the mesh. Without it the gradient layer widened the document by 243px on every page with a
+   * footer — and it did so invisibly, because a `::after` is not in `querySelectorAll`, so an element
+   * sweep for overflow finds nothing. Only the document-width check caught it.
+   */
+  overflow: hidden;
+}
+
+/*
+ * The mesh gradient, on by default.
+ *
+ * Three wide radial blooms in the brand hues, drifting slowly past each other. It sits under the
+ * vignette and over the ground, so it reads as light in the band rather than as a pattern on top of it —
+ * which is what the file draws: a purple bloom low-left and a blue one to the right of centre.
+ *
+ * A pseudo-element rather than a `background-image` on `.footerBase`, because the drift animates
+ * `background-position` and the band's own background is a flat colour that should not move with it.
+ *
+ * It is drawn whether or not `backdrop` is passed: with artwork it sits behind it, and the artwork's
+ * `object-fit: cover` covers it. Without, it is the whole of the interest in the band.
+ */
+.footerBase::after {
+  content: '';
+  position: absolute;
+  /*
+   * `inset: 0` and the travel comes from `background-size` being larger than the box, not from the box
+   * being larger than the band. Same drift, nothing outside the footer.
+   */
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(38% 44% at 22% 78%, var(--sds-footer-mesh-1) 0%, transparent 68%),
+    radial-gradient(42% 38% at 74% 42%, var(--sds-footer-mesh-2) 0%, transparent 70%),
+    radial-gradient(34% 40% at 52% 96%, var(--sds-footer-mesh-3) 0%, transparent 66%);
+  background-size: 180% 180%, 165% 165%, 190% 190%;
+  /*
+   * 48 seconds and three different offsets, so the blooms never line up into an obvious loop. Slow
+   * enough that it reads as light shifting rather than as something moving.
+   */
+  animation: sds-footer-mesh 48s ease-in-out infinite alternate;
+}
+
+@keyframes sds-footer-mesh {
+  from {
+    background-position:
+      0% 100%,
+      100% 0%,
+      50% 100%;
+  }
+  to {
+    background-position:
+      30% 70%,
+      64% 34%,
+      22% 72%;
+  }
+}
+
+/*
+ * Reduced motion keeps the gradient and drops the drift. The mesh is the band's colour, not an effect
+ * layered on it, so removing it would change the design rather than calm it.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .footerBase::after {
+    animation: none;
+  }
+}
+
+/* The backdrop artwork, behind everything and decorative. */
+.footerBackdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.footerBackdrop > :where(img, video, picture, div, svg) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The vignette, over the artwork and under the content. */
+.footerBase::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    120% 140% at 50% 0%,
+    transparent 0%,
+    var(--sds-footer-vignette) 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/*
+ * Links on the dark band.
+ *
+ * `Link variant="secondary"` is mode-aware — deliberately, since that is what fixed it being white-on-white
+ * in light mode elsewhere. But this band is dark in *both* modes, so a mode-aware link inverts the wrong way
+ * inside it: measured at **1.4:1** in light mode, dark ink on a dark ground, for every link in the footer.
+ *
+ * So the band pins them to their dark-canvas values, the same way it pins its own ground. The selector
+ * carries an attribute so it outranks `.link[data-variant='secondary']` rather than relying on file order.
+ */
+.footerBase a[data-variant] {
+  color: var(--sds-footer-text);
+}
+
+@media (hover: hover) {
+  .footerBase a[data-variant]:hover {
+    color: var(--sds-footer-link-hover);
+  }
+}
+
+.footerInner {
+  display: flex;
+  flex-direction: column;
+  /* `Container` gap 40 and padding 40, with the 1200 content column centred. */
+  gap: 40px;
+  padding-block: 40px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  max-width: calc(1200px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+  margin-inline: auto;
+}
+
+/*
+ * The columns. Figma has a nine-column Desktop cell in two rows and a Mobile cell 4,828px tall with
+ * everything stacked; rather than switch between the two, this is one grid of 214px tracks — Figma's own
+ * column width — so the count follows the space. Its two cells are the two ends of that range.
+ */
+.footerColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(214px, 1fr));
+  gap: 40px 32px;
+}
+
+.footerColumn {
+  display: flex;
+  flex-direction: column;
+  /* Title to links: 24. */
+  gap: 24px;
+  min-width: 0;
+}
+
+.footerColumnTitle {
+  margin: 0;
+  /* `Paragraph/Default/Heavier`. */
+  font-size: 18px;
+  line-height: 23px;
+  font-weight: 700;
+  color: var(--sds-action-neutral-inverted);
+}
+
+.footerLinks {
+  display: flex;
+  flex-direction: column;
+  /* Between links: 16. */
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  /* A list of links is a list; the marker is what goes, not the semantics. */
+  list-style: none;
+}
+
+.footerLinkItem {
+  display: flex;
+}
+
+/* ------------------------------------------------------------------- brand */
+
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.footerLogo {
+  display: flex;
+  align-items: center;
+}
+
+.footerLogo > :where(img, svg) {
+  /* Figma's lockup is 134x48; height is what a logo should be pinned by. */
+  height: 48px;
+  width: auto;
+}
+
+.footerAddress {
+  /* `<address>` is italic by default in every browser, and Figma's is not. */
+  font-style: normal;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--sds-action-neutral-inverted);
+  white-space: pre-line;
+}
+
+.footerSocial {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* Six icons, 16 apart. */
+  gap: 16px;
+}
+
+.footerSocial :where(a, button) {
+  display: grid;
+  place-items: center;
+  /*
+   * Figma's icons are 24px, which is under the 24x24 minimum a pointer target wants — so the glyph stays 24
+   * and the target around it is 44, the size everything else in this library uses for an icon-only control.
+   * Inferred; the file draws no target.
+   */
+  width: 44px;
+  height: 44px;
+  margin: -10px;
+  border-radius: 1000px;
+  color: var(--sds-action-neutral-inverted);
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.footerSocial :where(a, button) > svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (hover: hover) {
+  .footerSocial :where(a, button):hover {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+.footerSocial :where(a, button):focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------- subfooter */
+
+/* `Subfooter Content` — H, gap 80, and it wraps rather than overflowing on a narrow page. */
+.footerLegal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 80px;
+  padding-block: 3px;
+  font-size: 16px;
+  line-height: 24px
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footerSocial :where(a, button) {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* A vignette is invisible in forced colours and the artwork only competes with the text. */
+  .footerBase::before,
+  .footerBackdrop {
+    display: none;
+  }
+}
+
+/* ==========================================================================================
+ * Chip — Figma `Chip` (node `16858:51126`)
+ *
+ * A removable filter chip. One drawn size — 90x30 in the file — so there is no size axis: 8px of
+ * horizontal padding, 6px vertical, an 8px gap, `Border Radius/medium` and
+ * `Paragraph/X-Small/Semi Bold`. Five cells on the `State` axis, of which only two are props: focus and
+ * disabled are real CSS states, `Selected` is the checkbox, and `Dragged` is a hook for whatever is
+ * doing the dragging.
+ * ========================================================================================== */
+
+.chipWrapper {
+  display: inline-flex;
+}
+
+/*
+ * The pill itself is Mantine's `label`, not the root — the root is the wrapper holding the hidden
+ * checkbox. Every box property belongs here.
+ */
+.chipWrapper .chipLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding-block: 6px;
+  padding-inline: 8px;
+  border: none;
+  border-radius: var(--mantine-radius-md);
+  color: var(--sds-surfaces-text-primary);
+  /*
+   * 14/1.25 from the `Paragraph/X-Small/Semi Bold` **text style**, not from
+   * `Size/Paragraph/X-Small`, which is 11 in all three typography modes. The two disagree in the file —
+   * the same split `Button` and `Link` have between their `Action/*` text styles and their `Size/*`
+   * variables — and the text style is what the component is drawn with. The height confirms it: 14 at
+   * 1.25 is 17.5, plus 6 and 6 of padding, which is the drawn 30. At 11 the pill would be 28.
+   */
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  transition:
+    background-color var(--sds-motion-fast) var(--sds-motion-ease),
+    color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/*
+ * `State=Default`'s stroke is a *gradient* — `Components/Button Outline/line-stp-01` into `-02`, white
+ * into `Accent/Primary Blue Accent` — which a border-color cannot express. Same masked pseudo-element
+ * the card and the tab bar use for their hairlines, so all three hairlines are built the same way.
+ */
+.chipWrapper .chipLabel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    var(--sds-btn-outline-line) 0%,
+    var(--sds-accent-primary-blue-accent) 100%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/*
+ * The resting fill. Its own rule, and qualified with `:not([data-disabled])`, because Mantine paints the
+ * unchecked chip `--mantine-color-dark-5` from
+ * `:where([data-mantine-color-scheme='dark']) .m_fa109255:not([data-disabled])` — which ties with a
+ * two-class selector on specificity and wins on stylesheet order. Matching its shape outranks it.
+ */
+.chipWrapper .chipLabel:not([data-disabled]) {
+  background-color: transparent;
+}
+
+/* Mantine's tick, and the space it reserves. Figma's Selected cell is the same pill with a fill. */
+.chipIconWrapper {
+  display: none;
+}
+
+/*
+ * Mantine wraps whatever is passed as children in a bare `<span>` inside the label, so the row lives
+ * there rather than on the label — a gap on the label has one child to space and does nothing. The
+ * label's own gap is left in place for the tick, which is hidden but still Mantine's business.
+ */
+.chipWrapper .chipLabel > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chipLabelText {
+  white-space: nowrap;
+}
+
+/* Both icon slots are the 16px `UI Icon` the file draws, and neither shrinks with the label. */
+.chipSection {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.chipSection > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * `State=Selected` — `Surfaces/Card BG/Blue`, and **no hairline**: the Selected variant binds no
+ * `Button Outline` line token at all, so the stroke is the thing that goes when the fill arrives.
+ */
+.chipWrapper .chipInput:checked + .chipLabel {
+  background-color: var(--sds-surfaces-card-bg-blue);
+}
+
+.chipWrapper .chipInput:checked + .chipLabel::before {
+  display: none;
+}
+
+/*
+ * `State=Focused` — `Styles/focus-ring`. Figma draws it as the brand-to-accent gradient ring the pill
+ * sits inside, which is two rings: the hairline stays, and the ring sits outside it.
+ */
+.chipWrapper .chipInput:focus-visible + .chipLabel {
+  outline: 2px solid var(--sds-brand-primary-lighten-1);
+  outline-offset: 1px;
+}
+
+/* `State=Dragged` — lifted: the selected fill plus `elevation/tight/1`. */
+.chipWrapper .chipLabel[data-dragging],
+.chipWrapper[data-dragging] .chipLabel {
+  background-color: var(--sds-surfaces-card-bg-blue);
+  box-shadow: 0 1px 3px rgba(45, 45, 45, 0.3);
+}
+
+/*
+ * `State=Disabled` — `Neutral/07` text and the hairline dropped back, which is how the file draws it:
+ * the pill is still there, it has just stopped being an control.
+ */
+.chipWrapper .chipInput:disabled + .chipLabel,
+.chipWrapper .chipLabel[data-disabled] {
+  color: var(--sds-neutral-07);
+  background-color: transparent;
+  cursor: not-allowed;
+}
+
+.chipWrapper .chipInput:disabled + .chipLabel::before,
+.chipWrapper .chipLabel[data-disabled]::before {
+  opacity: 0.4;
+}
+
+@media (hover: hover) {
+  .chipWrapper .chipInput:not(:disabled) + .chipLabel:hover {
+    background-color: var(--sds-surfaces-card-bg-blue);
   }
 }

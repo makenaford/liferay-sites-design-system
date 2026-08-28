@@ -32,23 +32,23 @@ export interface DividerProps
  * <Divider orientation="vertical" />
  * ```
  *
- * ## What Figma draws, and the asymmetry in it
+ * ## One value for both axes
  *
- * All four cells are 1px. The colours are not symmetric:
+ * All four cells are 1px. Figma's colours are not symmetric — the normal tone is `Neutral/02` horizontally
+ * and `Neutral/03` vertically — and **this uses `Neutral/03` for both**. Nothing about turning a line 90°
+ * should change its weight, `Neutral/03` is the stronger of the pair, and it is what every other flat rule
+ * in this library already uses. Recorded in README.md as a deviation.
  *
- * | | horizontal | vertical |
+ * | | Figma | Here |
  * | --- | --- | --- |
- * | normal | `Neutral/02` | `Neutral/03` |
- * | gradient | `Neutral/06` → `Brand/Primary/Lighten/3` | same |
+ * | normal, horizontal | `Neutral/02` | `Neutral/03` |
+ * | normal, vertical | `Neutral/03` | `Neutral/03` |
+ * | gradient, both | `Neutral/06` → `Brand/Primary/Lighten/3` | as drawn |
  *
- * A horizontal rule and a vertical one being **different neutrals** looks like drift rather than intent —
- * nothing about turning a line 90° should change its weight. Both are reproduced as drawn, and it is
- * recorded in README.md.
- *
- * That matters because `Neutral/02` measures **1.24:1 against the light page**. A `normal` horizontal
- * divider is close to invisible in light mode; the vertical one, on `Neutral/03`, is 1.42:1 — barely
- * better. If a divider has to be seen rather than merely be present, `Neutral/05` is the step that reads
- * in both modes, which is what the Card's static surface hairline uses.
+ * Worth knowing what this does **not** fix: `Neutral/03` is 1.42:1 against the light page and 2.23:1 on
+ * dark. It is the stronger of Figma's two values, not a strong line. A divider whose job is to be *seen*
+ * rather than merely be present wants `Neutral/05`, which is the step the Card's static surface hairline
+ * settled on after measuring.
  *
  * `size` and `color` are not exposed: every cell in the file is 1px, and the colour is the `tone` axis.
  * Mantine's `dashed` and `dotted` line styles are not exposed either, for the same reason — the file
@@ -58,8 +58,8 @@ export interface DividerProps
  *
  * `StatBar` and `Accordion` draw their own rules rather than composing this one, and deliberately:
  *
- * - `StatBar`'s divider is flat `Neutral/03` between stats, which is the value asked for there rather
- *   than the `normal` horizontal `Neutral/02`.
+ * - `StatBar`'s divider is flat `Neutral/03` between stats — the same value this now uses, so the two
+ *   agree, but it is drawn by `StatBar` itself so its stats can space around it.
  * - `Accordion`'s rule **crossfades** between the flat and the gradient tone as a row opens, which needs
  *   two stacked layers on one element. A single `Divider` cannot animate between its own tones.
  */

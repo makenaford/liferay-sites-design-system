@@ -188,7 +188,7 @@ export const NoMarker: Story = {
 export const InACard: Story = {
   render: (args) => (
     <Card
-      w={480}
+      w={480} maw="100%"
       title="What you get"
       main={
         <List {...args} size="sm" spacing={12}>

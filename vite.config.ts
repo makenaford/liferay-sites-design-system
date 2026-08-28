@@ -6,8 +6,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/index.ts',
-      name: 'Scratch',
-      fileName: 'scratch',
+      name: 'LiferaySitesDesignSystem',
+      fileName: 'liferay-sites-design-system',
     },
     rollupOptions: {
       /**

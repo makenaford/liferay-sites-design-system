@@ -1,7 +1,7 @@
 /**
- * Public entry point for the Scratch design system.
+ * Public entry point for the Liferay Sites Design System.
  *
- * Consumers wrap their app in `ScratchProvider` once, then import components from here. The
+ * Consumers wrap their app in `LiferaySitesProvider` once, then import components from here. The
  * provider is what installs the theme and the `--sds-*` token variables that every component
  * assumes are present.
  */
@@ -13,7 +13,16 @@ export {
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
+export { Chip, type ChipProps } from './components/Chip'
 export { Divider, type DividerProps, type DividerTone } from './components/Divider'
+export {
+  Footer,
+  type FooterProps,
+  type FooterColumnProps,
+  type FooterLinkProps,
+  type FooterBrandProps,
+} from './components/Footer'
+export { Form, type FormProps, type FormRowProps } from './components/Form'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {
   Image,
@@ -36,6 +45,7 @@ export {
   type MegaFeaturedCardProps,
   type MegaCtaProps,
 } from './components/Header'
+export { Logo, type LogoProps, type LogoVariant } from './components/Logo'
 export {
   List,
   type ListProps,
@@ -87,11 +97,34 @@ export {
 } from './components/Stat'
 export { Tabs, type TabsProps } from './components/Tabs'
 
+/**
+ * Page templates as data. A builder produces a `PageSpec`; a developer renders it with `PageRenderer`
+ * and needs nothing else — which is what makes the handoff a file rather than a screenshot.
+ */
+export { PageRenderer } from './templates/PageRenderer'
+export { SECTION_TYPES, sectionSummary, sectionTypeFor, type SectionType } from './templates/section-catalog'
+export type {
+  CardSpec,
+  GlassIconName,
+  Headline,
+  HeroBanner,
+  HeroSpec,
+  IconName,
+  ImageRef,
+  LinkRef,
+  PageSpec,
+  PanelSpec,
+  SectionSpec,
+  StatSpec,
+  StorySpec,
+  TabGroup,
+} from './templates/page-schema'
+
 export * from './icons'
 
 export {
-  ScratchProvider,
-  type ScratchProviderProps,
+  LiferaySitesProvider,
+  type LiferaySitesProviderProps,
   theme,
   cssVariablesResolver,
   componentTheme,

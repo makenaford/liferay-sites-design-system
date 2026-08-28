@@ -55,7 +55,7 @@ export default {
       ${iconRightCode ? figma.code`rightSection={${iconRightCode}}` : ''}
     />
   `,
-  imports: ['import { LanguagePicker, Select, Textarea, TextInput } from "scratch"'],
+  imports: ['import { LanguagePicker, Select, Textarea, TextInput } from "liferay-sites-design-system"'],
   id: 'input',
   metadata: { nestable: true },
 }

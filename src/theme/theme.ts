@@ -60,7 +60,7 @@ const neutralRamp = (color: Record<ColorToken, string>) =>
   ] as unknown as MantineColorsTuple
 
 /**
- * The Mantine theme for the Scratch design system.
+ * The Mantine theme for the Liferay Sites Design System.
  *
  * Every value traces back to `tokens.generated.ts`, which is built from the Figma exports in
  * `tokens/figma/`. Component appearance is configured centrally in `./components.ts` so that a

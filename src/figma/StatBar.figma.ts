@@ -31,7 +31,7 @@ export default {
       <Stat size="${size}" value="3x" label="Faster releases" />
     </StatBar>
   `,
-  imports: ['import { Stat, StatBar } from "scratch"'],
+  imports: ['import { Stat, StatBar } from "liferay-sites-design-system"'],
   id: 'stat-bar',
   metadata: { nestable: false },
 }

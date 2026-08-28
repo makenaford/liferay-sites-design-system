@@ -1,0 +1,17 @@
+<style>
+  /*
+   * Let the story root shrink.
+   *
+   * `layout: 'centered'` makes <body> a flex container and #storybook-root a flex item, and a flex
+   * item's default `min-width: auto` refuses to shrink below its content's min-content width. A story
+   * with a fixed `frame` width therefore pushed the root wider than the viewport and scrolled the
+   * whole page sideways — which is exactly what StoryFrame's `maxWidth: 100%` was meant to prevent,
+   * and could not, because it was resolving against a box the story had already stretched.
+   *
+   * Found by the Playwright overflow suite: ~40 stories reported the same shape at 375 and 768, all
+   * of them component demos with a declared width. The components were fine; the harness was not.
+   */
+  #storybook-root {
+    min-width: 0;
+  }
+</style>
