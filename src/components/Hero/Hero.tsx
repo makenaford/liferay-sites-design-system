@@ -28,6 +28,17 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   /** A still for the video's first frame, shown while it loads. */
   videoPoster?: string
   /**
+   * The light scheme's animation.
+   *
+   * A second file rather than one that works in both: the dark bubble is a bright sphere on near-black
+   * and is composited with `screen`, which drops the ground and keeps the light. Over a light page that
+   * paints a dark blob with a visible frame edge, so light mode had no video at all until there was an
+   * asset drawn for it. Without this, light mode still falls back to the gradient.
+   */
+  videoLight?: string
+  /** A still for `videoLight`'s first frame. */
+  videoLightPoster?: string
+  /**
    * `center` centres the column and its text.
    *
    * **The file no longer draws this.** `Alignnemt` was Left / Center; every cell in the set is now
@@ -115,15 +126,19 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * The video is decorative: `aria-hidden`, muted, `playsinline`, and outside the tab order. Nothing in it
  * carries meaning, so there is nothing to caption.
  *
- * It also only plays on the **dark** canvas. The two files that ship are dark-canvas assets — Figma
- * names the component `Dark Bubble Animation` — and on a light page they read as a dark blob rather than
- * a light source. Light mode gets the gradient. A light-theme export would close that gap; see
- * README.md.
+ * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
+ * Animation` — a bright sphere on near-black, composited with `screen`. `videoLight` is its inverse, a
+ * coloured bubble on white, composited with `multiply`. Neither substitutes for the other: the dark
+ * asset over a light page reads as a dark blob rather than a light source, which is why light mode had
+ * only the gradient until there was an export drawn for it. A scheme with no file still gets the
+ * gradient, which is built from the same tokens.
  */
 export function Hero({
   background = 'none',
   video,
   videoPoster,
+  videoLight,
+  videoLightPoster,
   align = 'left',
   banner,
   label,
@@ -140,14 +155,16 @@ export function Hero({
   const reducedMotion = useReducedMotion()
   const scheme = useComputedColorScheme('dark')
   /**
-   * Three conditions, each for its own reason. There has to be a file. The background has to be a
-   * bubble. Nobody has asked for less motion. And the canvas has to be the dark one: Figma calls the
-   * component `Dark Bubble Animation`, and it is — a bright sphere on a near-black ground, which over a
-   * light page paints a dark blob with a visible frame edge instead of a light source. Light mode gets
-   * the gradient, which is built from the same tokens and reads correctly there.
+   * Each scheme has its own file, and neither is a fallback for the other.
+   *
+   * Figma calls the dark one `Dark Bubble Animation` and it is exactly that — a bright sphere on a
+   * near-black ground, composited with `screen`. Over a light page that paints a dark blob with a
+   * visible frame edge, which is why light mode had no video for so long. It has its own asset now, and
+   * a scheme with no file still falls back to the gradient, which is built from the same tokens.
    */
-  const showVideo =
-    Boolean(video) && background !== 'none' && !reducedMotion && scheme === 'dark'
+  const source = scheme === 'dark' ? video : videoLight
+  const poster = scheme === 'dark' ? videoPoster : videoLightPoster
+  const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
 
   return (
     <Box
@@ -164,14 +181,18 @@ export function Hero({
           {showVideo ? (
             <video
               className={classes.heroVideo}
-              src={video}
-              poster={videoPoster}
+              /* The two are composited differently; the stylesheet keys off this. */
+              data-scheme={scheme}
+              src={source}
+              poster={poster}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
               tabIndex={-1}
+              /* Remount on a scheme change: a `src` swap alone leaves the old frames on screen. */
+              key={source}
             />
           ) : null}
         </div>

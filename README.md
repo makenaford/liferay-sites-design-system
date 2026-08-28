@@ -778,8 +778,14 @@ with a visible frame edge instead of a light source — verified in the browser 
 the video plays on the dark canvas only, and light mode gets the gradient, which is built from the same
 tokens and reads correctly there.
 
-A light-theme export of the two animations would close this. Until then the light hero is a gradient, not
-an animation.
+**Closed.** There is a light export of each now — `bubble_corner_light.mp4` and
+`bubble_center_light.webm` — and they are the inverse: a coloured bubble on a *white* ground. So they
+composite with `multiply` rather than `screen`, which is what drops a white ground. `Hero` takes them as
+`videoLight` and picks by scheme; a scheme with no file still falls back to the gradient.
+
+The light ground samples a true 255,255,255 at every edge, where the dark asset's blacks are not pure —
+so the edge masks that hide the dark frame are not strictly needed here. They are kept anyway, because
+they are the shape of the treatment in both schemes and not only a patch.
 
 ## Header and MegaMenu
 
@@ -2619,11 +2625,11 @@ The `Hero` set's axis is `Alignnemt`, not `Alignment`. Harmless until someone wr
 variant names — the Code Connect mapping has to spell it Figma's way, which is worth fixing at the source
 rather than in every consumer.
 
-### The light hero has no animation
+### The light hero has no animation — fixed
 
-The two bubble files are dark-canvas assets and are gated to dark mode, so a light hero shows the
-gradient alone. Not a bug, but a gap in the asset set rather than in the code: a light-theme export of
-`Dark Bubble Animation` (which would presumably stop being called that) is all it needs.
+Was: the two bubble files were dark-canvas assets gated to dark mode, so a light hero showed the gradient
+alone. There is a light export of each now, taken by `Hero`'s `videoLight` and composited with
+`multiply`. See the Hero section.
 
 ### Smaller things
 

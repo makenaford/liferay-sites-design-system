@@ -3545,6 +3545,15 @@
   mask-composite: intersect;
 }
 
+/*
+ * The light asset is the inverse of the dark one: a coloured bubble on a *white* ground. `screen` keeps
+ * white, so it washed the hero out and left a bright rectangle where the frame ends; `multiply` is what
+ * drops a white ground and keeps the colour. The masks above still apply, and still earn their keep.
+ */
+.heroVideo[data-scheme='light'] {
+  mix-blend-mode: multiply;
+}
+
 .hero[data-background='corner'] .heroVideo {
   inset: auto 0 auto auto;
   width: min(1105px, 100%);
