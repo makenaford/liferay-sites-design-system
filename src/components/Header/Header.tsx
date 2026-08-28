@@ -395,7 +395,7 @@ export function Header({
 
           <span className={classes.headerDrawerTitle}>
             {view === LANGUAGE_VIEW
-              ? (drawerControls?.language?.label ?? 'Language')
+              ? 'Language'
               : view
                 ? items.find((item) => item.value === view)?.label
                 : null}
@@ -488,11 +488,6 @@ export function Header({
               data-state={view === LANGUAGE_VIEW ? 'active' : 'ahead'}
               inert={view === LANGUAGE_VIEW ? undefined : true}
             >
-              {/*
-               * Named, because the bar above says which language is *current* rather than what the list
-               * is. Without it the panel is eight words and no question.
-               */}
-              <p className={classes.headerDrawerPanelHeading}>Language</p>
               <div className={[classes.headerDrawerList, classes.headerDrawerOptions].join(' ')}>
                 {drawerControls.language.options.map((option) => (
                   <UnstyledButton

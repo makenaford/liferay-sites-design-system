@@ -2918,7 +2918,8 @@
   gap: 8px;
   /* The band's own height, so the row lands where the logo was rather than a few pixels off it. */
   min-height: var(--sds-header-bar-height, 64px);
-  padding: 8px clamp(16px, 4vw, 24px);
+  /* 24 flat, matching the panel below: the file puts the logo at x=24 and the close 24 off the right. */
+  padding: 8px 24px;
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
@@ -3040,6 +3041,7 @@
   width: 100%;
   /* The file's row is 60 tall and its label 21px — a phone row is the target, and reads like one. */
   min-height: 60px;
+  /* No trailing padding: the chevron's 44px box is what reaches the edge, like the close button's. */
   padding: 16px 0;
   color: var(--sds-surfaces-text-primary);
   font-size: 21px;
@@ -3058,16 +3060,6 @@
 .headerDrawerDivided {
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   padding-bottom: 16px;
-}
-
-/* A panel's own heading, on the drawer's group-label treatment. */
-.headerDrawerPanelHeading {
-  margin: 0 0 8px;
-  color: var(--sds-surfaces-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 /*
@@ -3101,15 +3093,25 @@
   font-weight: 700;
 }
 
+/*
+ * The chevron sits in the close button's box, not at the row's edge.
+ *
+ * Both are 44 wide and both end at the same inset, so the glyph lands on the same centre line as the
+ * bar's close — a row's affordance and the way out of the sheet reading as one column rather than as
+ * two things a few pixels apart.
+ */
 .headerDrawerChevron {
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
+  width: 44px;
   color: var(--sds-surfaces-text-tertiary);
 }
 
 .headerDrawerChevron > svg {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
 }
 
 /*
