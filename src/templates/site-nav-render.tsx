@@ -127,11 +127,12 @@ export const SITE_DRAWER_CONTROLS = {
    */
   login: { items: [{ label: 'Login', href: '#' }] },
   /*
-   * `sm`, because this button is drawn twice on a phone — compact in the bar beside the burger, and
-   * stretched full width at the foot of the drawer. One source, so a page cannot ship two different
-   * calls to action; the width is the drawer's, the height is the bar's.
+   * `md`, matching the log-in beside it at the foot of the drawer. One source for both places this is
+   * drawn — the footer and the bar beside the burger — so a page cannot ship two different calls to
+   * action; Mantine writes a button's size as inline variables, so the bar cannot shrink its copy from
+   * a stylesheet, and the drawer is where the button matters most.
    */
-  cta: <Button size="sm">Contact Sales</Button>,
+  cta: <Button size="md">Contact Sales</Button>,
 }
 
 /**
