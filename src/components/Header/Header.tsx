@@ -544,11 +544,11 @@ export function Header({
              */}
             {drawerControls?.login?.items.map((item, index) =>
               item.href ? (
-                <Button key={index} component="a" href={item.href} variant="outline" size="sm">
+                <Button key={index} component="a" href={item.href} variant="outline" size="md">
                   {item.label}
                 </Button>
               ) : (
-                <Button key={index} variant="outline" size="sm" onClick={item.onClick}>
+                <Button key={index} variant="outline" size="md" onClick={item.onClick}>
                   {item.label}
                 </Button>
               ),

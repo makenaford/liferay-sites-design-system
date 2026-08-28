@@ -3133,6 +3133,11 @@
  * another, so the line marks the break between them rather than fencing off every row.
  */
 .headerDrawerDivided {
+  /*
+   * 16 above the rule as well as below it, so the line sits in its own air rather than tight under
+   * Partners — the sections' last row only contributed its own 16px of padding before.
+   */
+  margin-top: 16px;
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   padding-bottom: 16px;
 }
@@ -3207,13 +3212,8 @@
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
-/*
- * Both halves are 48 in the file. The call to action is `sm` because the *bar* draws it too and 48
- * there would crowd a 64px band; `min-height` grows it here without a second source for the button.
- */
 .headerDrawerFooter > * {
   width: 100%;
-  min-height: 48px;
 }
 
 /*
