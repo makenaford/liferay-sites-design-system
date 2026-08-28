@@ -752,17 +752,34 @@ cannot know whether it holds the page's `h1`.
 
 That order is the point. The gradient is built from `Brand/Primary/Primary` and `Accent/Product Accent`
 — the colours the animation is made of — so it needs no network, survives a blocked or slow file, and is
-what shows when the video is not playing. The webm then paints over it plainly, no blend.
+what shows when the video is not playing. The webm then blends over it.
 
-**No blend.** It used to be `mix-blend-mode: screen` on the dark file and `multiply` on the light one,
-because a blend was what dropped each one's ground. That is also what made the frames so hard to hide:
-over blacks that are not pure, `screen` leaves a rectangle, and no mask shaped like a gradient fully
-answers a blend. Painted as it is, the mask is ordinary alpha — two linear fades, one down the frame and
-one across it — and alpha fades to nothing.
+**The ground comes off with a blend, not with a fade.** `screen` on the dark canvas and `multiply` on
+the light one, on the bubble *layer* rather than on the video: `.heroBubble` is `z-index: -1`, which
+makes it a stacking context, so a blend on the video inside it composites against that empty layer and
+does nothing at all. On the layer the backdrop is the hero's own `background-color` — a negative
+z-index child paints after its parent's background and before its content — which is the surface the
+ground has to disappear into. `.hero` is `isolation: isolate`, so the blend stops there.
 
-The cost is that each file now carries its ground, so neither can go on the other's page: the dark
-export over a light canvas is a black rectangle across the hero with the headline inside it. Hence two
-props rather than one.
+Both grounds are **pure**: sampled at any corner, the dark export is exactly `#000` and the light one
+exactly `#fff`, which is what `screen` and `multiply` remove completely.
+
+This is the second time the blends have been here. They were taken out once, on the reasoning that
+`screen` over a rectangle of near-black leaves a rectangle no gradient-shaped mask can answer — and
+that was true, but the rectangle was the problem, not the blend. Now that the geometry is measured to
+the artwork and anchors its cuts past the hero's edges, there is no rectangle for the blend to expose.
+
+**Which is why the fades are almost gone.** There used to be two, intersected, starting a third of the
+way into the artwork: one down the box and one across it, every edge of the frame having to reach
+nothing. That is what dimmed the bubble — the drawing never played at full strength anywhere. There are
+no side fades now and nothing vertical inside the hero. What is left is one fade for the **overhang**:
+below the hero's foot there is no surface to blend into, so the ground reappears — a white band across
+the next section on the light canvas — and the fade starts at the foot and is at nothing by the
+artwork's own bottom edge. Its stops are that arithmetic and nothing else: the hero's height as a
+fraction of the video box, then the artwork's bottom as another.
+
+Each file still carries its own ground, so neither can go on the other's page — the blend that drops
+black is not the one that drops white. Hence two props rather than one.
 
 **The video is not bundled.** The four files live in `assets/bubbles/` — 0.7MB to 2.0MB — and a
 component library has no business putting that inside anyone's JavaScript, so `video` takes a URL. The
@@ -2684,7 +2701,8 @@ rather than in every consumer.
 
 Was: the two bubble files were dark-canvas assets gated to dark mode, so a light hero showed the gradient
 alone. There is a light export of each now — `bubble_center_light.webm` and `bubble_corner_light.webm` —
-taken by `Hero`'s `videoLight` and painted plainly, no blend. See the Hero section.
+taken by `Hero`'s `videoLight` and composited with `multiply`, as the dark one is with `screen`. See
+the Hero section.
 
 ### Smaller things
 
