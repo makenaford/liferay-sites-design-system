@@ -3614,6 +3614,10 @@
  * 60%-alpha wash, so what sat behind it came out dimmed and the wash's own foot read as the very line
  * the offset was meant to remove.
  *
+ * The class carries a still as readily as a loop — an `img` when the source does not move. Everything
+ * below is shape rather than motion: a frame's artwork sits in the same place whether it was exported as
+ * a webm or a png, so there is nothing here for the element type to change.
+ *
  * **No blend.** It used to be composited with `screen`, which drops a near-black ground and keeps the
  * light — and which is exactly why the frame's edges were so hard to hide: over blacks that are not
  * pure, `screen` leaves a rectangle, and a mask shaped like a gradient cannot fully answer a blend.
