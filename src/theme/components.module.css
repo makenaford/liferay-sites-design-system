@@ -3524,15 +3524,23 @@
   container-name: sds-hero;
   isolation: isolate;
   /*
-   * Not clipped, so the bubble can run past the foot of the hero.
+   * Down the page, not across it.
    *
-   * The animation is 1200x866 and a hero is far wider than that — 1216x474 at a 1280 window. Fitting
-   * the frame inside it meant choosing which edge to lose; letting it out means losing none, and the
-   * mask on the video dissolves whatever hangs below rather than ruling a line across the page. The
-   * bubble is `z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers nor
-   * catches.
+   * The bubble deliberately runs past the **foot** of the hero — the mask dissolves what hangs below
+   * rather than ruling a line across the page, and `z-index: -1` with `pointer-events: none` means what
+   * it overhangs it neither covers nor catches. So the block axis stays `visible`.
+   *
+   * The inline axis must not be. Both the corner artwork and the drawn lobes are anchored *past* the
+   * hero's right edge on purpose, which is off-viewport on a full-bleed page and off-*document*
+   * nowhere: they grew `scrollWidth` to 1617 at a 1440 viewport and put a horizontal scrollbar on every
+   * page with a hero on it. `tests/layout.spec.ts` is the thing that noticed; a padded Storybook canvas
+   * hides it, because there the overhang lands in the canvas's own gutter.
+   *
+   * `clip` rather than `hidden`, so this does not become a scroll container — and `visible` on the
+   * other axis is legal only against `clip`, which is exactly why it is the right value here.
    */
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   background-color: var(--sds-surfaces-page-bg-base-default);
   color: var(--sds-surfaces-text-primary);
 }
