@@ -5963,14 +5963,19 @@
 }
 
 /*
- * `State=Hover` — Figma's own, and unusual: no fill and no stroke, only a `#adc9ff` glow. Reproduced as a
- * box-shadow, so an inactive tab lights up without drawing a second pill competing with the real one.
+ * `State=Hover` — the colour, and only the colour.
+ *
+ * Figma draws this as a `#adc9ff` glow at blur 4 **spread 4**, and a spread that wide in a pale blue is
+ * not a glow on screen: it is a hard ring a pixel or two off the pill's edge, and four of them across a
+ * bar read as four outlined pills competing with the one filled pill that is actually selected. The
+ * glow was reproduced faithfully and the faithful version is the problem, so it is gone.
+ *
+ * Hover keeps `Tab Content`'s hover colour, which is the cue the rest of this library uses for the
+ * same job. **Deliberate divergence from the file** — the drawn state is a glow, this one is not.
  */
 @media (hover: hover) {
   .tabsRoot[data-pills] .tabsTab:hover:not([data-active], :disabled, [data-disabled]) {
-    /* `Tab Content`'s hover colour, and the glow at Figma's own offset, radius and spread. */
     color: var(--sds-action-link-hover-link);
-    box-shadow: -1px 1px 4px 4px var(--sds-brand-primary-lighten-4);
     backdrop-filter: blur(20px);
   }
 }
