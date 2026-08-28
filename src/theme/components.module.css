@@ -2989,7 +2989,8 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 8px clamp(16px, 4vw, 24px) 24px;
+  /* 24 at the top, so the first row clears the bar by the same air the groups are set apart with. */
+  padding: 24px clamp(16px, 4vw, 24px) 24px;
   transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
@@ -3163,7 +3164,7 @@
 .headerDrawerPanel .megaColumns {
   grid-template-columns: 1fr;
   /* The file sets its groups well apart on a phone; 20px ran them together into one long list. */
-  gap: 36px;
+  gap: 32px;
   padding: 0;
   min-width: 0;
 }
@@ -3173,10 +3174,10 @@
   border-inline-start: none;
   /*
    * The rail is another group, so it is set off by the gap the groups use rather than by a padding of
-   * its own — Featured was landing flush against the last column while every other heading had 36px
-   * above it.
+   * its own — Featured was landing flush against the last column while every other heading had the
+   * gap above it.
    */
-  padding: 36px 0 0;
+  padding: 32px 0 0;
   background-image: none;
 }
 
