@@ -48,6 +48,7 @@ function menuOf(menu: NavMenu) {
                   icon={navIcon(link.icon)}
                   title={link.title}
                   description={link.description}
+                  external={link.external}
                 />
               ))}
             </MegaMenu.Column>
