@@ -2354,6 +2354,28 @@
     transform var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
+/*
+ * The panel's own arrival.
+ *
+ * An animation rather than the transition above, which never played: a closed panel is `hidden`, and a
+ * transition cannot run on an element that was `display: none` a frame ago — so the box appeared at
+ * full size and only its columns moved. The keyframes run on render, which is the whole point of them.
+ *
+ * Subtle on purpose. It drops 6px and fades over one `medium`, under the columns that follow it, and
+ * the closing stays instant because a closed panel goes back to `hidden`.
+ */
+@keyframes header-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .headerMega[data-open] {
   /* Never taller than the viewport under the band, and scrollable when the content is longer. */
   max-height: calc(100vh - 84px);
@@ -2361,6 +2383,7 @@
   overflow-x: hidden;
   opacity: 1;
   transform: translateY(0);
+  animation: header-panel-in var(--sds-motion-medium) var(--sds-motion-ease-out) both;
 }
 
 /*
@@ -3141,37 +3164,6 @@
   min-height: 48px;
 }
 
-/* The log-in half: an outline button beside the filled call to action, both 48 tall. */
-.headerDrawerFooterLogin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 48 exactly, level with the call to action beside it. */
-  height: 48px;
-  padding: 0 16px;
-  line-height: 1;
-  border: 1px solid var(--sds-glass-line-from);
-  border-radius: 8px;
-  color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-@media (hover: hover) {
-  .headerDrawerFooterLogin:hover {
-    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
-    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
-  }
-}
-
-.headerDrawerFooterLogin:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-}
-
 /*
  * The actions, stacked full-width at the foot of the list. They are whatever the caller passed — a
  * language picker, a log-in link, a button — so this lays them out rather than rebuilding them.
@@ -3359,6 +3351,7 @@
 
   .headerMega[data-open] {
     transform: none;
+    animation: none;
   }
 
   .headerMega[data-open] .megaColumn,
