@@ -1,6 +1,7 @@
 import { Children } from 'react'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
 import classes from '../../theme/components.module.css'
+import { Link } from '../Link'
 import { IconArrowRight, IconExternalLink } from '../../icons'
 
 export interface MegaMenuProps {
@@ -24,7 +25,9 @@ export interface MegaMenuProps {
  *     </MegaMenu.Columns>
  *     <MegaMenu.Featured heading="Featured">…</MegaMenu.Featured>
  *   </MegaMenu.Body>
- *   <MegaMenu.Cta label="Ready to evaluate?">…</MegaMenu.Cta>
+ *   <MegaMenu.Cta label="Ready to evaluate?" action={{ label: 'See options', href: '#' }}>
+ *     <Button variant="outline">See options</Button>
+ *   </MegaMenu.Cta>
  * </MegaMenu>
  * ```
  */
@@ -196,15 +199,39 @@ function More({ children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) {
 export interface MegaCtaProps {
   /** The prompt on the left of the strip. */
   label?: ReactNode
+  /**
+   * The same call to action as a link, for the drawer.
+   *
+   * The one place the panel content *does* need a variant. A strip is a strip on a wide panel — a
+   * prompt on the left, a button on the right — and on a phone there is no right: the two stack, and a
+   * bordered button under a prompt reads as the end of the drawer rather than as one more way on. The
+   * file draws a link there, so that is what the drawer gets.
+   *
+   * Both are in the markup and the breakpoint chooses, which is the honest cost of this. `display:
+   * none` is what does the choosing, so whichever one is not on screen is out of the accessibility tree
+   * as well — there is never a second copy for a screen reader to find.
+   */
+  action?: { label: ReactNode; href: string }
   children: ReactNode
 }
 
 /** The strip across the bottom of the Platform menu: a prompt and an action. */
-function Cta({ label, children }: MegaCtaProps) {
+function Cta({ label, action, children }: MegaCtaProps) {
   return (
     <div className={classes.megaCta}>
       {label ? <span className={classes.megaCtaLabel}>{label}</span> : null}
-      {children}
+      {/* `display: contents` on a wide panel, so the strip's own layout is unchanged by the wrapper. */}
+      <span className={classes.megaCtaAction}>{children}</span>
+      {action ? (
+        <Link
+          className={classes.megaCtaLink}
+          href={action.href}
+          size="md"
+          rightSection={<IconArrowRight />}
+        >
+          {action.label}
+        </Link>
+      ) : null}
     </div>
   )
 }

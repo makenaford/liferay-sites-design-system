@@ -87,7 +87,10 @@ function menuOf(menu: NavMenu) {
       </MegaMenu.Body>
 
       {menu.cta ? (
-        <MegaMenu.Cta label="Ready to Evaluate?">
+        <MegaMenu.Cta
+          label="Ready to Evaluate?"
+          action={{ label: menu.cta.label, href: menu.cta.href }}
+        >
           <Button variant="outline" size="sm" rightSection={<IconArrowRight />}>
             {menu.cta.label}
           </Button>

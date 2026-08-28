@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, type PointerEvent, type ReactNode } from 'react'
 import { Box, createPolymorphicComponent } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
@@ -180,9 +180,29 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
    */
   const clickable = surface === 'static' || surface === 'highlighted' ? false : (interactive ?? true)
 
+  /*
+   * Where the pointer is, for the hover ring to light from.
+   *
+   * The ring is already a gradient in the card's own two brand colours; this only decides where its
+   * bright end sits, so a card lights from the corner the pointer came in at rather than from a fixed
+   * 135deg. Written straight to the element as a custom property rather than held in state — it fires
+   * on every pointer move, and re-rendering a card's whole subtree at that rate to move a gradient is a
+   * cost with nothing to show for it.
+   *
+   * Pointer events rather than mouse: a touch does not hover, and `pointermove` with a `mouse` filter
+   * keeps a finger drag from lighting a ring nobody asked for.
+   */
+  const track = (event: PointerEvent<HTMLDivElement>) => {
+    if (!clickable || event.pointerType !== 'mouse') return
+    const box = event.currentTarget.getBoundingClientRect()
+    event.currentTarget.style.setProperty('--sds-card-x', `${event.clientX - box.left}px`)
+    event.currentTarget.style.setProperty('--sds-card-y', `${event.clientY - box.top}px`)
+  }
+
   return (
     <Box
       ref={ref}
+      onPointerMove={clickable ? track : undefined}
       className={[classes.cardRoot, className].filter(Boolean).join(' ')}
       data-surface={surface}
       data-tone={surface === 'highlighted' ? tone : undefined}
@@ -193,6 +213,13 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
       data-interactive={clickable || undefined}
       {...props}
     >
+      {/*
+        * The wash under the pointer. A real element rather than a third pseudo — the card's own two are
+        * spoken for, `::before` by the glass hairline and `::after` by the ring — and `aria-hidden`
+        * because it is light on a surface and carries nothing to read.
+        */}
+      {clickable ? <span className={classes.cardSpotlight} aria-hidden /> : null}
+
       {image ? (
         <div className={classes.cardImage} data-ratio={imageRatio}>
           {image}

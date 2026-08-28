@@ -1027,6 +1027,55 @@
  * its image, and a padded card hovers as a card.
  */
 
+/*
+ * The spotlight: the surface catching the light the ring is lit by.
+ *
+ * The ring alone gives the edge a direction, and on a large card that reads as an outline moving on its
+ * own. This puts the same light on the face — 5% white, no colour, so it lifts the surface without
+ * tinting what is printed on it — and the two together read as one light source rather than two effects.
+ *
+ * Sized to the pointer (a 220px circle) where the ring is sized to the card, which is the difference
+ * between a spotlight and an edge: this one *is* meant to be a puddle.
+ */
+.cardSpotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background-image: radial-gradient(
+    220px circle at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    rgba(255, 255, 255, 0.05),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease);
+  pointer-events: none;
+}
+
+.cardRoot[data-align][data-interactive]:hover > .cardSpotlight {
+  opacity: 1;
+}
+
+/* The light is the hover cue; without the movement it has nothing left to say. */
+@media (prefers-reduced-motion: reduce) {
+  .cardSpotlight {
+    transition: none;
+  }
+}
+
+/*
+ * Text wraps rather than widening the card.
+ *
+ * A card is sized by its grid cell, and a long unbroken run — a URL, a product name with no spaces, a
+ * German compound — has nothing to break on, so it pushes the card past its column and takes the grid
+ * with it. `break-word` rather than `break-all`: it only breaks a word that would otherwise overflow,
+ * so ordinary prose is untouched.
+ */
+.cardRoot[data-align] :where(.cardTitle, .cardDescription, .cardText, .cardHeader, .cardBottom) {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
 .cardRoot[data-align][data-interactive] {
   cursor: pointer;
   transition:
@@ -1045,9 +1094,20 @@
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background-image: linear-gradient(
-    135deg,
-    var(--sds-action-primary-hover) 50%,
+  /*
+   * The same two colours the ring has always been, lit from wherever the pointer is.
+   *
+   * `Card.tsx` writes `--sds-card-x/y` on every pointer move; the 50% defaults here are what the ring
+   * looks like before it has heard from one, which is also what it looks like on a keyboard focus and
+   * on a touch device — a ring lit from its middle, i.e. the gradient it was.
+   *
+   * 140% so the far end of the gradient is off the card. Sized to the pointer instead, the ring would
+   * be bright in a puddle around the cursor and dark everywhere else, which reads as a spotlight rather
+   * than as an edge catching the light.
+   */
+  background-image: radial-gradient(
+    140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    var(--sds-action-primary-hover) 0%,
     var(--sds-accent-product-accent) 100%
   );
   mask:
@@ -2812,6 +2872,22 @@
   font-weight: 600;
 }
 
+/*
+ * The wrapper exists only so the drawer has one thing to switch off. `contents` keeps the action a
+ * direct child of the strip's flex row everywhere else, so the wide panel lays out exactly as before.
+ */
+.megaCtaAction {
+  display: contents;
+}
+
+/*
+ * The link form, which only the drawer shows. Two classes so this outranks `.link[data-variant]`'s own
+ * `display: inline-flex` — a single class ties with it and loses on nothing but source order.
+ */
+.megaCta .megaCtaLink {
+  display: none;
+}
+
 /* ---------------------------------------------------------------------------- the scrim
  *
  * Not in the prototype, which listens for a click on the document. A transparent layer under the panel
@@ -3341,20 +3417,47 @@
  * it, and no rule. That rule was the only hard line left in a sheet that separates by space everywhere
  * else.
  *
- * Its parts stack, because a label over a full-width button is what a phone has room for; the desktop's
+ * Its parts stack, because a prompt over an action is what a phone has room for; the desktop's
  * right-aligned pairing needs a width neither of them has here.
+ *
+ * And the action is a **link** here, not the button the wide panel ends in. Stacked and full width, a
+ * bordered button reads as the end of the drawer rather than as one more way on — so the file draws a
+ * link, and `MegaMenu.Cta` renders both and lets this breakpoint choose. `flex-start` rather than
+ * `stretch` with it: a full-width button wanted stretching, a link hugs its text and takes its hit area
+ * with it.
+ *
+ * The prompt goes small caps at the same time, which is what every other prompt in this menu already
+ * is — `.megaHeading` and `.megaColumnHeading` are both 14/600 at 0.06em uppercase, and this one was
+ * the odd one out at paragraph size. Same style, from the type token rather than the 14px those two
+ * still hardcode.
  */
 .headerDrawerPanel .megaCta {
   flex-direction: column;
-  align-items: stretch;
-  /* 24, like the padding around it — the strip uses one number throughout. */
-  gap: 24px;
+  align-items: flex-start;
+  /* Closer than the strip's 24: a link has none of a button's padding holding it off the prompt. */
+  gap: 16px;
   margin-inline: -24px;
   /* The strip closes a Platform panel, so nothing follows it — not even the panel's own padding. */
   margin-bottom: -24px;
   padding: 32px 24px 24px;
   border-top: none;
   background-color: transparent;
+}
+
+.headerDrawerPanel .megaCtaLabel {
+  color: var(--sds-surfaces-text-secondary);
+  font-size: var(--sds-size-paragraph-small-caps);
+  line-height: var(--sds-line-height-paragraph-small-caps);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.headerDrawerPanel .megaCtaAction {
+  display: none;
+}
+
+.headerDrawerPanel .megaCta .megaCtaLink {
+  display: inline-flex;
 }
 
 .headerDrawerPanel .megaBody {
