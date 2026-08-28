@@ -3002,6 +3002,11 @@
   transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
+/* The file gives the first level 16 above its rows, where a section gets the 24 the groups want. */
+.headerDrawerRoot {
+  padding-top: 16px;
+}
+
 .headerDrawerPanel[data-state='active'] {
   transform: translateX(0);
   z-index: 2;
@@ -3036,13 +3041,22 @@
   /* The file's row is 60 tall and its label 21px — a phone row is the target, and reads like one. */
   min-height: 60px;
   padding: 16px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   color: var(--sds-surfaces-text-primary);
   font-size: 21px;
   line-height: 28px;
   font-weight: 600;
   text-align: start;
   text-decoration: none;
+}
+
+/*
+ * The one rule in the list, above the language selector.
+ *
+ * The file draws a divider there and nowhere else: the four sections are one group and the language is
+ * another, so the line marks the break between them rather than fencing off every row.
+ */
+.headerDrawerDivided {
+  border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
 /* The globe sits with the label rather than in a slot of its own — one row, read as one thing. */

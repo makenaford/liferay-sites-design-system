@@ -417,7 +417,7 @@ export function Header({
 
         <div className={classes.headerDrawerPanels}>
           <div
-            className={classes.headerDrawerPanel}
+            className={[classes.headerDrawerPanel, classes.headerDrawerRoot].join(' ')}
             data-state={view ? 'behind' : 'active'}
             inert={view ? true : undefined}
           >
@@ -455,7 +455,9 @@ export function Header({
              * foot of the drawer itself, below, so they stay put while this panel scrolls.
              */}
             {drawerControls?.language ? (
-              <div className={classes.headerDrawerList}>
+              <div
+                className={[classes.headerDrawerList, classes.headerDrawerDivided].join(' ')}
+              >
                 <UnstyledButton
                   component="button"
                   type="button"
