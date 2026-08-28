@@ -2945,8 +2945,8 @@
 }
 
 .headerDrawerBack > svg {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 
 .headerDrawerClose {
@@ -2960,14 +2960,14 @@
 }
 
 .headerDrawerClose > svg {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 
 .headerDrawerTitle {
   justify-self: center;
   color: var(--sds-surfaces-text-primary);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -3057,6 +3057,28 @@
  */
 .headerDrawerDivided {
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+  padding-bottom: 16px;
+}
+
+/* A panel's own heading, on the drawer's group-label treatment. */
+.headerDrawerPanelHeading {
+  margin: 0 0 8px;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/*
+ * The options are a list to read, not four destinations to weigh: 16px and a shorter row, where the
+ * first level's 21 is sized for a thumb picking one of four.
+ */
+.headerDrawerOptions .headerDrawerRow {
+  min-height: 48px;
+  padding: 10px 0;
+  font-size: 16px;
+  line-height: 24px;
 }
 
 /* The globe sits with the label rather than in a slot of its own — one row, read as one thing. */
