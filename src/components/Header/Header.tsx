@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { Box, UnstyledButton } from '@mantine/core'
+import { Box, Button, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 import { Logo } from '../Logo'
@@ -395,7 +395,7 @@ export function Header({
 
           <span className={classes.headerDrawerTitle}>
             {view === LANGUAGE_VIEW
-              ? (drawerControls?.language?.label ?? 'Language')
+              ? 'Language'
               : view
                 ? items.find((item) => item.value === view)?.label
                 : null}
@@ -417,7 +417,7 @@ export function Header({
 
         <div className={classes.headerDrawerPanels}>
           <div
-            className={classes.headerDrawerPanel}
+            className={[classes.headerDrawerPanel, classes.headerDrawerRoot].join(' ')}
             data-state={view ? 'behind' : 'active'}
             inert={view ? true : undefined}
           >
@@ -455,7 +455,9 @@ export function Header({
              * foot of the drawer itself, below, so they stay put while this panel scrolls.
              */}
             {drawerControls?.language ? (
-              <div className={classes.headerDrawerList}>
+              <div
+                className={[classes.headerDrawerList, classes.headerDrawerDivided].join(' ')}
+              >
                 <UnstyledButton
                   component="button"
                   type="button"
@@ -486,7 +488,7 @@ export function Header({
               data-state={view === LANGUAGE_VIEW ? 'active' : 'ahead'}
               inert={view === LANGUAGE_VIEW ? undefined : true}
             >
-              <div className={classes.headerDrawerList}>
+              <div className={[classes.headerDrawerList, classes.headerDrawerOptions].join(' ')}>
                 {drawerControls.language.options.map((option) => (
                   <UnstyledButton
                     key={option.value}
@@ -531,21 +533,24 @@ export function Header({
          */}
         {drawerControls?.cta || drawerControls?.login?.items.length ? (
           <div className={classes.headerDrawerFooter}>
+            {/*
+             * The library's outline button, not a hand-rolled box that looked like one. It sat beside a
+             * real `Button` and drew its own border, radius and hover — three chances to drift from the
+             * thing it was imitating, and no way to pick up a change to it.
+             *
+             * Mantine's `Button` rather than this library's wrapper, because a log-in is a link and the
+             * wrapper is not polymorphic — which is what its own docs say to do here. The theme styles
+             * both the same, so `variant="outline"` is the set's outline either way.
+             */}
             {drawerControls?.login?.items.map((item, index) =>
               item.href ? (
-                <a key={index} className={classes.headerDrawerFooterLogin} href={item.href}>
+                <Button key={index} component="a" href={item.href} variant="outline" size="sm">
                   {item.label}
-                </a>
+                </Button>
               ) : (
-                <UnstyledButton
-                  key={index}
-                  component="button"
-                  type="button"
-                  className={classes.headerDrawerFooterLogin}
-                  onClick={item.onClick}
-                >
+                <Button key={index} variant="outline" size="sm" onClick={item.onClick}>
                   {item.label}
-                </UnstyledButton>
+                </Button>
               ),
             )}
             {drawerControls?.cta}
