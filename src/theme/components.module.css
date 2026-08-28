@@ -2248,10 +2248,18 @@
   transform: scaleX(1);
 }
 
+/*
+ * `Neutral/08` for every glyph in the header — the carets, the burger, the drawer's controls, a row's
+ * icon. It is a colour rather than the text ink at an opacity, which is what these were: an opacity
+ * makes a glyph a faded version of the words beside it, where the file gives icons their own step on
+ * the neutral scale. The token inverts with the scheme, so it stays a mid grey in both.
+ */
 .headerCaret {
   display: flex;
-  opacity: 0.7;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+  color: var(--sds-neutral-08);
+  transition:
+    color var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 .headerCaret > svg {
@@ -2260,7 +2268,8 @@
 }
 
 .headerNav .headerItem[data-open] .headerCaret {
-  opacity: 1;
+  /* The open section's caret goes with its label rather than staying grey. */
+  color: inherit;
   transform: rotate(180deg);
 }
 
@@ -2309,7 +2318,7 @@
 
 .headerActions [data-section],
 .headerActions .fieldSection[data-position='right'] {
-  opacity: 0.7;
+  color: var(--sds-neutral-08);
 }
 
 /* ------------------------------------------------------------------------ the mega panel
@@ -2512,8 +2521,7 @@
   width: 20px;
   height: 20px;
   margin-top: 1px;
-  color: var(--sds-surfaces-text-primary);
-  opacity: 0.9;
+  color: var(--sds-neutral-08);
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
@@ -2633,6 +2641,7 @@
   flex-shrink: 0;
   width: 18px;
   height: 18px;
+  color: var(--sds-neutral-08);
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
@@ -2838,14 +2847,19 @@
  * The narrow-viewport menu button. A UI icon in a 44px target — the size every other icon-only control in
  * this library uses — with the standard focus ring, where Mantine's `Burger` brought its own everything.
  */
-.headerBurger {
+/*
+ * Qualified, like the drawer's rows: `UnstyledButton`'s root sets `color: inherit` on a single class,
+ * which ties on specificity and wins on order — so a bare `.headerBurger` colour was silently dropped
+ * and the glyph took the bar's text ink instead.
+ */
+.headerBar .headerBurger {
   display: grid;
   place-items: center;
   flex: none;
   width: 44px;
   height: 44px;
   border-radius: 1000px;
-  color: var(--sds-surfaces-text-primary);
+  color: var(--sds-neutral-08);
   cursor: pointer;
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
@@ -2869,7 +2883,7 @@
   }
 }
 
-.headerBurger > svg {
+.headerBar .headerBurger > svg {
   width: 24px;
   height: 24px;
   animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
@@ -3009,32 +3023,32 @@
   width: auto;
 }
 
-.headerDrawerBack {
+.headerDrawerBar .headerDrawerBack {
   display: flex;
   align-items: center;
   justify-content: center;
   justify-self: start;
   width: 44px;
   height: 44px;
-  color: var(--sds-surfaces-text-primary);
+  color: var(--sds-neutral-08);
 }
 
-.headerDrawerBack > svg {
+.headerDrawerBar .headerDrawerBack > svg {
   width: 28px;
   height: 28px;
 }
 
-.headerDrawerClose {
+.headerDrawerBar .headerDrawerClose {
   display: flex;
   align-items: center;
   justify-content: center;
   justify-self: end;
   width: 44px;
   height: 44px;
-  color: var(--sds-surfaces-text-primary);
+  color: var(--sds-neutral-08);
 }
 
-.headerDrawerClose > svg {
+.headerDrawerBar .headerDrawerClose > svg {
   width: 28px;
   height: 28px;
   animation: header-icon-turn-in var(--sds-motion-fast) var(--sds-motion-ease-out) both;
@@ -3165,7 +3179,7 @@
   width: 24px;
   height: 24px;
   flex: none;
-  color: var(--sds-surfaces-text-secondary);
+  color: var(--sds-neutral-08);
 }
 
 .headerDrawerRow[data-current] {
@@ -3186,7 +3200,7 @@
   justify-content: center;
   flex: none;
   width: 44px;
-  color: var(--sds-surfaces-text-tertiary);
+  color: var(--sds-neutral-08);
 }
 
 .headerDrawerChevron > svg {
