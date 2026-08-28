@@ -2704,7 +2704,8 @@
 .megaFeaturedTitle {
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
-  font-weight: 400;
+  /* Semibold, like every other link title in a menu — a card's heading is a heading either way. */
+  font-weight: 600;
   line-height: 1.25;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
@@ -2920,9 +2921,9 @@
   justify-self: start;
 }
 
-/* The lockup is 48 in the band; in the drawer's bar it comes down a step so the row is not all logo. */
+/* The file's drawer lockup is 108x32 — a step down from the band's, so the row is not all logo. */
 .headerDrawerLogo svg {
-  height: 36px;
+  height: 32px;
   width: auto;
 }
 
@@ -2990,7 +2991,7 @@
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   /* 24 at the top, so the first row clears the bar by the same air the groups are set apart with. */
-  padding: 24px clamp(16px, 4vw, 24px) 24px;
+  padding: 24px 24px;
   transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
@@ -3015,18 +3016,23 @@
   flex-direction: column;
 }
 
-.headerDrawerRow {
+/*
+ * Two classes, because Mantine's `UnstyledButton` root sets a font size of its own and ties on
+ * specificity — a single class here lost the 21px to its 16 depending on sheet order.
+ */
+.headerDrawerList .headerDrawerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  /* The file's rows are generous — this is a phone, and the row is the target. */
-  min-height: 64px;
-  padding: 18px 4px;
+  /* The file's row is 60 tall and its label 21px — a phone row is the target, and reads like one. */
+  min-height: 60px;
+  padding: 16px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
   color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
+  font-size: 21px;
+  line-height: 28px;
   font-weight: 600;
   text-align: start;
   text-decoration: none;
@@ -3041,8 +3047,8 @@
 }
 
 .headerDrawerRowLabel > svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex: none;
   color: var(--sds-surfaces-text-secondary);
 }
@@ -3064,48 +3070,6 @@
 }
 
 /*
- * Log in and create an account: two targets of the same weight, side by side, which is what the file
- * draws and what a thumb wants. `margin-top: auto` pins the pair to the foot of a short list rather
- * than leaving it floating under four rows.
- */
-.headerDrawerLogin {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 32px;
-}
-
-.headerDrawerLoginItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  /* 8px, not 16: at half the drawer's width `Create an Account` wraps to two lines with any more. */
-  padding: 12px 8px;
-  border: 1px solid var(--sds-glass-line-from);
-  border-radius: 8px;
-  color: var(--sds-surfaces-text-primary);
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-@media (hover: hover) {
-  .headerDrawerLoginItem:hover {
-    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
-    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
-  }
-}
-
-.headerDrawerLoginItem:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-}
-
-/*
  * The call to action, pinned to the foot of the drawer.
  *
  * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
@@ -3113,16 +3077,54 @@
  */
 .headerDrawerFooter {
   flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 16px clamp(16px, 4vw, 24px);
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  display: grid;
+  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
 }
 
+/*
+ * Both halves are 48 in the file. The call to action is `sm` because the *bar* draws it too and 48
+ * there would crowd a 64px band; `min-height` grows it here without a second source for the button.
+ */
 .headerDrawerFooter > * {
   width: 100%;
+  min-height: 48px;
+}
+
+/* The log-in half: an outline button beside the filled call to action, both 48 tall. */
+.headerDrawerFooterLogin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 48 exactly, level with the call to action beside it. */
+  height: 48px;
+  padding: 0 16px;
+  line-height: 1;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .headerDrawerFooterLogin:hover {
+    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+}
+
+.headerDrawerFooterLogin:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
 }
 
 /*

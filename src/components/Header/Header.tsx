@@ -449,11 +449,10 @@ export function Header({
              *
              * The language is a row like the sections, and drills in like them — the file gives it the
              * same chevron, and an accordion here would expand a list of eight under the four things
-             * you came for. The log-in pair are buttons rather than links because that is what they
-             * are on a phone: two targets of the same weight, side by side.
+             * you came for.
              *
-             * The call to action is *not* here. It is pinned to the foot of the drawer itself, below,
-             * so it stays put while this panel scrolls.
+             * Log in and the call to action are *not* here. They are the two buttons pinned to the
+             * foot of the drawer itself, below, so they stay put while this panel scrolls.
              */}
             {drawerControls?.language ? (
               <div className={classes.headerDrawerList}>
@@ -471,28 +470,6 @@ export function Header({
                     <IconRight />
                   </span>
                 </UnstyledButton>
-              </div>
-            ) : null}
-
-            {drawerControls?.login?.items.length ? (
-              <div className={classes.headerDrawerLogin}>
-                {drawerControls.login.items.map((item, index) =>
-                  item.href ? (
-                    <a key={index} className={classes.headerDrawerLoginItem} href={item.href}>
-                      {item.label}
-                    </a>
-                  ) : (
-                    <UnstyledButton
-                      key={index}
-                      component="button"
-                      type="button"
-                      className={classes.headerDrawerLoginItem}
-                      onClick={item.onClick}
-                    >
-                      {item.label}
-                    </UnstyledButton>
-                  ),
-                )}
               </div>
             ) : null}
 
@@ -552,8 +529,27 @@ export function Header({
          * draws on every one of its mobile frames. Outside `.headerDrawerPanels`, because that box
          * clips and scrolls.
          */}
-        {drawerControls?.cta ? (
-          <div className={classes.headerDrawerFooter}>{drawerControls.cta}</div>
+        {drawerControls?.cta || drawerControls?.login?.items.length ? (
+          <div className={classes.headerDrawerFooter}>
+            {drawerControls?.login?.items.map((item, index) =>
+              item.href ? (
+                <a key={index} className={classes.headerDrawerFooterLogin} href={item.href}>
+                  {item.label}
+                </a>
+              ) : (
+                <UnstyledButton
+                  key={index}
+                  component="button"
+                  type="button"
+                  className={classes.headerDrawerFooterLogin}
+                  onClick={item.onClick}
+                >
+                  {item.label}
+                </UnstyledButton>
+              ),
+            )}
+            {drawerControls?.cta}
+          </div>
         ) : null}
       </div>
 
