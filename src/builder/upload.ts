@@ -120,8 +120,8 @@ export async function prepareImage(file: File): Promise<Blob> {
  * Stores a file against a page and returns the URL to put in the node's `src`.
  *
  * The URL is relative, so a page keeps working under whichever hostname it is opened on, and it is
- * behind the same gate as the page itself — a reader with the share link can see it, and nobody else
- * can. See the `assets` route in `worker/index.ts`.
+ * served to anyone who has it — which is what makes a mock's pictures render outside the builder.
+ * See the `assets` route in `worker/index.ts`.
  */
 export async function uploadImage(pageId: string, file: File): Promise<string> {
   const blob = await prepareImage(file)

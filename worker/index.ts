@@ -17,6 +17,10 @@
  * - **A share code** — a reader. Enough to see one page, and nothing else. It buys no access to any
  *   other page and no ability to write to this one.
  *
+ * Uploaded images are the one exception to both, and the route says why: they are served to anyone
+ * who has the URL, so that a mock's pictures survive being pasted into a branch or opened somewhere
+ * the cookie did not follow.
+ *
  * The code travels in the URL exactly once, on the first open. From then on it lives in an HttpOnly
  * cookie, so the address bar is clean: copying the URL out of it and passing it on does not pass on
  * the access. That is a **speed bump, not a wall** — the person who was given the link can always
@@ -31,7 +35,7 @@
  * | `DELETE /api/pages/:id` | Access |
  * | `GET /api/pages/:id/socket` | Access, or the code. Only Access may write over it |
  * | `POST /api/pages/:id/assets` | Access. Stores an uploaded image |
- * | `GET /api/pages/:id/assets/:asset` | Access, or the page's code |
+ * | `GET /api/pages/:id/assets/:asset` | anyone holding the link — see the route |
  * | `GET /api/pages/:id/history` | Access |
  * | `POST /api/pages/:id/restore` | Access |
  * | `POST /api/pages/:id/share` | Access. `{ rotate: true }` replaces the code |
@@ -346,19 +350,35 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
         return json({ id: asset, url: `/api/pages/${id}/assets/${asset}` }, 201)
       }
 
+      /*
+       * **Reading an image needs nothing.** This is the one route on a page that is not gated, and it
+       * is a deliberate exception rather than an oversight.
+       *
+       * A gated image is a picture that only renders inside this builder. Paste the handoff code into
+       * a branch and it is a broken image; open the artefact anywhere the cookie did not follow and it
+       * is a broken image. The point of a mock is to be looked at, and every one of those failures is
+       * this check doing its job.
+       *
+       * What stands in for the gate is the id: 128 bits from `crypto.getRandomValues`, so a URL cannot
+       * be guessed, walked, or arrived at from the page's name. That is the honest boundary — **anyone
+       * holding the link holds the image** — and it is the same bargain as the share code one level
+       * up. The page's *contents* stay gated; a photograph on it does not.
+       */
       if (request.method !== 'GET') return oops('Method not allowed', 405)
       if (!VALID_ASSET.test(rest)) return oops('Not an image id', 404)
-
-      const read = await mayRead(request, env, url, id, who)
-      if (!read.ok) return oops('No access to this page', 403)
 
       const stored = await env.UPLOADS.get(assetKey(id, rest))
       if (!stored) return oops('No such image', 404)
 
       /*
-       * `immutable`, because the id is random and the bytes behind it never change — so a page full
-       * of photographs is fetched once and then never again. `private`, because it is behind the same
-       * gate as the page: a shared cache holding it would be handing it to whoever asked next.
+       * `public` and `immutable`, which together are what make this cheap: the id is random and the
+       * bytes behind it never change, so nothing ever needs to revalidate. A browser fetches each
+       * image once for a year, and Cloudflare's own cache answers everyone else's first request
+       * without the Worker or the bucket being touched at all.
+       *
+       * `public` is only correct *because* the route is ungated. The two go together — a shared cache
+       * holding a gated response would hand it to whoever asked next — so if this ever goes back
+       * behind a check, this header has to go back to `private` with it.
        *
        * The `Content-Security-Policy` is what makes SVG safe to accept. Script inside an SVG never
        * runs when it is drawn by an `<img>`, but *navigating* to this URL renders it as a document on
@@ -370,7 +390,7 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
           'content-type': stored.httpMetadata?.contentType ?? 'application/octet-stream',
           'content-length': String(stored.size),
           etag: stored.httpEtag,
-          'cache-control': 'private, max-age=31536000, immutable',
+          'cache-control': 'public, max-age=31536000, immutable',
           'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:",
           'x-content-type-options': 'nosniff',
         },
