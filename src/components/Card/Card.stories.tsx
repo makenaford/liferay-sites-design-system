@@ -170,10 +170,10 @@ export const CustomerQuote: Story = {
       <Card
         {...args}
         image={<CustomerThumb name="Advanced Energy" />}
-        top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
+        top={<Stat size="md" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
         description="Liferay’s out-of-the-box features let us stand up eleven regional sites in a single quarter, on one codebase."
         bottom={
-          <Stack gap="4">
+          <Stack gap="0">
             <Text fz="16" fw={600} c="var(--sds-surfaces-text-primary)">
               Anne Anderson
             </Text>
@@ -182,6 +182,7 @@ export const CustomerQuote: Story = {
               fw={600}
               c="var(--sds-surfaces-text-secondary)"
               tt="uppercase"
+              line-height={1.5}
               style={{ letterSpacing: '0.04em' }}
             >
               VP of Experience and Change Management

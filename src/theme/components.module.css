@@ -2570,13 +2570,20 @@
  */
 .megaTile {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  /*
+   * Icon over label, not beside it. The file's `Nav Item 01` puts the 20px glyph at y=0 and its content
+   * at y=24 inside a 12px inset — a column, four pixels apart — and it is what makes the tile read as a
+   * heading for the list below rather than as one more row of it.
+   */
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
   width: 100%;
   /* The file's tile is 68px tall, so a one-line label keeps rank with a two-line one beside it. */
   min-height: 68px;
   margin-bottom: 16px;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid var(--sds-glass-line-from);
   border-radius: 8px;
   /*
@@ -3224,13 +3231,16 @@
  */
 .headerDrawerPanel .megaHeading {
   flex: 0 0 auto;
-  padding: 0 0 12px;
+  /* 8, like every other heading-to-items gap in the drawer. */
+  padding: 0 0 8px;
 }
 
 /* Compact in the drawer, where a 250px-tall box would stand in front of the list it introduces. */
 .headerDrawerPanel .megaTile {
   min-height: 0;
-  padding: 12px 14px;
+  padding: 12px;
+  /* The tile *is* the column's heading here, so it sits 8 above its list like the labels do. */
+  margin-bottom: 8px;
 }
 
 /*
@@ -3246,7 +3256,7 @@
 }
 
 .headerDrawerPanel .megaColumnHeading {
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
 
 @media (prefers-reduced-motion: reduce) {
