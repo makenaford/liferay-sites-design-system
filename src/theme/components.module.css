@@ -3260,16 +3260,39 @@
   min-width: 0;
 }
 
+/*
+ * The gradient the file puts behind a featured panel:
+ *
+ *   linear-gradient(178deg, Components/Gradient Card/03 63.85%, Components/Gradient Card/blue 84.95%)
+ *
+ * `Gradient Card/03` is **not exported** — the token pipeline brings across only the blue and purple
+ * stops, on the grounds that the other three are all `Surfaces/Card BG/Grey`. So that is what stands in
+ * here, at the file's own 15%, which is also what the desktop rail already does. The two differ by
+ * #0F131B against Figma's #0A0E17, which at 15% alpha is not a difference anyone can see — but it is a
+ * stand-in, and it is written down as one.
+ */
+.headerDrawerPanel .megaFeatured,
+.headerDrawerPanel .megaCta {
+  background-image: linear-gradient(
+    178deg,
+    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 15%, transparent) 63.85%,
+    color-mix(in srgb, var(--sds-gradient-card-blue) 15%, transparent) 84.95%
+  );
+}
+
 .headerDrawerPanel .megaFeatured {
-  width: 100%;
+  /* `100%` is the panel's *content* box, which the negative margins then hang outside of — so the
+   * gradient stopped 24px short of the right edge while the strip below it reached both. */
+  width: calc(100% + 48px);
   border-inline-start: none;
   /*
    * The rail is another group, so it is set off by the gap the groups use rather than by a padding of
    * its own — Featured was landing flush against the last column while every other heading had the
-   * gap above it.
+   * gap above it. The 24 either side is the panel's, given back: the gradient needs to reach the edges
+   * of the sheet, so the rail cancels the panel's inset and re-applies it as its own padding.
    */
-  padding: 32px 0 0;
-  background-image: none;
+  margin-inline: -24px;
+  padding: 32px 24px 24px;
 }
 
 /*
@@ -3291,7 +3314,9 @@
 
 .headerDrawerPanel .megaCta {
   justify-content: flex-start;
-  padding-inline: 0;
+  /* 24 all round, and the gradient above reaches the sheet's edges the way the rail's does. */
+  margin-inline: -24px;
+  padding: 24px;
   background-color: transparent;
 }
 
