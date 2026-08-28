@@ -3306,6 +3306,12 @@
    * of the sheet, so the rail cancels the panel's inset and re-applies it as its own padding.
    */
   margin-inline: -24px;
+  /*
+   * `margin-bottom` cancels the panel's own 24 at the foot. The rail is the last thing in every panel
+   * that has one, so that padding was a band of bare sheet between the gradient and the footer above
+   * it — the panel ended, and then the drawer did, 24px later.
+   */
+  margin-bottom: -24px;
   padding: 32px 24px 24px;
 }
 
@@ -3330,6 +3336,8 @@
   justify-content: flex-start;
   /* 24 all round, and the gradient above reaches the sheet's edges the way the rail's does. */
   margin-inline: -24px;
+  /* And the same at the foot: the strip closes a Platform panel, so nothing should follow it. */
+  margin-bottom: -24px;
   padding: 24px;
   background-color: transparent;
 }

@@ -86,7 +86,15 @@ const meta = {
       description: "Figma's `Type`: Default, Full Bubble, Corner Bubble.",
     },
     align: { options: ['left', 'center'], control: 'inline-radio' },
-    video: { control: false },
+    /*
+     * Uploads, not URLs. Each of the four takes a file straight from disk — pick one and the hero swaps
+     * to it — because that is what a person has when they want to try an animation, and making them
+     * host it first to get a string is a step that proves nothing.
+     */
+    video: { control: { type: 'file', accept: 'video/*' } },
+    videoLight: { control: { type: 'file', accept: 'video/*' } },
+    videoPoster: { control: { type: 'file', accept: 'video/*,image/*' } },
+    videoLightPoster: { control: { type: 'file', accept: 'video/*,image/*' } },
     label: { control: false },
     title: { control: false },
     actions: { control: false },
@@ -104,7 +112,9 @@ const meta = {
           '',
           "The background is **a gradient in CSS with the webm on top**. The gradient needs no network, survives a blocked file, and is what shows under `prefers-reduced-motion` — where the video is not rendered at all, so it is never fetched. An autoplaying 2MB loop is exactly what that preference is for.",
           '',
-          'The video is not bundled: pass its URL. These stories import them from `assets/bubbles/`, which holds four files — a dark and a light export of each bubble. `video` is the dark canvas, `videoLight` the light one.',
+          'The video is not bundled: pass its URL, **or a file**. `video`, `videoLight`, `videoPoster` and `videoLightPoster` each take a `File` as readily as a string, so a builder can hand over what someone just picked from disk without hosting it first — the hero makes the object URL and revokes it when the file changes. The controls below are file pickers for exactly that; drop a webm on `video` and watch the background change.',
+          '',
+          'These stories start from `assets/bubbles/`, which holds four files — a dark and a light export of each bubble. `video` is the dark canvas, `videoLight` the light one.',
         ].join('\n'),
       },
     },
