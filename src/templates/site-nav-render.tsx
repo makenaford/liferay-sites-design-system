@@ -120,12 +120,12 @@ export const SITE_DRAWER_CONTROLS = {
       { value: 'ja-JP', label: '日本語' },
     ],
   },
-  login: {
-    items: [
-      { label: 'Login', href: '#' },
-      { label: 'Create an Account', href: '#' },
-    ],
-  },
+  /*
+   * One item on a phone. The file's drawer footer is two buttons — Login and Contact Sales — and it
+   * hides the create-an-account link that used to sit in the body; the bar's own account menu still
+   * carries both above the breakpoint.
+   */
+  login: { items: [{ label: 'Login', href: '#' }] },
   /*
    * `sm`, because this button is drawn twice on a phone — compact in the bar beside the burger, and
    * stretched full width at the foot of the drawer. One source, so a page cannot ship two different
