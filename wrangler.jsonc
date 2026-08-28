@@ -1,0 +1,73 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "liferay-sites-page-builder",
+  "main": "worker/index.ts",
+
+  /*
+   * Pinned rather than tracking today's date. The compatibility date decides which runtime behaviours
+   * a Worker gets, so moving it is a deliberate upgrade with its own test run — a deploy from a
+   * different machine on a different day must not quietly change how this thing works.
+   */
+  "compatibility_date": "2026-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+
+  /*
+   * The built builder. `not_found_handling` is off on purpose: the Worker does the single-page-app
+   * fallback itself, so that a mistyped `/api/` path answers with a JSON 404 instead of quietly
+   * returning the builder's HTML with a 200. See the note in `worker/index.ts`.
+   */
+  "assets": {
+    "directory": "./dist/builder",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
+
+  /*
+   * The parts of the builder that run inside the Worker, built by Vite into `dist/ssr/`. They cannot
+   * be bundled from source here: wrangler's bundler names CSS Module classes differently from Vite's,
+   * so a Worker-bundled renderer emits markup whose classes are absent from the stylesheet. See
+   * `vite.ssr.config.ts` and `src/builder/server.ts`.
+   */
+  "alias": { "#ssr": "./dist/ssr/server.js" },
+
+  /*
+   * Where uploaded images live.
+   *
+   * Not in the page's own Durable Object, which was the obvious place and the wrong one: a SQLite row
+   * caps at 2MB, so the object could only ever hold an image small enough to be a row, and every read
+   * of a photograph would have to wake the object that owns the document. A bucket has neither
+   * problem, and the bytes stay reachable while the object is busy.
+   *
+   * The gate has not moved. A key is `pages/<page>/<asset>` and the Worker is the only thing holding
+   * the binding, so an image is still readable exactly when its page is — see `worker/index.ts`.
+   */
+  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "liferay-sites-page-builder-assets" }],
+
+  "durable_objects": {
+    "bindings": [{ "name": "PAGES", "class_name": "PageDocument" }]
+  },
+
+  /*
+   * SQLite-backed, which is what gives each page a real table for its revision history rather than a
+   * key-value blob. The tag is append-only: never edit `v1`, add a `v2`.
+   */
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PageDocument"] }],
+
+  /*
+   * Cloudflare Access, which is what authenticates editors.
+   *
+   * Both must be filled in for a deployment to allow any editing at all: with either missing, the
+   * Worker cannot tell an editor from a stranger and every gated route refuses. An unconfigured
+   * deployment is inert rather than open — see `worker/access.ts`.
+   *
+   * Neither value is a secret. `ACCESS_AUD` is the Audience tag of the Access application, and the
+   * application must cover `/edit/*` on this hostname so that following a link there produces the
+   * one-time-code screen. Locally, `.dev.vars` stands in for both.
+   */
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "liferaydesign.cloudflareaccess.com",
+    "ACCESS_AUD": "6d25b3a25bce831e42953ef64e9683cb1bf451c0ab45c56b43de51f86563749b"
+  },
+
+  "observability": { "enabled": true }
+}

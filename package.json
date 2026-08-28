@@ -11,8 +11,16 @@
   },
   "scripts": {
     "assets:check": "node scripts/check-asset-size.mjs",
-    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && pnpm assets:check && tsc --noEmit && vite build",
+    "build": "pnpm tokens:check && pnpm icons:check && pnpm glass-icons:check && pnpm builder:catalog:check && pnpm assets:check && tsc --noEmit && pnpm builder:typecheck && vite build && pnpm builder:build",
     "build-storybook": "storybook build",
+    "builder:build": "vite build --config vite.builder.config.ts && pnpm builder:ssr",
+    "builder:catalog": "node scripts/build-builder-catalog.mjs",
+    "builder:catalog:check": "node scripts/build-builder-catalog.mjs --check",
+    "builder:deploy": "pnpm builder:build && wrangler deploy",
+    "builder:dev": "vite --config vite.builder.config.ts",
+    "builder:ssr": "vite build --config vite.ssr.config.ts",
+    "builder:typecheck": "tsc --noEmit -p worker/tsconfig.json",
+    "builder:worker": "wrangler dev",
     "dev": "vite",
     "figma:drift": "node scripts/check-figma-drift.mjs",
     "figma:publish": "figma connect publish",
@@ -39,6 +47,7 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260818.1",
     "@figma/code-connect": "^1.5.2",
     "@mantine/core": "9.5.1",
     "@mantine/hooks": "9.5.1",
@@ -57,6 +66,7 @@
     "react-dom": "^19.2.8",
     "storybook": "^10.5.7",
     "typescript": "^5.5.0",
-    "vite": "^5.4.0"
+    "vite": "^5.4.0",
+    "wrangler": "^4.124.0"
   }
 }
