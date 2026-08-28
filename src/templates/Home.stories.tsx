@@ -8,7 +8,6 @@ import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
-import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
 import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
@@ -358,7 +357,6 @@ function HomePage() {
       <Hero
         background="full"
         video={bubbleFull}
-        videoLight={bubbleFullLight}
         banner={
           <Card
             surface="glass"
