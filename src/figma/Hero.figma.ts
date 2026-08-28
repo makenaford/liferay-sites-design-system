@@ -49,6 +49,7 @@ export default {
     <Hero
       background="${type}"
       ${type !== 'none' ? 'video={bubble}' : ''}
+      ${type !== 'none' ? 'videoLight={bubbleLight}' : ''}
       label={<Label size="sm" variant="gradient">Platform</Label>}
       title={<h1>One platform, every channel</h1>}
       description="Build once and deliver everywhere."
@@ -61,6 +62,7 @@ export default {
   imports: [
     'import { Button, Hero, Label, TextInput } from "liferay-sites-design-system"',
     'import bubble from "./assets/bubbles/bubble_corner.webm"',
+    'import bubbleLight from "./assets/bubbles/bubble_corner_light.webm"',
   ],
   id: 'hero',
   metadata: { nestable: false },

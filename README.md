@@ -752,51 +752,75 @@ cannot know whether it holds the page's `h1`.
 
 That order is the point. The gradient is built from `Brand/Primary/Primary` and `Accent/Product Accent`
 — the colours the animation is made of — so it needs no network, survives a blocked or slow file, and is
-what shows when the video is not playing. The webm then layers over it with `mix-blend-mode: screen`,
-which drops its near-black ground and keeps the light.
+what shows when the video is not playing. The webm then paints over it plainly, no blend.
 
-Two masks shape it, and neither is decoration: a radial one softens the frame's corners, and a linear one
-dissolves the bottom, where the asset's own gradient ends in a faceted edge that `screen` would otherwise
-reveal as a shape. Without them the light source reads as a rectangle.
+**No blend.** It used to be `mix-blend-mode: screen` on the dark file and `multiply` on the light one,
+because a blend was what dropped each one's ground. That is also what made the frames so hard to hide:
+over blacks that are not pure, `screen` leaves a rectangle, and no mask shaped like a gradient fully
+answers a blend. Painted as it is, the mask is ordinary alpha — two linear fades, one down the frame and
+one across it — and alpha fades to nothing.
 
-**The video is not bundled.** The two files live in `assets/bubbles/` — 2.0MB and 1.7MB — and a component
-library has no business putting that inside anyone's JavaScript, so `video` takes a URL. The stories
-import it through the bundler; an app can equally serve it from a public directory.
+The cost is that each file now carries its ground, so neither can go on the other's page: the dark
+export over a light canvas is a black rectangle across the hero with the headline inside it. Hence two
+props rather than one.
+
+**The video is not bundled.** The four files live in `assets/bubbles/` — 0.7MB to 2.0MB — and a
+component library has no business putting that inside anyone's JavaScript, so `video` takes a URL. The
+stories import them through the bundler; an app can equally serve them from a public directory.
 
 **It does not play in three cases**, each for its own reason:
 
 - `prefers-reduced-motion` — the video is not rendered at all, so it is never even fetched. An
   autoplaying 2MB loop is precisely what that preference is about.
 - `background="none"` — there is no bubble to animate.
-- **Light mode** — see below.
+- **No file for the canvas in play** — the gradient stands in, built from the same tokens.
 
-### The bubbles are dark-canvas assets
+### Each canvas has its own export
 
-Figma names the component `Dark Bubble Animation`, and that is what the files are: a bright sphere on a
-near-black ground. Over the light page background `screen` cannot lift them, so they paint a dark blob
-with a visible frame edge instead of a light source — verified in the browser before this was gated. So
-the video plays on the dark canvas only, and light mode gets the gradient, which is built from the same
-tokens and reads correctly there.
+Figma names the dark one `Dark Bubble Animation`, and that is what it is: a bright sphere on near-black.
+`videoLight` is its inverse, a coloured sphere on white. The hero picks by the computed colour scheme and
+remounts on a flip — a `src` swap alone leaves the old frames on screen. Pass only `video` and the light
+canvas falls back to the gradient.
 
-**One file, drawn plainly.** The blend is gone. `screen` is what dropped the near-black ground and kept
-the light, and it is also why the frame was so hard to hide: over blacks that are not pure it leaves a
-rectangle, and no mask shaped like a gradient fully answers a blend. Painted as it is, the mask is
-ordinary alpha — two linear fades, one down the frame and one across it — and alpha fades to nothing.
+| `background` | dark | light |
+| --- | --- | --- |
+| `full` | `bubble_center.webm` | `bubble_center_light.webm` |
+| `corner` | `bubble_corner.webm` | `bubble_corner_light.webm` |
 
-Which means the video is **dark-canvas only** again. Without the blend the file is what it is: a bright
-sphere on near-black, which over a light page is a black rectangle across the hero with the headline
-inside it. Light mode gets the gradient, as it did before. The light exports in `assets/bubbles/` are
-unused for now; they are there if a light treatment comes back.
+### Sized to the artwork, not to the frame
 
-**Stretched, top-aligned, taller than the hero, and behind the header.** The animation is 1200x866 and
-a hero is far wider, so fitting the frame inside meant losing an edge — `cover` cropped the bottom or
-the top, `contain` shrank it to a band. It is stretched instead (`object-fit: fill`), which is fine here
-and nowhere else: an abstract gradient has no figure, no text and no circle anyone can check against.
+All four files are 1200x866, and in none of them does the artwork fill that. The frames are what the
+export cut, and the cuts are what used to show:
 
-It is 180% of the hero's height so the artwork has somewhere to go rather than being squeezed into a
-band, and pinned to the hero's top edge so what spills is the bottom. The hero does not clip
-(`overflow: visible`), so the bottom is never cut; the mask dissolves it instead. The bubble is
-`z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers nor catches.
+| | artwork inside the 1200x866 frame | the cut |
+| --- | --- | --- |
+| centre | full width, **y 142 to 680** | hard at the top, a fade at the bottom |
+| corner | **1035x630** at the top left | hard at the right and the bottom |
+
+So the CSS measures the artwork and lets the frame fall where it must.
+
+**`full`** is pinned by the artwork's top, not the frame's. 142 of the 866 rows are empty ground above
+the drawing, so pinning the frame to `top: 0` started the bubble a sixth of the way down the hero — the
+file was flush and the drawing inside it was not. The frame is hung above the hero by exactly that ground
+(`top: -26.35%`) and sized so what is below it fills the hero (`height: 160.7%`). The artwork's top cut
+lands on the hero's own top edge, which is where the design runs it up behind the header.
+
+It is stretched to get there (`object-fit: fill`), which is fine here and nowhere else: an abstract
+gradient has no figure, no text and no circle anyone can check against.
+
+**`corner`** is pinned by the artwork's **right** cut, which is where the design bleeds it off the page.
+It is laid out at the width Figma draws it — 1105 of the 1440 frame, i.e. 76.7%, so `width: 88.9%` of the
+frame puts that much artwork on screen — with its own aspect kept rather than stretched, and shifted 3%
+further right so the cut itself lands past the hero's edge instead of on it. The vertical fade then ends
+at the bottom cut, 71.9% down the frame, so the one cut still on screen arrives at zero alpha rather than
+as a line.
+
+Before that it was the whole frame stretched to `100% x 180%`, which put both cuts *inside* the hero: a
+straight bright edge down the middle of the page and a second one below the copy.
+
+The hero does not clip (`overflow: visible`), so nothing that overhangs is cut; the mask dissolves it
+instead. The bubble is `z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers
+nor catches.
 
 It briefly started a bar's height *above* the hero, to run up behind the header. That bought nothing:
 the header band is a 60%-alpha wash, so what sat behind it came out dimmed and the wash's own foot read
@@ -2659,8 +2683,8 @@ rather than in every consumer.
 ### The light hero has no animation — fixed
 
 Was: the two bubble files were dark-canvas assets gated to dark mode, so a light hero showed the gradient
-alone. There is a light export of each now, taken by `Hero`'s `videoLight` and composited with
-`multiply`. See the Hero section.
+alone. There is a light export of each now — `bubble_center_light.webm` and `bubble_corner_light.webm` —
+taken by `Hero`'s `videoLight` and painted plainly, no blend. See the Hero section.
 
 ### Smaller things
 

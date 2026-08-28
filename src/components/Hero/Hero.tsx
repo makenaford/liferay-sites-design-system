@@ -83,6 +83,17 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    */
   video?: HeroMediaSource
   /**
+   * The same animation exported for the light canvas — `bubble_center_light.webm` with
+   * `background="full"` and `bubble_corner_light.webm` with `background="corner"`.
+   *
+   * Two files rather than one, because the artwork is the ground it is drawn on: `video` is a bright
+   * sphere on black, `videoLight` a coloured one on white, and each is painted plainly, so neither
+   * survives being put on the other's page. The hero picks by the computed colour scheme and remounts
+   * on a flip. Pass only `video` and the light canvas falls back to the gradient, which is built from
+   * the same tokens.
+   */
+  videoLight?: HeroMediaSource
+  /**
    * What stands in for the animation until it can play — and if it never can.
    *
    * An image *or* a video. HTML's own `poster` attribute takes an image only, so a moving poster is
@@ -179,15 +190,16 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * carries meaning, so there is nothing to caption.
  *
  * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
- * Animation` — a bright sphere on near-black, composited with `screen`. `videoLight` is its inverse, a
- * coloured bubble on white, composited with `multiply`. Neither substitutes for the other: the dark
- * asset over a light page reads as a dark blob rather than a light source, which is why light mode had
- * only the gradient until there was an export drawn for it. A scheme with no file still gets the
- * gradient, which is built from the same tokens.
+ * Animation` — a bright sphere on near-black; `videoLight` is its inverse, a coloured bubble on white.
+ * Both are painted plainly, with no blend, so each carries its own ground and neither substitutes for
+ * the other: the dark export over a light page is a black rectangle across the hero with the headline
+ * inside it. The hero picks by the computed colour scheme and remounts on a flip. A scheme with no file
+ * gets the gradient, which is built from the same tokens.
  */
 export function Hero({
   background = 'none',
   video,
+  videoLight,
   videoPoster,
   align = 'left',
   banner,
@@ -203,28 +215,23 @@ export function Hero({
   ...props
 }: HeroProps) {
   const reducedMotion = useReducedMotion()
-  /*
-   * One file, drawn as it is.
-   *
-   * It used to be two — a bright sphere on near-black composited with `screen`, and a light-canvas
-   * export composited with `multiply` — because a blend was what dropped each one's ground. That is
-   * also what made the frame's edges so hard to hide: `screen` over impure blacks leaves a rectangle,
-   * and no mask shaped like a gradient can fully answer a blend. Painted plainly, the mask is just
-   * alpha, and alpha fades to nothing.
-   */
-  const source = useMediaUrl(video)
-  const poster = useMediaUrl(videoPoster)
   const scheme = useComputedColorScheme('dark')
   /*
-   * And only on the dark canvas.
+   * One file per canvas, each drawn as it is.
    *
-   * Without a blend the file is painted as it is, and as it is it is a bright sphere on a near-black
-   * ground — over a light page that is a black rectangle across the hero with the headline inside it.
-   * Verified in the browser, which is the only way this kind of thing is ever caught. Light mode gets
-   * the gradient, which is built from the same tokens and reads correctly there.
+   * No blend: they used to be composited with `screen` and `multiply`, which is what dropped each
+   * one's ground, and which is also what made their frames so hard to hide — over blacks that are not
+   * pure, `screen` leaves a rectangle, and a mask shaped like a gradient cannot fully answer a blend.
+   * Painted plainly the mask is ordinary alpha, and alpha fades to nothing; the cost is that the file
+   * now carries its ground, so the dark export cannot go on a light page or the other way round.
+   *
+   * Hence the pick below rather than a blend. `videoLight` missing is not a failure — the light canvas
+   * falls back to the gradient, which is built from the same tokens.
    */
-  const showVideo =
-    Boolean(source) && background !== 'none' && !reducedMotion && scheme === 'dark'
+  const dark = scheme === 'dark'
+  const source = useMediaUrl(dark ? video : videoLight)
+  const poster = useMediaUrl(videoPoster)
+  const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
 
   /*
    * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
