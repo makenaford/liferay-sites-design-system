@@ -3646,6 +3646,36 @@
 }
 
 /*
+ * `Type=Full Bubble` — top-aligned to the artwork inside the file, not to the file's frame.
+ *
+ * Both centre files are 1200x866 with the artwork exported into **y 142 to 680** of that frame: 142
+ * rows of empty ground above it and 186 below. Pinning the *frame* to `top: 0` therefore started the
+ * bubble a sixth of the way down the hero, which is what read as the full bubble not being aligned to
+ * the top — the file was flush, the drawing inside it was not.
+ *
+ * So the frame is hung above the hero by exactly that ground, and sized so the artwork below it fills
+ * the hero's height:
+ *
+ *   height = 100% / ((680 - 142)/866) = 160.7%   the frame that puts a hero's worth of artwork on screen
+ *   top    = -(142/866) * 160.7%      = -26.35%  the ground above the artwork, lifted off the top
+ *
+ * The artwork's top is a hard cut — the sphere is drawn larger than the frame — and that cut is now the
+ * hero's own top edge, which is where the design runs it up behind the header. Its bottom is a fade the
+ * file already draws, so the mask only has to see the frame out: transparent by 78.6%, where the
+ * artwork ends and there is nothing left below but ground.
+ */
+.hero[data-background='full'] .heroVideo {
+  top: -26.35%;
+  height: 160.7%;
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0%, #000 62%, transparent 78.6%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, #000 0%, #000 62%, transparent 78.6%),
+    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+
+/*
  * The layer that is not the one being shown — the poster behind the animation, or the animation behind
  * its poster. Both keep playing: a video that is `display: none` is not reliably allowed to autoplay,
  * and the stand-in has to already be running when the swap happens or it appears as a frozen frame.
@@ -3654,13 +3684,55 @@
   opacity: 0;
 }
 
+/*
+ * `Type=Corner Bubble` — sized and anchored to the artwork inside the file, not to the file's frame.
+ *
+ * Both corner files are 1200x866 with the artwork exported into the top left **1035x630** of that
+ * frame and pure ground either side of it; the sphere is drawn larger than the frame, so the export cut
+ * its right and bottom. Stretching the whole 1200x866 to the hero put those two cuts *inside* the hero
+ * — a straight bright edge down the middle of the page and a second one below the text, which is what
+ * `object-fit: fill` at `100% x 180%` was doing.
+ *
+ * So the artwork is measured rather than the file. It is laid out at the width Figma draws it — 1105 of
+ * the 1440 frame, i.e. 76.7% — with its own aspect kept (no `object-fit` stretch, `aspect-ratio` and an
+ * auto height do it), and it is pinned by its **right** cut to the hero's right edge, which is where the
+ * design bleeds it off. `width` and `right` are the file fractions doing that arithmetic:
+ *
+ *   width  = 76.7% / (1035/1200) = 88.9%   the frame that puts 1105px of artwork on screen
+ *   right  = -(1 - 1035/1200) * 88.9% - 3%  the ground right of the cut, plus a 3% overshoot so the
+ *                                            cut itself lands past the hero's edge rather than on it
+ *
+ * The vertical fade then ends at the bottom cut — 630/866 on the dark file, 623/866 on the
+ * light one, so it takes the earlier of the two, 71.9% down the frame, so the one
+ * cut still on screen arrives at zero alpha instead of a line. Below that there is nothing left to see,
+ * which is also why the hero no longer carries a bubble hanging a whole frame past its foot.
+ */
 .hero[data-background='corner'] .heroVideo {
-  /* The corner bubble's weight is in the artwork, so it stays in the corner without being boxed in. */
+  left: auto;
+  right: -15.2%;
+  width: 88.9%;
+  height: auto;
+  aspect-ratio: 1200 / 866;
+  object-fit: contain;
   -webkit-mask-image:
-    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 30%,
+      rgba(0, 0, 0, 0.78) 45%,
+      rgba(0, 0, 0, 0.34) 60%,
+      transparent 71.9%
+    ),
     linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
   mask-image:
-    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
+    linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 30%,
+      rgba(0, 0, 0, 0.78) 45%,
+      rgba(0, 0, 0, 0.34) 60%,
+      transparent 71.9%
+    ),
     linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
 }
 

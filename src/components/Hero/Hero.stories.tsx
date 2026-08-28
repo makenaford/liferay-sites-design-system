@@ -13,7 +13,9 @@ import { IconArrowRight, IconArrowUp, IconCheck } from '../../icons'
  * JavaScript — they are 2MB and 1.7MB — so a call site points at the file the same way these stories do.
  */
 import bubbleFull from '../../../assets/bubbles/bubble_center.webm'
+import bubbleFullLight from '../../../assets/bubbles/bubble_center_light.webm'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
+import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.webm'
 
 /** Stands in for the hero shot: the stories have to render offline. */
 function Shot() {
@@ -95,10 +97,21 @@ const meta = {
     video: {
       control: { type: 'file', accept: 'video/*' },
       description:
-        'The bubble animation, drawn as it is — no blend, so what you upload is what shows. One file for both colour schemes.',
+        'The bubble animation for the dark canvas, drawn as it is — no blend, so what you upload is what shows. The light canvas takes `videoLight`.',
+    },
+    /*
+     * Documented, not driveable. `videoLight` is fixed by the story to the export drawn for the light
+     * canvas, and the point of it is what happens when the scheme toolbar flips — a picker beside it
+     * only invites putting the wrong ground on the wrong page. `videoPoster` is a loading state, and a
+     * loading state a control can hold open is not the one anybody has.
+     */
+    videoLight: {
+      control: false,
+      description:
+        'The same animation exported for the light canvas. Two files, because each carries its own ground: `video` is a bright sphere on black, this one a coloured sphere on white. The hero picks by the computed colour scheme — flip the toolbar and watch it swap.',
     },
     videoPoster: {
-      control: { type: 'file', accept: 'video/*,image/*' },
+      control: false,
       description:
         'What stands in for `video` until it can play — and if it never can, so a missing file leaves a hero rather than a hole. An image or a video: HTML takes only an image on its own `poster` attribute, so a moving one is rendered behind the animation and swapped on `canplay`.',
     },
@@ -133,17 +146,17 @@ type Story = StoryObj<typeof meta>
 
 /** Every prop wired to a control. The bubble plays behind the content. */
 export const Playground: Story = {
-  args: { video: bubbleCorner, media: <Shot /> },
+  args: { video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
 }
 
 /** **Corner Bubble** with an image — Figma's `Type=Corner Bubble, Image=Yes`. */
 export const CornerBubble: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
 }
 
 /** **Full Bubble** — the animation fills the hero, centred and slightly high, behind the content. */
 export const FullBubble: Story = {
-  args: { background: 'full', video: bubbleFull, media: <Shot /> },
+  args: { background: 'full', video: bubbleFull, videoLight: bubbleFullLight, media: <Shot /> },
 }
 
 /** **Default** — no bubble at all, just the page surface. */
@@ -166,6 +179,7 @@ export const MotionPoster: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
+    videoLight: bubbleFullLight,
     videoPoster: bubbleCorner,
     media: <Shot />,
   },
@@ -191,6 +205,7 @@ export const Centered: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
+    videoLight: bubbleFullLight,
     align: 'center',
     media: undefined,
     description:
@@ -206,6 +221,7 @@ export const Form: Story = {
   args: {
     background: 'corner',
     video: bubbleCorner,
+    videoLight: bubbleCornerLight,
     actions: undefined,
     media: <Shot />,
     title: <h1>See it on your own content</h1>,
@@ -247,7 +263,7 @@ export const Minimal: Story = {
 
 /** The Gartner logo and tags under a standard hero — the spreadsheet's last content slot. */
 export const WithProof: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot />, proof: <GartnerProof /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot />, proof: <GartnerProof /> },
 }
 
 /** Stats in the hero, which is what the `children` slot is for. */
@@ -255,6 +271,7 @@ export const WithStats: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
+    videoLight: bubbleFullLight,
     media: undefined,
     align: 'center',
     children: (
@@ -279,13 +296,13 @@ export const GradientOnly: Story = {
 
 /** Stacked, as it renders below 1200px: the media drops under the content. */
 export const Stacked: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 }
 
 /** A page: the hero, then what follows it. */
 export const InPage: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot />, proof: <GartnerProof /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot />, proof: <GartnerProof /> },
   render: (args) => (
     <>
       <Hero {...args} />
