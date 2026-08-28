@@ -98,11 +98,15 @@ export {
 export { Tabs, type TabsProps } from './components/Tabs'
 
 /**
- * Page templates as data. A builder produces a `PageSpec`; a developer renders it with `PageRenderer`
- * and needs nothing else — which is what makes the handoff a file rather than a screenshot.
+ * Page templates as data. `PageSpec` describes a page at the level of whole sections — the Home page
+ * is written this way — and `PageRenderer` draws one.
+ *
+ * This is a *different* thing from the page builder in `src/builder/`, which composes individual
+ * components rather than whole sections and stores its pages in Durable Objects. Both exist on
+ * purpose: a section is the right unit for a page the design has already settled, and a component is
+ * the right unit for a page nobody has drawn yet.
  */
 export { PageRenderer } from './templates/PageRenderer'
-export { SECTION_TYPES, sectionSummary, sectionTypeFor, type SectionType } from './templates/section-catalog'
 export type {
   CardSpec,
   GlassIconName,

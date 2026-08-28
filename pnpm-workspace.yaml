@@ -24,5 +24,9 @@ trustPolicyIgnoreAfter: 131040
 
 # esbuild (a transitive build tool for Vite/Storybook) has a postinstall script that fetches its
 # platform binary — required for the build to work, so it's explicitly allowed to run.
+#
+# workerd is the Workers runtime, a wrangler dependency. Its postinstall unpacks the platform binary
+# that `wrangler dev` and `wrangler deploy` run against, so without this there is no local runtime.
 allowBuilds:
   esbuild: true
+  workerd: true

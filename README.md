@@ -26,9 +26,16 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm glass-icons` | Regenerate the illustrative set from `assets/glass-icons/` |
 | `pnpm glass-icons:check` | Fail if the generated glass icons are out of date (used by `pnpm build`) |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm build` | Check tokens, typecheck, build the library bundle |
+| `pnpm build` | Check the generated files, typecheck, build the library bundle and the page builder |
 | `pnpm build-storybook` | Static Storybook into `storybook-static/` |
 | `pnpm figma:publish` | Publish the Code Connect mappings to Figma |
+| `pnpm builder:dev` | The page builder's UI on port 5173 (needs `pnpm builder:worker` beside it) |
+| `pnpm builder:worker` | The Worker and the Durable Objects, locally, on port 8787 |
+| `pnpm builder:catalog` | Regenerate the builder's component catalogue from the components' types |
+| `pnpm builder:catalog:check` | Fail if the catalogue is out of date (used by `pnpm build`) |
+| `pnpm builder:build` | Build the builder app and the server-side renderer into `dist/` |
+| `pnpm builder:ssr` | Just the server-side renderer, for `/p/:id.html` |
+| `pnpm builder:deploy` | Build the app and deploy the Worker to Cloudflare |
 
 Pushing to `main` builds Storybook and publishes it to GitHub Pages at
 **https://makenaford.github.io/liferay-sites-design-system/** (`.github/workflows/deploy-storybook.yml`). That workflow
@@ -39,6 +46,269 @@ This repo uses **pnpm**, with supply-chain policies in `pnpm-workspace.yaml` —
 release age, strict engine checks, no exotic sub-dependencies, and a no-downgrade trust policy. If an
 install is refused because a version is too new, pin to the newest version old enough to pass rather
 than relaxing the policy.
+
+## The page builder
+
+A designer needs to try a page before anyone builds it — real components, real interactions, their own
+copy — without opening an editor and without a developer. That is what `worker/` and `src/builder/` are:
+a Cloudflare Worker serving a builder that composes **this library's components**, with each page kept
+in its own Durable Object.
+
+```bash
+pnpm builder:worker      # the Worker and the Durable Objects, on :8787
+pnpm builder:dev         # the UI with hot reloading, on :5173, proxying /api to the Worker
+```
+
+For a single process against the built app — closest to production — run `pnpm builder:build` and then
+`pnpm builder:worker`, and use :8787 alone.
+
+| Route | What it is |
+| --- | --- |
+| `/` | Start a new page, or reopen one this browser has seen |
+| `/edit/:id` | The builder |
+| `/p/:id` | The page on its own — the link a designer shares |
+| `/p/:id.html` | The same page as one self-contained file |
+| `/edit/new` | Signs you in (via Cloudflare Access) and makes a page |
+
+### What a designer can change, and what they cannot
+
+Everything in the inspector was read off a component's **TypeScript type**. `Card`'s five surfaces are
+five cells in Figma, and they reach the panel because `surface?: 'glass' | 'no-bg' | …` says so. There
+is no colour picker and no font size, because the components do not take those: a page that could set
+its own spacing would drift off the design, and then the mock stops predicting what gets built.
+
+The measurements that *are* offered — a `Grid`'s column count, a `Section`'s max width — are the ones
+the components already take as props, which is the library saying they belong to the caller.
+
+### How the catalogue stays honest
+
+`src/builder/catalog.generated.ts` is produced by `scripts/build-builder-catalog.mjs`, which reads the
+components' own types through the TypeScript compiler and keeps only the props **declared in this
+repository** — dropping the several hundred each component inherits from Mantine. Add a variant to a
+component and it appears in the builder; `pnpm build` fails if the file has drifted.
+
+Two things the types cannot answer are handled explicitly rather than guessed:
+
+- **Props the theme owns.** `Button` adds nothing to Mantine's `Button` — all four Figma appearances
+  are painted by the theme — so `filled | outline | neutral | rounded` is not in `ButtonProps`. It *is*
+  in the story's `argTypes`, for the same reason, so the generator reads the stories as a second source
+  and marks those props `source: 'story'`.
+- **Props no generic control can draw.** An array of objects, a render function. These are listed under
+  `unsupported` and shown in the inspector as "set in code only", so a designer knows the component can
+  do something the panel is not offering.
+
+### Presets, from the stories
+
+Every component in the inspector has a **Preset** field listing its Storybook stories. Choose `Rich
+panel` on an accordion and you get that accordion — two rows, the real questions, the buttons in the
+panel. Choose `Customer quote` on a card and you get the stat, the quote and the attribution, in the
+right slots.
+
+Nothing is written twice. A story is already the answer to "what does a good `Card` look like",
+checked on every commit against the Figma file, so the presets are **the stories themselves**, read at
+runtime.
+
+They are read as **rendered element trees**, not as source. Parsing the story files is the obvious
+approach and the wrong one: a story is full of `FAQ.map(…)`, `index === 2 ? … : …` and `{...args}`, so
+a static reader has to become a small JavaScript interpreter and will still lose to the next story
+someone writes. Calling `render(args)` gives back plain React elements with every `map` expanded and
+every ternary decided; what remains is a translation between two trees, which is a job with an end to
+it. It even calls the little helper components a story defines for itself — `Cover`, `GartnerProof` —
+since those are just functions of their props.
+
+**A preset is a story that renders exactly one of the component it documents.** That test, rather than
+a list of names, is what keeps the demonstration matrices out: `Sizes` draws both sizes side by side
+and `Matrix` draws twelve buttons, and neither is a thing anyone wants dropped onto a page. A story
+wrapped in a sizing `Box` still counts — the wrapper is unwrapped on the way down.
+
+A story may render scaffolding beside the component — the header stories draw a page below a *fixed*
+header so it has something to sit over — and that is still unambiguous when the story names its
+component: one match among the roots wins, two is a demonstration and is skipped.
+
+It reads `src/blocks/Blocks.stories.tsx` as well as the component stories, and those are the ones that
+matter most for a page: **`Section` gets all fifteen of Figma's block types** — `Card grid`, `Faq`,
+`Integrations`, `Tabbed content`, `Quote` — each several components deep with its copy already written.
+That file sets no `component` on its meta, because a block is a `Section` holding something else, so
+the target is inferred from whatever the story turns out to render.
+
+Three translations are worth knowing about, because each one recovered a set of stories that were
+otherwise lost. An inline `<svg>` — the logos a marquee draws by hand — becomes an `Image` whose source
+is that SVG serialised into a data URI, so it renders identically as one node instead of forty. A bare
+`<div>` is arrangement rather than design, and is unwrapped like a `Box`. And Mantine's tabs draw each
+tab twice, once as a pill and once as a panel, joined by `value`; those halves are matched back up into
+the builder's single `Tab` node, which is the same flattening `registry.tsx` performs in the other
+direction.
+
+That currently yields **119 presets across 20 components**, with 3 skipped. The reasons are in
+`unsupportedPresets` rather than hidden — a story that uses a hook, or one containing something the
+palette has no equivalent for — so the list is a to-do rather than a wart.
+
+Applying a preset keeps the node's id and position and replaces everything inside it, so the selection
+does not move and undo puts back exactly what was there. The node remembers which story filled it, so
+the control shows the choice rather than resetting to blank, and **↺** beside it re-applies the same
+preset — the gesture for "put it back" after editing the copy, which a select cannot express because
+`onChange` does not fire for a value that has not changed.
+
+### What a new page starts as
+
+Header, hero, a card grid, a carousel section, footer — the skeleton every site has, so the first edit
+is about *this* page rather than about rebuilding the same frame again.
+
+The two sections are **built from named presets** rather than from blanks, and that is the point rather
+than a shortcut. A blank section is a grid of three placeholder cards; `Card grid` and
+`Carousel section` are different kinds of band, written against the Figma file. Starting from named
+ones means a new page shows two different shapes instead of the same shape twice — and the inspector's
+preset field says which each one is, so it can be swapped for one of the other thirteen in a click. A
+name that no longer matches a story falls back to that component's blank, so renaming a story costs a
+plainer starter rather than a missing section.
+
+Nothing in it is special: they are the nodes the palette produces, and deleting the header deletes it
+for good. The first undo takes the page back to nothing, which is the right answer for someone who
+wanted a blank page after all.
+
+**The browser writes it, not the Worker.** Creating a page with its contents server-side is the tidier
+arrangement and was the first implementation — but building from presets means reading the Storybook
+stories, and importing those into the Worker took its bundle from 2.1MB to 7.4MB: **4.07MB gzipped,
+past the 3MB a Worker is allowed on the free plan.** Several megabytes of story content shipped to the
+edge to draw one starting page is the wrong trade.
+
+The signal the browser uses turns out to be exact anyway: `rev === 0` means the document has never been
+written. A page someone emptied has a revision history and is left alone. Two tabs opening the same
+brand-new page would both try, and the second gets the ordinary stale-revision answer and takes the
+first one's version — the same thing that happens for any other simultaneous edit.
+
+`Header` and `Footer` are in the palette for this. They were left out originally as site chrome rather
+than page content, which was the wrong call: a mock of a page is a mock of a page in a site. The
+header's nav is a list of objects rather than elements, so its items are held as `NavItem` nodes and
+read — not rendered — into `items`, the same way `Tabs` reads its tabs. `MegaMenu` is still out: it is
+a navigation panel several columns deep, and a component that takes twenty nodes to fill in is worse
+than no component until somebody asks for it.
+
+### Why a Durable Object per page
+
+A page being edited is a session, not a row. Every write to one page has to be ordered against every
+other write to that page and against nothing else, which is what a Durable Object is — single-threaded
+per instance, so the read-check-write of a revision needs no transaction. The same object holds the
+open WebSockets, so a second tab is told about a change by a method call rather than a message bus. And
+each object keeps its own SQLite table of past revisions, so a page has history from the first edit.
+
+A save carries the revision it was based on. If the stored page has moved on, the write is refused with
+a `409` and the current document comes back, rather than being merged — see `src/builder/usePage.ts` for
+what the builder does next, and why it prefers the edits already on the designer's screen.
+
+### The artefact
+
+Until you ask for it, a page has no HTML: `/p/:id` is an empty shell plus the JavaScript that builds
+the page in the browser. The document in the Durable Object is the truth and the DOM is derived from it.
+
+`/p/:id.html` is the other thing — one file, styles inlined, no JavaScript. It is a **document, not an
+application**: the markup and the styling are exact, but a carousel does not scroll and a tab bar does
+not swap, because that behaviour is React and there is no React in the file. Use it to send a page to
+someone, to archive a revision, or to diff two of them.
+
+It is rendered in the Worker, from the document, on request — not captured in the browser and stored.
+A stored snapshot is a second copy of the truth, and it starts drifting the moment anything else writes
+the page.
+
+The renderer is built by Vite rather than by wrangler, which is not a preference: **CSS Modules class
+names are chosen by the bundler**. Vite emits `_root_1uwax_29` and esbuild emits `components_root`, so a
+wrangler-bundled renderer produces markup whose classes are missing from the Vite-built stylesheet — a
+perfectly correct page with no styling at all. `vite.ssr.config.ts` builds it; `alias` in
+`wrangler.jsonc` points the Worker at the result.
+
+### The code panel
+
+**Code** in the toolbar opens the page's source beside it, in two views:
+
+- **React** — the source a developer pastes and maintains. Real import paths, real prop names. The
+  three components the builder flattens for a designer's sake — an accordion row, a tab, a list item —
+  are written back out as the compound API they really are, so what comes out compiles.
+- **HTML** — the output, from the same renderer the Worker uses, so it is exactly what a browser gets.
+
+Both are linked to the canvas in both directions: select a component and its lines scroll into view and
+light up; click a line and that component is selected and scrolled to. Neither is editable, and that is
+the design — the document is the truth and both views are derived from it. Typing into the HTML would
+produce markup no component can express, and the React a developer is handed would stop describing the
+page. Editing happens in the inspector, where every value on offer is one the design system has.
+
+### What the artefact caught
+
+Worth recording, because it is the argument for having it. `SectionTitle` renders `<h2>{title}</h2>`
+itself, and the builder's blank was putting a `Heading` — another `<h2>` — inside that slot. Nested
+headings, and a `<p>` inside a `<p>` for the description right below it.
+
+Both rendered fine for weeks of clicking around, because React builds the DOM directly and never
+consults the HTML parser. Serialise the same page to a file and the parser applies its own rules — a
+`<p>` is closed by the next `<p>`, a heading by the next heading — and the tree comes out a different
+shape from the one on screen. **A page can look right in the builder for exactly as long as nobody
+writes it down.** Those slots now accept inline content only.
+
+### Who can do what
+
+Two ways in, and they are not equivalent.
+
+**Cloudflare Access** authenticates editors — the email one-time-code screen, or whatever identity
+provider the team uses. It is required to create a page, change one, read its history, or mint a share
+link.
+
+**A share code** admits a reader to one page. It buys nothing on any other page and no ability to
+write to this one. The code travels in the URL exactly once, on the first open; the Worker moves it
+into an `HttpOnly` cookie and the app strips it from the address bar before the page has finished
+loading.
+
+| Route | Who |
+| --- | --- |
+| `GET /edit/new` | Access. Mints a page and redirects into it |
+| `GET /api/me` | anyone — reports whether you are signed in |
+| `GET /api/pages/:id` | Access, or the page's code |
+| `PUT`/`DELETE /api/pages/:id` | Access |
+| `GET /api/pages/:id/socket` | Access, or the code. Only Access may write over it |
+| `GET /api/pages/:id/history`, `POST …/restore`, `POST …/share` | Access |
+| `GET /p/:id.html` | Access, or the code |
+| everything else | the builder's files — the shell is not secret, the page data behind it is |
+
+The Worker verifies the Access assertion itself rather than trusting that Access was in front. It has
+to: an Access application protects a **path**, and `POST /api/pages/:id` must require a login while
+`GET /api/pages/:id` must not — Access sees one path, and cannot tell them apart. A Worker also has
+other front doors, `*.workers.dev` among them. So Access makes the login *happen* and
+`worker/access.ts` makes it *count*.
+
+**Be clear about what the cookie buys.** Taking the code out of the URL means the address bar of an
+open page is not a working invitation, so a reader who copies it and passes it on passes on nothing.
+It does not stop that reader forwarding the original link, and it never could without reader accounts.
+It is a speed bump, and **Share → Reset the link** is what actually revokes: it replaces the code, and
+every link already sent stops working.
+
+### Setting up Access
+
+Two variables in `wrangler.jsonc`, both from the Access application:
+
+```jsonc
+"vars": {
+  "ACCESS_TEAM_DOMAIN": "yourteam.cloudflareaccess.com",
+  "ACCESS_AUD": "<the application's Audience tag>"
+}
+```
+
+Neither is a secret. **With either missing, every gated route refuses** — an unconfigured deployment is
+inert rather than open.
+
+Create the application in Zero Trust → Access → Applications, as a self-hosted app on this Worker's
+hostname, and give it the path `/edit/*`. That path is what makes the login screen appear: `/edit/new`
+is the only "sign in" link the app offers, and it both authenticates and creates a page. Add a policy
+for whoever should be able to build pages — an email domain, a list of addresses, whatever suits.
+
+Locally, `.dev.vars` sets `ACCESS_DEV_OPEN=true` so `pnpm builder:worker` works without a tunnel and a
+real login. It is honoured **only for requests to localhost**, so it cannot open a deployed Worker even
+if the variable somehow reached production, and `wrangler deploy` never uploads the file. Two
+independent locks on the same door. To exercise the gates locally, run
+`pnpm builder:worker --var ACCESS_DEV_OPEN:false`.
+
+### Deploying
+
+`wrangler.jsonc` carries the bindings, the `#ssr` alias and a pinned compatibility date. `pnpm
+builder:deploy` builds the app into `dist/builder/` and the renderer into `dist/ssr/`, then deploys. Configure the Access
+application first, or the deployment will refuse every edit.
 
 ## How tokens flow
 

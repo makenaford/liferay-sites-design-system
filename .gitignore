@@ -7,6 +7,14 @@ storybook-static/
 .env.*
 !.env.example
 
+# `.dev.vars` IS committed: it holds no secret, only the localhost-scoped development switch that
+# makes `pnpm builder:worker` usable in a fresh clone. `.dev.vars.*` variants are not.
+/.dev.vars.*
+
+# wrangler's local state: the Durable Objects' SQLite files for `pnpm builder:worker`, and its build
+# cache. Local pages are meant to be throwaway; the deployed Worker has the real ones.
+/.wrangler/
+
 # Playwright
 /test-results/
 /playwright-report/

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page builder</title>
+    <!--
+      The library is drawn dark, and a published page inherits that. Painting the ground here rather
+      than waiting for the app to mount avoids the white flash a dark page otherwise opens with.
+    -->
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #06070a; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

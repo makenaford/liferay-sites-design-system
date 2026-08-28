@@ -1,0 +1,26 @@
+{
+  /*
+   * The Worker is typechecked separately from the library.
+   *
+   * It runs on workerd, not in a browser: there is no `document`, and there *is* a `DurableObject`
+   * base class and a `WebSocketPair` that the DOM lib knows nothing about. Pointing the root
+   * tsconfig at both would mean the library's components could reference Worker globals and the
+   * Worker could reference `window`, and neither mistake would be caught until it ran.
+   *
+   * The one thing they share is `src/builder/document.ts`, which is deliberately plain JSON handling
+   * so that it compiles under both.
+   */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["@cloudflare/workers-types"],
+    "baseUrl": ".",
+    /*
+     * `#ssr` is the built SSR bundle at runtime. Pointed at its source here so the Worker is
+     * typechecked against the real thing rather than against `any` from an untyped import.
+     */
+    "paths": { "#ssr": ["../src/builder/server.ts"] },
+    "noEmit": true
+  },
+  "include": ["../worker", "../src/builder", "../src/vite-env.d.ts"]
+}
