@@ -193,6 +193,13 @@ function Ruler({ nonce }: { nonce: string }) {
 interface LabProps {
   /** Which preset to draw the bubble on. The hero is the preset's own, not an approximation of one. */
   template: string
+  /**
+   * The file, or the drawing.
+   *
+   * `css` is the prototype: two lobes, a crease and a slow drift, sized off the hero rather than off a
+   * frame. Flip between them on the same page at the same size — that comparison is the point of it.
+   */
+  bubble: 'file' | 'css'
   /** Figma's `Type`, overriding whatever the preset asked for. */
   background: HeroBackground
   /** The file for the dark canvas. A webm, or a still — both render under the same geometry. */
@@ -210,16 +217,17 @@ interface LabProps {
  * hand-written approximation of a landing hero drifts from the real one, and then the thing you are
  * looking at is not the thing that ships.
  */
-function BubbleInPage({ template, background, video, videoLight, ruler }: LabProps) {
+function BubbleInPage({ template, background, bubble, video, videoLight, ruler }: LabProps) {
   const page = presetFor(template)?.create() ?? presetFor('landing')!.create()
   page.hero.background = background
 
   /* Enough to tell the ruler that what it measured is no longer what is on screen. */
-  const nonce = [template, background, String(video), String(videoLight)].join('|')
+  const nonce = [template, background, bubble, String(video), String(videoLight)].join('|')
+  const drawn = bubble === 'css'
 
   return (
     <>
-      {ruler ? (
+      {ruler && !drawn ? (
         <Box
           pos="fixed"
           bottom={16}
@@ -238,7 +246,7 @@ function BubbleInPage({ template, background, video, videoLight, ruler }: LabPro
         </Box>
       ) : null}
       <SiteHeader />
-      <PageRenderer page={page} bubble={{ video, videoLight }} />
+      <PageRenderer page={page} bubble={{ video, videoLight, css: drawn }} />
       <SiteFooter />
     </>
   )
@@ -250,6 +258,7 @@ const meta = {
   args: {
     template: 'landing',
     background: 'corner',
+    bubble: 'file',
     ruler: true,
   },
   argTypes: {
@@ -262,6 +271,12 @@ const meta = {
       options: ['none', 'full', 'corner'],
       control: 'inline-radio',
       description: "Figma's `Type`, overriding the preset's own.",
+    },
+    bubble: {
+      options: ['file', 'css'],
+      control: 'inline-radio',
+      description:
+        'The shipped webm, or the CSS prototype. The drawing has no frame, so the ruler has nothing to measure and hides itself.',
     },
     /*
      * Pickers here and nowhere else. On the Hero's own stories these two are documented rows without a
@@ -307,4 +322,14 @@ export const Corner: Story = {}
 /** The full bubble, top-aligned to its artwork rather than to its frame. */
 export const Full: Story = {
   args: { background: 'full' },
+}
+
+/** The corner bubble drawn in CSS rather than played. Compare against `Corner`. */
+export const CornerDrawn: Story = {
+  args: { background: 'corner', bubble: 'css' },
+}
+
+/** The full bubble drawn in CSS rather than played. Compare against `Full`. */
+export const FullDrawn: Story = {
+  args: { background: 'full', bubble: 'css' },
 }

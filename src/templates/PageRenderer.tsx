@@ -186,6 +186,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        * a page's business.
        */
       background={background}
+      data-bubble-css={bubble?.css || undefined}
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
@@ -751,6 +752,14 @@ function renderSection(spec: SectionSpec, index: number) {
 export interface BubbleOverride {
   video?: HeroMediaSource
   videoLight?: HeroMediaSource
+  /**
+   * Draw the bubble in CSS instead of playing a file — the prototype the lab exists to judge.
+   *
+   * A data attribute rather than a prop, because that is the honest status of it: the stylesheet
+   * knows how to draw a bubble, nothing in the component's API says so yet, and if the drawing wins
+   * that is the moment to give it a name.
+   */
+  css?: boolean
 }
 
 export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {
