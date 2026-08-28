@@ -14,6 +14,8 @@ import { IconArrowRight, IconArrowUp, IconCheck } from '../../icons'
  */
 import bubbleFull from '../../../assets/bubbles/bubble_center.webm'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
+import bubbleFullLight from '../../../assets/bubbles/bubble_center_light.webm'
+import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.mp4'
 
 /** Stands in for the hero shot: the stories have to render offline. */
 function Shot() {
@@ -102,7 +104,7 @@ const meta = {
           '',
           "The background is **a gradient in CSS with the webm on top**. The gradient needs no network, survives a blocked file, and is what shows under `prefers-reduced-motion` — where the video is not rendered at all, so it is never fetched. An autoplaying 2MB loop is exactly what that preference is for.",
           '',
-          'The video is not bundled: pass its URL. These stories import it from `assets/bubbles/`, which is where the two files live.',
+          'The video is not bundled: pass its URL. These stories import them from `assets/bubbles/`, which holds four files — a dark and a light export of each bubble. `video` is the dark canvas, `videoLight` the light one.',
         ].join('\n'),
       },
     },
@@ -114,17 +116,17 @@ type Story = StoryObj<typeof meta>
 
 /** Every prop wired to a control. The bubble plays behind the content. */
 export const Playground: Story = {
-  args: { video: bubbleCorner, media: <Shot /> },
+  args: { video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
 }
 
 /** **Corner Bubble** with an image — Figma's `Type=Corner Bubble, Image=Yes`. */
 export const CornerBubble: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
 }
 
 /** **Full Bubble** — the animation fills the hero, centred and slightly high, behind the content. */
 export const FullBubble: Story = {
-  args: { background: 'full', video: bubbleFull, media: <Shot /> },
+  args: { background: 'full', video: bubbleFull, videoLight: bubbleFullLight, media: <Shot /> },
 }
 
 /** **Default** — no bubble at all, just the page surface. */
@@ -132,11 +134,51 @@ export const Default: Story = {
   args: { background: 'none', media: <Shot /> },
 }
 
+/**
+ * **A moving poster.** `videoPoster` takes a video as readily as an image.
+ *
+ * HTML's own `poster` attribute takes an image and nothing else, so a motion poster is rendered as a
+ * second video behind the animation and swapped out when the animation can play. Both keep running
+ * while they wait — a paused stand-in shows as a frozen frame the moment it is revealed.
+ *
+ * It earns its keep where the animation is the heavy file and the poster is a light loop of the same
+ * artwork: the hero moves from the first frame rather than sitting still until the download lands. Here
+ * the corner bubble stands in for the centre one, which is the pairing you can see happen.
+ */
+export const MotionPoster: Story = {
+  args: {
+    background: 'full',
+    video: bubbleFull,
+    videoPoster: bubbleCorner,
+    videoLight: bubbleFullLight,
+    videoLightPoster: bubbleCornerLight,
+    media: <Shot />,
+  },
+}
+
+/**
+ * **A poster that is all there is.** The animation's URL is broken, so the poster stays up.
+ *
+ * The animation is the enhancement and the poster is the page: a file that 404s leaves the stand-in
+ * running rather than a hole where the hero was.
+ */
+export const PosterWhenTheVideoFails: Story = {
+  args: {
+    background: 'full',
+    video: '/does-not-exist.webm',
+    videoPoster: bubbleCorner,
+    videoLight: '/does-not-exist.webm',
+    videoLightPoster: bubbleCornerLight,
+    media: <Shot />,
+  },
+}
+
 /** Centre aligned, with no media: Figma's `Alignnemt=Center, Image=No`. */
 export const Centered: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
+    videoLight: bubbleFullLight,
     align: 'center',
     media: undefined,
     description:
@@ -152,6 +194,7 @@ export const Form: Story = {
   args: {
     background: 'corner',
     video: bubbleCorner,
+    videoLight: bubbleCornerLight,
     actions: undefined,
     media: <Shot />,
     title: <h1>See it on your own content</h1>,
@@ -201,6 +244,7 @@ export const WithStats: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
+    videoLight: bubbleFullLight,
     media: undefined,
     align: 'center',
     children: (
@@ -225,7 +269,7 @@ export const GradientOnly: Story = {
 
 /** Stacked, as it renders below 1200px: the media drops under the content. */
 export const Stacked: Story = {
-  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 }
 

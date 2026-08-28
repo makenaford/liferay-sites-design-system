@@ -10,6 +10,10 @@ import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
+import bubbleFull from '../../assets/bubbles/bubble_center.webm'
+import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
+import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
+import bubbleCornerLight from '../../assets/bubbles/bubble_corner_light.mp4'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
@@ -172,9 +176,17 @@ function HeroMedia({ media }: { media: ImageRef }) {
 }
 
 function renderHero(hero: HeroSpec) {
+  const background = hero.background ?? 'corner'
+
   return (
     <Hero
-      background={hero.background ?? 'corner'}
+      /*
+       * The bubble that goes with the background, in the scheme's own export. A page says which shape
+       * it wants; which file that is, and whether the canvas is light or dark, is not a page's business.
+       */
+      background={background}
+      video={background === 'full' ? bubbleFull : bubbleCorner}
+      videoLight={background === 'full' ? bubbleFullLight : bubbleCornerLight}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       title={
         <h1>

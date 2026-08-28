@@ -1,8 +1,16 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Box, useComputedColorScheme } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import { useReducedMotion } from '@mantine/hooks'
 import classes from '../../theme/components.module.css'
+
+/**
+ * Whether a poster points at something that moves.
+ *
+ * By extension, the same rule `page-schema.ts` uses for its media refs — inferred rather than declared,
+ * so swapping a still for a motion version stays a one-field change.
+ */
+const isMotion = (src?: string) => Boolean(src) && /\.(webm|mp4)(\?|#|$)/i.test(src!)
 
 export type HeroBackground = 'none' | 'full' | 'corner'
 export type HeroAlign = 'left' | 'center'
@@ -25,8 +33,25 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * JavaScript. Import it with your bundler or serve it from your public directory, and pass the URL.
    */
   video?: string
-  /** A still for the video's first frame, shown while it loads. */
+  /**
+   * What stands in for the animation until it can play — and if it never can.
+   *
+   * An image *or* a video. HTML's own `poster` attribute takes an image only, so a moving poster is
+   * rendered as a second video behind the first and swapped out on `canplay`; a still goes on the
+   * attribute as before. Which one you passed is inferred from the extension.
+   */
   videoPoster?: string
+  /**
+   * The light scheme's animation.
+   *
+   * A second file rather than one that works in both: the dark bubble is a bright sphere on near-black
+   * and is composited with `screen`, which drops the ground and keeps the light. Over a light page that
+   * paints a dark blob with a visible frame edge, so light mode had no video at all until there was an
+   * asset drawn for it. Without this, light mode still falls back to the gradient.
+   */
+  videoLight?: string
+  /** The same for `videoLight`, and it may move too. */
+  videoLightPoster?: string
   /**
    * `center` centres the column and its text.
    *
@@ -115,15 +140,19 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * The video is decorative: `aria-hidden`, muted, `playsinline`, and outside the tab order. Nothing in it
  * carries meaning, so there is nothing to caption.
  *
- * It also only plays on the **dark** canvas. The two files that ship are dark-canvas assets — Figma
- * names the component `Dark Bubble Animation` — and on a light page they read as a dark blob rather than
- * a light source. Light mode gets the gradient. A light-theme export would close that gap; see
- * README.md.
+ * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
+ * Animation` — a bright sphere on near-black, composited with `screen`. `videoLight` is its inverse, a
+ * coloured bubble on white, composited with `multiply`. Neither substitutes for the other: the dark
+ * asset over a light page reads as a dark blob rather than a light source, which is why light mode had
+ * only the gradient until there was an export drawn for it. A scheme with no file still gets the
+ * gradient, which is built from the same tokens.
  */
 export function Hero({
   background = 'none',
   video,
   videoPoster,
+  videoLight,
+  videoLightPoster,
   align = 'left',
   banner,
   label,
@@ -140,14 +169,35 @@ export function Hero({
   const reducedMotion = useReducedMotion()
   const scheme = useComputedColorScheme('dark')
   /**
-   * Three conditions, each for its own reason. There has to be a file. The background has to be a
-   * bubble. Nobody has asked for less motion. And the canvas has to be the dark one: Figma calls the
-   * component `Dark Bubble Animation`, and it is — a bright sphere on a near-black ground, which over a
-   * light page paints a dark blob with a visible frame edge instead of a light source. Light mode gets
-   * the gradient, which is built from the same tokens and reads correctly there.
+   * Each scheme has its own file, and neither is a fallback for the other.
+   *
+   * Figma calls the dark one `Dark Bubble Animation` and it is exactly that — a bright sphere on a
+   * near-black ground, composited with `screen`. Over a light page that paints a dark blob with a
+   * visible frame edge, which is why light mode had no video for so long. It has its own asset now, and
+   * a scheme with no file still falls back to the gradient, which is built from the same tokens.
    */
-  const showVideo =
-    Boolean(video) && background !== 'none' && !reducedMotion && scheme === 'dark'
+  const source = scheme === 'dark' ? video : videoLight
+  const poster = scheme === 'dark' ? videoPoster : videoLightPoster
+  const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
+
+  /*
+   * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
+   * So it becomes a second video *behind* the first, and the first is transparent until it can play.
+   *
+   * `ready` is what swaps them and `failed` is what stops the swap ever happening: the animation is the
+   * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
+   * hole. Both reset when the source changes, which is what a scheme flip does.
+   */
+  const motionPoster = isMotion(poster)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setReady(false)
+    setFailed(false)
+  }, [source])
+
+  const showPoster = motionPoster && (!ready || failed)
 
   return (
     <Box
@@ -161,17 +211,44 @@ export function Hero({
     >
       {background === 'none' ? null : (
         <div className={classes.heroBubble} aria-hidden>
-          {showVideo ? (
+          {showVideo && motionPoster ? (
             <video
               className={classes.heroVideo}
-              src={video}
-              poster={videoPoster}
+              data-scheme={scheme}
+              src={poster}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
               tabIndex={-1}
+              /*
+               * Faded rather than `hidden`: a `display: none` video is not reliably allowed to autoplay,
+               * and this one has to be running before it is seen or the swap shows a frozen frame.
+               */
+              data-idle={!showPoster || undefined}
+              key={`poster-${poster}`}
+            />
+          ) : null}
+
+          {showVideo && !failed ? (
+            <video
+              className={classes.heroVideo}
+              /* The two are composited differently; the stylesheet keys off this. */
+              data-scheme={scheme}
+              src={source}
+              poster={motionPoster ? undefined : poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+              data-idle={showPoster || undefined}
+              onCanPlay={() => setReady(true)}
+              onError={() => setFailed(true)}
+              /* Remount on a scheme change: a `src` swap alone leaves the old frames on screen. */
+              key={source}
             />
           ) : null}
         </div>

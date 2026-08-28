@@ -3530,19 +3530,32 @@
    */
   mix-blend-mode: screen;
   /*
-   * Two mask layers, intersected. The radial one softens the frame's corners; the linear one dissolves
-   * the bottom, where the asset's own gradient ends in a faceted edge that `screen` would otherwise
-   * reveal as a shape. Neither is decoration for its own sake — they hide that the light source is a
-   * rectangle.
+   * One mask layer, radial, which softens the frame's corners so the light source is not a rectangle.
+   *
+   * There used to be a second, a linear fade dissolving the bottom of the frame. It took the bottom of
+   * the animation with it — the part of the bubble that reaches furthest down the hero — for a frame
+   * edge that the radial already handles. The bottom is shown in full.
    */
-  -webkit-mask-image:
-    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
-    linear-gradient(to bottom, #000 42%, transparent 88%);
-  mask-image:
-    radial-gradient(115% 115% at 50% 34%, #000 22%, transparent 88%),
-    linear-gradient(to bottom, #000 42%, transparent 88%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+  -webkit-mask-image: radial-gradient(115% 115% at 50% 34%, #000 40%, transparent 96%);
+  mask-image: radial-gradient(115% 115% at 50% 34%, #000 40%, transparent 96%);
+}
+
+/*
+ * The light asset is the inverse of the dark one: a coloured bubble on a *white* ground. `screen` keeps
+ * white, so it washed the hero out and left a bright rectangle where the frame ends; `multiply` is what
+ * drops a white ground and keeps the colour. The masks above still apply, and still earn their keep.
+ */
+/*
+ * The layer that is not the one being shown. Both keep playing — a video that is `display: none` is not
+ * reliably allowed to autoplay, and the poster has to already be running when the swap happens or it
+ * appears as a frozen frame.
+ */
+.heroVideo[data-idle] {
+  opacity: 0;
+}
+
+.heroVideo[data-scheme='light'] {
+  mix-blend-mode: multiply;
 }
 
 .hero[data-background='corner'] .heroVideo {
@@ -3551,12 +3564,8 @@
   height: 100%;
   object-position: top right;
   /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
-  -webkit-mask-image:
-    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
-    linear-gradient(to bottom, #000 52%, transparent 94%);
-  mask-image:
-    radial-gradient(100% 100% at 88% 6%, #000 46%, transparent 92%),
-    linear-gradient(to bottom, #000 52%, transparent 94%);
+  -webkit-mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
+  mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
 }
 
 /* ------------------------------------------------------------------------------- the layout */

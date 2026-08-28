@@ -150,7 +150,7 @@ const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', '
 
 export const HOME_PAGE: PageSpec = {
   hero: {
-    background: 'corner',
+    background: 'full',
     banner: {
       kind: 'solutionFinder',
       label: 'Explore customized solutions',
