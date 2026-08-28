@@ -1133,11 +1133,18 @@
     opacity: 1;
   }
 
-  /* Padded: the card leads — it rises, and the glow under it warms from the glass shadow to brand blue. */
+  /*
+   * Padded: the card leads — it rises, and the glow under it warms from the glass shadow to brand blue.
+   *
+   * Tight and faint, at 24px and a third. It was 32 at 55%, which put a wide blue haze well past the
+   * card's own footprint — closer to the card being backlit than to it having lifted, and on a grid it
+   * bled into the neighbours. A cast shadow belongs to the gap the lift opened, so its radius stays
+   * near the 2px the card actually moved.
+   */
   .cardRoot[data-align][data-padding='all'][data-interactive]:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px -12px
-      color-mix(in srgb, var(--sds-action-primary-hover) 55%, transparent);
+    box-shadow: 0 10px 24px -12px
+      color-mix(in srgb, var(--sds-action-primary-hover) 34%, transparent);
   }
 
   /*
