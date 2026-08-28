@@ -28,6 +28,8 @@ export interface NavLink {
   standin?: boolean
   /** The sheet marks the destination as not yet published. */
   unpublished?: boolean
+  /** Leaves the site — takes the icon that says so, and opens in a new tab. */
+  external?: boolean
 }
 
 export interface NavColumn {
@@ -206,15 +208,15 @@ export const SITE_NAV: NavMenu[] = [
     label: 'Partners',
     columns: [
       {
-        heading: 'Find a Partner',
+        /*
+         * One column, not two of one row each. Find a Partner and Partner Portal were a heading apiece
+         * over a single link — a column that is all label and no list, twice — so they share the one
+         * they were always describing.
+         */
+        heading: 'Resources',
         links: [
           { title: 'Partner Directory', href: 'https://www.liferay.com/partners/directory', description: 'Find a certified Liferay partner.', icon: 'IconContacts3' },
-        ],
-      },
-      {
-        heading: 'Partner Portal',
-        links: [
-          { title: 'Partner Portal (Login)', href: 'https://partner.liferay.com/', description: 'Partner resources and support in one place.', icon: 'IconUser4' },
+          { title: 'Partner Portal', href: 'https://partner.liferay.com/', description: 'Partner resources and support in one place.', icon: 'IconUser4', external: true },
         ],
       },
       {
