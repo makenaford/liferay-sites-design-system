@@ -1,8 +1,16 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Box, useComputedColorScheme } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import { useReducedMotion } from '@mantine/hooks'
 import classes from '../../theme/components.module.css'
+
+/**
+ * Whether a poster points at something that moves.
+ *
+ * By extension, the same rule `page-schema.ts` uses for its media refs — inferred rather than declared,
+ * so swapping a still for a motion version stays a one-field change.
+ */
+const isMotion = (src?: string) => Boolean(src) && /\.(webm|mp4)(\?|#|$)/i.test(src!)
 
 export type HeroBackground = 'none' | 'full' | 'corner'
 export type HeroAlign = 'left' | 'center'
@@ -25,7 +33,13 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * JavaScript. Import it with your bundler or serve it from your public directory, and pass the URL.
    */
   video?: string
-  /** A still for the video's first frame, shown while it loads. */
+  /**
+   * What stands in for the animation until it can play — and if it never can.
+   *
+   * An image *or* a video. HTML's own `poster` attribute takes an image only, so a moving poster is
+   * rendered as a second video behind the first and swapped out on `canplay`; a still goes on the
+   * attribute as before. Which one you passed is inferred from the extension.
+   */
   videoPoster?: string
   /**
    * The light scheme's animation.
@@ -36,7 +50,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * asset drawn for it. Without this, light mode still falls back to the gradient.
    */
   videoLight?: string
-  /** A still for `videoLight`'s first frame. */
+  /** The same for `videoLight`, and it may move too. */
   videoLightPoster?: string
   /**
    * `center` centres the column and its text.
@@ -166,6 +180,25 @@ export function Hero({
   const poster = scheme === 'dark' ? videoPoster : videoLightPoster
   const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
 
+  /*
+   * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
+   * So it becomes a second video *behind* the first, and the first is transparent until it can play.
+   *
+   * `ready` is what swaps them and `failed` is what stops the swap ever happening: the animation is the
+   * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
+   * hole. Both reset when the source changes, which is what a scheme flip does.
+   */
+  const motionPoster = isMotion(poster)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setReady(false)
+    setFailed(false)
+  }, [source])
+
+  const showPoster = motionPoster && (!ready || failed)
+
   return (
     <Box
       component="section"
@@ -178,19 +211,42 @@ export function Hero({
     >
       {background === 'none' ? null : (
         <div className={classes.heroBubble} aria-hidden>
-          {showVideo ? (
+          {showVideo && motionPoster ? (
             <video
               className={classes.heroVideo}
-              /* The two are composited differently; the stylesheet keys off this. */
               data-scheme={scheme}
-              src={source}
-              poster={poster}
+              src={poster}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
               tabIndex={-1}
+              /*
+               * Faded rather than `hidden`: a `display: none` video is not reliably allowed to autoplay,
+               * and this one has to be running before it is seen or the swap shows a frozen frame.
+               */
+              data-idle={!showPoster || undefined}
+              key={`poster-${poster}`}
+            />
+          ) : null}
+
+          {showVideo && !failed ? (
+            <video
+              className={classes.heroVideo}
+              /* The two are composited differently; the stylesheet keys off this. */
+              data-scheme={scheme}
+              src={source}
+              poster={motionPoster ? undefined : poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+              data-idle={showPoster || undefined}
+              onCanPlay={() => setReady(true)}
+              onError={() => setFailed(true)}
               /* Remount on a scheme change: a `src` swap alone leaves the old frames on screen. */
               key={source}
             />

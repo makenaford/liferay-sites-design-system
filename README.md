@@ -787,6 +787,15 @@ The light ground samples a true 255,255,255 at every edge, where the dark asset'
 so the edge masks that hide the dark frame are not strictly needed here. They are kept anyway, because
 they are the shape of the treatment in both schemes and not only a patch.
 
+**The poster may move.** `videoPoster` and `videoLightPoster` take a video as readily as an image, which
+matters where the animation is the heavy file and the poster is a light loop of the same artwork: the
+hero moves from the first frame rather than sitting still until the download lands. HTML's own `poster`
+attribute takes an image and nothing else, so a motion poster is rendered as a second video behind the
+animation and swapped on `canplay`. Both keep playing while they wait — a paused stand-in shows as a
+frozen frame the moment it is revealed — and a `display: none` video is not reliably allowed to autoplay,
+so the one not being shown is faded rather than hidden. If the animation 404s the poster simply stays:
+the animation is the enhancement, the poster is the page.
+
 ## Header and MegaMenu
 
 From the desktop navigation prototype (`liferay-nav-desktop_12.html`) rather than a Figma component

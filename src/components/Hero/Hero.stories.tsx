@@ -134,6 +134,45 @@ export const Default: Story = {
   args: { background: 'none', media: <Shot /> },
 }
 
+/**
+ * **A moving poster.** `videoPoster` takes a video as readily as an image.
+ *
+ * HTML's own `poster` attribute takes an image and nothing else, so a motion poster is rendered as a
+ * second video behind the animation and swapped out when the animation can play. Both keep running
+ * while they wait — a paused stand-in shows as a frozen frame the moment it is revealed.
+ *
+ * It earns its keep where the animation is the heavy file and the poster is a light loop of the same
+ * artwork: the hero moves from the first frame rather than sitting still until the download lands. Here
+ * the corner bubble stands in for the centre one, which is the pairing you can see happen.
+ */
+export const MotionPoster: Story = {
+  args: {
+    background: 'full',
+    video: bubbleFull,
+    videoPoster: bubbleCorner,
+    videoLight: bubbleFullLight,
+    videoLightPoster: bubbleCornerLight,
+    media: <Shot />,
+  },
+}
+
+/**
+ * **A poster that is all there is.** The animation's URL is broken, so the poster stays up.
+ *
+ * The animation is the enhancement and the poster is the page: a file that 404s leaves the stand-in
+ * running rather than a hole where the hero was.
+ */
+export const PosterWhenTheVideoFails: Story = {
+  args: {
+    background: 'full',
+    video: '/does-not-exist.webm',
+    videoPoster: bubbleCorner,
+    videoLight: '/does-not-exist.webm',
+    videoLightPoster: bubbleCornerLight,
+    media: <Shot />,
+  },
+}
+
 /** Centre aligned, with no media: Figma's `Alignnemt=Center, Image=No`. */
 export const Centered: Story = {
   args: {

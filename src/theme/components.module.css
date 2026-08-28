@@ -3545,6 +3545,15 @@
  * white, so it washed the hero out and left a bright rectangle where the frame ends; `multiply` is what
  * drops a white ground and keeps the colour. The masks above still apply, and still earn their keep.
  */
+/*
+ * The layer that is not the one being shown. Both keep playing — a video that is `display: none` is not
+ * reliably allowed to autoplay, and the poster has to already be running when the swap happens or it
+ * appears as a frozen frame.
+ */
+.heroVideo[data-idle] {
+  opacity: 0;
+}
+
 .heroVideo[data-scheme='light'] {
   mix-blend-mode: multiply;
 }
