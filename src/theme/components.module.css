@@ -3566,6 +3566,39 @@
   background-image: none;
 }
 
+/*
+ * The ground comes off with a blend, not with a fade.
+ *
+ * Each file carries its own ground — the dark export a black one, the light export a white one — and
+ * both are **pure**: sampled at any corner they are exactly `#000` and exactly `#fff`. A pure ground is
+ * what `screen` and `multiply` remove completely, which is why the blends are back after having been
+ * taken out once. What defeated them before was not the ground, it was the *frame*: `screen` over a
+ * rectangle of near-black leaves a rectangle, and the masks existed to fade that rectangle's edges —
+ * dimming the artwork in order to hide the file.
+ *
+ * The frame is no longer a problem. The geometry above is measured to the artwork and anchors its cuts
+ * past the hero's edges, so the ground can be dropped outright, and with the ground gone there is
+ * nothing left for a fade to hide. The artwork plays at full strength, which is what it was drawn at.
+ *
+ * **On the layer, not on the video.** `.heroBubble` is `z-index: -1`, which makes it a stacking context;
+ * a blend on the video inside it therefore composites against that empty layer and does nothing at all.
+ * On the layer itself the backdrop is the hero's own `background-color` — a negative-z-index child
+ * paints after its parent's background and before its content — which is exactly the surface the ground
+ * has to disappear into. `.hero` is `isolation: isolate`, so the blend stops there and never reaches
+ * the page behind it.
+ *
+ * Scoped away from the drawn bubble, whose lobes carry their own colour and their own `plus-lighter`.
+ */
+.hero[data-video]:not([data-bubble-css]) .heroBubble {
+  mix-blend-mode: screen;
+}
+
+:where([data-mantine-color-scheme='light'])
+  .hero[data-video]:not([data-bubble-css])
+  .heroBubble {
+  mix-blend-mode: multiply;
+}
+
 .heroBubble {
   position: absolute;
   inset: 0;
@@ -3640,21 +3673,24 @@
   height: 180%;
   object-fit: fill;
   /*
-   * Two fades, intersected: one down the box and one across it, so no side of the rectangle survives as
-   * a straight edge. The bottom half of the vertical fade is the long one — that is the part hanging
-   * below the hero, and it has to arrive at nothing before it meets whatever follows.
+   * A fade for the overhang, and for nothing else.
    *
-   * This was a radial at 115%, which is why the edges showed at all: sized larger than the box, its
-   * transparent end fell outside it and never reached them. Percentages, so they hold at any size.
+   * It used to be two fades intersected — one down the box, one across it — starting a third of the way
+   * into the artwork, because their job was to hide the file's frame. That is what dimmed the bubble:
+   * every edge of the rectangle had to reach nothing, so the drawing inside it never played at full
+   * strength anywhere.
+   *
+   * The frame is gone as a problem twice over now. The geometry is measured to the artwork, and the
+   * blend on the layer drops each file's ground into the hero's surface. So there are no side fades at
+   * all, and nothing vertical inside the hero: the artwork plays as drawn everywhere it is seen.
+   *
+   * What is left is the overhang. Below the hero's foot there is no surface to blend into, so the ground
+   * comes back — as a white band across the next section on the light canvas. Hence a fade that starts
+   * at the foot and is at nothing by the artwork's own bottom edge. Every stop is that arithmetic: the
+   * hero's height as a fraction of the video box, then the artwork's bottom as another.
    */
-  -webkit-mask-image:
-    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  mask-image:
-    linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%);
 }
 
 /*
@@ -3679,12 +3715,9 @@
 .hero[data-background='full'] .heroVideo {
   top: -26.35%;
   height: 160.7%;
-  -webkit-mask-image:
-    linear-gradient(to bottom, #000 0%, #000 62%, transparent 78.6%),
-    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  mask-image:
-    linear-gradient(to bottom, #000 0%, #000 62%, transparent 78.6%),
-    linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  /* The hero's foot is 100/160.7 = 62% down this box; the artwork's own bottom is at 78.6%. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 79%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 79%);
 }
 
 /*
@@ -3726,26 +3759,13 @@
   height: auto;
   aspect-ratio: 1200 / 866;
   object-fit: contain;
-  -webkit-mask-image:
-    linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 30%,
-      rgba(0, 0, 0, 0.78) 45%,
-      rgba(0, 0, 0, 0.34) 60%,
-      transparent 71.9%
-    ),
-    linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
-  mask-image:
-    linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 30%,
-      rgba(0, 0, 0, 0.78) 45%,
-      rgba(0, 0, 0, 0.34) 60%,
-      transparent 71.9%
-    ),
-    linear-gradient(to right, transparent 0%, #000 22%, #000 100%);
+  /*
+   * The foot lands near 58% of this box on a desktop hero and the artwork is **cut** at 71.9%, so the
+   * fade has that much room and not a stop more: it has to be at nothing by the cut, or the cut is a
+   * bright line across the section below.
+   */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
 }
 
 /* ---------------------------------------------------------------------- the bubble, drawn

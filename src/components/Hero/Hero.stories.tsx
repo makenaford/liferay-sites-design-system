@@ -97,7 +97,7 @@ const meta = {
     video: {
       control: { type: 'file', accept: 'video/*' },
       description:
-        'The bubble animation for the dark canvas, drawn as it is — no blend, so what you upload is what shows. The light canvas takes `videoLight`.',
+        'The bubble animation for the dark canvas. Its black ground is blended away with `screen`, so upload something drawn on black — the light canvas takes `videoLight`, whose white ground comes off with `multiply`.',
     },
     /*
      * Documented, not driveable. `videoLight` is fixed by the story to the export drawn for the light
@@ -134,7 +134,7 @@ const meta = {
           '',
           'The video is not bundled: pass its URL, **or a file**. Both `video` and `videoPoster` take a `File` as readily as a string, so a builder can hand over what someone just picked from disk without hosting it first — the hero makes the object URL and revokes it when the file changes. The controls below are file pickers for exactly that; drop a webm on `video` and watch the background change.',
           '',
-          '**One file, no blend.** The animation used to be composited with `screen`, and a second light-canvas export with `multiply`, because a blend was what dropped each ground. That is also what made the frame so hard to hide — `screen` over impure blacks leaves a rectangle no gradient-shaped mask can fully answer. Drawn plainly, the mask is ordinary alpha, and alpha fades to nothing.',
+          '**A file per canvas, each blended.** `screen` drops the dark export’s black ground, `multiply` the light export’s white one, against the hero’s own surface — both grounds are pure, which is what makes the blends exact. The fades that used to hide the files’ frames are gone with them: the artwork now plays at full strength everywhere it is seen, and one fade is left for what hangs below the hero’s foot.',
         ].join('\n'),
       },
     },

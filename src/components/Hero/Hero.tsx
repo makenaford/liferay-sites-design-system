@@ -196,10 +196,10 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  *
  * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
  * Animation` — a bright sphere on near-black; `videoLight` is its inverse, a coloured bubble on white.
- * Both are painted plainly, with no blend, so each carries its own ground and neither substitutes for
- * the other: the dark export over a light page is a black rectangle across the hero with the headline
- * inside it. The hero picks by the computed colour scheme and remounts on a flip. A scheme with no file
- * gets the gradient, which is built from the same tokens.
+ * Each has its ground blended away against the hero's surface, `screen` for one and `multiply` for the
+ * other, which is exactly why neither substitutes for the other. The hero picks by the computed colour
+ * scheme and remounts on a flip. A scheme with no file gets the gradient, which is built from the same
+ * tokens.
  */
 export function Hero({
   background = 'none',
@@ -222,16 +222,13 @@ export function Hero({
   const reducedMotion = useReducedMotion()
   const scheme = useComputedColorScheme('dark')
   /*
-   * One file per canvas, each drawn as it is.
+   * One file per canvas, and the stylesheet blends each one's ground away — `screen` for the black
+   * ground of the dark export, `multiply` for the white ground of the light one. Both grounds are pure,
+   * which is what makes those blends exact.
    *
-   * No blend: they used to be composited with `screen` and `multiply`, which is what dropped each
-   * one's ground, and which is also what made their frames so hard to hide — over blacks that are not
-   * pure, `screen` leaves a rectangle, and a mask shaped like a gradient cannot fully answer a blend.
-   * Painted plainly the mask is ordinary alpha, and alpha fades to nothing; the cost is that the file
-   * now carries its ground, so the dark export cannot go on a light page or the other way round.
-   *
-   * Hence the pick below rather than a blend. `videoLight` missing is not a failure — the light canvas
-   * falls back to the gradient, which is built from the same tokens.
+   * So the pick below is not interchangeable: the blend that drops black is not the blend that drops
+   * white, and each file has to meet the canvas it was drawn for. `videoLight` missing is not a failure
+   * — the light canvas falls back to the gradient, which is built from the same tokens.
    */
   const dark = scheme === 'dark'
   const canvas = dark ? video : videoLight
