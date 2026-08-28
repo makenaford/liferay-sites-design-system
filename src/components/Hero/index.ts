@@ -1,1 +1,7 @@
-export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './Hero'
+export {
+  Hero,
+  type HeroProps,
+  type HeroBackground,
+  type HeroAlign,
+  type HeroMediaSource,
+} from './Hero'
