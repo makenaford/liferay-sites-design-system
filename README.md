@@ -495,7 +495,9 @@ layout rather than from a style:
   rest, which reads as a border appearing from nowhere rather than as the image lighting up.
 - **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the ring warms
   to the brand gradient, and a glow appears beneath it. An image inside the padding scales too, at 1.03,
-  because the card is what leads.
+  because the card is what leads. The glow is deliberately tight and faint — 24px at a third — because a
+  cast shadow belongs to the gap the lift opened, and the card only moved 2px. It was 32px at 55%, which
+  read as the card being backlit rather than lifted and bled into its neighbours on a grid.
 
 Press settles the movement back towards rest rather than pushing further.
 
