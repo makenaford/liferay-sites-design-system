@@ -6,7 +6,7 @@ import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
-import { Hero } from '../components/Hero'
+import { Hero, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
@@ -175,7 +175,7 @@ function HeroMedia({ media }: { media: ImageRef }) {
   )
 }
 
-function renderHero(hero: HeroSpec) {
+function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
 
   return (
@@ -186,8 +186,8 @@ function renderHero(hero: HeroSpec) {
        * a page's business.
        */
       background={background}
-      video={background === 'full' ? bubbleFull : bubbleCorner}
-      videoLight={background === 'full' ? bubbleFullLight : bubbleCornerLight}
+      video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
+      videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       title={
         <h1>
@@ -739,10 +739,24 @@ function renderSection(spec: SectionSpec, index: number) {
   }
 }
 
-export function PageRenderer({ page }: { page: PageSpec }) {
+/**
+ * The bubble a page draws, when something outside the page is choosing it.
+ *
+ * A page normally does not choose — `renderHero` pairs a file with the shape the data asked for, and
+ * which file that is is not a page's business. The one caller that *is* allowed to say is a tool for
+ * looking at bubbles, where the whole point is putting a file that is not in `assets/` on a real page.
+ * So this is an override rather than a field on `PageSpec`: it does not round-trip, it does not belong
+ * to the mockup, and nothing serialised can set it.
+ */
+export interface BubbleOverride {
+  video?: HeroMediaSource
+  videoLight?: HeroMediaSource
+}
+
+export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {
   return (
     <>
-      {renderHero(page.hero)}
+      {renderHero(page.hero, bubble)}
       {page.sections.map(renderSection)}
     </>
   )
