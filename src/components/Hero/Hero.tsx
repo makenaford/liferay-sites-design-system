@@ -78,6 +78,11 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * The bubble animation. `assets/bubbles/bubble_center.webm` goes with `background="full"` and
    * `bubble_corner.webm` with `background="corner"`.
    *
+   * **A still works here too.** Pass a `.png`/`.jpg`/`.webp` — or a `File` that is one — and the bubble
+   * renders as an `img` under the same geometry and masks, since those are shape and not motion. Which
+   * one you passed is inferred, so a still and an animation are interchangeable in this slot. A still is
+   * also the one bubble `prefers-reduced-motion` does not suppress: there is nothing moving to suppress.
+   *
    * Deliberately not bundled: it is 2MB, and a component library should not put that inside anyone's
    * JavaScript. Import it with your bundler or serve it from your public directory, and pass the URL.
    */
@@ -191,10 +196,10 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  *
  * **Each canvas has its own file.** `video` is the dark one — Figma names the component `Dark Bubble
  * Animation` — a bright sphere on near-black; `videoLight` is its inverse, a coloured bubble on white.
- * Both are painted plainly, with no blend, so each carries its own ground and neither substitutes for
- * the other: the dark export over a light page is a black rectangle across the hero with the headline
- * inside it. The hero picks by the computed colour scheme and remounts on a flip. A scheme with no file
- * gets the gradient, which is built from the same tokens.
+ * Each has its ground blended away against the hero's surface, `screen` for one and `multiply` for the
+ * other, which is exactly why neither substitutes for the other. The hero picks by the computed colour
+ * scheme and remounts on a flip. A scheme with no file gets the gradient, which is built from the same
+ * tokens.
  */
 export function Hero({
   background = 'none',
@@ -217,21 +222,32 @@ export function Hero({
   const reducedMotion = useReducedMotion()
   const scheme = useComputedColorScheme('dark')
   /*
-   * One file per canvas, each drawn as it is.
+   * One file per canvas, and the stylesheet blends each one's ground away — `screen` for the black
+   * ground of the dark export, `multiply` for the white ground of the light one. Both grounds are pure,
+   * which is what makes those blends exact.
    *
-   * No blend: they used to be composited with `screen` and `multiply`, which is what dropped each
-   * one's ground, and which is also what made their frames so hard to hide — over blacks that are not
-   * pure, `screen` leaves a rectangle, and a mask shaped like a gradient cannot fully answer a blend.
-   * Painted plainly the mask is ordinary alpha, and alpha fades to nothing; the cost is that the file
-   * now carries its ground, so the dark export cannot go on a light page or the other way round.
-   *
-   * Hence the pick below rather than a blend. `videoLight` missing is not a failure — the light canvas
-   * falls back to the gradient, which is built from the same tokens.
+   * So the pick below is not interchangeable: the blend that drops black is not the blend that drops
+   * white, and each file has to meet the canvas it was drawn for. `videoLight` missing is not a failure
+   * — the light canvas falls back to the gradient, which is built from the same tokens.
    */
   const dark = scheme === 'dark'
-  const source = useMediaUrl(dark ? video : videoLight)
+  const canvas = dark ? video : videoLight
+  const source = useMediaUrl(canvas)
   const poster = useMediaUrl(videoPoster)
-  const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
+  /*
+   * A still is a bubble too.
+   *
+   * The geometry and the masks are shape, not motion — they measure where the artwork sits inside its
+   * frame, and a PNG exported from the same Figma frame sits in exactly the same place. So the slot
+   * takes either, an `img` stands in for the `video`, and `isMotion` decides which.
+   *
+   * Which is also why `prefers-reduced-motion` only gates the animation. A still bubble is what that
+   * preference asks for; suppressing it in favour of the gradient would be answering the preference by
+   * throwing away the thing that already honours it.
+   */
+  const still = Boolean(canvas) && !isMotion(canvas)
+  const showBubble = Boolean(source) && background !== 'none' && (still || !reducedMotion)
+  const showVideo = showBubble && !still
 
   /*
    * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
@@ -257,15 +273,32 @@ export function Hero({
       component="section"
       className={[classes.hero, className].filter(Boolean).join(' ')}
       data-background={background === 'none' ? undefined : background}
-      /* Tells the stylesheet to drop the gradient: the animation is standing in its place. */
-      data-video={showVideo || undefined}
+      /* Tells the stylesheet to drop the gradient: the artwork is standing in its place. */
+      data-video={showBubble || undefined}
       data-align={align === 'center' ? 'center' : undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
       {...props}
     >
       {background === 'none' ? null : (
-        <div className={classes.heroBubble} aria-hidden>
+        /*
+         * `data-bubble` is a hook, not a style: the layer is otherwise identifiable only by a hashed
+         * CSS-module class, and the bubble lab has to find the element it is measuring without also
+         * finding the video in the hero's media column.
+         */
+        <div className={classes.heroBubble} data-bubble aria-hidden>
+          {still && showBubble ? (
+            <img
+              className={classes.heroVideo}
+              src={source}
+              alt=""
+              /* Decorative, like the animation it stands in for: nothing here carries meaning. */
+              aria-hidden
+              draggable={false}
+              key={source}
+            />
+          ) : null}
+
           {showVideo && motionPoster ? (
             <video
               className={classes.heroVideo}
