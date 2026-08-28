@@ -3880,42 +3880,45 @@
 
 /* ---------------------------------------------------------------------- the bubble, drawn
  *
- * The same bubble in CSS: two lobes, a crease where they overlap, and a slow drift. A prototype, judged
- * side by side with the files in `Templates/Bubble in a page`.
+ * Two blobs with mesh gradients, orbiting a shared centre — which is what the source animation is, and
+ * not what the first attempt at this was. That drew two hard-edged circles lit along the rim, and a
+ * circle lit at its edge reads as an outline of a ball; the drawing it was copying has no outline
+ * anywhere in it. What it has is soft organic masses whose colour changes across the form.
  *
- * **Why bother.** Every bubble bug this library has had came from a raster with a frame: the artwork
- * does not fill the file, the file does not fit the hero, and the arithmetic that reconciles them has to
- * be redone for every export. A drawing has no frame. It sizes to the hero it is in, it costs nothing to
- * download, one shape covers both `corner` and `full` as parameters rather than two files with different
- * geometry, light and dark are the same rule with different tokens, and `prefers-reduced-motion` means
- * *stop moving* rather than *disappear*.
+ * Three things carry that, and all three are needed — any two without the third fall back to looking
+ * like a gradient in a box:
  *
- * **Rim-lit, not centre-lit.** The stops run dark through the body of each lobe and bright in a narrow
- * band just inside the silhouette, because that is how the file is drawn: the light is behind the form,
- * not in front of it. Centre-lit stops — the obvious first guess — flood the hero with a field of blue
- * and take the headline's contrast with them.
+ *   **The shape is not a circle.** An eight-value `border-radius` gives a squircle with four different
+ *   corners, which is the blob; animating those eight values morphs it. There is no other way to get an
+ *   organic silhouette in CSS without an SVG path or a blur, and a blur this size is the one thing here
+ *   that costs real time on a slow machine.
  *
- * **What is hard.** A silhouette, which is `border-radius: 50%` and free; a specular rim where the two
- * lobes meet, which is an inset shadow and close; and smooth gradients, which are neither free nor
- * close. Big dark ramps band in sRGB, and the reason the webm looks smoother than anything written here
- * is that its encoder dithered it. So the gradients interpolate `in oklab` and each lobe carries a noise
- * layer over its own gradient — the dither the file gets for nothing.
+ *   **The fill is a mesh.** Not one gradient but five radial ones stacked in a single `background-image`
+ *   — magenta high left, violet under it, brand blue through the middle, a cyan hotspot low right, and a
+ *   near-black ground beneath the lot. Each is small and soft and they overlap, which is what a mesh
+ *   gradient is: colour that varies in two directions rather than along one axis. `in oklab`, or the
+ *   magenta-to-blue crossings go through grey.
  *
- * Everything animates on `transform` alone, so it composites and never touches layout, and nothing is
- * blurred: a hero-sized `filter: blur()` is the one thing here that would show up on a slow machine.
+ *   **They orbit.** `transform-origin` sits outside each blob, at the point between the two, so a plain
+ *   `rotate` carries each around that shared centre. The mesh rotates with the form, which is the point
+ *   — the colour arrives from a different side as it comes round. Two different periods, so the pair
+ *   never returns to the same arrangement.
+ *
+ * The magenta and the cyan are **not tokens**. The ramp has no magenta at all and nothing near
+ * `#67e8f9`, and the source animation plainly does — so they are declared here, once, as the two colours
+ * this drawing needs and the palette does not have. If the drawn bubble ships, they want promoting to
+ * `Accent/*` in the file rather than living in a stylesheet.
  */
 
-/*
- * Neither the fallback gradient nor a file, when the bubble is being drawn — and a fade at the foot.
- *
- * "No frame" turned out not to mean "no boundary". The lobes overhang the hero deliberately, the hero
- * does not clip, and the silhouette that then crosses into the next section reads as a shape drawn on
- * the page rather than as light behind the hero. So the drawn bubble dissolves at its foot exactly as
- * the file does — the difference is that this fade is chosen for the composition rather than forced by
- * where an export happened to be cut.
- */
 .hero[data-bubble-css] .heroBubble {
+  /* The two hues the ramp is missing. See above — candidates for the file, not permanent residents. */
+  --sds-bubble-magenta: #d8558f;
+  --sds-bubble-cyan: #67e8f9;
   background-image: none;
+  /*
+   * A drawing has no frame, but it does have a silhouette, and one crossing into the next section reads
+   * as a shape on the page rather than as light behind the hero.
+   */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
 }
@@ -3925,224 +3928,253 @@
 }
 
 /*
- * The lobes. `::before` is the light one that carries the shape, `::after` the accent that overlaps it
- * from below — the crease between them is the whole reason there are two.
+ * Both blobs. Shape, mesh and orbit are per-blob below; this is what they share.
  *
- * Sized in `cqi` against the hero's own inline size (`container-type` is on `.hero`), so the bubble is a
- * proportion of the hero rather than a measurement in it, and a short hero and a tall one get the same
- * drawing rather than the same number of pixels.
+ * `will-change` on the transform only — the rotation runs on the compositor, and the border-radius morph
+ * does not, which is exactly why the morph is slow and the rotation is what carries the motion.
  */
 .hero[data-bubble-css] .heroBubble::before,
 .hero[data-bubble-css] .heroBubble::after {
   content: '';
   position: absolute;
-  border-radius: 50%;
-  /*
-   * Three layers, in this order, for every lobe: noise, the specular, the body.
-   *
-   * Always three even where a lobe's specular is nothing, because `background-blend-mode` is positional
-   * — a shape with two layers and a three-mode list silently blends the wrong pair. One fixed shape of
-   * layer stack is worth more than the few bytes a no-op gradient costs.
-   *
-   * The noise is what keeps the ramps from banding: big dark gradients band in sRGB, and the reason the
-   * webm looks smoother than anything written here is that its encoder dithered it. `overlay` rather
-   * than a flat opacity, so it perturbs the mid-tones where banding shows and leaves both ends alone.
-   */
-  background-blend-mode: overlay, normal, normal;
-  /*
-   * The noise tiles at a fixed size and the gradients fill the box. Left to `auto` the tile scales with
-   * the element, so the grain coarsens as the lobe gets smaller — the dither turns into texture at
-   * exactly the size where the ramps need it least.
-   */
-  background-size: 140px 140px, 100% 100%, 100% 100%;
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E"),
-    var(--sds-hero-specular, radial-gradient(circle, transparent, transparent)),
-    var(--sds-hero-lobe);
+  will-change: transform;
+  animation:
+    sds-blob-orbit var(--sds-blob-orbit-time) linear infinite,
+    sds-blob-morph var(--sds-blob-morph-time) ease-in-out infinite alternate;
 }
 
 /*
- * `Type=Corner Bubble` — the light source entering from the top right, as the file is drawn.
+ * `Type=Corner Bubble`.
  *
- * The lobe runs off the top and the right on purpose: what the file achieves by being cut, a drawing
- * achieves by being bigger than its container, and this way the edge that leaves the page is a real
- * silhouette rather than the end of a rectangle.
+ * The pair orbits a centre off the hero's top right, so what crosses the page is the near edge of the
+ * orbit rather than the whole of it — the same read the file gets by being cut there.
  */
 .hero[data-background='corner'][data-bubble-css] .heroBubble::before {
-  /*
-   * The specular: one bright spot just inside the silhouette, on the side the light comes from, rather
-   * than a ring all the way round. A uniform rim reads as an outline drawn on a shape; an arc that is
-   * brightest in one place reads as light falling on it, and that difference is most of what separates
-   * this from looking coded.
-   */
-  --sds-hero-specular: radial-gradient(
-    circle at 26% 74%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 78%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 46%, transparent) 34%,
-    transparent 62%
-  );
-  --sds-hero-lobe: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 36%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 54%, transparent) 62%,
-    color-mix(in oklab, var(--sds-brand-primary-primary) 82%, transparent) 90%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 96%, transparent) 97.5%,
-    transparent 100%
-  );
-  width: 72cqi;
+  --sds-blob-orbit-time: 48s;
+  --sds-blob-morph-time: 19s;
+  width: 38cqi;
   aspect-ratio: 1;
-  top: -34cqi;
-  right: -8cqi;
-  animation: sds-hero-drift-a 34s ease-in-out infinite alternate;
+  top: -9cqi;
+  right: 8cqi;
+  transform-origin: 80% 84%;
+  /*
+   * Near-black at the core with the colour pushed to the perimeter, which is how the source reads: a
+   * dark mass with light caught on its edges, not a coloured disc. The last layer is the core, painted
+   * back over the middle of the others — without it four perimeter gradients meet in the centre and
+   * average out to a flat lilac, which is exactly what the first attempt at this looked like.
+   */
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  background-image:
+    radial-gradient(
+      34% 32% at 16% 18%,
+      color-mix(in oklab, var(--sds-bubble-magenta) 96%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      32% 30% at 12% 54%,
+      color-mix(in oklab, var(--sds-accent-product-accent) 92%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      40% 38% at 92% 62%,
+      color-mix(in oklab, var(--sds-brand-primary-primary) 98%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 30% at 58% 96%,
+      color-mix(in oklab, var(--sds-bubble-cyan) 92%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      58% 56% at 48% 44%,
+      var(--sds-surfaces-page-bg-base-default) 0%,
+      color-mix(in oklab, var(--sds-surfaces-page-bg-base-default) 72%, transparent) 58%,
+      transparent 100%
+    );
 }
 
 .hero[data-background='corner'][data-bubble-css] .heroBubble::after {
-  --sds-hero-specular: radial-gradient(
-    circle at 30% 24%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 72%, transparent) 0%,
-    transparent 58%
-  );
-  --sds-hero-lobe: radial-gradient(
-    circle at 50% 50%,
-    transparent 0%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 30%, transparent) 56%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 84%, transparent) 90%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 46%, transparent) 98%,
-    transparent 100%
-  );
-  width: 38cqi;
+  --sds-blob-orbit-time: 62s;
+  --sds-blob-morph-time: 27s;
+  width: 26cqi;
   aspect-ratio: 1;
   top: 14cqi;
-  right: -14cqi;
+  right: -6cqi;
+  transform-origin: 14% 8%;
   /*
-   * The crease. Where the accent lobe passes under the light one, the file draws a bright arc — the two
-   * surfaces meeting — and `plus-lighter` over an inset highlight is what gets closest to it without a
-   * blur.
+   * Near-black at the core with the colour pushed to the perimeter, which is how the source reads: a
+   * dark mass with light caught on its edges, not a coloured disc. The last layer is the core, painted
+   * back over the middle of the others — without it four perimeter gradients meet in the centre and
+   * average out to a flat lilac, which is exactly what the first attempt at this looked like.
    */
-  mix-blend-mode: plus-lighter;
-  box-shadow: inset 4cqi 3cqi 9cqi
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 22%, transparent);
-  animation: sds-hero-drift-b 46s ease-in-out infinite alternate;
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  background-image:
+    radial-gradient(
+      36% 34% at 22% 22%,
+      color-mix(in oklab, var(--sds-brand-primary-lighten-1) 94%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 32% at 82% 84%,
+      color-mix(in oklab, var(--sds-bubble-cyan) 92%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 32% at 16% 86%,
+      color-mix(in oklab, var(--sds-accent-product-accent) 88%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      58% 56% at 48% 44%,
+      var(--sds-surfaces-page-bg-base-default) 0%,
+      color-mix(in oklab, var(--sds-surfaces-page-bg-base-default) 72%, transparent) 58%,
+      transparent 100%
+    );
 }
 
-/* `Type=Full Bubble` — the same two lobes spread wide and low, which is the shape the centre file draws. */
+/* `Type=Full Bubble` — the same pair, spread across the hero and sunk into its lower half. */
 .hero[data-background='full'][data-bubble-css] .heroBubble::before {
-  --sds-hero-specular: radial-gradient(
-    ellipse at 44% 10%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 58%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 30%, transparent) 36%,
-    transparent 64%
-  );
-  --sds-hero-lobe: radial-gradient(
-    ellipse at 50% 50%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 32%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 50%, transparent) 62%,
-    color-mix(in oklab, var(--sds-brand-primary-primary) 76%, transparent) 90%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 88%, transparent) 97.5%,
-    transparent 100%
-  );
-  width: 186cqi;
-  height: 112cqi;
-  left: -43cqi;
-  top: 26cqi;
-  border-radius: 50%;
-  animation: sds-hero-drift-a 40s ease-in-out infinite alternate;
+  --sds-blob-orbit-time: 54s;
+  --sds-blob-morph-time: 21s;
+  width: 52cqi;
+  aspect-ratio: 1;
+  /*
+   * Clear of the content column. The pair belongs to the hero's right half — over the headline it takes
+   * the headline's contrast with it, which is the one thing the light source must not do.
+   */
+  top: 10cqi;
+  left: 34cqi;
+  transform-origin: 84% 66%;
+  /*
+   * Near-black at the core with the colour pushed to the perimeter, which is how the source reads: a
+   * dark mass with light caught on its edges, not a coloured disc. The last layer is the core, painted
+   * back over the middle of the others — without it four perimeter gradients meet in the centre and
+   * average out to a flat lilac, which is exactly what the first attempt at this looked like.
+   */
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  background-image:
+    radial-gradient(
+      34% 32% at 16% 20%,
+      color-mix(in oklab, var(--sds-bubble-magenta) 92%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      32% 30% at 12% 56%,
+      color-mix(in oklab, var(--sds-accent-product-accent) 88%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      40% 38% at 90% 64%,
+      color-mix(in oklab, var(--sds-brand-primary-primary) 96%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 30% at 56% 96%,
+      color-mix(in oklab, var(--sds-bubble-cyan) 88%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      58% 56% at 48% 44%,
+      var(--sds-surfaces-page-bg-base-default) 0%,
+      color-mix(in oklab, var(--sds-surfaces-page-bg-base-default) 72%, transparent) 58%,
+      transparent 100%
+    );
 }
 
 .hero[data-background='full'][data-bubble-css] .heroBubble::after {
-  --sds-hero-specular: radial-gradient(
-    ellipse at 28% 30%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 66%, transparent) 0%,
-    transparent 60%
-  );
-  --sds-hero-lobe: radial-gradient(
-    ellipse at 50% 50%,
-    transparent 0%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 26%, transparent) 58%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 76%, transparent) 90%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 40%, transparent) 98%,
-    transparent 100%
-  );
-  width: 72cqi;
-  height: 56cqi;
-  right: -20cqi;
-  top: 2cqi;
-  mix-blend-mode: plus-lighter;
-  box-shadow: inset 3cqi 2cqi 8cqi
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 20%, transparent);
-  animation: sds-hero-drift-b 52s ease-in-out infinite alternate;
+  --sds-blob-orbit-time: 68s;
+  --sds-blob-morph-time: 29s;
+  width: 38cqi;
+  aspect-ratio: 1;
+  top: 22cqi;
+  right: 2cqi;
+  transform-origin: 18% 16%;
+  /*
+   * Near-black at the core with the colour pushed to the perimeter, which is how the source reads: a
+   * dark mass with light caught on its edges, not a coloured disc. The last layer is the core, painted
+   * back over the middle of the others — without it four perimeter gradients meet in the centre and
+   * average out to a flat lilac, which is exactly what the first attempt at this looked like.
+   */
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  background-image:
+    radial-gradient(
+      36% 34% at 24% 24%,
+      color-mix(in oklab, var(--sds-brand-primary-lighten-1) 90%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 32% at 80% 82%,
+      color-mix(in oklab, var(--sds-bubble-cyan) 88%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      34% 32% at 18% 84%,
+      color-mix(in oklab, var(--sds-accent-product-accent) 84%, transparent) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      58% 56% at 48% 44%,
+      var(--sds-surfaces-page-bg-base-default) 0%,
+      color-mix(in oklab, var(--sds-surfaces-page-bg-base-default) 72%, transparent) 58%,
+      transparent 100%
+    );
 }
 
 /*
- * Narrow heroes, where the columns have stacked.
- *
- * Everything above is sized in `cqi`, so at 375px the lobes are small in a hero that is now tall — two
- * legible circles sitting on the headline rather than light behind it. The fix is proportion, not
- * pixels: push them further out and scale them up until only an arc is on the page, which is the same
- * composition arriving by different numbers.
- *
- * This is the thing a file cannot do. The webm at this width is the same drawing stretched, and the only
- * choice it offers is which edge to lose.
+ * Narrow heroes: the orbit is pushed out and scaled up until only its near edge is on the page. A bubble
+ * sized off the hero's width is a different composition when the hero is a column rather than two — and
+ * this is the thing a file cannot do, since the webm at this width is the same drawing stretched.
  */
 @container sds-hero (max-width: 1199px) {
   .hero[data-background='corner'][data-bubble-css] .heroBubble::before {
-    width: 112cqi;
-    top: -62cqi;
-    right: -34cqi;
-    /*
-     * Dimmer than on a wide hero, because here the lobe is behind the headline rather than beside it.
-     * The bubble is the page's light source and the headline is the page's point; when they occupy the
-     * same ground the light gives way.
-     */
-    --sds-hero-specular: radial-gradient(
-      circle at 30% 70%,
-      color-mix(in oklab, var(--sds-brand-primary-lighten-3) 34%, transparent) 0%,
-      transparent 54%
-    );
+    width: 96cqi;
+    top: -44cqi;
+    right: -14cqi;
   }
 
   .hero[data-background='corner'][data-bubble-css] .heroBubble::after {
-    width: 58cqi;
-    top: -6cqi;
+    width: 68cqi;
+    top: -10cqi;
     right: -30cqi;
   }
 
   .hero[data-background='full'][data-bubble-css] .heroBubble::before {
-    width: 240cqi;
-    height: 150cqi;
-    left: -70cqi;
-    top: 4cqi;
+    width: 124cqi;
+    top: -6cqi;
+    left: -22cqi;
   }
 
   .hero[data-background='full'][data-bubble-css] .heroBubble::after {
-    width: 108cqi;
-    height: 84cqi;
-    right: -40cqi;
-    top: -14cqi;
+    width: 96cqi;
+    top: 16cqi;
+    right: -26cqi;
   }
 }
 
 /*
- * The drift: two periods that do not divide into each other, so the pair never returns to the same
- * arrangement on a loop anyone will sit through. Small — this is a light source shifting, not a thing
- * moving across the page.
+ * The orbit. A whole turn, linearly, so there is no point in the loop where the pair pauses and gives
+ * away that it is a loop.
  */
-@keyframes sds-hero-drift-a {
+@keyframes sds-blob-orbit {
   from {
-    transform: translate3d(0, 0, 0) scale(1);
+    rotate: 0deg;
   }
   to {
-    transform: translate3d(-3cqi, 2cqi, 0) scale(1.06);
+    rotate: 360deg;
   }
 }
 
-@keyframes sds-hero-drift-b {
+/*
+ * The morph: eight radii to eight others and back. The values are only "not the same on any two corners"
+ * — a blob is asymmetric or it is an oval — and the pair of sets is far enough apart to read as the form
+ * breathing rather than as it wobbling.
+ */
+@keyframes sds-blob-morph {
   from {
-    transform: translate3d(0, 0, 0) scale(1.04);
+    border-radius: 58% 42% 38% 62% / 46% 54% 46% 54%;
   }
   to {
-    transform: translate3d(2cqi, -3cqi, 0) scale(0.96);
+    border-radius: 38% 62% 56% 44% / 62% 38% 62% 38%;
   }
 }
 
@@ -4154,6 +4186,7 @@
   .hero[data-bubble-css] .heroBubble::before,
   .hero[data-bubble-css] .heroBubble::after {
     animation: none;
+    border-radius: 58% 42% 38% 62% / 46% 54% 46% 54%;
   }
 }
 
