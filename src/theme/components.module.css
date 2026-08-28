@@ -3332,13 +3332,28 @@
   height: 64px;
 }
 
+/*
+ * The strip is one more section, and reads like one.
+ *
+ * On the desktop panel it is a bar across the foot, so it has a rule above it and its action on the
+ * right. In the drawer there is no bar to close — it follows a list the way Featured does — so it takes
+ * the rail's own box exactly: 32 above the label, 24 at the sides and below, the gradient across all of
+ * it, and no rule. That rule was the only hard line left in a sheet that separates by space everywhere
+ * else.
+ *
+ * Its parts stack, because a label over a full-width button is what a phone has room for; the desktop's
+ * right-aligned pairing needs a width neither of them has here.
+ */
 .headerDrawerPanel .megaCta {
-  justify-content: flex-start;
-  /* 24 all round, and the gradient above reaches the sheet's edges the way the rail's does. */
+  flex-direction: column;
+  align-items: stretch;
+  /* 24, like the padding around it — the strip uses one number throughout. */
+  gap: 24px;
   margin-inline: -24px;
-  /* And the same at the foot: the strip closes a Platform panel, so nothing should follow it. */
+  /* The strip closes a Platform panel, so nothing follows it — not even the panel's own padding. */
   margin-bottom: -24px;
-  padding: 24px;
+  padding: 32px 24px 24px;
+  border-top: none;
   background-color: transparent;
 }
 
@@ -3564,12 +3579,25 @@
  * 1440x648 hero, i.e. edge to edge; `Corner Bubble` is 1105 wide against the same frame, anchored to the
  * top right, so it is not stretched across the whole width.
  */
+/*
+ * The frame is stretched to the hero, not fitted into it.
+ *
+ * `cover` was cropping the bottom — it fills a box by overflowing whichever axis does not fit, and in a
+ * hero shorter than the artwork the part that goes was the bottom of the bubble, which is the part that
+ * reaches furthest into the page. Sizing by width instead kept every edge but left gradient above the
+ * bubble in a tall hero, which is worse.
+ *
+ * So `fill`: both axes scale to the box, nothing is cropped on any edge, and the bubble tracks the
+ * window as it resizes. It distorts, and that is fine *here* and nowhere else — this is an abstract
+ * gradient with no figure, no text and no circle anyone can check. A photograph in this slot would need
+ * `cover` and a considered crop.
+ */
 .heroVideo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   /*
    * The file is a bright sphere on a near-black ground, so `screen` drops the ground and keeps the
    * light. Its blacks are not pure, though, which leaves a faint rectangle where the frame ends — hence
@@ -3606,10 +3634,14 @@
 }
 
 .hero[data-background='corner'] .heroVideo {
-  inset: auto 0 auto auto;
-  width: min(1105px, 100%);
+  /*
+   * The corner bubble fills the hero too. It used to be a 1105px box anchored top right, which is what
+   * cut its bottom away; the weight is in the artwork, so it stays in the corner without being boxed
+   * into one.
+   */
+  inset: 0;
+  width: 100%;
   height: 100%;
-  object-position: top right;
   /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
   -webkit-mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
   mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);

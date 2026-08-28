@@ -87,14 +87,33 @@ const meta = {
     },
     align: { options: ['left', 'center'], control: 'inline-radio' },
     /*
-     * Uploads, not URLs. Each of the four takes a file straight from disk — pick one and the hero swaps
-     * to it — because that is what a person has when they want to try an animation, and making them
-     * host it first to get a string is a step that proves nothing.
+     * Uploads, not URLs. Each takes a file straight from disk — pick one and the hero swaps to it —
+     * because that is what a person has when they want to try an animation, and making them host it
+     * first to get a string is a step that proves nothing.
+     *
+     * The descriptions are not decoration. Four controls called `video`, `videoLight`, `videoPoster`
+     * and `videoLightPoster` tell you nothing about *when* each one is on screen, and the answer is not
+     * guessable: two of them are a colour scheme apart and two more are a loading state apart.
      */
-    video: { control: { type: 'file', accept: 'video/*' } },
-    videoLight: { control: { type: 'file', accept: 'video/*' } },
-    videoPoster: { control: { type: 'file', accept: 'video/*,image/*' } },
-    videoLightPoster: { control: { type: 'file', accept: 'video/*,image/*' } },
+    video: {
+      control: { type: 'file', accept: 'video/*' },
+      description:
+        'The bubble animation on the **dark** canvas. Switch the toolbar to light and this one is not used.',
+    },
+    videoLight: {
+      control: { type: 'file', accept: 'video/*' },
+      description:
+        'The same bubble on the **light** canvas — a separate export, not a filter. The dark file is a bright sphere on near-black composited with `screen`; over a light page that paints a dark blob rather than a light source. Leave it empty and light mode shows the CSS gradient instead.',
+    },
+    videoPoster: {
+      control: { type: 'file', accept: 'video/*,image/*' },
+      description:
+        'What stands in for `video` until it can play — and if it never can, so a missing file leaves a hero rather than a hole. An image or a video: HTML takes only an image on its own `poster` attribute, so a moving one is rendered behind the animation and swapped on `canplay`.',
+    },
+    videoLightPoster: {
+      control: { type: 'file', accept: 'video/*,image/*' },
+      description: 'The same stand-in for `videoLight`.',
+    },
     label: { control: false },
     title: { control: false },
     actions: { control: false },
