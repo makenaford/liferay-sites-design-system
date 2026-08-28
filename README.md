@@ -672,7 +672,7 @@ desktop, a radial of the `Glass Card` steps on mobile. Below 1200px the bar scro
 | State | Figma |
 | --- | --- |
 | Default | nothing drawn at all |
-| Hover | no fill, no stroke — a `#adc9ff` glow at blur 4, spread 4 |
+| Hover | no fill, no stroke — a `#adc9ff` glow at blur 4, spread 4. **Not implemented — see below** |
 | Selected | radial `Glass Tab/bg-gradient-01` 10% → `02` 5%, a 1.5px gradient stroke, a 40 background blur and a `#1f2531` drop shadow |
 
 ### The pill slides, and its position is measured
@@ -2590,8 +2590,14 @@ so the implementation takes the Desktop treatment at both breakpoints and only t
   light mode the `Glass Tab` pair is deliberately transparent while the raw pair is not, so the two
   sizes would disagree about whether a selected segment has an edge at all.
 - **Mobile's Hover variant has no effects.** Desktop hover carries the `Brand/Primary/Lighten/4` glow
-  and the 40-radius blur; Mobile carries neither, though both change the label colour. The glow is
+  and the 40-radius blur; Mobile carries neither, though both change the label colour. The blur is
   applied at every width here, inside a `hover: hover` query so a touch device never latches it.
+- **The hover glow is not implemented, deliberately.** It was, faithfully, and the faithful version is
+  the problem: blur 4 at **spread 4** in a pale blue is not a glow on screen, it is a hard ring a pixel
+  or two off the pill's edge. Four of them across a bar read as four outlined pills competing with the
+  one filled pill that is actually selected. Hover keeps the label colour, which is the cue the rest of
+  this library uses for the same job. A divergence to take back to the file rather than to fix in code:
+  the state wants a soft fill or a lower spread, not a reproduction.
 
 ### Tabs have no focus, pressed or disabled state
 
