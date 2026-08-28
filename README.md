@@ -778,31 +778,45 @@ with a visible frame edge instead of a light source — verified in the browser 
 the video plays on the dark canvas only, and light mode gets the gradient, which is built from the same
 tokens and reads correctly there.
 
-**Closed.** There is a light export of each now — `bubble_corner_light.mp4` and
-`bubble_center_light.webm` — and they are the inverse: a coloured bubble on a *white* ground. So they
-composite with `multiply` rather than `screen`, which is what drops a white ground. `Hero` takes them as
-`videoLight` and picks by scheme; a scheme with no file still falls back to the gradient.
+**One file, drawn plainly.** The blend is gone. `screen` is what dropped the near-black ground and kept
+the light, and it is also why the frame was so hard to hide: over blacks that are not pure it leaves a
+rectangle, and no mask shaped like a gradient fully answers a blend. Painted as it is, the mask is
+ordinary alpha — two linear fades, one down the frame and one across it — and alpha fades to nothing.
 
-The light ground samples a true 255,255,255 at every edge, where the dark asset's blacks are not pure —
-so the edge masks that hide the dark frame are not strictly needed here. They are kept anyway, because
-they are the shape of the treatment in both schemes and not only a patch.
+Which means the video is **dark-canvas only** again. Without the blend the file is what it is: a bright
+sphere on near-black, which over a light page is a black rectangle across the hero with the headline
+inside it. Light mode gets the gradient, as it did before. The light exports in `assets/bubbles/` are
+unused for now; they are there if a light treatment comes back.
 
-**A file, not only a URL.** `video`, `videoLight`, `videoPoster` and `videoLightPoster` each take a
-`File` as readily as a string, so a builder can hand over what someone just picked from disk without
-hosting it first to get a URL back. The hero makes the object URL and revokes it when the file changes
-or the hero unmounts — without that every re-pick leaks the last one, and a video is not a small thing
-to leak. A file input hands you a list rather than a file, so a list is accepted too and the first entry
-taken, which saves every call site the same unwrapping. Whether a source moves is read from a file's
-MIME type rather than its extension, because an object URL has no extension to read.
+**Stretched, top-aligned, taller than the hero, and behind the header.** The animation is 1200x866 and
+a hero is far wider, so fitting the frame inside meant losing an edge — `cover` cropped the bottom or
+the top, `contain` shrank it to a band. It is stretched instead (`object-fit: fill`), which is fine here
+and nowhere else: an abstract gradient has no figure, no text and no circle anyone can check against.
 
-**The poster may move.** `videoPoster` and `videoLightPoster` take a video as readily as an image, which
-matters where the animation is the heavy file and the poster is a light loop of the same artwork: the
-hero moves from the first frame rather than sitting still until the download lands. HTML's own `poster`
-attribute takes an image and nothing else, so a motion poster is rendered as a second video behind the
-animation and swapped on `canplay`. Both keep playing while they wait — a paused stand-in shows as a
-frozen frame the moment it is revealed — and a `display: none` video is not reliably allowed to autoplay,
-so the one not being shown is faded rather than hidden. If the animation 404s the poster simply stays:
-the animation is the enhancement, the poster is the page.
+It is 180% of the hero's height so the artwork has somewhere to go rather than being squeezed into a
+band, and pinned to the hero's top edge so what spills is the bottom. The hero does not clip
+(`overflow: visible`), so the bottom is never cut; the mask dissolves it instead. The bubble is
+`z-index: -1` and `pointer-events: none`, so what it overhangs it neither covers nor catches.
+
+It briefly started a bar's height *above* the hero, to run up behind the header. That bought nothing:
+the header band is a 60%-alpha wash, so what sat behind it came out dimmed and the wash's own foot read
+as the very line the offset was meant to remove. Top edge to top edge, fully opaque there, no top fade.
+
+**A file, not only a URL.** `video` and `videoPoster` each take a `File` as readily as a string, so a
+builder can hand over what someone just picked from disk without hosting it first to get a URL back.
+The hero makes the object URL and revokes it when the file changes or the hero unmounts — without that
+every re-pick leaks the last one, and a video is not a small thing to leak. A file input hands you a
+list rather than a file, so a list is accepted too and the first entry taken. Whether a source moves is
+read from a file's MIME type rather than its extension, because an object URL has no extension to read.
+
+**The poster may move.** `videoPoster` takes a video as readily as an image, which matters where the
+animation is the heavy file and the poster is a light loop of the same artwork: the hero moves from the
+first frame rather than sitting still until the download lands. HTML's own `poster` attribute takes an
+image and nothing else, so a motion poster is rendered as a second video behind the animation and
+swapped on `canplay`. Both keep playing while they wait — a paused stand-in shows as a frozen frame the
+moment it is revealed — and a `display: none` video is not reliably allowed to autoplay, so the one not
+being shown is faded rather than hidden. If the animation 404s the poster simply stays: the animation is
+the enhancement, the poster is the page.
 
 ## Header and MegaMenu
 

@@ -91,17 +91,6 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    */
   videoPoster?: HeroMediaSource
   /**
-   * The light scheme's animation.
-   *
-   * A second file rather than one that works in both: the dark bubble is a bright sphere on near-black
-   * and is composited with `screen`, which drops the ground and keeps the light. Over a light page that
-   * paints a dark blob with a visible frame edge, so light mode had no video at all until there was an
-   * asset drawn for it. Without this, light mode still falls back to the gradient.
-   */
-  videoLight?: HeroMediaSource
-  /** The same for `videoLight`, and it may move too. */
-  videoLightPoster?: HeroMediaSource
-  /**
    * `center` centres the column and its text.
    *
    * **The file no longer draws this.** `Alignnemt` was Left / Center; every cell in the set is now
@@ -200,8 +189,6 @@ export function Hero({
   background = 'none',
   video,
   videoPoster,
-  videoLight,
-  videoLightPoster,
   align = 'left',
   banner,
   label,
@@ -216,20 +203,28 @@ export function Hero({
   ...props
 }: HeroProps) {
   const reducedMotion = useReducedMotion()
-  const scheme = useComputedColorScheme('dark')
-  /**
-   * Each scheme has its own file, and neither is a fallback for the other.
+  /*
+   * One file, drawn as it is.
    *
-   * Figma calls the dark one `Dark Bubble Animation` and it is exactly that — a bright sphere on a
-   * near-black ground, composited with `screen`. Over a light page that paints a dark blob with a
-   * visible frame edge, which is why light mode had no video for so long. It has its own asset now, and
-   * a scheme with no file still falls back to the gradient, which is built from the same tokens.
+   * It used to be two — a bright sphere on near-black composited with `screen`, and a light-canvas
+   * export composited with `multiply` — because a blend was what dropped each one's ground. That is
+   * also what made the frame's edges so hard to hide: `screen` over impure blacks leaves a rectangle,
+   * and no mask shaped like a gradient can fully answer a blend. Painted plainly, the mask is just
+   * alpha, and alpha fades to nothing.
    */
-  const sourceRef = scheme === 'dark' ? video : videoLight
-  const posterRef = scheme === 'dark' ? videoPoster : videoLightPoster
-  const source = useMediaUrl(sourceRef)
-  const poster = useMediaUrl(posterRef)
-  const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
+  const source = useMediaUrl(video)
+  const poster = useMediaUrl(videoPoster)
+  const scheme = useComputedColorScheme('dark')
+  /*
+   * And only on the dark canvas.
+   *
+   * Without a blend the file is painted as it is, and as it is it is a bright sphere on a near-black
+   * ground — over a light page that is a black rectangle across the hero with the headline inside it.
+   * Verified in the browser, which is the only way this kind of thing is ever caught. Light mode gets
+   * the gradient, which is built from the same tokens and reads correctly there.
+   */
+  const showVideo =
+    Boolean(source) && background !== 'none' && !reducedMotion && scheme === 'dark'
 
   /*
    * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
@@ -239,7 +234,7 @@ export function Hero({
    * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
    * hole. Both reset when the source changes, which is what a scheme flip does.
    */
-  const motionPoster = isMotion(posterRef)
+  const motionPoster = isMotion(videoPoster)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -255,6 +250,8 @@ export function Hero({
       component="section"
       className={[classes.hero, className].filter(Boolean).join(' ')}
       data-background={background === 'none' ? undefined : background}
+      /* Tells the stylesheet to drop the gradient: the animation is standing in its place. */
+      data-video={showVideo || undefined}
       data-align={align === 'center' ? 'center' : undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
@@ -265,7 +262,6 @@ export function Hero({
           {showVideo && motionPoster ? (
             <video
               className={classes.heroVideo}
-              data-scheme={scheme}
               src={poster}
               autoPlay
               muted
@@ -285,8 +281,6 @@ export function Hero({
           {showVideo && !failed ? (
             <video
               className={classes.heroVideo}
-              /* The two are composited differently; the stylesheet keys off this. */
-              data-scheme={scheme}
               src={source}
               poster={motionPoster ? undefined : poster}
               autoPlay
@@ -298,7 +292,7 @@ export function Hero({
               data-idle={showPoster || undefined}
               onCanPlay={() => setReady(true)}
               onError={() => setFailed(true)}
-              /* Remount on a scheme change: a `src` swap alone leaves the old frames on screen. */
+              /* Remount on a source change: a `src` swap alone leaves the old frames on screen. */
               key={source}
             />
           ) : null}

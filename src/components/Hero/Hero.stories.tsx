@@ -14,8 +14,6 @@ import { IconArrowRight, IconArrowUp, IconCheck } from '../../icons'
  */
 import bubbleFull from '../../../assets/bubbles/bubble_center.webm'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
-import bubbleFullLight from '../../../assets/bubbles/bubble_center_light.webm'
-import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.mp4'
 
 /** Stands in for the hero shot: the stories have to render offline. */
 function Shot() {
@@ -91,28 +89,18 @@ const meta = {
      * because that is what a person has when they want to try an animation, and making them host it
      * first to get a string is a step that proves nothing.
      *
-     * The descriptions are not decoration. Four controls called `video`, `videoLight`, `videoPoster`
-     * and `videoLightPoster` tell you nothing about *when* each one is on screen, and the answer is not
-     * guessable: two of them are a colour scheme apart and two more are a loading state apart.
+     * The descriptions are not decoration: `video` and `videoPoster` say nothing about *when* each is
+     * on screen, and the answer is a loading state apart.
      */
     video: {
       control: { type: 'file', accept: 'video/*' },
       description:
-        'The bubble animation on the **dark** canvas. Switch the toolbar to light and this one is not used.',
-    },
-    videoLight: {
-      control: { type: 'file', accept: 'video/*' },
-      description:
-        'The same bubble on the **light** canvas — a separate export, not a filter. The dark file is a bright sphere on near-black composited with `screen`; over a light page that paints a dark blob rather than a light source. Leave it empty and light mode shows the CSS gradient instead.',
+        'The bubble animation, drawn as it is — no blend, so what you upload is what shows. One file for both colour schemes.',
     },
     videoPoster: {
       control: { type: 'file', accept: 'video/*,image/*' },
       description:
         'What stands in for `video` until it can play — and if it never can, so a missing file leaves a hero rather than a hole. An image or a video: HTML takes only an image on its own `poster` attribute, so a moving one is rendered behind the animation and swapped on `canplay`.',
-    },
-    videoLightPoster: {
-      control: { type: 'file', accept: 'video/*,image/*' },
-      description: 'The same stand-in for `videoLight`.',
     },
     label: { control: false },
     title: { control: false },
@@ -131,9 +119,9 @@ const meta = {
           '',
           "The background is **a gradient in CSS with the webm on top**. The gradient needs no network, survives a blocked file, and is what shows under `prefers-reduced-motion` — where the video is not rendered at all, so it is never fetched. An autoplaying 2MB loop is exactly what that preference is for.",
           '',
-          'The video is not bundled: pass its URL, **or a file**. `video`, `videoLight`, `videoPoster` and `videoLightPoster` each take a `File` as readily as a string, so a builder can hand over what someone just picked from disk without hosting it first — the hero makes the object URL and revokes it when the file changes. The controls below are file pickers for exactly that; drop a webm on `video` and watch the background change.',
+          'The video is not bundled: pass its URL, **or a file**. Both `video` and `videoPoster` take a `File` as readily as a string, so a builder can hand over what someone just picked from disk without hosting it first — the hero makes the object URL and revokes it when the file changes. The controls below are file pickers for exactly that; drop a webm on `video` and watch the background change.',
           '',
-          'These stories start from `assets/bubbles/`, which holds four files — a dark and a light export of each bubble. `video` is the dark canvas, `videoLight` the light one.',
+          '**One file, no blend.** The animation used to be composited with `screen`, and a second light-canvas export with `multiply`, because a blend was what dropped each ground. That is also what made the frame so hard to hide — `screen` over impure blacks leaves a rectangle no gradient-shaped mask can fully answer. Drawn plainly, the mask is ordinary alpha, and alpha fades to nothing.',
         ].join('\n'),
       },
     },
@@ -145,17 +133,17 @@ type Story = StoryObj<typeof meta>
 
 /** Every prop wired to a control. The bubble plays behind the content. */
 export const Playground: Story = {
-  args: { video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
+  args: { video: bubbleCorner, media: <Shot /> },
 }
 
 /** **Corner Bubble** with an image — Figma's `Type=Corner Bubble, Image=Yes`. */
 export const CornerBubble: Story = {
-  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
 }
 
 /** **Full Bubble** — the animation fills the hero, centred and slightly high, behind the content. */
 export const FullBubble: Story = {
-  args: { background: 'full', video: bubbleFull, videoLight: bubbleFullLight, media: <Shot /> },
+  args: { background: 'full', video: bubbleFull, media: <Shot /> },
 }
 
 /** **Default** — no bubble at all, just the page surface. */
@@ -179,8 +167,6 @@ export const MotionPoster: Story = {
     background: 'full',
     video: bubbleFull,
     videoPoster: bubbleCorner,
-    videoLight: bubbleFullLight,
-    videoLightPoster: bubbleCornerLight,
     media: <Shot />,
   },
 }
@@ -196,8 +182,6 @@ export const PosterWhenTheVideoFails: Story = {
     background: 'full',
     video: '/does-not-exist.webm',
     videoPoster: bubbleCorner,
-    videoLight: '/does-not-exist.webm',
-    videoLightPoster: bubbleCornerLight,
     media: <Shot />,
   },
 }
@@ -207,7 +191,6 @@ export const Centered: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
-    videoLight: bubbleFullLight,
     align: 'center',
     media: undefined,
     description:
@@ -223,7 +206,6 @@ export const Form: Story = {
   args: {
     background: 'corner',
     video: bubbleCorner,
-    videoLight: bubbleCornerLight,
     actions: undefined,
     media: <Shot />,
     title: <h1>See it on your own content</h1>,
@@ -273,7 +255,6 @@ export const WithStats: Story = {
   args: {
     background: 'full',
     video: bubbleFull,
-    videoLight: bubbleFullLight,
     media: undefined,
     align: 'center',
     children: (
@@ -298,7 +279,7 @@ export const GradientOnly: Story = {
 
 /** Stacked, as it renders below 1200px: the media drops under the content. */
 export const Stacked: Story = {
-  args: { background: 'corner', video: bubbleCorner, videoLight: bubbleCornerLight, media: <Shot /> },
+  args: { background: 'corner', video: bubbleCorner, media: <Shot /> },
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 }
 
