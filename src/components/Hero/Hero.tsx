@@ -105,6 +105,23 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * rendered as a second video behind the first and swapped out on `canplay`; a still goes on the
    * attribute as before. Which one you passed is inferred from the extension.
    */
+  /**
+   * Draw the bubble instead of playing a file — the prototype the bubble lab exists to judge.
+   *
+   * Five translucent gradient waves, stacked and drifting at different phases, after the construction
+   * loading.io's `wave` background uses: the depth is the *overlap* of translucent layers rather than
+   * any one layer's fill, which is what a stack of radial gradients cannot do — those average toward
+   * grey where they meet, these keep building colour.
+   *
+   * SVG rather than pseudo-elements: there are five layers and an element has two pseudos, and the
+   * stops read the same tokens the rest of the hero does, which a `background-image` data URI cannot.
+   * `preserveAspectRatio="none"`, so the waves stretch to whatever hero they are in — which is the whole
+   * argument for drawing the bubble rather than exporting it.
+   *
+   * Not documented for callers yet, and off unless asked for. It is a prototype until a designer says
+   * otherwise.
+   */
+  drawn?: boolean
   videoPoster?: HeroMediaSource
   /**
    * `center` centres the column and its text.
@@ -147,6 +164,64 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   /** Figma's `Image=Yes`: the media column beside the content. An image, a video card, anything. */
   media?: ReactNode
   children?: ReactNode
+}
+
+/*
+ * One wave, twice as wide as it is shown.
+ *
+ * Two full periods across the 200-unit box, so translating by exactly 100 lands the second period where
+ * the first was and the loop has no seam. `a` is the amplitude and `y` the rest height; every layer is
+ * the same curve at a different height, amplitude and phase, which is what keeps five of them reading
+ * as one moving field rather than as five separate ribbons.
+ */
+const wave = (y: number, a: number) =>
+  `M0 ${y} C 25 ${y - a}, 75 ${y + a}, 100 ${y} S 175 ${y + a}, 200 ${y} L200 140 L0 140 Z`
+
+/*
+ * The five layers, back to front. Each carries its own two-stop gradient, its own height and amplitude,
+ * and its own period — none of the periods divide into another, so the field never returns to an
+ * arrangement anyone will sit through twice.
+ *
+ * The palette runs the ramp the hero already owns and adds the two hues it does not have: there is no
+ * magenta in the token set and nothing near this cyan, and the source animation plainly has both.
+ */
+const LAYERS = [
+  { y: 74, a: 26, from: 'var(--sds-bubble-magenta)', to: 'var(--sds-accent-product-accent)', time: '31s' },
+  { y: 62, a: 20, from: 'var(--sds-accent-product-accent)', to: 'var(--sds-brand-primary-primary)', time: '43s' },
+  { y: 84, a: 30, from: 'var(--sds-brand-primary-primary)', to: 'var(--sds-brand-primary-lighten-1)', time: '37s' },
+  { y: 96, a: 22, from: 'var(--sds-brand-primary-lighten-1)', to: 'var(--sds-bubble-cyan)', time: '53s' },
+  { y: 108, a: 16, from: 'var(--sds-bubble-cyan)', to: 'var(--sds-accent-product-accent)', time: '47s' },
+]
+
+/** The drawn bubble: five translucent gradient waves over the hero's own surface. */
+function HeroWaves() {
+  return (
+    <svg
+      className={classes.heroWaves}
+      viewBox="0 0 200 140"
+      preserveAspectRatio="none"
+      aria-hidden
+      focusable="false"
+    >
+      <defs>
+        {LAYERS.map((layer, i) => (
+          <linearGradient key={i} id={`sds-wave-${i}`} x1="0" y1="0" x2="1" y2="0.35">
+            <stop offset="0%" stopColor={layer.from} />
+            <stop offset="100%" stopColor={layer.to} />
+          </linearGradient>
+        ))}
+      </defs>
+      {LAYERS.map((layer, i) => (
+        <path
+          key={i}
+          className={classes.heroWave}
+          d={wave(layer.y, layer.a)}
+          fill={`url(#sds-wave-${i})`}
+          style={{ animationDuration: layer.time }}
+        />
+      ))}
+    </svg>
+  )
 }
 
 /**
@@ -205,6 +280,7 @@ export function Hero({
   background = 'none',
   video,
   videoLight,
+  drawn,
   videoPoster,
   align = 'left',
   banner,
@@ -246,8 +322,8 @@ export function Hero({
    * throwing away the thing that already honours it.
    */
   const still = Boolean(canvas) && !isMotion(canvas)
-  const showBubble = Boolean(source) && background !== 'none' && (still || !reducedMotion)
-  const showVideo = showBubble && !still
+  const showBubble = (drawn || Boolean(source)) && background !== 'none' && (still || !reducedMotion || drawn)
+  const showVideo = showBubble && !still && !drawn
 
   /*
    * A moving poster cannot go on the `poster` attribute — HTML takes an image there and nothing else.
@@ -275,6 +351,7 @@ export function Hero({
       data-background={background === 'none' ? undefined : background}
       /* Tells the stylesheet to drop the gradient: the artwork is standing in its place. */
       data-video={showBubble || undefined}
+      data-bubble-css={drawn || undefined}
       data-align={align === 'center' ? 'center' : undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
@@ -287,6 +364,7 @@ export function Hero({
          * finding the video in the hero's media column.
          */
         <div className={classes.heroBubble} data-bubble aria-hidden>
+          {drawn ? <HeroWaves /> : null}
           {still && showBubble ? (
             <img
               className={classes.heroVideo}
