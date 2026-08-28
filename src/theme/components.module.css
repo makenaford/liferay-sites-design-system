@@ -3164,15 +3164,37 @@
   grid-template-columns: 1fr;
   /* The file sets its groups well apart on a phone; 20px ran them together into one long list. */
   gap: 36px;
-  padding: 0 0 8px;
+  padding: 0;
   min-width: 0;
 }
 
 .headerDrawerPanel .megaFeatured {
   width: 100%;
   border-inline-start: none;
-  padding: 8px 0 16px;
+  /*
+   * The rail is another group, so it is set off by the gap the groups use rather than by a padding of
+   * its own — Featured was landing flush against the last column while every other heading had 36px
+   * above it.
+   */
+  padding: 36px 0 0;
   background-image: none;
+}
+
+/*
+ * Horizontal, whatever the desktop rail does.
+ *
+ * `stacked` is the narrow rail's answer to a 320px column: the image goes over the text because there
+ * is no room beside it. A drawer is the full width of the phone, and there is — so the card keeps the
+ * thumbnail beside its title, which is both what the file draws and what fits three of them on screen.
+ */
+.headerDrawerPanel .megaFeaturedCard[data-stacked] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.headerDrawerPanel .megaFeaturedCard[data-stacked] .megaFeaturedThumb {
+  width: 96px;
+  height: 64px;
 }
 
 .headerDrawerPanel .megaCta {

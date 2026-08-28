@@ -237,7 +237,7 @@ export const SITE_NAV: NavMenu[] = [
     ],
     featuredStacked: true,
     featured: [
-      { title: 'Techem\'s Customer Portal Goes Live in 18 Countries', href: 'https://www.liferay.com/resources/case-studies/techem', description: 'tech', hue: 20 },
+      { title: 'Techem\'s Customer Portal Goes Live in 18 Countries', href: 'https://www.liferay.com/resources/case-studies/techem', description: 'Faster billing, better visibility, built-in compliance.', hue: 20 },
       { title: 'Maschio Gaspardo Builds a Single Source of Truth for Product Data', href: 'https://www.liferay.com/resources/case-studies/maschio-gaspardo', description: 'From 6,000 printed catalogs a year to just 100.', hue: 96 },
     ],
   },
