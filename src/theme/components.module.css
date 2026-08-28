@@ -3579,12 +3579,25 @@
  * 1440x648 hero, i.e. edge to edge; `Corner Bubble` is 1105 wide against the same frame, anchored to the
  * top right, so it is not stretched across the whole width.
  */
+/*
+ * Pinned left, right and bottom — never cropped along the bottom.
+ *
+ * This was `inset: 0` with `object-fit: cover`, which fills the box by overflowing whichever axis does
+ * not fit: in a hero shorter than the artwork it ate the bottom of the bubble, which is the part that
+ * reaches furthest into the page. Sizing by width with `height: auto` and anchoring the bottom means
+ * the frame's own proportions decide the height, and anything that does not fit is taken off the top,
+ * behind the content, where there is nothing to lose.
+ */
 .heroVideo {
   position: absolute;
-  inset: 0;
+  inset: auto 0 0 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  /*
+   * `auto`, and no `object-fit`: the frame keeps its own ratio, so nothing is cropped on any of the
+   * three pinned edges. A hero taller than that simply has gradient above the bubble; a shorter one
+   * loses the top of the frame to `overflow: hidden`, which is the end with nothing in it.
+   */
+  height: auto;
   /*
    * The file is a bright sphere on a near-black ground, so `screen` drops the ground and keeps the
    * light. Its blacks are not pure, though, which leaves a faint rectangle where the frame ends — hence
@@ -3621,10 +3634,13 @@
 }
 
 .hero[data-background='corner'] .heroVideo {
-  inset: auto 0 auto auto;
-  width: min(1105px, 100%);
-  height: 100%;
-  object-position: top right;
+  /*
+   * The corner bubble keeps its top-right weight, but takes the same three edges: the full width, and
+   * the bottom. It used to be a 1105px box anchored top right, which is what cut its bottom away.
+   */
+  inset: auto 0 0 0;
+  width: 100%;
+  height: auto;
   /* Anchored top right, so the fade runs down and to the left, away from the corner it sits in. */
   -webkit-mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
   mask-image: radial-gradient(120% 120% at 88% 6%, #000 62%, transparent 98%);
