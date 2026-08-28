@@ -787,6 +787,14 @@ The light ground samples a true 255,255,255 at every edge, where the dark asset'
 so the edge masks that hide the dark frame are not strictly needed here. They are kept anyway, because
 they are the shape of the treatment in both schemes and not only a patch.
 
+**A file, not only a URL.** `video`, `videoLight`, `videoPoster` and `videoLightPoster` each take a
+`File` as readily as a string, so a builder can hand over what someone just picked from disk without
+hosting it first to get a URL back. The hero makes the object URL and revokes it when the file changes
+or the hero unmounts — without that every re-pick leaks the last one, and a video is not a small thing
+to leak. A file input hands you a list rather than a file, so a list is accepted too and the first entry
+taken, which saves every call site the same unwrapping. Whether a source moves is read from a file's
+MIME type rather than its extension, because an object URL has no extension to read.
+
 **The poster may move.** `videoPoster` and `videoLightPoster` take a video as readily as an image, which
 matters where the animation is the heavy file and the poster is a light loop of the same artwork: the
 hero moves from the first frame rather than sitting still until the download lands. HTML's own `poster`

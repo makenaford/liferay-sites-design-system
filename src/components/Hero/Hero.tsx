@@ -5,12 +5,61 @@ import { useReducedMotion } from '@mantine/hooks'
 import classes from '../../theme/components.module.css'
 
 /**
- * Whether a poster points at something that moves.
+ * What the hero will take for an animation or its poster.
  *
- * By extension, the same rule `page-schema.ts` uses for its media refs — inferred rather than declared,
- * so swapping a still for a motion version stays a one-field change.
+ * A URL, or a file — so a builder can hand over what someone just picked from disk without first
+ * uploading it somewhere and passing back a string. `readonly (…)[]` is there because a file input
+ * hands you a list, and taking the first of it here saves every call site the same unwrapping.
  */
-const isMotion = (src?: string) => Boolean(src) && /\.(webm|mp4)(\?|#|$)/i.test(src!)
+export type HeroMediaSource = string | File | Blob | readonly (string | File | Blob)[]
+
+/** A list from a file input collapses to its first entry; everything else is already one thing. */
+const first = (source?: HeroMediaSource) =>
+  (Array.isArray(source) ? source[0] : source) as string | File | Blob | undefined
+
+/**
+ * Whether a source points at something that moves.
+ *
+ * A file says so itself, in its MIME type. A URL is judged by its extension — the same rule
+ * `page-schema.ts` uses for its media refs, inferred rather than declared, so swapping a still for a
+ * motion version stays a one-field change. An object URL has no extension, which is why the file's own
+ * type has to be asked first.
+ */
+function isMotion(source?: HeroMediaSource) {
+  const value = first(source)
+  if (!value) return false
+  if (typeof value !== 'string') return value.type.startsWith('video/')
+  return /\.(webm|mp4)(\?|#|$)/i.test(value)
+}
+
+/**
+ * A source as something `src` will take.
+ *
+ * A string passes through. A file becomes an object URL, revoked when it changes or the hero unmounts —
+ * without that every re-pick leaks the last one, and a video file is not a small thing to leak.
+ */
+function useMediaUrl(source?: HeroMediaSource) {
+  const value = first(source)
+  const [url, setUrl] = useState(typeof value === 'string' ? value : undefined)
+
+  useEffect(() => {
+    if (!value) {
+      setUrl(undefined)
+      return undefined
+    }
+
+    if (typeof value === 'string') {
+      setUrl(value)
+      return undefined
+    }
+
+    const objectUrl = URL.createObjectURL(value)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [value])
+
+  return url
+}
 
 export type HeroBackground = 'none' | 'full' | 'corner'
 export type HeroAlign = 'left' | 'center'
@@ -32,7 +81,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * Deliberately not bundled: it is 2MB, and a component library should not put that inside anyone's
    * JavaScript. Import it with your bundler or serve it from your public directory, and pass the URL.
    */
-  video?: string
+  video?: HeroMediaSource
   /**
    * What stands in for the animation until it can play — and if it never can.
    *
@@ -40,7 +89,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * rendered as a second video behind the first and swapped out on `canplay`; a still goes on the
    * attribute as before. Which one you passed is inferred from the extension.
    */
-  videoPoster?: string
+  videoPoster?: HeroMediaSource
   /**
    * The light scheme's animation.
    *
@@ -49,9 +98,9 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * paints a dark blob with a visible frame edge, so light mode had no video at all until there was an
    * asset drawn for it. Without this, light mode still falls back to the gradient.
    */
-  videoLight?: string
+  videoLight?: HeroMediaSource
   /** The same for `videoLight`, and it may move too. */
-  videoLightPoster?: string
+  videoLightPoster?: HeroMediaSource
   /**
    * `center` centres the column and its text.
    *
@@ -176,8 +225,10 @@ export function Hero({
    * visible frame edge, which is why light mode had no video for so long. It has its own asset now, and
    * a scheme with no file still falls back to the gradient, which is built from the same tokens.
    */
-  const source = scheme === 'dark' ? video : videoLight
-  const poster = scheme === 'dark' ? videoPoster : videoLightPoster
+  const sourceRef = scheme === 'dark' ? video : videoLight
+  const posterRef = scheme === 'dark' ? videoPoster : videoLightPoster
+  const source = useMediaUrl(sourceRef)
+  const poster = useMediaUrl(posterRef)
   const showVideo = Boolean(source) && background !== 'none' && !reducedMotion
 
   /*
@@ -188,7 +239,7 @@ export function Hero({
    * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
    * hole. Both reset when the source changes, which is what a scheme flip does.
    */
-  const motionPoster = isMotion(poster)
+  const motionPoster = isMotion(posterRef)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
 
