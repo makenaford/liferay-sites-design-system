@@ -3902,14 +3902,17 @@
 
 .hero[data-bubble-css] .heroBubble {
   /*
-   * The one hue the ramp is missing, **sampled from the webms** rather than picked: binning every frame
-   * of both files by hue and keeping the brightest saturated pixel puts the whole animation between 200°
-   * and 260°, and this is its cyan end. The other three stops are tokens the library already has, which
-   * the sampling landed within a few units of.
+   * The drawing's own colours, given rather than sampled.
    *
-   * A candidate for `Accent/*` in the file, not a permanent resident of a stylesheet.
+   * `#0b5fff` is `Brand/Primary/Primary` exactly, so the mesh takes that one from the token and these
+   * four carry the rest. None of them has a home in the ramp yet — there is no violet this deep, no
+   * sky this light and nothing near `#070d52` — so they live here, once, and are flagged for `Accent/*`
+   * in the file if the drawn bubble ships.
    */
-  --sds-bubble-cyan: #5fbaeb;
+  --sds-bubble-magenta: #9500f2;
+  --sds-bubble-violet: #6f0bd2;
+  --sds-bubble-sky: #3fa2f7;
+  --sds-bubble-deep: #070d52;
   background-image: none;
   /*
    * A field has no frame, but it does have a bottom edge, and one crossing into the next section reads
@@ -3997,14 +4000,27 @@
 .hero[data-background='full'][data-bubble-css] .heroWaves {
   top: -8%;
   height: 130%;
-  rotate: -6deg;
   /*
-   * No horizontal mask here, unlike `corner`.
-   *
-   * It was protecting the headline from a field that crossed it. Two edge-lit waves have a transparent
-   * middle by construction, and the headline sits in that middle — the composition already does what the
-   * mask was for, and keeping it only dimmed the two edges that are the whole variant.
+   * Level, and sitting on the hero's foot. No rotation and no horizontal mask: the pair is a coloured
+   * floor with light coming off it, the gradient has faded to nothing long before the content, and
+   * anything that dimmed it further would take the one edge the variant has.
    */
+  rotate: 0deg;
+  top: 0;
+  height: 100%;
+}
+
+/*
+ * No bottom fade on `full`.
+ *
+ * `.heroBubble`'s fade exists for a drawing that overhangs the hero and has to dissolve before the next
+ * section. This pair does not overhang — both waves close on the foot of the box, which is the foot of
+ * the hero — and the fade was landing exactly on the saturated edge that is the whole point of the
+ * variant, eating it from below while the drawing's own gradient ate it from above.
+ */
+.hero[data-background='full'][data-bubble-css] .heroBubble {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /*
@@ -4016,7 +4032,7 @@
    * Stronger than the corner field's layers, and for the opposite reason: there are two of them rather
    * than five, so nothing accumulates. All the light this variant has is on two edges.
    */
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 /*

@@ -186,19 +186,20 @@ const wave = (y: number, a: number, to: number) =>
   `M0 ${y} C 25 ${y - a}, 75 ${y + a}, 100 ${y} S 175 ${y + a}, 200 ${y} L200 ${to} L0 ${to} Z`
 
 /*
- * `Type=Full Bubble` — two waves facing each other, lit along their edges.
+ * `Type=Full Bubble` — two overlapping waves rising off the foot of the hero.
  *
- * Not a field: a pair. One hangs from the top and one rises from the bottom, offset half a period so
- * their crests never line up, and each is coloured *at its curve* and fades to nothing into its own
- * body. What is left is light along two edges and a transparent middle — which is the hero's own
- * surface showing through, not a colour painted to look like it.
+ * Both are anchored to the bottom and both are saturated *there*, fading upward to nothing well before
+ * they reach the content. So the hero has a coloured floor with light coming off it, and the headline
+ * sits in clear air above — no mask needed to protect it, because the gradient never arrives.
  *
- * `fade` is where each one stops: the top wave fades out at the top of the box, the bottom wave at the
- * bottom, so the colour is always strongest on the edge that faces the middle.
+ * They overlap rather than facing each other across a gap: different crest heights, different
+ * amplitudes and a half-period offset, so the two curves cross and the colour doubles where they do.
+ * That crossing is the only place two layers can build depth, which is why the phases matter more than
+ * the fills.
  */
 const FULL_LAYERS = [
-  { y: 46, a: 11, to: -40, fade: -6, phase: 0, time: '37s' },
-  { y: 100, a: 13, to: 180, fade: 150, phase: -100, time: '53s' },
+  { y: 62, a: 16, to: 140, fade: 62, phase: 0, time: '37s', mesh: 'a' },
+  { y: 88, a: 22, to: 140, fade: 84, phase: -100, time: '53s', mesh: 'b' },
 ]
 
 /*
@@ -207,36 +208,41 @@ const FULL_LAYERS = [
  * to an arrangement anyone will sit through twice.
  */
 const CORNER_LAYERS = [
-  { y: 74, a: 26, to: 140, fade: 140, phase: 0, time: '31s' },
-  { y: 62, a: 20, to: 140, fade: 140, phase: 0, time: '43s' },
-  { y: 84, a: 30, to: 140, fade: 140, phase: 0, time: '37s' },
-  { y: 96, a: 22, to: 140, fade: 140, phase: 0, time: '53s' },
-  { y: 108, a: 16, to: 140, fade: 140, phase: 0, time: '47s' },
+  { y: 74, a: 26, to: 140, fade: 200, phase: 0, time: '31s', mesh: 'a' },
+  { y: 62, a: 20, to: 140, fade: 200, phase: 0, time: '43s', mesh: 'b' },
+  { y: 84, a: 30, to: 140, fade: 200, phase: 0, time: '37s', mesh: 'a' },
+  { y: 96, a: 22, to: 140, fade: 200, phase: 0, time: '53s', mesh: 'b' },
+  { y: 108, a: 16, to: 140, fade: 200, phase: 0, time: '47s', mesh: 'a' },
 ]
 
 /*
- * The mesh, along the edge — **sampled from the webms**, not invented.
+ * The mesh, across the wave.
  *
- * Four stops across the wave rather than two, so the colour changes along the curve instead of ramping
- * once from end to end. That is the mesh the drawing has and a two-stop gradient cannot give: the light
- * is a different colour depending where you look along it.
+ * Four stops rather than two, so the colour changes along the curve instead of ramping once end to end —
+ * the light is a different colour depending where you look at it, which is what a two-stop gradient
+ * cannot give and what makes this a mesh rather than a fade.
  *
- * The stops come from the shipped files. Every frame of `bubble_center.webm` and `bubble_corner.webm`
- * was binned by hue, keeping the brightest saturated pixel in each bin, and the whole animation turns
- * out to live between **200° and 260°** — `#5fbaeb` cyan-blue through `#83bbfe`, `#91a4fa`, `#adacff`
- * to `#a686ff` violet.
+ * Two of them, so the overlapping pair does not cross itself with its own colours: `a` runs violet into
+ * blue, `b` runs the deep navy into sky, and where the two waves cross the stops are never the same.
  *
- * Which settles something an earlier pass got wrong: **there is no magenta in the artwork at all.** It
- * was in the reference image and I read it as part of the palette; it is not. Three of the four sampled
- * hues also land within a few units of tokens the library already has, so only the cyan end needs a
- * literal — and that literal is measured from the file rather than chosen.
+ * Named colours from the design, not sampled and not invented. `#0b5fff` is `Brand/Primary/Primary`
+ * exactly, so that one is the token; the other four have no home in the ramp yet and are declared in the
+ * stylesheet, flagged there for the file.
  */
-const MESH = [
-  { at: '0%', color: 'var(--sds-bubble-cyan)' },
-  { at: '36%', color: 'var(--sds-brand-primary-lighten-3)' },
-  { at: '72%', color: 'var(--sds-accent-product-accent)' },
-  { at: '100%', color: 'var(--sds-brand-primary-lighten-1)' },
-]
+const MESH = {
+  a: [
+    { at: '0%', color: 'var(--sds-bubble-magenta)' },
+    { at: '38%', color: 'var(--sds-bubble-violet)' },
+    { at: '74%', color: 'var(--sds-brand-primary-primary)' },
+    { at: '100%', color: 'var(--sds-bubble-sky)' },
+  ],
+  b: [
+    { at: '0%', color: 'var(--sds-bubble-deep)' },
+    { at: '32%', color: 'var(--sds-bubble-violet)' },
+    { at: '70%', color: 'var(--sds-brand-primary-primary)' },
+    { at: '100%', color: 'var(--sds-bubble-sky)' },
+  ],
+}
 
 /** The drawn bubble: gradient waves over the hero's own surface. */
 function HeroWaves({ background }: { background: HeroBackground }) {
@@ -253,7 +259,7 @@ function HeroWaves({ background }: { background: HeroBackground }) {
       <defs>
         {layers.map((_, i) => (
           <linearGradient key={`m${i}`} id={`sds-wave-mesh-${i}`} x1="0" y1="0" x2="1" y2="0.3">
-            {MESH.map((stop) => (
+            {MESH[layers[i].mesh as 'a' | 'b'].map((stop) => (
               <stop key={stop.at} offset={stop.at} stopColor={stop.color} />
             ))}
           </linearGradient>
@@ -263,18 +269,24 @@ function HeroWaves({ background }: { background: HeroBackground }) {
           * shape closes. A mask rather than a second fill, because a fill can only be one gradient and
           * this needs two directions — colour along the edge, transparency across it.
           */}
+        {/*
+          * The fade, per layer, in the viewBox's own units and running **upward from the foot**: full
+          * strength along the bottom edge, gone by `fade`, which sits at or above the wave's own crest.
+          * A mask rather than a second fill, because this needs two directions at once — colour across
+          * the wave and transparency up it — and a fill can only be one gradient.
+          */}
         {layers.map((layer, i) => (
           <linearGradient
             key={`f${i}`}
             id={`sds-wave-fade-${i}`}
             gradientUnits="userSpaceOnUse"
             x1="0"
-            y1={layer.y}
+            y1="140"
             x2="0"
             y2={layer.fade}
           >
             <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="26%" stopColor="#fff" stopOpacity="0.55" />
+            <stop offset="46%" stopColor="#fff" stopOpacity="0.62" />
             <stop offset="100%" stopColor="#fff" stopOpacity="0" />
           </linearGradient>
         ))}
