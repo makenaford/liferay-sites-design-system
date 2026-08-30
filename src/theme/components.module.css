@@ -3901,9 +3901,15 @@
  */
 
 .hero[data-bubble-css] .heroBubble {
-  /* The two hues the ramp is missing. Candidates for `Accent/*` in the file, not permanent residents. */
-  --sds-bubble-magenta: #d8558f;
-  --sds-bubble-cyan: #67e8f9;
+  /*
+   * The one hue the ramp is missing, **sampled from the webms** rather than picked: binning every frame
+   * of both files by hue and keeping the brightest saturated pixel puts the whole animation between 200°
+   * and 260°, and this is its cyan end. The other three stops are tokens the library already has, which
+   * the sampling landed within a few units of.
+   *
+   * A candidate for `Accent/*` in the file, not a permanent resident of a stylesheet.
+   */
+  --sds-bubble-cyan: #5fbaeb;
   background-image: none;
   /*
    * A field has no frame, but it does have a bottom edge, and one crossing into the next section reads
@@ -3992,9 +3998,13 @@
   top: -8%;
   height: 130%;
   rotate: -6deg;
-  /* Weakest where the text is and strongest away from it, which is what `full` can afford and `corner` cannot. */
-  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, #000 58%);
-  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.4) 0%, #000 58%);
+  /*
+   * No horizontal mask here, unlike `corner`.
+   *
+   * It was protecting the headline from a field that crossed it. Two edge-lit waves have a transparent
+   * middle by construction, and the headline sits in that middle — the composition already does what the
+   * mask was for, and keeping it only dimmed the two edges that are the whole variant.
+   */
 }
 
 /*
@@ -4002,7 +4012,11 @@
  * shoulder, and is over the media column where a strong field would fight the product shot.
  */
 .hero[data-background='full'][data-bubble-css] .heroWave {
-  opacity: 0.3;
+  /*
+   * Stronger than the corner field's layers, and for the opposite reason: there are two of them rather
+   * than five, so nothing accumulates. All the light this variant has is on two edges.
+   */
+  opacity: 0.8;
 }
 
 /*

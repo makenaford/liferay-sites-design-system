@@ -174,27 +174,74 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
  * the same curve at a different height, amplitude and phase, which is what keeps five of them reading
  * as one moving field rather than as five separate ribbons.
  */
-const wave = (y: number, a: number) =>
-  `M0 ${y} C 25 ${y - a}, 75 ${y + a}, 100 ${y} S 175 ${y + a}, 200 ${y} L200 140 L0 140 Z`
+/*
+ * A wave edge, and the body it closes into.
+ *
+ * Two full periods across the 200-unit box, so translating by exactly 100 lands the second period where
+ * the first was and the loop has no seam. `to` is where the shape closes — below its own curve for a
+ * wave that hangs downward, above it for one that hangs up — which is what lets two of them face each
+ * other across an empty middle.
+ */
+const wave = (y: number, a: number, to: number) =>
+  `M0 ${y} C 25 ${y - a}, 75 ${y + a}, 100 ${y} S 175 ${y + a}, 200 ${y} L200 ${to} L0 ${to} Z`
 
 /*
- * The five layers, back to front. Each carries its own two-stop gradient, its own height and amplitude,
- * and its own period — none of the periods divide into another, so the field never returns to an
- * arrangement anyone will sit through twice.
+ * `Type=Full Bubble` — two waves facing each other, lit along their edges.
  *
- * The palette runs the ramp the hero already owns and adds the two hues it does not have: there is no
- * magenta in the token set and nothing near this cyan, and the source animation plainly has both.
+ * Not a field: a pair. One hangs from the top and one rises from the bottom, offset half a period so
+ * their crests never line up, and each is coloured *at its curve* and fades to nothing into its own
+ * body. What is left is light along two edges and a transparent middle — which is the hero's own
+ * surface showing through, not a colour painted to look like it.
+ *
+ * `fade` is where each one stops: the top wave fades out at the top of the box, the bottom wave at the
+ * bottom, so the colour is always strongest on the edge that faces the middle.
  */
-const LAYERS = [
-  { y: 74, a: 26, from: 'var(--sds-bubble-magenta)', to: 'var(--sds-accent-product-accent)', time: '31s' },
-  { y: 62, a: 20, from: 'var(--sds-accent-product-accent)', to: 'var(--sds-brand-primary-primary)', time: '43s' },
-  { y: 84, a: 30, from: 'var(--sds-brand-primary-primary)', to: 'var(--sds-brand-primary-lighten-1)', time: '37s' },
-  { y: 96, a: 22, from: 'var(--sds-brand-primary-lighten-1)', to: 'var(--sds-bubble-cyan)', time: '53s' },
-  { y: 108, a: 16, from: 'var(--sds-bubble-cyan)', to: 'var(--sds-accent-product-accent)', time: '47s' },
+const FULL_LAYERS = [
+  { y: 46, a: 11, to: -40, fade: -6, phase: 0, time: '37s' },
+  { y: 100, a: 13, to: 180, fade: 150, phase: -100, time: '53s' },
 ]
 
-/** The drawn bubble: five translucent gradient waves over the hero's own surface. */
-function HeroWaves() {
+/*
+ * `Type=Corner Bubble` — five layers, back to front, after loading.io's own `Layer 5`. Each carries its
+ * own height, amplitude and period; none of the periods divide into another, so the field never returns
+ * to an arrangement anyone will sit through twice.
+ */
+const CORNER_LAYERS = [
+  { y: 74, a: 26, to: 140, fade: 140, phase: 0, time: '31s' },
+  { y: 62, a: 20, to: 140, fade: 140, phase: 0, time: '43s' },
+  { y: 84, a: 30, to: 140, fade: 140, phase: 0, time: '37s' },
+  { y: 96, a: 22, to: 140, fade: 140, phase: 0, time: '53s' },
+  { y: 108, a: 16, to: 140, fade: 140, phase: 0, time: '47s' },
+]
+
+/*
+ * The mesh, along the edge — **sampled from the webms**, not invented.
+ *
+ * Four stops across the wave rather than two, so the colour changes along the curve instead of ramping
+ * once from end to end. That is the mesh the drawing has and a two-stop gradient cannot give: the light
+ * is a different colour depending where you look along it.
+ *
+ * The stops come from the shipped files. Every frame of `bubble_center.webm` and `bubble_corner.webm`
+ * was binned by hue, keeping the brightest saturated pixel in each bin, and the whole animation turns
+ * out to live between **200° and 260°** — `#5fbaeb` cyan-blue through `#83bbfe`, `#91a4fa`, `#adacff`
+ * to `#a686ff` violet.
+ *
+ * Which settles something an earlier pass got wrong: **there is no magenta in the artwork at all.** It
+ * was in the reference image and I read it as part of the palette; it is not. Three of the four sampled
+ * hues also land within a few units of tokens the library already has, so only the cyan end needs a
+ * literal — and that literal is measured from the file rather than chosen.
+ */
+const MESH = [
+  { at: '0%', color: 'var(--sds-bubble-cyan)' },
+  { at: '36%', color: 'var(--sds-brand-primary-lighten-3)' },
+  { at: '72%', color: 'var(--sds-accent-product-accent)' },
+  { at: '100%', color: 'var(--sds-brand-primary-lighten-1)' },
+]
+
+/** The drawn bubble: gradient waves over the hero's own surface. */
+function HeroWaves({ background }: { background: HeroBackground }) {
+  const layers = background === 'full' ? FULL_LAYERS : CORNER_LAYERS
+
   return (
     <svg
       className={classes.heroWaves}
@@ -204,20 +251,47 @@ function HeroWaves() {
       focusable="false"
     >
       <defs>
-        {LAYERS.map((layer, i) => (
-          <linearGradient key={i} id={`sds-wave-${i}`} x1="0" y1="0" x2="1" y2="0.35">
-            <stop offset="0%" stopColor={layer.from} />
-            <stop offset="100%" stopColor={layer.to} />
+        {layers.map((_, i) => (
+          <linearGradient key={`m${i}`} id={`sds-wave-mesh-${i}`} x1="0" y1="0" x2="1" y2="0.3">
+            {MESH.map((stop) => (
+              <stop key={stop.at} offset={stop.at} stopColor={stop.color} />
+            ))}
           </linearGradient>
         ))}
+        {/*
+          * The fade, per layer, in the viewBox's own units: opaque on the curve and gone by the time the
+          * shape closes. A mask rather than a second fill, because a fill can only be one gradient and
+          * this needs two directions — colour along the edge, transparency across it.
+          */}
+        {layers.map((layer, i) => (
+          <linearGradient
+            key={`f${i}`}
+            id={`sds-wave-fade-${i}`}
+            gradientUnits="userSpaceOnUse"
+            x1="0"
+            y1={layer.y}
+            x2="0"
+            y2={layer.fade}
+          >
+            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+            <stop offset="26%" stopColor="#fff" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+        ))}
+        {layers.map((_, i) => (
+          <mask key={`k${i}`} id={`sds-wave-mask-${i}`} maskUnits="userSpaceOnUse" x="0" y="-60" width="200" height="260">
+            <rect x="0" y="-60" width="200" height="260" fill={`url(#sds-wave-fade-${i})`} />
+          </mask>
+        ))}
       </defs>
-      {LAYERS.map((layer, i) => (
+      {layers.map((layer, i) => (
         <path
           key={i}
           className={classes.heroWave}
-          d={wave(layer.y, layer.a)}
-          fill={`url(#sds-wave-${i})`}
-          style={{ animationDuration: layer.time }}
+          d={wave(layer.y, layer.a, layer.to)}
+          fill={`url(#sds-wave-mesh-${i})`}
+          mask={`url(#sds-wave-mask-${i})`}
+          style={{ animationDuration: layer.time, animationDelay: `${layer.phase / 10}s` }}
         />
       ))}
     </svg>
@@ -364,7 +438,7 @@ export function Hero({
          * finding the video in the hero's media column.
          */
         <div className={classes.heroBubble} data-bubble aria-hidden>
-          {drawn ? <HeroWaves /> : null}
+          {drawn ? <HeroWaves background={background} /> : null}
           {still && showBubble ? (
             <img
               className={classes.heroVideo}
