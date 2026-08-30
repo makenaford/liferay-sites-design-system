@@ -3996,27 +3996,27 @@
   mask-image: linear-gradient(to right, transparent 0%, #000 46%);
 }
 
-/* `Type=Full Bubble` — level and full width, the field the whole hero sits on. */
+/*
+ * `Type=Full Bubble` — level, full width, and hung from the top edge.
+ *
+ * The waves start at the top of the hero and close on their own curves, and `ARC` is centred on that top
+ * edge, so the field has to *begin* there: any offset upward moves the gradient's origin off the page and
+ * takes the band with it.
+ */
 .hero[data-background='full'][data-bubble-css] .heroWaves {
-  top: -8%;
-  height: 130%;
-  /*
-   * Level, and sitting on the hero's foot. No rotation and no horizontal mask: the pair is a coloured
-   * floor with light coming off it, the gradient has faded to nothing long before the content, and
-   * anything that dimmed it further would take the one edge the variant has.
-   */
-  rotate: 0deg;
   top: 0;
   height: 100%;
+  rotate: 0deg;
 }
 
 /*
- * No bottom fade on `full`.
+ * No fade on `full`, in either direction.
  *
  * `.heroBubble`'s fade exists for a drawing that overhangs the hero and has to dissolve before the next
- * section. This pair does not overhang — both waves close on the foot of the box, which is the foot of
- * the hero — and the fade was landing exactly on the saturated edge that is the whole point of the
- * variant, eating it from below while the drawing's own gradient ate it from above.
+ * section. This pair does not overhang, and more to the point `ARC` already ends at `#000111` and
+ * `#00010F` — the page ground to within a couple of units — at both ends of its radius. It arrives at
+ * the background on its own, above the band and below it. A second fade on top of that would only be
+ * thinning a gradient that has already been designed to do this.
  */
 .hero[data-background='full'][data-bubble-css] .heroBubble {
   -webkit-mask-image: none;
@@ -4024,15 +4024,16 @@
 }
 
 /*
- * `full` carries the whole hero, so its layers are stronger than `corner`'s — which only has to light a
- * shoulder, and is over the media column where a strong field would fight the product shot.
+ * `full` paints `ARC` as drawn: full strength, no blend.
+ *
+ * The gradient is a finished thing — its own dark ends, its own violet spike a quarter of a percent
+ * wide — so thinning it or adding it to what is underneath would be editing a decision that has already
+ * been made. The layer opacity and `plus-lighter` belong to the corner field, where five weak layers
+ * accumulating *is* the construction.
  */
 .hero[data-background='full'][data-bubble-css] .heroWave {
-  /*
-   * Stronger than the corner field's layers, and for the opposite reason: there are two of them rather
-   * than five, so nothing accumulates. All the light this variant has is on two edges.
-   */
-  opacity: 0.85;
+  opacity: 1;
+  mix-blend-mode: normal;
 }
 
 /*
@@ -5385,7 +5386,6 @@
  */
 .marqueeRoot[data-monochrome] .marqueeCell > :where(img, picture) {
   filter: brightness(0);
-  opacity: 0.85;
 }
 
 :where([data-mantine-color-scheme='dark'])

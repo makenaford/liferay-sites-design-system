@@ -186,20 +186,20 @@ const wave = (y: number, a: number, to: number) =>
   `M0 ${y} C 25 ${y - a}, 75 ${y + a}, 100 ${y} S 175 ${y + a}, 200 ${y} L200 ${to} L0 ${to} Z`
 
 /*
- * `Type=Full Bubble` — two overlapping waves rising off the foot of the hero.
+ * `Type=Full Bubble` — two overlapping waves hanging from the top of the page.
  *
- * Both are anchored to the bottom and both are saturated *there*, fading upward to nothing well before
- * they reach the content. So the hero has a coloured floor with light coming off it, and the headline
- * sits in clear air above — no mask needed to protect it, because the gradient never arrives.
+ * Both start at the top edge and close on their own curve, so the shape is the *upper* part of the hero
+ * and the curve is its lower edge. They overlap: different crest heights, different amplitudes and a
+ * half-period offset, so the two curves cross and the band doubles where they do. With two layers that
+ * crossing is the only place depth can come from, which makes the phases matter more than the fills.
  *
- * They overlap rather than facing each other across a gap: different crest heights, different
- * amplitudes and a half-period offset, so the two curves cross and the colour doubles where they do.
- * That crossing is the only place two layers can build depth, which is why the phases matter more than
- * the fills.
+ * Nothing fades them. The gradient does it itself — see `ARC` — which is the whole reason it is worth
+ * using verbatim rather than rebuilt out of stops.
  */
 const FULL_LAYERS = [
-  { y: 62, a: 16, to: 140, fade: 62, phase: 0, time: '37s', mesh: 'a' },
-  { y: 88, a: 22, to: 140, fade: 84, phase: -100, time: '53s', mesh: 'b' },
+  /* `mesh` and `fade` are the corner field's business; `full` paints `ARC` and needs neither. */
+  { y: 86, a: 18, to: -60, fade: 140, phase: 0, time: '37s', mesh: 'a' as const },
+  { y: 106, a: 24, to: -60, fade: 140, phase: -100, time: '53s', mesh: 'b' as const },
 ]
 
 /*
@@ -208,27 +208,53 @@ const FULL_LAYERS = [
  * to an arrangement anyone will sit through twice.
  */
 const CORNER_LAYERS = [
-  { y: 74, a: 26, to: 140, fade: 200, phase: 0, time: '31s', mesh: 'a' },
-  { y: 62, a: 20, to: 140, fade: 200, phase: 0, time: '43s', mesh: 'b' },
-  { y: 84, a: 30, to: 140, fade: 200, phase: 0, time: '37s', mesh: 'a' },
-  { y: 96, a: 22, to: 140, fade: 200, phase: 0, time: '53s', mesh: 'b' },
-  { y: 108, a: 16, to: 140, fade: 200, phase: 0, time: '47s', mesh: 'a' },
+  { y: 74, a: 26, to: 140, fade: 200, phase: 0, time: '31s', mesh: 'a' as const },
+  { y: 62, a: 20, to: 140, fade: 200, phase: 0, time: '43s', mesh: 'b' as const },
+  { y: 84, a: 30, to: 140, fade: 200, phase: 0, time: '37s', mesh: 'a' as const },
+  { y: 96, a: 22, to: 140, fade: 200, phase: 0, time: '53s', mesh: 'b' as const },
+  { y: 108, a: 16, to: 140, fade: 200, phase: 0, time: '47s', mesh: 'a' as const },
 ]
 
 /*
- * The mesh, across the wave.
+ * The arc: the design's own gradient, transcribed rather than re-derived.
  *
- * Four stops rather than two, so the colour changes along the curve instead of ramping once end to end —
- * the light is a different colour depending where you look at it, which is what a two-stop gradient
- * cannot give and what makes this a mesh rather than a fade.
+ * ```
+ * radial-gradient(339.71% 100.1% at 46.74% 0%,
+ *   #000111 0%, #00010F 33.07%, #12096B 53.11%, #2712D8 61.87%,
+ *   #175FE4 69.66%, #A71BF5 74.76%, #0429BD 75%, #01024C 76%, #00010F 93.75%)
+ * ```
  *
- * Two of them, so the overlapping pair does not cross itself with its own colours: `a` runs violet into
- * blue, `b` runs the deep navy into sky, and where the two waves cross the stops are never the same.
+ * A very wide ellipse centred on the **top edge**, dark at both ends and carrying its colour in a band
+ * between 53% and 76% of the way out: navy into indigo, indigo into electric blue, and then a single
+ * violet spike at 74.76% that falls back to deep blue within a quarter of a percent. That spike is the
+ * whole character of it — a hard edge inside a soft field — and it is the reason this is copied stop for
+ * stop instead of approximated.
  *
- * Named colours from the design, not sampled and not invented. `#0b5fff` is `Brand/Primary/Primary`
- * exactly, so that one is the token; the other four have no home in the ramp yet and are declared in the
- * stylesheet, flagged there for the file.
+ * It is also why nothing here needs a fade mask. The gradient's own ends are `#000111` and `#00010F`,
+ * which is the page ground to within a couple of units, so it arrives at the background on its own —
+ * above the band where the content is, and below it at the foot.
+ *
+ * SVG has no two-radius radial, so the ellipse is a circle of `ry` with a `gradientTransform` scaling
+ * `rx / ry` across. `userSpaceOnUse`, so both waves share one geometry measured on the hero rather than
+ * each getting its own relative to its own bounding box.
  */
+const ARC = [
+  { at: '0%', color: '#000111' },
+  { at: '33.07%', color: '#00010F' },
+  { at: '53.11%', color: '#12096B' },
+  { at: '61.87%', color: '#2712D8' },
+  { at: '69.66%', color: '#175FE4' },
+  { at: '74.76%', color: '#A71BF5' },
+  { at: '75%', color: '#0429BD' },
+  { at: '76%', color: '#01024C' },
+  { at: '93.75%', color: '#00010F' },
+]
+
+/* 46.74% of 200, and 339.71% / 100.1% as a ratio across a circle of the vertical radius. */
+const ARC_CX = 93.48
+const ARC_R = 140.14
+const ARC_STRETCH = 4.8481
+
 const MESH = {
   a: [
     { at: '0%', color: 'var(--sds-bubble-magenta)' },
@@ -246,7 +272,8 @@ const MESH = {
 
 /** The drawn bubble: gradient waves over the hero's own surface. */
 function HeroWaves({ background }: { background: HeroBackground }) {
-  const layers = background === 'full' ? FULL_LAYERS : CORNER_LAYERS
+  const isFull = background === 'full'
+  const layers = isFull ? FULL_LAYERS : CORNER_LAYERS
 
   return (
     <svg
@@ -257,52 +284,66 @@ function HeroWaves({ background }: { background: HeroBackground }) {
       focusable="false"
     >
       <defs>
-        {layers.map((_, i) => (
-          <linearGradient key={`m${i}`} id={`sds-wave-mesh-${i}`} x1="0" y1="0" x2="1" y2="0.3">
-            {MESH[layers[i].mesh as 'a' | 'b'].map((stop) => (
+        {isFull ? (
+          <radialGradient
+            id="sds-wave-arc"
+            gradientUnits="userSpaceOnUse"
+            cx={ARC_CX}
+            cy="0"
+            r={ARC_R}
+            gradientTransform={`translate(${ARC_CX} 0) scale(${ARC_STRETCH} 1) translate(${-ARC_CX} 0)`}
+          >
+            {ARC.map((stop) => (
               <stop key={stop.at} offset={stop.at} stopColor={stop.color} />
             ))}
-          </linearGradient>
-        ))}
-        {/*
-          * The fade, per layer, in the viewBox's own units: opaque on the curve and gone by the time the
-          * shape closes. A mask rather than a second fill, because a fill can only be one gradient and
-          * this needs two directions — colour along the edge, transparency across it.
-          */}
-        {/*
-          * The fade, per layer, in the viewBox's own units and running **upward from the foot**: full
-          * strength along the bottom edge, gone by `fade`, which sits at or above the wave's own crest.
-          * A mask rather than a second fill, because this needs two directions at once — colour across
-          * the wave and transparency up it — and a fill can only be one gradient.
-          */}
-        {layers.map((layer, i) => (
-          <linearGradient
-            key={`f${i}`}
-            id={`sds-wave-fade-${i}`}
-            gradientUnits="userSpaceOnUse"
-            x1="0"
-            y1="140"
-            x2="0"
-            y2={layer.fade}
-          >
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="46%" stopColor="#fff" stopOpacity="0.62" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </linearGradient>
-        ))}
-        {layers.map((_, i) => (
-          <mask key={`k${i}`} id={`sds-wave-mask-${i}`} maskUnits="userSpaceOnUse" x="0" y="-60" width="200" height="260">
-            <rect x="0" y="-60" width="200" height="260" fill={`url(#sds-wave-fade-${i})`} />
-          </mask>
-        ))}
+          </radialGradient>
+        ) : (
+          <>
+            {layers.map((_, i) => (
+              <linearGradient key={`m${i}`} id={`sds-wave-mesh-${i}`} x1="0" y1="0" x2="1" y2="0.3">
+                {MESH[layers[i].mesh].map((stop) => (
+                  <stop key={stop.at} offset={stop.at} stopColor={stop.color} />
+                ))}
+              </linearGradient>
+            ))}
+            {layers.map((layer, i) => (
+              <linearGradient
+                key={`f${i}`}
+                id={`sds-wave-fade-${i}`}
+                gradientUnits="userSpaceOnUse"
+                x1="0"
+                y1="140"
+                x2="0"
+                y2={layer.fade}
+              >
+                <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+                <stop offset="46%" stopColor="#fff" stopOpacity="0.62" />
+                <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+              </linearGradient>
+            ))}
+            {layers.map((_, i) => (
+              <mask
+                key={`k${i}`}
+                id={`sds-wave-mask-${i}`}
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="-60"
+                width="200"
+                height="260"
+              >
+                <rect x="0" y="-60" width="200" height="260" fill={`url(#sds-wave-fade-${i})`} />
+              </mask>
+            ))}
+          </>
+        )}
       </defs>
       {layers.map((layer, i) => (
         <path
           key={i}
           className={classes.heroWave}
           d={wave(layer.y, layer.a, layer.to)}
-          fill={`url(#sds-wave-mesh-${i})`}
-          mask={`url(#sds-wave-mask-${i})`}
+          fill={isFull ? 'url(#sds-wave-arc)' : `url(#sds-wave-mesh-${i})`}
+          mask={isFull ? undefined : `url(#sds-wave-mask-${i})`}
           style={{ animationDuration: layer.time, animationDelay: `${layer.phase / 10}s` }}
         />
       ))}
