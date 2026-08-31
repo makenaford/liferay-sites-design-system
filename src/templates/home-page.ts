@@ -279,25 +279,31 @@ export const HOME_PAGE: PageSpec = {
       type: 'customerStories',
       title: '1,200+ Enterprises Move the Needle With Liferay',
       stories: [
+        /*
+         * The eight from the `§4 Customer Testimonials` sheet, kept in step with `Home.stories.tsx`.
+         * Two copies of one list is a duplication worth closing, but not while the builder is landing.
+         *
+         * Sky's entry was wrong here too: Mueller's quote under an author who is not in the source.
+         */
         {
-          customer: 'Sky',
+          customer: 'Sky TV',
           value: '140',
           suffix: '%',
           label: 'Increase in customer self-service',
           quote:
-            'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
-          name: 'Anne Anderson',
-          role: 'VP of Experience and Change Management',
+            'With Liferay, [Sky can] scale automatically or on a schedule a lot quicker than we could do before.',
+          name: 'Jacques Hefer',
+          role: 'Solution Architect',
         },
         {
-          customer: 'Stadt Wien',
+          customer: 'City of Vienna',
           value: '100M',
           prefix: '+',
           label: 'Site views per month',
           quote:
             'Liferay’s out-of-the-box features mean we can offer state-of-the-art communication trends and methods, quickly and conveniently.',
           name: 'Nikolaus Reisel',
-          role: 'GBS Group Leader: Basic Systems and Platforms',
+          role: 'GBS Group Leader: Basic Systems and platforms',
         },
         {
           customer: 'Broadcom',
@@ -317,6 +323,44 @@ export const HOME_PAGE: PageSpec = {
             'Liferay was a bit of a no-brainer for us. The entire digital journey is now orchestrated in a unified way.',
           name: 'Srikant Chandrasekharan',
           role: 'Senior Delivery Lead for Enterprise Platforms & Products',
+        },
+        {
+          customer: 'Airbus',
+          value: '24,000',
+          label: 'Users served by portal',
+          quote:
+            'Keycopter brings efficiency and autonomy to helicopter operators. By providing coherent online services with Liferay, it is easy for our customers to keep their aircraft in good condition.',
+          name: 'Jérôme Chauvin',
+          role: 'IM Project Manager',
+        },
+        {
+          customer: 'Mueller, Inc.',
+          value: '73',
+          suffix: '%',
+          label: 'Quote increase',
+          quote:
+            'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
+          name: 'Hab Adkins',
+          role: 'Corporate Technology Manager',
+        },
+        {
+          customer: 'Jose Cuervo',
+          value: '7',
+          label: 'Teams unified via intranet',
+          quote:
+            'Our new corporate communication media needed to be effective and provide an optimal user experience, and now that was finally possible with Liferay.',
+          name: 'Loria Saviñon',
+          role: 'HR Manager',
+        },
+        {
+          customer: 'MacDon',
+          value: '50',
+          suffix: '%',
+          label: 'Increase in online transactions',
+          quote:
+            'It was just time for an upgrade, and now we get ecstatic reviews on the customer experience every week.',
+          name: 'Derek Boonstra',
+          role: 'Manager, Business Systems',
         },
       ],
     },
