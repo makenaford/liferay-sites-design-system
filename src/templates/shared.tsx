@@ -91,10 +91,23 @@ export const unit = (u: string) => (
 export function Quotee({ name, title }: { name: string; title: string }) {
   return (
     <Stack gap={4}>
-      <Text fz="sm" fw={600}>
+      {/*
+        * `Paragraph/Base` for the name — 16px, through the theme scale rather than a literal, so it
+        * follows the token if the ramp moves. It was `sm` (13px), which put the person's name below the
+        * size of ordinary body copy and made the attribution read as a caption rather than as a person.
+        */}
+      <Text fz="md" fw={600}>
         {name}
       </Text>
-      <Text fz={12} fw={600} tt="uppercase" lts="0.06em" c="var(--sds-surfaces-text-secondary)">
+      {/* Small caps, at 150% — the tracking needs the extra leading or the line sits tight under the name. */}
+      <Text
+        fz={12}
+        lh={1.5}
+        fw={600}
+        tt="uppercase"
+        lts="0.06em"
+        c="var(--sds-surfaces-text-secondary)"
+      >
         {title}
       </Text>
     </Stack>

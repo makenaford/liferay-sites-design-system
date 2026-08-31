@@ -108,20 +108,31 @@ const GOALS: Record<string, { title: string; image: string; alt: string }[]> = {
 }
 
 /** The four fully drawn customer-story cards in the `CAROUSEL` section. */
+/*
+ * The eight customer stories, from the `§4 Customer Testimonials` sheet — company, metric, quote and
+ * source, transcribed rather than paraphrased.
+ *
+ * Four of these are new. Of the four that were here, **Sky's was wrong**: it carried Mueller's quote and
+ * an author who does not appear anywhere in the source, so the card was attributing one customer's words
+ * to another under a made-up name. Mueller is now its own entry with that quote, and Sky has the one the
+ * sheet gives it.
+ *
+ * `hue` is the card's tile, and is the only field here that is not from the sheet.
+ */
 const STORIES = [
   {
-    customer: 'Sky',
+    customer: 'Sky TV',
     hue: 214,
     value: '140',
     suffix: '%',
     label: 'Increase in customer self-service',
     quote:
-      'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
-    name: 'Anne Anderson',
-    title: 'VP of Experience and Change Management',
+      'With Liferay, [Sky can] scale automatically or on a schedule a lot quicker than we could do before.',
+    name: 'Jacques Hefer',
+    title: 'Solution Architect',
   },
   {
-    customer: 'Stadt Wien',
+    customer: 'City of Vienna',
     hue: 0,
     value: '100M',
     prefix: '+',
@@ -129,7 +140,7 @@ const STORIES = [
     quote:
       'Liferay’s out-of-the-box features mean we can offer state-of-the-art communication trends and methods, quickly and conveniently.',
     name: 'Nikolaus Reisel',
-    title: 'GBS Group Leader: Basic Systems and Platforms',
+    title: 'GBS Group Leader: Basic Systems and platforms',
   },
   {
     customer: 'Broadcom',
@@ -151,6 +162,48 @@ const STORIES = [
       'Liferay was a bit of a no-brainer for us. The entire digital journey is now orchestrated in a unified way.',
     name: 'Srikant Chandrasekharan',
     title: 'Senior Delivery Lead for Enterprise Platforms & Products',
+  },
+  {
+    customer: 'Airbus',
+    hue: 196,
+    value: '24,000',
+    label: 'Users served by portal',
+    quote:
+      'Keycopter brings efficiency and autonomy to helicopter operators. By providing coherent online services with Liferay, it is easy for our customers to keep their aircraft in good condition.',
+    name: 'Jérôme Chauvin',
+    title: 'IM Project Manager',
+  },
+  {
+    customer: 'Mueller, Inc.',
+    hue: 264,
+    value: '73',
+    suffix: '%',
+    label: 'Quote increase',
+    quote:
+      'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
+    name: 'Hab Adkins',
+    title: 'Corporate Technology Manager',
+  },
+  {
+    customer: 'Jose Cuervo',
+    hue: 24,
+    value: '7',
+    label: 'Teams unified via intranet',
+    quote:
+      'Our new corporate communication media needed to be effective and provide an optimal user experience, and now that was finally possible with Liferay.',
+    name: 'Loria Saviñon',
+    title: 'HR Manager',
+  },
+  {
+    customer: 'MacDon',
+    hue: 156,
+    value: '50',
+    suffix: '%',
+    label: 'Increase in online transactions',
+    quote:
+      'It was just time for an upgrade, and now we get ecstatic reviews on the customer experience every week.',
+    name: 'Derek Boonstra',
+    title: 'Manager, Business Systems',
   },
 ]
 
@@ -549,8 +602,9 @@ function HomePage() {
               component="a"
               href="#"
               interactive
-              padding="all"
-              image={<Image src={goal.image} alt={goal.alt} ratio="3:2" radius="sm" />}
+              /* `content` so the image reaches the card's edges; `all` framed every thumbnail in card. */
+              padding="content"
+              image={<Image src={goal.image} alt={goal.alt} ratio="3:2" />}
               title={goal.title}
             />
           ))}

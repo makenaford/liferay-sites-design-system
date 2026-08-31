@@ -5592,7 +5592,21 @@
   --sds-section-gap: 24px;
   /* 20 -> 80 across 390 -> 1440: (80 - 20) / 1050 = 0.05714 */
   --sds-section-gutter: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
-  --sds-section-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  /*
+   * **120 at every width**, unlike the gutter.
+   *
+   * The two axes were the same fluid ramp, which is what the file draws — 80 at 1440 and 20 at 390. They
+   * are not the same problem. The inline gutter holds text off the edge of a screen, so it has to give
+   * way when the screen is narrow; the block padding separates one section from the next, and that
+   * separation is worth the same amount whatever the width. At 20 a phone ran its sections together and
+   * nothing read as a section any more.
+   *
+   * 120 rather than the file's 80, because at 80 the sections separated but still read as one continuous
+   * scroll: the page wants more air between one idea and the next than between a heading and its own
+   * body. A deliberate divergence from both drawn cells, and the one place these two stop sharing a
+   * formula.
+   */
+  --sds-section-block: 120px;
   /*
    * Named, so a nested block queries the section rather than whatever container happens to be closer. The
    * padding lives on the inner element and not here: a container cannot use its own query units for its
