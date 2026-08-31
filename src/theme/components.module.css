@@ -6521,19 +6521,50 @@
 }
 
 /* `Page Action Section` — the grey band. Padding is the page gutter, so it is fluid like `Section`'s. */
+/*
+ * `Ready for the future?` sits on the page, not on a panel.
+ *
+ * It carried `Surfaces/Card BG/Grey`, which drew a band behind the heading and made the CTA read as a
+ * card the page had scrolled to. The file has nothing there: the ground runs straight through from the
+ * last section into the footer, and the only thing separating them is the gradient rule above the stats.
+ */
 .footerCta {
   padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
   padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
-  background-color: var(--sds-surfaces-card-bg-grey);
   container-type: inline-size;
 }
 
 /* `Number Footer` — the blue strip. 24px of block padding rather than the gutter's. */
+/*
+ * The stats band, and the one line that separates the page from the footer.
+ *
+ * The file draws a gradient rule across the top of this band — brand blue running into the product
+ * accent — and it is doing real work now that the CTA above has no panel of its own: it is the only
+ * thing marking where the page ends and the footer begins.
+ *
+ * A pseudo-element rather than `border-image`, which cannot be combined with a radius and reads as a
+ * border in the inspector when it is really a drawn rule. `position: relative` is here for it.
+ */
 .footerStats {
+  position: relative;
   padding-block: 24px;
   padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
   background-color: var(--sds-surfaces-card-bg-blue);
   container-type: inline-size;
+}
+
+.footerStats::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    var(--sds-brand-primary-lighten-1) 0%,
+    var(--sds-brand-primary-primary) 58%,
+    var(--sds-accent-product-accent) 100%
+  );
 }
 
 /*
@@ -6553,7 +6584,12 @@
  */
 .footerBase {
   position: relative;
-  container-type: inline-size;
+  /*
+   * Named, like every other container in this stylesheet, so the column grid below queries *the footer*
+   * rather than whatever container happens to be nearest. It resolved to this element anyway — but only
+   * because nothing closer declares one, which is a fact about today's markup and not a rule.
+   */
+  container: sds-footer / inline-size;
   background-color: var(--sds-footer-ground);
   color: var(--sds-action-neutral-inverted);
   isolation: isolate;
@@ -6692,10 +6728,41 @@
  * everything stacked; rather than switch between the two, this is one grid of 214px tracks — Figma's own
  * column width — so the count follows the space. Its two cells are the two ends of that range.
  */
+/*
+ * Five tracks, explicitly.
+ *
+ * This was `repeat(auto-fit, minmax(214px, 1fr))`, and `auto-fit` is why the layout was inconsistent: the
+ * track count came out of the available width, so the grid landed on four columns or six as easily as
+ * five, and the brand block — which is the sixth child and has to *start the second row* — went wherever
+ * the flow put it. At six tracks it sat at the end of row one, and the two rows of headings stopped
+ * lining up with each other.
+ *
+ * The file draws five columns with the brand under the first, so the count is a fact about the design
+ * rather than something to derive from the width. It steps down at widths where five 214px columns do not
+ * fit, and the brand keeps starting a row at every step because the counts stay divisors of the content.
+ */
 .footerColumns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(214px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 40px 32px;
+}
+
+@container sds-footer (max-width: 1100px) {
+  .footerColumns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container sds-footer (max-width: 680px) {
+  .footerColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container sds-footer (max-width: 420px) {
+  .footerColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .footerColumn {
@@ -6706,13 +6773,23 @@
   min-width: 0;
 }
 
+/*
+ * `Small Caps/Small Caps Default/Semi Bold` in `Surfaces/Text/Secondary` — 14/20 at 600 and 6% tracking.
+ *
+ * These were `Paragraph/Default/Heavier` in white, which made every heading compete with the links under
+ * it: eighteen-point bold white against sixteen-point regular white is the heading winning an argument it
+ * should not be having. Small caps in the secondary colour is what the file draws and what the rest of
+ * this library already does for the same job — the mega menu's column headings and `Stat`'s label are
+ * both this style.
+ */
 .footerColumnTitle {
   margin: 0;
-  /* `Paragraph/Default/Heavier`. */
-  font-size: 18px;
-  line-height: 23px;
-  font-weight: 700;
-  color: var(--sds-action-neutral-inverted);
+  color: var(--sds-surfaces-text-secondary);
+  font-size: var(--sds-size-paragraph-small-caps);
+  line-height: var(--sds-line-height-paragraph-small-caps);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .footerLinks {
