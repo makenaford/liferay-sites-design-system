@@ -371,10 +371,15 @@ function GridCard({ card }: { card: CardSpec }) {
        * with nowhere to go looked exactly like one that had somewhere.
        */
       surface={card.href ? 'glass' : 'static'}
-      padding={card.image ? 'all' : undefined}
+      /*
+       * `content`, not `all`: the image runs to the card's edges and only the text is inset. `all` pads
+       * the image too, which put a 20px frame of card around every thumbnail and made the picture look
+       * like it had been pasted in rather than like it was the card's face.
+       */
+      padding={card.image ? 'content' : undefined}
       image={
         card.image ? (
-          <Image src={card.image.src} alt={card.image.alt} ratio="3:2" radius="sm" />
+          <Image src={card.image.src} alt={card.image.alt} ratio="3:2" />
         ) : undefined
       }
       hero={
