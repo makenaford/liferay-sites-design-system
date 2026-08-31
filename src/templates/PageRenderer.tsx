@@ -404,6 +404,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
 
   return (
     <Section
+      reveal
       gap={32}
       title={
         <SectionTitle
@@ -439,7 +440,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
 /** `Type=Resources` — three columns at the drawn 24px gap, icon- or tag-led cards. */
 function ResourceGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'resourceGrid' }> }) {
   return (
-    <Section title={<SectionTitle title={spec.title} description={spec.description} />}>
+    <Section reveal title={<SectionTitle title={spec.title} description={spec.description} />}>
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
         {spec.cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
@@ -496,7 +497,7 @@ function CustomerStoriesSection({
   spec: Extract<SectionSpec, { type: 'customerStories' }>
 }) {
   return (
-    <Section bleed title={<SectionTitle align="center" title={spec.title} />}>
+    <Section reveal bleed title={<SectionTitle align="center" title={spec.title} />}>
       <Carousel label={spec.title} gutter={80} indicators="none" arrows>
         {spec.stories.map((story) => (
           <StoryCard key={story.customer} story={story} />
@@ -509,7 +510,7 @@ function CustomerStoriesSection({
 /** `Logos scrolling section` — 64px monochrome logos, flush against the band above. */
 function LogoMarqueeSection({ spec }: { spec: Extract<SectionSpec, { type: 'logoMarquee' }> }) {
   return (
-    <Section spacing="none" pt={24}>
+    <Section reveal spacing="none" pt={24}>
       <Marquee label={spec.label} monochrome size="lg">
         {spec.logos.map((name) => (
           <Wordmark key={name} name={name} />
@@ -531,6 +532,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
 
   return (
     <Section
+      reveal
       title={<SectionTitle align="center" title={spec.title} description={spec.description} />}
     >
       {/*
@@ -612,6 +614,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
 
   return (
     <Section
+      reveal
       gap={24}
       title={<SectionTitle title={spec.title} />}
       footer={
@@ -664,7 +667,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
 /** A centred band holding one wide graphic. The column is capped at the drawn 1000. */
 function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaBand' }> }) {
   return (
-    <Section maxWidth={1000} gap={40} title={<SectionTitle align="center" title={spec.title} />}>
+    <Section reveal maxWidth={1000} gap={40} title={<SectionTitle align="center" title={spec.title} />}>
       <Image src={spec.image.src} alt={spec.image.alt} ratio="auto" fit="contain" />
     </Section>
   )
@@ -679,6 +682,7 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
 function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'integrations' }> }) {
   return (
     <Section
+      reveal
       gap={32}
       title={
         <SectionTitle

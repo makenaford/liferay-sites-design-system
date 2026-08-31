@@ -554,7 +554,7 @@ function HomePage() {
       />
 
       {/* 2. Logos scrolling section — a 64px logo row directly under the hero. */}
-      <Section spacing="none" pt={24}>
+      <Section reveal spacing="none" pt={24}>
         <Marquee label="Customers using Liferay" monochrome size="lg">
           {CUSTOMERS.map((name) => (
             <Wordmark key={name} name={name} />
@@ -564,6 +564,7 @@ function HomePage() {
 
       {/* 3. Audience Specific Goals — the title and its pills share one row. */}
       <Section
+        reveal
         gap={32}
         title={
           <SectionTitle
@@ -613,6 +614,7 @@ function HomePage() {
 
       {/* 4. CAROUSEL — customer stories, arrows rather than dots, and the row bleeds off both edges. */}
       <Section
+        reveal
         bleed
         title={<SectionTitle align="center" title="1,200+ Enterprises Move the Needle With Liferay" />}
       >
@@ -649,6 +651,7 @@ function HomePage() {
 
       {/* 5. Different Teams. One Platform. — pills over an accordion, media and stats on the right. */}
       <Section
+        reveal
         title={
           <SectionTitle
             align="center"
@@ -722,6 +725,7 @@ function HomePage() {
 
       {/* 6. Designed for Your Industry — one full card, with the industry tabs under it. */}
       <Section
+        reveal
         gap={24}
         title={<SectionTitle title="Designed for Your Industry. Built for Growth." />}
         footer={
@@ -785,6 +789,7 @@ function HomePage() {
 
       {/* 7. Everything You Need in One Platform — the product map, drawn at 1000×806. */}
       <Section
+        reveal
         maxWidth={1000}
         gap={40}
         title={<SectionTitle align="center" title="Everything You Need in One Platform" />}
@@ -799,6 +804,7 @@ function HomePage() {
 
       {/* 8. Every Capability Your Enterprise Needs — the six-cell segmented bar. */}
       <Section
+        reveal
         title={<SectionTitle align="center" title="Every Capability Your Enterprise Needs" />}
       >
         <Stack gap={24} w="100%">
@@ -845,6 +851,7 @@ function HomePage() {
        * the `Padding` axis, so the box is sized here rather than by the component. In the README.
        */}
       <Section
+        reveal
         gap={32}
         title={
           <SectionTitle
@@ -888,6 +895,7 @@ function HomePage() {
        * six headlines the design has not chosen.
        */}
       <Section
+        reveal
         title={
           <SectionTitle title="Trending Now" description="Latest insights and resources from Liferay." />
         }
@@ -909,6 +917,7 @@ function HomePage() {
 
       {/* 11. Our Latest Research & Data — a tag over a title, and nothing else. */}
       <Section
+        reveal
         title={
           <SectionTitle
             title="Our Latest Research &amp; Data"
