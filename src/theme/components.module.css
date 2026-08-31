@@ -678,8 +678,21 @@
   padding: 20px;
 }
 
+/*
+ * The body's own inset, and the only space between it and the image above it.
+ *
+ * The card root also carries `gap: 16px` between the image and the body, which on a **bled** image
+ * stacked with the root gap: 16 from the root plus 20 from this padding put the title 36px under the
+ * picture, and the card read as an image and a caption rather than as one thing. The gap is dropped for
+ * this padding below — a bled image is flush to the card's edges, so the text should be inset from it by
+ * the same 20 it is inset from everything else.
+ */
 .cardRoot[data-align='vertical'][data-padding='content'] > .cardBody {
   padding: 20px;
+}
+
+.cardRoot[data-align='vertical'][data-padding='content'] {
+  gap: 0;
 }
 
 /*
@@ -1121,15 +1134,23 @@
 
 @media (hover: hover) {
   /*
-   * The ring on hover belongs to the **padded** card only. A full-bleed card is clickable across its
-   * whole area — the root is the anchor — but nothing about the card reacts: only the image does. A ring
-   * drawn around a `none` card outlines a box that has no edge at rest, which reads as a border
-   * appearing out of nowhere rather than as the image lighting up.
+   * The ring on hover belongs to any card that has an edge at rest — `all` and `content`.
+   *
+   * It used to be `all` alone, and `content` was grouped with `none` as "the image leads". That was
+   * wrong for `content`, and visibly so: a `content` card has a **padded body**, so it has a visible
+   * edge and a card-shaped hover to draw a ring around. Only `none` is genuinely edgeless — a ring there
+   * outlines a box that has no edge at rest, which reads as a border appearing out of nowhere rather
+   * than as the image lighting up.
+   *
+   * The bug this fixes: switching the goal cards to `content` so their image would bleed also took away
+   * their hover ring, because the ring was scoped to `all`. Two properties that have nothing to do with
+   * each other were tied together by the selector.
    *
    * Focus is the exception, below: a focus ring has to be visible wherever the focus is, so it stays on
    * the whole card for every padding.
    */
-  .cardRoot[data-align][data-padding='all'][data-interactive]:hover::after {
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover::after,
+  .cardRoot[data-align][data-padding='content'][data-interactive]:hover::after {
     opacity: 1;
   }
 
@@ -1141,7 +1162,8 @@
    * bled into the neighbours. A cast shadow belongs to the gap the lift opened, so its radius stays
    * near the 2px the card actually moved.
    */
-  .cardRoot[data-align][data-padding='all'][data-interactive]:hover {
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover,
+  .cardRoot[data-align][data-padding='content'][data-interactive]:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 24px -12px
       color-mix(in srgb, var(--sds-action-primary-hover) 34%, transparent);
@@ -1151,31 +1173,34 @@
    * Full-bleed: the image leads and the card stays put. The scale runs on the compositor and is clipped by
    * the image box, so nothing outside the card moves.
    */
-  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage > *,
-  .cardRoot[data-align][data-padding='content'][data-interactive]:hover > .cardImage > * {
+  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage > * {
     transform: scale(1.06);
   }
 
-  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage,
-  .cardRoot[data-align][data-padding='content'][data-interactive]:hover > .cardImage {
+  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage {
     /* A touch of light, so the image reads as active and not only as bigger. */
     filter: brightness(1.06);
   }
 
-  /* A padded card with an image inside it scales that too, a little less: the card is what leads. */
-  .cardRoot[data-align][data-padding='all'][data-interactive]:hover > .cardImage > * {
+  /*
+   * A card that leads scales its image too, a little less — `content` included, now that it rises with
+   * the ring rather than sitting still while its picture grows. At 1.06 the bled image pulled away from
+   * the card's corners it is clipped by; at 1.03 it stays inside them.
+   */
+  .cardRoot[data-align][data-padding='all'][data-interactive]:hover > .cardImage > *,
+  .cardRoot[data-align][data-padding='content'][data-interactive]:hover > .cardImage > * {
     transform: scale(1.03);
   }
 }
 
 /* Pressed: the movement settles back towards rest rather than going further. */
-.cardRoot[data-align][data-padding='all'][data-interactive]:active {
+.cardRoot[data-align][data-padding='all'][data-interactive]:active,
+.cardRoot[data-align][data-padding='content'][data-interactive]:active {
   transform: translateY(0);
   transition-duration: var(--sds-motion-press);
 }
 
-.cardRoot[data-align][data-padding='none'][data-interactive]:active > .cardImage > *,
-.cardRoot[data-align][data-padding='content'][data-interactive]:active > .cardImage > * {
+.cardRoot[data-align][data-padding='none'][data-interactive]:active > .cardImage > * {
   transform: scale(1.02);
   transition-duration: var(--sds-motion-press);
 }
