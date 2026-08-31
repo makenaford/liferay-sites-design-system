@@ -186,7 +186,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        * a page's business.
        */
       background={background}
-      data-bubble-css={bubble?.css || undefined}
+      drawn={bubble?.css || undefined}
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}

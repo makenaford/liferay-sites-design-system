@@ -3880,44 +3880,46 @@
 
 /* ---------------------------------------------------------------------- the bubble, drawn
  *
- * The same bubble in CSS: two lobes, a crease where they overlap, and a slow drift. A prototype, judged
- * side by side with the files in `Templates/Bubble in a page`.
+ * Five translucent gradient waves, stacked and drifting — the construction loading.io's `wave`
+ * background uses, and the third attempt at this. The first drew two rim-lit circles, which read as an
+ * outline of a ball; the second drew two mesh blobs, which read as two lilac discs.
  *
- * **Why bother.** Every bubble bug this library has had came from a raster with a frame: the artwork
- * does not fill the file, the file does not fit the hero, and the arithmetic that reconciles them has to
- * be redone for every export. A drawing has no frame. It sizes to the hero it is in, it costs nothing to
- * download, one shape covers both `corner` and `full` as parameters rather than two files with different
- * geometry, light and dark are the same rule with different tokens, and `prefers-reduced-motion` means
- * *stop moving* rather than *disappear*.
+ * Both failed the same way, and it is worth writing down because it is the whole reason this one is
+ * built differently: **stacked radial gradients are not a mesh gradient.** A mesh interpolates colour
+ * between control points; radials composite with alpha, so wherever three or four overlap they average
+ * toward grey. No amount of tuning stops averaging, which is why each pass ended up flat and muddy in
+ * the middle no matter how saturated the stops were.
  *
- * **Rim-lit, not centre-lit.** The stops run dark through the body of each lobe and bright in a narrow
- * band just inside the silhouette, because that is how the file is drawn: the light is behind the form,
- * not in front of it. Centre-lit stops — the obvious first guess — flood the hero with a field of blue
- * and take the headline's contrast with them.
+ * Translucent *shapes* do not have that problem. Each wave is one two-stop gradient at 40% — a single
+ * ramp, nothing to average against itself — and the depth comes from five of them overlapping at
+ * different heights and phases. Colour builds where they cross instead of cancelling.
  *
- * **What is hard.** A silhouette, which is `border-radius: 50%` and free; a specular rim where the two
- * lobes meet, which is an inset shadow and close; and smooth gradients, which are neither free nor
- * close. Big dark ramps band in sRGB, and the reason the webm looks smoother than anything written here
- * is that its encoder dithered it. So the gradients interpolate `in oklab` and each lobe carries a noise
- * layer over its own gradient — the dither the file gets for nothing.
- *
- * Everything animates on `transform` alone, so it composites and never touches layout, and nothing is
- * blurred: a hero-sized `filter: blur()` is the one thing here that would show up on a slow machine.
+ * SVG rather than pseudo-elements, for two reasons: there are five layers and an element has two
+ * pseudos, and `stop-color` reads the same custom properties the rest of the stylesheet does, which a
+ * `background-image` data URI cannot. `preserveAspectRatio="none"` stretches the field to whatever
+ * hero it is in, which is the argument for drawing the bubble rather than exporting it.
  */
 
-/*
- * Neither the fallback gradient nor a file, when the bubble is being drawn — and a fade at the foot.
- *
- * "No frame" turned out not to mean "no boundary". The lobes overhang the hero deliberately, the hero
- * does not clip, and the silhouette that then crosses into the next section reads as a shape drawn on
- * the page rather than as light behind the hero. So the drawn bubble dissolves at its foot exactly as
- * the file does — the difference is that this fade is chosen for the composition rather than forced by
- * where an export happened to be cut.
- */
 .hero[data-bubble-css] .heroBubble {
+  /*
+   * The drawing's own colours, given rather than sampled.
+   *
+   * `#0b5fff` is `Brand/Primary/Primary` exactly, so the mesh takes that one from the token and these
+   * four carry the rest. None of them has a home in the ramp yet — there is no violet this deep, no
+   * sky this light and nothing near `#070d52` — so they live here, once, and are flagged for `Accent/*`
+   * in the file if the drawn bubble ships.
+   */
+  --sds-bubble-magenta: #9500f2;
+  --sds-bubble-violet: #6f0bd2;
+  --sds-bubble-sky: #3fa2f7;
+  --sds-bubble-deep: #070d52;
   background-image: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
+  /*
+   * A field has no frame, but it does have a bottom edge, and one crossing into the next section reads
+   * as a shape on the page rather than as light behind the hero.
+   */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 54%, transparent 94%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 54%, transparent 94%);
 }
 
 .hero[data-bubble-css] .heroVideo {
@@ -3925,234 +3927,150 @@
 }
 
 /*
- * The lobes. `::before` is the light one that carries the shape, `::after` the accent that overlaps it
- * from below — the crease between them is the whole reason there are two.
- *
- * Sized in `cqi` against the hero's own inline size (`container-type` is on `.hero`), so the bubble is a
- * proportion of the hero rather than a measurement in it, and a short hero and a tall one get the same
- * drawing rather than the same number of pixels.
+ * The field. Twice the hero's width, so each layer has somewhere to travel: the paths carry two full
+ * periods across the box and the animation moves them by exactly one, which is why the loop has no seam.
  */
-.hero[data-bubble-css] .heroBubble::before,
-.hero[data-bubble-css] .heroBubble::after {
-  content: '';
+.heroWaves {
   position: absolute;
-  border-radius: 50%;
-  /*
-   * Three layers, in this order, for every lobe: noise, the specular, the body.
-   *
-   * Always three even where a lobe's specular is nothing, because `background-blend-mode` is positional
-   * — a shape with two layers and a three-mode list silently blends the wrong pair. One fixed shape of
-   * layer stack is worth more than the few bytes a no-op gradient costs.
-   *
-   * The noise is what keeps the ramps from banding: big dark gradients band in sRGB, and the reason the
-   * webm looks smoother than anything written here is that its encoder dithered it. `overlay` rather
-   * than a flat opacity, so it perturbs the mid-tones where banding shows and leaves both ends alone.
-   */
-  background-blend-mode: overlay, normal, normal;
-  /*
-   * The noise tiles at a fixed size and the gradients fill the box. Left to `auto` the tile scales with
-   * the element, so the grain coarsens as the lobe gets smaller — the dither turns into texture at
-   * exactly the size where the ramps need it least.
-   */
-  background-size: 140px 140px, 100% 100%, 100% 100%;
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E"),
-    var(--sds-hero-specular, radial-gradient(circle, transparent, transparent)),
-    var(--sds-hero-lobe);
+  inset: 0;
+  width: 200%;
+  height: 100%;
 }
 
 /*
- * `Type=Corner Bubble` — the light source entering from the top right, as the file is drawn.
- *
- * The lobe runs off the top and the right on purpose: what the file achieves by being cut, a drawing
- * achieves by being bigger than its container, and this way the edge that leaves the page is a real
- * silhouette rather than the end of a rectangle.
+ * `plus-lighter` rather than plain alpha. Two translucent gradients over one another in `normal` give
+ * the *upper* one's colour at 40% — the lower one is being covered, not added to. `plus-lighter` adds
+ * them, which is what makes a crossing brighter than either layer and is the entire reason five of
+ * these read as depth rather than as five stickers.
  */
-.hero[data-background='corner'][data-bubble-css] .heroBubble::before {
+.heroWave {
   /*
-   * The specular: one bright spot just inside the silhouette, on the side the light comes from, rather
-   * than a ring all the way round. A uniform rim reads as an outline drawn on a shape; an arc that is
-   * brightest in one place reads as light falling on it, and that difference is most of what separates
-   * this from looking coded.
+   * loading.io's own default is 0.4 a layer. Five of those under `plus-lighter` is a field bright enough
+   * to take the headline's contrast with it, and the headline is the page's point — so the layers are
+   * lighter here and the depth comes from there being five of them rather than from any one being
+   * strong.
    */
-  --sds-hero-specular: radial-gradient(
-    circle at 26% 74%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 78%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 46%, transparent) 34%,
-    transparent 62%
-  );
-  --sds-hero-lobe: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 36%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 54%, transparent) 62%,
-    color-mix(in oklab, var(--sds-brand-primary-primary) 82%, transparent) 90%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 96%, transparent) 97.5%,
-    transparent 100%
-  );
-  width: 72cqi;
-  aspect-ratio: 1;
-  top: -34cqi;
-  right: -8cqi;
-  animation: sds-hero-drift-a 34s ease-in-out infinite alternate;
-}
-
-.hero[data-background='corner'][data-bubble-css] .heroBubble::after {
-  --sds-hero-specular: radial-gradient(
-    circle at 30% 24%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 72%, transparent) 0%,
-    transparent 58%
-  );
-  --sds-hero-lobe: radial-gradient(
-    circle at 50% 50%,
-    transparent 0%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 30%, transparent) 56%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 84%, transparent) 90%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 46%, transparent) 98%,
-    transparent 100%
-  );
-  width: 38cqi;
-  aspect-ratio: 1;
-  top: 14cqi;
-  right: -14cqi;
-  /*
-   * The crease. Where the accent lobe passes under the light one, the file draws a bright arc — the two
-   * surfaces meeting — and `plus-lighter` over an inset highlight is what gets closest to it without a
-   * blur.
-   */
+  opacity: 0.22;
   mix-blend-mode: plus-lighter;
-  box-shadow: inset 4cqi 3cqi 9cqi
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 22%, transparent);
-  animation: sds-hero-drift-b 46s ease-in-out infinite alternate;
+  animation-name: sds-wave-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
 }
 
-/* `Type=Full Bubble` — the same two lobes spread wide and low, which is the shape the centre file draws. */
-.hero[data-background='full'][data-bubble-css] .heroBubble::before {
-  --sds-hero-specular: radial-gradient(
-    ellipse at 44% 10%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 58%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 30%, transparent) 36%,
-    transparent 64%
-  );
-  --sds-hero-lobe: radial-gradient(
-    ellipse at 50% 50%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 32%, transparent) 0%,
-    color-mix(in oklab, var(--sds-brand-primary-darken-5) 50%, transparent) 62%,
-    color-mix(in oklab, var(--sds-brand-primary-primary) 76%, transparent) 90%,
-    color-mix(in oklab, var(--sds-brand-primary-lighten-3) 88%, transparent) 97.5%,
-    transparent 100%
-  );
-  width: 186cqi;
-  height: 112cqi;
-  left: -43cqi;
-  top: 26cqi;
-  border-radius: 50%;
-  animation: sds-hero-drift-a 40s ease-in-out infinite alternate;
+/* Each layer starts somewhere different in its own cycle, or all five crest together on first paint. */
+.heroWave:nth-child(2) {
+  animation-delay: -7s;
 }
 
-.hero[data-background='full'][data-bubble-css] .heroBubble::after {
-  --sds-hero-specular: radial-gradient(
-    ellipse at 28% 30%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 66%, transparent) 0%,
-    transparent 60%
-  );
-  --sds-hero-lobe: radial-gradient(
-    ellipse at 50% 50%,
-    transparent 0%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 26%, transparent) 58%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 76%, transparent) 90%,
-    color-mix(in oklab, var(--sds-accent-product-accent) 40%, transparent) 98%,
-    transparent 100%
-  );
-  width: 72cqi;
-  height: 56cqi;
-  right: -20cqi;
-  top: 2cqi;
-  mix-blend-mode: plus-lighter;
-  box-shadow: inset 3cqi 2cqi 8cqi
-    color-mix(in oklab, var(--sds-brand-primary-lighten-4) 20%, transparent);
-  animation: sds-hero-drift-b 52s ease-in-out infinite alternate;
+.heroWave:nth-child(3) {
+  animation-delay: -19s;
+}
+
+.heroWave:nth-child(4) {
+  animation-delay: -3s;
+}
+
+.heroWave:nth-child(5) {
+  animation-delay: -13s;
 }
 
 /*
- * Narrow heroes, where the columns have stacked.
+ * `Type=Corner Bubble` — the field pushed into the top right and turned, so what crosses the page is
+ * one shoulder of it rather than a band across the whole hero. The slope is loading.io's own parameter
+ * by another name: a wave field reads as weather when it is level and as light when it is tilted.
+ */
+.hero[data-background='corner'][data-bubble-css] .heroWaves {
+  left: auto;
+  right: -30%;
+  width: 150%;
+  height: 150%;
+  top: -46%;
+  rotate: -14deg;
+  /*
+   * Gone by the time it reaches the content column. `corner` means the light is in one corner, and a
+   * field that runs the full width is `full` by another name — but more than that, the left third is
+   * where the headline is, and a wave crossing behind it is the one thing this must not do.
+   */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 46%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 46%);
+}
+
+/*
+ * `Type=Full Bubble` — level, full width, and hung from the top edge.
  *
- * Everything above is sized in `cqi`, so at 375px the lobes are small in a hero that is now tall — two
- * legible circles sitting on the headline rather than light behind it. The fix is proportion, not
- * pixels: push them further out and scale them up until only an arc is on the page, which is the same
- * composition arriving by different numbers.
+ * The waves start at the top of the hero and close on their own curves, and `ARC` is centred on that top
+ * edge, so the field has to *begin* there: any offset upward moves the gradient's origin off the page and
+ * takes the band with it.
+ */
+.hero[data-background='full'][data-bubble-css] .heroWaves {
+  top: 0;
+  height: 100%;
+  rotate: 0deg;
+}
+
+/*
+ * No fade on `full`, in either direction.
  *
- * This is the thing a file cannot do. The webm at this width is the same drawing stretched, and the only
- * choice it offers is which edge to lose.
+ * `.heroBubble`'s fade exists for a drawing that overhangs the hero and has to dissolve before the next
+ * section. This pair does not overhang, and more to the point `ARC` already ends at `#000111` and
+ * `#00010F` — the page ground to within a couple of units — at both ends of its radius. It arrives at
+ * the background on its own, above the band and below it. A second fade on top of that would only be
+ * thinning a gradient that has already been designed to do this.
+ */
+.hero[data-background='full'][data-bubble-css] .heroBubble {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/*
+ * `full` paints `ARC` as drawn: full strength, no blend.
+ *
+ * The gradient is a finished thing — its own dark ends, its own violet spike a quarter of a percent
+ * wide — so thinning it or adding it to what is underneath would be editing a decision that has already
+ * been made. The layer opacity and `plus-lighter` belong to the corner field, where five weak layers
+ * accumulating *is* the construction.
+ */
+.hero[data-background='full'][data-bubble-css] .heroWave {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+/*
+ * Narrow heroes: the field is taller than it is wide here, so it is turned further and pushed further
+ * out — the same composition arriving by different numbers, which is the thing a file cannot do.
  */
 @container sds-hero (max-width: 1199px) {
-  .hero[data-background='corner'][data-bubble-css] .heroBubble::before {
-    width: 112cqi;
-    top: -62cqi;
-    right: -34cqi;
-    /*
-     * Dimmer than on a wide hero, because here the lobe is behind the headline rather than beside it.
-     * The bubble is the page's light source and the headline is the page's point; when they occupy the
-     * same ground the light gives way.
-     */
-    --sds-hero-specular: radial-gradient(
-      circle at 30% 70%,
-      color-mix(in oklab, var(--sds-brand-primary-lighten-3) 34%, transparent) 0%,
-      transparent 54%
-    );
+  .hero[data-background='corner'][data-bubble-css] .heroWaves {
+    right: -60%;
+    width: 200%;
+    height: 130%;
+    top: -34%;
+    rotate: -22deg;
   }
 
-  .hero[data-background='corner'][data-bubble-css] .heroBubble::after {
-    width: 58cqi;
-    top: -6cqi;
-    right: -30cqi;
+  .hero[data-background='full'][data-bubble-css] .heroWaves {
+    height: 150%;
+    rotate: -10deg;
   }
+}
 
-  .hero[data-background='full'][data-bubble-css] .heroBubble::before {
-    width: 240cqi;
-    height: 150cqi;
-    left: -70cqi;
-    top: 4cqi;
+/* One period, linearly, so there is no point in the loop where the field pauses and gives itself away. */
+@keyframes sds-wave-drift {
+  from {
+    transform: translateX(0);
   }
-
-  .hero[data-background='full'][data-bubble-css] .heroBubble::after {
-    width: 108cqi;
-    height: 84cqi;
-    right: -40cqi;
-    top: -14cqi;
+  to {
+    transform: translateX(-50%);
   }
 }
 
 /*
- * The drift: two periods that do not divide into each other, so the pair never returns to the same
- * arrangement on a loop anyone will sit through. Small — this is a light source shifting, not a thing
- * moving across the page.
- */
-@keyframes sds-hero-drift-a {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(-3cqi, 2cqi, 0) scale(1.06);
-  }
-}
-
-@keyframes sds-hero-drift-b {
-  from {
-    transform: translate3d(0, 0, 0) scale(1.04);
-  }
-  to {
-    transform: translate3d(2cqi, -3cqi, 0) scale(0.96);
-  }
-}
-
-/*
- * Asked for less motion, and it stops moving — rather than vanishing, which is what a file has to do.
- * The bubble is the page's light source; the preference is about movement, not about light.
+ * Asked for less motion, and the field stops moving — rather than vanishing, which is what a file has
+ * to do. The bubble is the page's light source; the preference is about movement, not about light.
  */
 @media (prefers-reduced-motion: reduce) {
-  .hero[data-bubble-css] .heroBubble::before,
-  .hero[data-bubble-css] .heroBubble::after {
+  .heroWave {
     animation: none;
   }
 }
@@ -5468,7 +5386,6 @@
  */
 .marqueeRoot[data-monochrome] .marqueeCell > :where(img, picture) {
   filter: brightness(0);
-  opacity: 0.85;
 }
 
 :where([data-mantine-color-scheme='dark'])
