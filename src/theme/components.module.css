@@ -5548,6 +5548,69 @@
  * 1280 while the section itself still fills the page — the standard container pattern, and what Figma's
  * 1280-in-1440 actually means.
  */
+/*
+ * `reveal` — the section drifts up into place as it arrives.
+ *
+ * A **scroll-driven** animation, not an observer: `animation-timeline: view()` ties the animation's
+ * progress to where the section sits in the viewport, which means there is no JavaScript, nothing to
+ * unobserve, and the whole thing runs off the main thread. Scrolling back up plays it backwards, because
+ * the timeline is the scroll position rather than an event that happened once.
+ *
+ * Three guards, and all three matter:
+ *
+ *   `prefers-reduced-motion: no-preference` — asked for less motion and there is none. Nothing else here
+ *   depends on the animation having run, so the section simply sits where it belongs.
+ *
+ *   `@supports (animation-timeline: view())` — Safari and Firefox do not have this yet. Without the
+ *   query the `from` keyframe would apply as a static style and every section below the fold would be
+ *   permanently dimmed and offset. This is the guard that turns a broken page into no effect at all.
+ *
+ *   `animation-range: entry 0% entry 35%` — the reveal happens over the first third of the section's
+ *   entry rather than across the whole of it. `entry` ends when the section's *bottom* clears the
+ *   viewport's bottom, so on a tall section the full range would still be finishing long after the
+ *   reader arrived.
+ *
+ * `both`, so a section that has not arrived holds the `from` state and one already in view on load is
+ * past `entry` and renders at `to` — no flash of dimmed content on a deep link.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .sectionRoot[data-reveal] > .sectionInner {
+      /*
+       * Longhands, and `animation-duration: auto` in particular.
+       *
+       * `animation: sds-section-rise linear both` looks equivalent and is not: the shorthand sets every
+       * property it omits to its initial value, and `animation-duration`'s initial value is `0s`. A
+       * scroll-driven animation with a zero duration sits at its end state at every scroll position — so
+       * it reads as correctly configured in the inspector, `animation-timeline` and all, and does
+       * absolutely nothing. `auto` is what makes the animation span its timeline.
+       */
+      animation-name: sds-section-rise;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/*
+ * 24px and a sixth of the opacity. Subtle is the brief: enough that the page feels like it is assembling
+ * as you go, not enough that anyone waits for it or notices a section arriving late.
+ */
+@keyframes sds-section-rise {
+  from {
+    opacity: 0.6;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .sectionInner {
   display: flex;
   flex-direction: column;

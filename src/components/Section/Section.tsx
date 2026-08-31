@@ -14,6 +14,17 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
    * bleed off the side of the page.
    */
   bleed?: boolean
+  /**
+   * Drift the section up into place as it scrolls into view.
+   *
+   * Off by default: it belongs to a long marketing page reading as a sequence, and a section in an app
+   * shell or a docs page has no such sequence to join. `Templates/Home` turns it on throughout.
+   *
+   * A scroll-driven animation rather than an observer — no JavaScript, and scrolling back up plays it
+   * backwards, because the timeline *is* the scroll position. It does nothing at all where
+   * `animation-timeline` is unsupported, and nothing under `prefers-reduced-motion`.
+   */
+  reveal?: boolean
   /** The heading block. A `SectionTitle`, normally. */
   title?: ReactNode
   /** Below the body — Figma's `Call to Action` and carousel controls both sit here. */
@@ -76,6 +87,7 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
 export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
   {
     spacing = 'default',
+    reveal,
     bleed,
     title,
     footer,
@@ -94,6 +106,7 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
       ref={ref}
       className={[classes.sectionRoot, className].filter(Boolean).join(' ')}
       data-spacing={spacing}
+      data-reveal={reveal || undefined}
       data-bleed={bleed || undefined}
       style={{
         '--sds-section-max': typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
