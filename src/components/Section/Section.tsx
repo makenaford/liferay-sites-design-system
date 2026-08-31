@@ -36,7 +36,8 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
  *
  * | Figma | Prop |
  * | --- | --- |
- * | `padding` 80 desktop / 20 mobile | fluid, see below |
+ * | `padding-inline` 80 desktop / 20 mobile | fluid, see below |
+ * | `padding-block` | **80 at every width**, see below |
  * | The 40px block padding on `Quote` and `Highlight Text` | `spacing="tight"` |
  * | `padding-inline: 0` on `Integrations Section` and `Carousel` | `bleed` |
  * | `Section Title` | `title` |
@@ -58,12 +59,19 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
  * whose stops are not in this file. If sections do need a background later, it belongs here as one prop
  * rather than at every call site; until then the page owns it.
  *
- * ## The padding is fluid, not stepped
+ * ## The inline padding is fluid; the block padding is 80
  *
- * Figma draws two cells — 80px at 1440 and 20px at 390 — and the obvious reading is a breakpoint. This
- * uses `clamp(20px, 5.56cqi, 80px)` instead, which **passes through both of Figma's numbers exactly**
- * (5.56% of 1440 is 80, and the floor catches 390) and every width between them without a jump. A page
- * gutter is the one measurement where a hard step is most visible, because everything moves at once.
+ * Figma draws two cells — 80px at 1440 and 20px at 390 — and the obvious reading is a breakpoint. The
+ * **gutter** uses `clamp(20px, 5.56cqi, 80px)` instead, which **passes through both of Figma's numbers
+ * exactly** (5.56% of 1440 is 80, and the floor catches 390) and every width between them without a
+ * jump. A page gutter is the one measurement where a hard step is most visible, because everything moves
+ * at once.
+ *
+ * The **block** padding does not follow it down. It is 80 at every width, which is a deliberate
+ * divergence from the Mobile cell. The two axes look like one measurement in the file and are not one
+ * problem: the gutter holds text off the edge of a screen and has to give way when the screen is narrow,
+ * while the block padding separates one section from the next, and that separation is worth the same
+ * amount however wide the page is. At 20 a phone ran its sections together and nothing read as a section.
  *
  * `spacing="tight"` is the same formula halved: `clamp(20px, 2.78cqi, 40px)`, which lands on Figma's 40 at
  * 1440 and its 20 at 390.

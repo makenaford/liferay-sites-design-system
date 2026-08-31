@@ -1616,7 +1616,16 @@ fights whatever the page has already decided; three of its four cells are a flat
 one line, and the fourth is a gradient whose stops are not in this file. If sections do need a background
 later it belongs here as one prop rather than at every call site — until then the page owns it.
 
-### Fluid, and it passes through both of Figma's cells exactly
+### Fluid across, fixed down
+
+The **inline** measurements are fluid and pass through both of Figma's cells exactly. The **block**
+padding is not: it is **80 at every width**.
+
+The file draws them as one measurement and they are not one problem. A gutter holds text off the edge of
+a screen, so it has to give way when the screen is narrow. Block padding separates one section from the
+next, and that separation is worth the same amount however wide the page is — at Figma's mobile 20 a
+phone ran its sections together and nothing read as a section any more. A deliberate divergence from the
+Mobile cell, and the one place the two axes stop sharing a formula.
 
 Figma draws each section twice — 1440 and 390 — and the obvious reading is a breakpoint. Every fluid value
 here is instead a straight line through both drawn numbers:
@@ -1633,6 +1642,7 @@ Measured, by driving the section's width directly:
 | Section width | 1440 | 1200 | 900 | 768 | 390 | 320 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Gutter | **80** | 66.3 | 49.1 | 41.6 | **20** | 20 |
+| Block padding | 80 | 80 | 80 | 80 | 80 | 80 |
 | Content column | **1280** | 1067 | 802 | 685 | **350** | 280 |
 | Title | **37** | 35.9 | 34.4 | 33.8 | **32** | 32 |
 | Description | **21** | 20.3 | 19.5 | 19.1 | **18** | 18 |

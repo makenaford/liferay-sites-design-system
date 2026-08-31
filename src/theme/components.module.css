@@ -5569,8 +5569,9 @@
  *   Content Left/Right Image  `Content` row gap 40, two 620 columns both growing
  *                             text column gap 24, `card-header` gap 8
  *
- * The padding and the type are **fluid rather than stepped**, and they measure against the section's own
- * width with container query units rather than the viewport's.
+ * The **inline** padding and the type are fluid rather than stepped, and they measure against the
+ * section's own width with container query units rather than the viewport's. The **block** padding is
+ * not: it is 80 at every width. See `--sds-section-block`.
  *
  * Every fluid value is a straight line through Figma's two cells, so it hits both **exactly**:
  *
@@ -5579,7 +5580,8 @@
  * 1050 is 1440 - 390, the distance between the two drawn widths. A plain `5.56cqi` was the first attempt
  * and it lands 80 at 1440 but 21.7 at 390 — close to Figma's 20 without being it, because one percentage
  * cannot pass through two arbitrary points. Measured at 1440 / 390 after the change: 80 / 20 gutter,
- * 1280 / 350 content, 37 / 32 title, 21 / 18 description.
+ * 1280 / 350 content, 37 / 32 title, 21 / 18 description. The block padding used to follow the gutter
+ * down that ramp and no longer does.
  *
  * `cqi` rather than `vw` for the same reason the marquee uses a container query: "the window is narrow"
  * and "this section is narrow" are different questions, and a section in an app with a sidebar, a preview
@@ -5592,7 +5594,19 @@
   --sds-section-gap: 24px;
   /* 20 -> 80 across 390 -> 1440: (80 - 20) / 1050 = 0.05714 */
   --sds-section-gutter: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
-  --sds-section-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+  /*
+   * **80 at every width**, unlike the gutter.
+   *
+   * The two axes were the same fluid ramp, which is what the file draws — 80 at 1440 and 20 at 390. They
+   * are not the same problem, though. The inline gutter is holding text off the edge of a screen, so it
+   * has to give way when the screen is narrow; the block padding is separating one section from the next,
+   * and that separation is worth the same amount whatever the width. At 20px a phone ran its sections
+   * together and nothing read as a section any more.
+   *
+   * So the ramp stays on the gutter and the block padding is flat. A deliberate divergence from the
+   * Mobile cell, and the one place these two stop sharing a formula.
+   */
+  --sds-section-block: 80px;
   /*
    * Named, so a nested block queries the section rather than whatever container happens to be closer. The
    * padding lives on the inner element and not here: a container cannot use its own query units for its
