@@ -29,7 +29,6 @@ import {
   IconGlassEnterpriseWebsite4,
   IconGlassFinancialServices,
   IconGlassIntranets,
-  IconGlassMail,
   IconGlassPartnerPortals,
   IconGlassSupplierPortals,
   IconGroup,
@@ -382,6 +381,43 @@ const CUSTOMERS = [
 ]
 
 const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', 'Figma', 'Payhip']
+
+/*
+ * `Trending Now` — node `7655:15414`, now that the cell has been drawn.
+ *
+ * Six resource cards: a label over a title, under an image, on the page's own ground. The design's
+ * thumbnails are stock photography that is not ours to commit, so the tile below stands in for them the
+ * way `logoTile` stands in for customer marks — same shape, same ratio, obviously a placeholder. The
+ * titles and labels are the file's.
+ */
+const TRENDING = [
+  { tag: 'Guide', title: 'What is AI Transformation?' },
+  { tag: 'Blog', title: 'What is the Purpose of a Knowledge Management System?' },
+  { tag: 'Blog', title: 'What is Low-Code and No-Code?' },
+  { tag: 'Article', title: 'What is Digital Strategy?' },
+  { tag: 'Blog', title: '16 Awesome Web Portal Examples' },
+  { tag: 'Blog', title: 'What Is B2B Ecommerce?' },
+]
+
+/**
+ * A 3:2 stand-in for a resource thumbnail.
+ *
+ * Hued off the title so the six are told apart, but **inside the brand's own arc** — 200° to 280°, which
+ * is where the bubble artwork lives. `logoTile` takes the hue modulo 360 and lands wherever it lands,
+ * which is fine for a customer mark standing in for someone else's colour and wrong here: six panels of
+ * arbitrary olive and magenta across a marketing section read as a bug rather than as placeholders.
+ */
+const resourceTile = (title: string) => {
+  const hue = 200 + ([...title].reduce((total, ch) => total + ch.charCodeAt(0), 0) % 80)
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="360" viewBox="0 0 540 360">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="hsl(${hue} 58% 30%)"/>
+    <stop offset="1" stop-color="hsl(${hue + 24} 64% 14%)"/>
+  </linearGradient></defs>
+  <rect width="540" height="360" fill="url(#g)"/>
+</svg>`)}`
+}
 
 const RESEARCH = [
   { tag: 'CMS Trends', title: '2026 Liferay Digital Content Management Report' },
@@ -890,9 +926,10 @@ function HomePage() {
       </Section>
 
       {/*
-       * 10. Trending Now — six resource cards. The file has not been written yet here: every card
-       * says `Card Title` and a line of lorem, so that is what this renders rather than inventing
-       * six headlines the design has not chosen.
+       * 10. Trending Now — node `7655:15414`. Six resource cards: `Type=Resources`, which is a link
+       * with no fill, so the image sits on the page's own ground rather than inside a panel and the
+       * label and title sit under it with no inset of their own. It used to be six glass cards with a
+       * mail icon reading `Card Title` and a line of lorem, because the cell had not been drawn yet.
        */}
       <Section
         reveal
@@ -901,15 +938,23 @@ function HomePage() {
         }
       >
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {TRENDING.map((item) => (
             <Card
-              key={i}
+              key={item.title}
               component="a"
               href="#"
               interactive
-              hero={<IconGlassMail width={40} height={40} />}
-              title="Card Title"
-              description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+              surface="none"
+              padding="none"
+              image={
+                <Image src={resourceTile(item.title)} alt="" ratio="3:2" radius="sm" />
+              }
+              top={
+                <Label variant="glass" size="sm">
+                  {item.tag}
+                </Label>
+              }
+              title={item.title}
             />
           ))}
         </SimpleGrid>
