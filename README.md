@@ -788,6 +788,158 @@ real instance overrides it** with `Components/Glass Line/01` at 20% into `02` at
 Reading the set instead of the instances paints every card blue at rest.
 
 
+## CapabilityMap
+
+The product constellation on the homepage redesign — `Homepage Redesign`, the `FINAL` frame
+(`7703:16084`): sixteen products in four sections of four, around DXP.
+
+### A honeycomb, so overlap is impossible
+
+Flat-top hexagons on a hexagonal lattice, every tile placed by *lattice cell* rather than by position.
+Three constants turn a cell into a position: a column step is `0.75 × tile` across, a row step is
+`0.866 × tile` down, and odd columns hang half a row lower.
+
+That is the whole non-overlap guarantee, and it is structural rather than careful: two different cells
+are at least one hexagon apart because the arithmetic says so. A tile then fills 88% of its cell, which
+turns the leftover into an even gap on all six sides.
+
+A section is a **diamond of four cells around an empty one** — the shape the Figma frame draws. Of the
+twelve mirror-symmetric arrangements the lattice allows without two sections touching, it is the
+tightest: the nearest tile is 1.5 cells from the hub where a 2×2 block managed 1.732, and the figure
+comes out 5.8 cells wide rather than 6.3. It is symmetric in both axes by construction, so nothing
+needs shifting to centre it.
+
+`CANVAS` in the component is the single source of the figure's proportions — the box's aspect ratio and
+the tile's share of its width both come off it, so neither can be half-changed.
+
+### 14px is the floor, and it sizes the hexagons
+
+`Paragraph/Small Caps` is the label's **minimum**, not its ceiling: a product name is the one thing here
+a reader must be able to read, so it never scales below the token however narrow the column.
+
+That requirement sizes everything else. 14px of text and an icon have to fit inside a hexagon's middle
+band, which is why the canvas is only 5.8 tiles wide. At a 1100px column the tiles are 167px and all
+sixteen names sit on one line; **below roughly 850px the two longest wrap to two lines**, which is the
+honest floor for this figure. A page with less room than that should show a list.
+
+### The network
+
+Three things share one SVG layer, all walking the lattice's own edges rather than cutting across it:
+
+- **Traces** — two dozen short walks that draw themselves on and off, about eight at a time.
+- **Loops** — one around each section's computed outline, and one around the hub's.
+- **Connectors** — one route from the hub out to each section, so the figure says the products are wired
+  to the platform rather than merely arranged around it. Routed by breadth-first search over the vertex
+  graph. A straight radial line would have been clearer and wrong: it would be the only thing in the
+  figure that ignores the grid.
+
+A section's loop is *computed*, not drawn: list the four cells' 24 edges, drop the five any two of them
+share, and the 14 that remain are the boundary; threading those by shared vertex gives the perimeter in
+order. So the path is always exactly that section's outline.
+
+Every line is stroked with one gradient in `objectBoundingBox` units, which resolves against each
+line's own box — so all of them run base `Brand/Primary` to base `Accent/Product Accent` along their own
+length from a single `<defs>` entry. Peaks are 0.55 for connectors, 0.4 for traces, 0.3 for loops: the
+order is the point, since only the connectors carry a message.
+
+Walk starts are **seeded** at both ends rather than left to chance. Drawn uniformly from some five
+hundred vertices, a start almost never lands near the middle or out at the rim — measured, the closest
+any line came to the centre was 2.78 cells. Four now begin at the core and six at the outermost
+vertices, so the middle and the edges both carry lines.
+
+### Two rendering rules, learned the hard way
+
+**`pathLength` and `vector-effect: non-scaling-stroke` cannot both apply to one stroke.** The second
+measures a normalised dash in device pixels, so a dash of 28-of-100 becomes 0.84 device pixels and a
+travelling line renders as a row of dots. Widths are therefore authored in tiles with no vector-effect.
+
+**Nothing may render below about 1.25 device pixels**, which is where a diagonal stops antialiasing and
+starts flickering. `--sds-map-tw` is a floor the component computes from its own rendered width and only
+ever raises: at a 1100px column it is 1, and at 378px it lifts to 1.475 to hold the thinnest stroke at
+1.25px instead of 0.85.
+
+Two related mistakes worth not repeating: `drop-shadow` on a couple of dozen paths whose geometry is
+animating means re-rasterising every filtered region every frame, and it stuttered visibly — the glow is
+now a second, wider, fainter copy of each path. And `preserveAspectRatio="none"` scales the axes
+independently, so any rounding between them makes a stroke heavier along one axis than the other; on a
+lattice built from diagonals that reads as lines of uneven weight.
+
+### The tile's edge is the library's, at half strength
+
+Every tile carries `Components/Glass Line` at 225° — the hairline `Card` draws on every glass surface —
+but at about **half the token value**, `--sds-map-tile-line-*` rather than `--sds-glass-line-*`.
+
+The token is right for one card on a page. Sixteen ringing a single hub is a different problem: at full
+strength the edges were the brightest thing in the figure and the centre, which is the subject, read as
+the dimmest. **The hub keeps the full value**, so the hierarchy runs core, then tiles, then network.
+This is a deliberate deviation from the token and is the kind of thing a reviewer comparing against
+Figma would otherwise read as a mistake.
+
+It is painted on the body and revealed as a 1.5px rim by insetting everything above it. A `clip-path`
+cannot take a border, and the masked pseudo-element ring the rounded cards use does not survive a
+hexagon: clipping a rectangular ring to one erases the line along all four diagonals.
+
+### Tiles are socketed, evenly
+
+Inside that edge each tile is shaded as a socket, with the shadow **even on all six sides**: clear in
+the middle, deepening to 66% black on the outline.
+
+One gradient does it, and the shape keyword is why it comes out even. `closest-side` on a radial gives
+an **ellipse** whose radii are the box's own half-width and half-height — and this box is a hexagon's
+bounding box, `w × 0.866w`. So it saturates at `0.5w` horizontally, exactly where the left and right
+vertices are, and at `0.433w` vertically, exactly where the flat top and bottom edges are: on the
+outline in every direction, rather than short of it on four sides and past it on two, which is what a
+circle would do.
+
+Still gradients rather than `box-shadow: inset`, which follows the rectangular border box — clipped to a
+hexagon it bands along the straight top and bottom and leaves all four diagonals bare.
+
+### The hub
+
+The one block that is not glass: opaque, with `backdrop-filter: none`, and lit from within by a radial
+of `Brand/Primary`. Being solid is what lets the traces cross the middle — a line passing behind a
+platform disappears behind it — and it puts the brightest edge in the figure around the thing the figure
+is about.
+
+It sits on the lattice cell at the origin that no section may use, 1.8 cells wide, which clears its
+nearest neighbour by a fifth of a tile.
+
+### Nothing pulses
+
+The breath went from all seventeen tiles, to the hub alone, to nothing. The centre's presence comes from
+the wash being *there* instead: static, and considerably stronger for it — `--sds-map-wash-*` at 0.52
+and 0.4 in dark mode, blobs at 52% of the field.
+
+Two findings from the passes that got there are worth keeping. The tiles were **already** perfectly
+synchronised when they looked staggered — all seventeen shared one timeline with identical scale and
+`currentTime` at every sample — and the fault was the curve: `cubic-bezier(0.05, 0.7, 0.1, 1)` is a
+decelerate curve for one-way transitions, and looped it snaps to the peak then sits at rest for a third
+of every cycle. And a swell's amplitude comes from the tiles rather than the animation: the 88% fill is
+what left room to grow into.
+
+### Interaction
+
+`Card`'s hover on a hexagon: the tile grows to 1.14, its edge fills with `card-Focus Ring` lit from
+where the pointer entered, a sheen follows the cursor across the glass, and the label comes up to full
+white. Focus mirrors it exactly.
+
+A tile grows rather than lifting. `Card` rises 2px into the gap around it; a tile on a lattice has
+nowhere to lift to, so scale is the affordance — at rest nothing overlaps, and a hovered tile
+deliberately does, which is how it comes forward.
+
+On top of that, **the section stays lit**: everything outside the hovered tile's section drops to
+`saturate(0.5) brightness(0.58)` and the three tiles beside it only to `0.92`/`0.9`, and the section's
+name comes up with them. The hub belongs to no section and dims with the outsiders. The hover teaches
+the taxonomy instead of a legend, and the keyboard gets it too.
+
+**Arrow keys walk the lattice.** Tab order on a spatial figure follows the DOM rather than the drawing;
+the arrow keys move to the nearest tile in that direction through a **70° cone** — wide, because a
+hexagon lattice's only off-vertical neighbours sit at 60° and a tighter cone skips them. Pressing Right
+then Down then Left then Up from a section's top tile walks its diamond and returns.
+
+`prefers-reduced-motion` drops the traces and loops entirely — a drawn-on line has nothing to say when
+it cannot draw — but keeps the connectors still and visible, because the topology is information.
+
 ## Stat
 
 From the Figma `Stats Item` set (node `15121:237366`), with `StatBar` from `Stats Bar`
@@ -3020,6 +3172,32 @@ the Hero section.
 - **The outline glass sheen is an approximation.** Figma expresses it as a radial gradient with a
   transform matrix; CSS has no direct equivalent, so it is reproduced as an ellipse at the same
   position and scale. It reads the same but is not mathematically identical.
+
+### The product constellation is a frame, not a component
+
+`Homepage Redesign`'s `FINAL` frame (`7703:16084`) — the sixteen products around DXP that `CapabilityMap`
+implements — is sixteen groups of shapes drawn on a page. No component, no `Type` axis, no slots.
+
+Code Connect **cannot map it**: `figma connect publish` rejects the node with `corresponding node is not a
+component or component set`, and because an invalid file aborts the run, a mapping for it would block the
+publish for every valid mapping in `src/figma`. One was written and removed for exactly that reason.
+
+So the figure is the one thing in this library that is invisible in Dev Mode. **Making it a component with
+a slot per tile** fixes that, and the mapping is then a twenty-line file — the data shape is already
+`{ label, icon, href }` per tile, four tiles per cluster, four clusters.
+
+### There is no SEO Studio icon
+
+Fifteen of the sixteen products in the constellation have their own illustration in
+`assets/glass-icons` — `Commerce/PIM`, `General/Personalization`, `General/Liferay Data Platform`,
+`General/ai`, `Product/DXP` for the hub. SEO Studio has none.
+
+The design draws a magnifier with sparkles. Nothing in the set is that, so the tile borrows
+`Product Modules/Content Performance/CDN`, since content performance is what the product is for. Worth
+drawing the missing one — it is the only substitution in the figure.
+
+`Content/Search` is a figure behind a magnifier and is the design's **Search** icon exactly, so it stays
+with Search rather than being reassigned here.
 
 ## Layout
 

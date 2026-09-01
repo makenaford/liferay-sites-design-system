@@ -7070,3 +7070,622 @@
     background-color: var(--sds-surfaces-card-bg-blue);
   }
 }
+
+/* ======================================================================== CapabilityMap
+ *
+ * Sixteen products in four sections of four, around the platform they sit on.
+ *
+ * ## One number
+ *
+ * Everything is a multiple of `--sds-map-tile`, the width of one lattice cell, set by the component as a
+ * share of the map's width in container units. A flat-top hexagon of width `w` is `0.866w` tall, its
+ * neighbours sit `0.75w` across and `0.866w` down, and odd columns hang half a row lower. Those are the
+ * only measurements here, and they are why tiles cannot overlap: a tile is placed by cell, and two cells
+ * are one hexagon apart because the arithmetic says so.
+ */
+.mapRoot {
+  position: relative;
+  width: 100%;
+  container-type: inline-size;
+  /*
+   * The hexagon. 25%/75% are the corner cuts that make all six edges equal, which is what lets four
+   * cells meet without a seam.
+   */
+  --sds-map-hex: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  --sds-map-step-x: calc(var(--sds-map-tile) * 0.75);
+  --sds-map-step-y: calc(var(--sds-map-tile) * 0.8660254);
+  /* How much of its cell a tile fills. The remaining 12% is the gap, even on all six sides. */
+  --sds-map-fill: 0.88;
+  --sds-map-w: calc(var(--sds-map-tile) * var(--sds-map-fill));
+  --sds-map-h: calc(var(--sds-map-w) * 0.8660254);
+}
+
+/* ---- the wash -------------------------------------------------------------------------------
+ *
+ * The light the whole figure sits in: three blobs of the brand's dark steps, screened together, blurred,
+ * and masked to the middle so the field has no visible boundary.
+ *
+ * Static, and strong. Nothing in this figure pulses — not the tiles, not the hub, not this — so the
+ * centre's presence has to come from the wash being *there*. A slow pulse on it would read as the centre
+ * breathing, which is the thing being left out. Every keyframe for that is gone; bringing it back means
+ * writing one.
+ */
+.mapWash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(50px);
+  opacity: 0.88;
+  mask-image: radial-gradient(
+    closest-side at 50% 50%,
+    #000 0%,
+    #000 44%,
+    rgba(0, 0, 0, 0.5) 72%,
+    transparent 94%
+  );
+  -webkit-mask-image: radial-gradient(
+    closest-side at 50% 50%,
+    #000 0%,
+    #000 44%,
+    rgba(0, 0, 0, 0.5) 72%,
+    transparent 94%
+  );
+}
+
+.mapWash > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+  mix-blend-mode: screen;
+}
+
+.mapWash > span:nth-child(1) {
+  background-image: radial-gradient(circle, var(--sds-map-wash-core) 0%, transparent 66%);
+  transform: translate(-9%, -5%) scale(1.08);
+}
+
+.mapWash > span:nth-child(2) {
+  background-image: radial-gradient(circle, var(--sds-map-wash-halo) 0%, transparent 66%);
+  transform: translate(9%, 8%) scale(1.02);
+}
+
+.mapWash > span:nth-child(3) {
+  width: 36%;
+  background-image: radial-gradient(circle, var(--sds-map-wash-inner) 0%, transparent 62%);
+  transform: translate(-3%, 6%) scale(1.14);
+}
+
+/* ---- the network ----------------------------------------------------------------------------
+ *
+ * Traces walking the lattice, a loop round each section, and a connector from the hub to each one. All
+ * of them follow the lattice's own edges: a straight radial line would be the only thing in the figure
+ * that ignores the grid.
+ *
+ * Two rules, both learned the hard way:
+ *
+ * 1. `pathLength` and `vector-effect: non-scaling-stroke` cannot both apply to one stroke. The second
+ *    measures a normalised dash in device pixels, so a dash of 28-of-100 becomes 0.84 device pixels and
+ *    a travelling line renders as a row of dots. Widths are therefore in tiles, with no vector-effect.
+ * 2. Nothing may land under about 1.25 device pixels, where a diagonal stops antialiasing and starts
+ *    flickering. `--sds-map-tw` is a floor the component computes from its own rendered width and only
+ *    ever raises.
+ *
+ * The glow is a second, wider, fainter copy of each path rather than a `drop-shadow`. Filters on two
+ * dozen paths whose geometry is animating means re-rasterising every filtered region every frame, and it
+ * showed: the lines stuttered and broke up.
+ */
+.mapNetwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /*
+   * `farthest-corner`, so the sides sit well inside the opaque part and only the extreme corners soften.
+   * Sized to the closest side instead, the outer half of every trace was invisible.
+   */
+  mask-image: radial-gradient(
+    farthest-corner at 50% 50%,
+    #000 0%,
+    #000 86%,
+    rgba(0, 0, 0, 0.45) 96%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    farthest-corner at 50% 50%,
+    #000 0%,
+    #000 86%,
+    rgba(0, 0, 0, 0.45) 96%,
+    transparent 100%
+  );
+}
+
+.mapTrace,
+.mapTraceHalo,
+.mapLoop,
+.mapLoopHalo,
+.mapLink,
+.mapLinkHalo {
+  fill: none;
+  stroke: url(#sds-map-line);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+}
+
+.mapTrace { stroke-width: calc(0.013 * var(--sds-map-tw, 1)); }
+.mapTraceHalo { stroke-width: calc(0.05 * var(--sds-map-tw, 1)); }
+.mapLoop { stroke-width: calc(0.014 * var(--sds-map-tw, 1)); stroke-dasharray: 34 66; }
+.mapLoopHalo { stroke-width: calc(0.055 * var(--sds-map-tw, 1)); stroke-dasharray: 34 66; }
+.mapLink { stroke-width: calc(0.016 * var(--sds-map-tw, 1)); }
+.mapLinkHalo { stroke-width: calc(0.062 * var(--sds-map-tw, 1)); }
+
+/* The resting outline, just enough for a highlight to have something to travel along. */
+.mapLoopRest {
+  fill: none;
+  stroke: var(--sds-map-grid-line);
+  stroke-width: calc(0.011 * var(--sds-map-tw, 1));
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.mapTrace,
+.mapTraceHalo {
+  animation: sds-map-draw 7.5s linear infinite;
+  animation-delay: var(--sds-map-delay, 0s);
+}
+
+.mapLoop,
+.mapLoopHalo {
+  animation: sds-map-lap 19s linear infinite;
+  animation-delay: var(--sds-map-delay, 0s);
+}
+
+.mapLink,
+.mapLinkHalo {
+  animation: sds-map-link 9s var(--sds-motion-ease-out) infinite;
+  animation-delay: var(--sds-map-delay, 0s);
+}
+
+.mapTraceHalo { animation-name: sds-map-draw-halo; }
+.mapLoopHalo { animation-name: sds-map-lap-halo; }
+.mapLinkHalo { animation-name: sds-map-link-halo; }
+
+/*
+ * The three tiers, and the order between them is the point: connectors carry a message, the traces are
+ * traffic, the loops are structure. Peaks of 0.55, 0.4 and 0.3.
+ */
+@keyframes sds-map-draw {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.4; }
+  20% { stroke-dashoffset: 0; opacity: 0.4; }
+  26% { opacity: 0.36; }
+  44% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes sds-map-draw-halo {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.09; }
+  20% { stroke-dashoffset: 0; opacity: 0.09; }
+  26% { opacity: 0.08; }
+  44% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes sds-map-lap {
+  0% { stroke-dashoffset: 100; opacity: 0.07; }
+  25% { opacity: 0.3; }
+  50% { stroke-dashoffset: 50; opacity: 0.11; }
+  75% { opacity: 0.27; }
+  100% { stroke-dashoffset: 0; opacity: 0.07; }
+}
+
+@keyframes sds-map-lap-halo {
+  0% { stroke-dashoffset: 100; opacity: 0.02; }
+  25% { opacity: 0.08; }
+  50% { stroke-dashoffset: 50; opacity: 0.03; }
+  75% { opacity: 0.07; }
+  100% { stroke-dashoffset: 0; opacity: 0.02; }
+}
+
+/* The connector holds at full length for a third of its cycle, which is what gives the eye time to
+ * follow one from the hub out to its section. */
+@keyframes sds-map-link {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.55; }
+  30% { stroke-dashoffset: 0; opacity: 0.55; }
+  62% { stroke-dashoffset: 0; opacity: 0.5; }
+  82% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes sds-map-link-halo {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.13; }
+  30% { stroke-dashoffset: 0; opacity: 0.13; }
+  62% { stroke-dashoffset: 0; opacity: 0.11; }
+  82% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+/* ---- the section names ----------------------------------------------------------------------
+ *
+ * Above each top section and below each bottom one. Tiles reach 2.11 tiles from the centre vertically
+ * and a name sits at 2.36, so there is a fifth of a tile between them.
+ *
+ * Beside the sections would be closer to the Figma frame, but that room comes straight off the width of
+ * every hexagon, and legible product labels matter more than where four group names sit.
+ */
+.mapName {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--sds-map-tile) * 1.65);
+  translate: calc(var(--sds-map-nx) * var(--sds-map-tile) - 50%)
+    calc(var(--sds-map-ny) * var(--sds-map-tile) - 50%);
+  z-index: 700;
+  pointer-events: none;
+  text-align: center;
+  font-size: min(var(--sds-size-paragraph-small-caps), calc(var(--sds-map-tile) * 0.088));
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* ---- a tile ---------------------------------------------------------------------------------
+ *
+ * The tile positions and the body draws, which is what keeps the hover scale off the same property as
+ * the placement.
+ */
+.mapTile {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--sds-map-w);
+  height: var(--sds-map-h);
+  translate: calc(var(--sds-map-q) * var(--sds-map-step-x) - 50%)
+    calc(var(--sds-map-r) * var(--sds-map-step-y) - 50%);
+  z-index: calc(100 + var(--sds-map-r) * 10);
+  display: block;
+  border: 0;
+  padding: 0;
+  appearance: none;
+  background: none;
+  text-decoration: none;
+  color: var(--sds-surfaces-text-primary);
+  outline: none;
+}
+
+.mapTile[data-interactive] { cursor: pointer; }
+
+/*
+ * The edge is `Components/Glass Line` at 225°, the hairline `Card` draws on every glass surface — at
+ * about half the token value on a tile.
+ *
+ * The token is right for one card on a page. Sixteen ringing a single hub is a different problem: at full
+ * strength the edges were the brightest thing in the figure and the centre, which is the subject, read as
+ * the dimmest. The hub keeps the full value, so the hierarchy runs core, then tiles, then network.
+ *
+ * Painted on the body and revealed as a 1.5px rim by insetting everything above it: a clip-path cannot
+ * take a border, and the masked pseudo-element ring the rounded cards use does not survive a hexagon —
+ * clipping a rectangular ring to one erases the line along all four diagonals.
+ */
+.mapTileBody {
+  position: absolute;
+  inset: 0;
+  clip-path: var(--sds-map-hex);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--sds-map-tile) * 0.04);
+  padding: calc(var(--sds-map-tile) * 0.05) calc(var(--sds-map-tile) * 0.11);
+  text-align: center;
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-map-tile-line-from) 1%,
+    var(--sds-map-tile-line-to) 92%
+  );
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    filter var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* The glass: `Glass Step 01` into `02` over a deep ground, with the blurred backdrop the card draws. */
+.mapTileFace {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: var(--sds-map-hex);
+  background-color: var(--sds-map-tile-fill);
+  background-image: linear-gradient(
+    60deg,
+    var(--sds-map-tile-sheen-from) 0%,
+    var(--sds-map-tile-sheen-to) 100%
+  );
+  backdrop-filter: blur(18px) saturate(1.45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.45);
+  transition: background-color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The tile is set *into* the grid, with the shadow even on all six sides.
+ *
+ * `closest-side` on a radial gives an **ellipse** whose radii are the box's own half-width and
+ * half-height — and this box is a hexagon's bounding box, `w` by `0.866w`. So it saturates at 0.5w
+ * horizontally, exactly where the left and right vertices are, and at 0.433w vertically, exactly where
+ * the flat top and bottom edges are: on the outline in every direction, rather than short of it on four
+ * sides and past it on two, which is what a circle would do.
+ *
+ * Not `box-shadow: inset`, which follows the rectangular border box: clipped to a hexagon it bands along
+ * the straight top and bottom and leaves all four diagonals bare.
+ */
+.mapTileWell {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: var(--sds-map-hex);
+  pointer-events: none;
+  background-image: radial-gradient(
+    closest-side at 50% 50%,
+    transparent 44%,
+    var(--sds-map-well-mid) 70%,
+    color-mix(in srgb, var(--sds-map-well-edge) 66%, transparent) 88%,
+    var(--sds-map-well-edge) 100%
+  );
+}
+
+/* The sheen: `Card`'s pointer-tracked light, sized to the tile rather than to the cursor. */
+.mapTileSheen {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: var(--sds-map-hex);
+  pointer-events: none;
+  opacity: 0;
+  background-image: radial-gradient(
+    calc(var(--sds-map-tile) * 1.1) circle at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    rgba(255, 255, 255, 0.075),
+    transparent 68%
+  );
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.mapTileIcon {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(var(--sds-map-tile) * 0.3);
+  height: calc(var(--sds-map-tile) * 0.3);
+}
+
+.mapTileIcon > svg { width: 100%; height: 100%; }
+.mapTileIcon[data-hub] { width: calc(var(--sds-map-tile) * 0.34); height: calc(var(--sds-map-tile) * 0.34); }
+
+/*
+ * The label. `Paragraph/Small Caps` — 14px — is the **floor**, not the ceiling: a product name is the one
+ * thing here a reader must be able to read, so it never scales below the token however narrow the column.
+ *
+ * This is what sizes the hexagons. 14px of text and an icon have to fit inside a hexagon's middle band,
+ * which is why the canvas is only 5.8 tiles wide.
+ */
+.mapTileLabel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  font-size: max(var(--sds-size-paragraph-small-caps), calc(var(--sds-map-tile) * 0.085));
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-secondary);
+  overflow-wrap: break-word;
+  hyphens: auto;
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease);
+}
+
+/* ---- the hub --------------------------------------------------------------------------------
+ *
+ * The one block that is not glass: opaque, no backdrop-filter — there is nothing to see through it, and
+ * blurring a backdrop nobody can see is work for no picture.
+ *
+ * Being solid is what lets the traces cross the middle: a line passing behind a platform disappears
+ * behind it, which is what a platform should do to whatever runs under it.
+ */
+.mapHub {
+  --sds-map-q: 0;
+  --sds-map-r: 0;
+  width: calc(var(--sds-map-tile) * 1.8 * var(--sds-map-fill));
+  height: calc(var(--sds-map-tile) * 1.8 * var(--sds-map-fill) * 0.8660254);
+  z-index: 95;
+  cursor: default;
+}
+
+/* The full `Components/Glass Line`: one shape rather than sixteen, so the strength that was too much on
+ * the tiles is exactly right here — and it puts the brightest edge around the thing the figure is about. */
+.mapHub > .mapTileBody {
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
+  );
+  gap: calc(var(--sds-map-tile) * 0.03);
+}
+
+.mapHub .mapTileFace {
+  background-color: var(--sds-map-hub-fill);
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Shallower: the hub is what the others are set around, not another socket, and at full strength the
+ * shadow would close over the core. */
+.mapHub .mapTileWell {
+  background-image: radial-gradient(
+    closest-side at 50% 50%,
+    transparent 58%,
+    var(--sds-map-well-hub-mid) 80%,
+    var(--sds-map-well-hub-edge) 100%
+  );
+}
+
+/*
+ * The core: a radial of `Brand/Primary` inside the hub's own silhouette, brightest just above centre and
+ * gone before the edge, so the platform is lit from within rather than tinted. Above the fill and the
+ * well so the blue is not muted, below the icon and the label so neither is read through it.
+ */
+.mapTileCore {
+  position: absolute;
+  inset: 1.5px;
+  clip-path: var(--sds-map-hex);
+  pointer-events: none;
+  background-image: radial-gradient(
+    62% 56% at 50% 46%,
+    var(--sds-map-core-from),
+    var(--sds-map-core-to) 46%,
+    transparent 82%
+  );
+}
+
+.mapHub .mapTileLabel {
+  font-size: calc(var(--sds-map-tile) * 0.15);
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* ---- interaction ----------------------------------------------------------------------------
+ *
+ * `Card`'s hover on a hexagon: the tile grows, its edge fills with `card-Focus Ring` lit from where the
+ * pointer entered, the sheen comes up and the label goes to full white.
+ *
+ * A tile grows rather than lifting. `Card` rises 2px into the gap around it; a tile on a lattice has
+ * nowhere to lift to, so scale is the affordance — at rest nothing overlaps, and a hovered tile
+ * deliberately does, which is how it comes forward.
+ */
+@media (hover: hover) {
+  .mapTile[data-interactive]:hover { z-index: 800; }
+  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); }
+  .mapTile[data-interactive]:hover .mapTileSheen { opacity: 1; }
+  .mapTile[data-interactive]:hover .mapTileLabel { color: var(--sds-surfaces-text-primary); }
+  .mapTile[data-interactive]:hover .mapTileFace { background-color: var(--sds-map-tile-fill-hover); }
+
+  .mapTile[data-interactive]:hover > .mapTileBody {
+    background-image: radial-gradient(
+      140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+      var(--sds-map-rim-from),
+      var(--sds-map-rim-to)
+    );
+  }
+
+  /*
+   * The section stays lit. Everything outside the hovered tile's section drops further than the section
+   * itself, so the four products that belong together read as a set and the hover teaches the taxonomy
+   * without a legend. The hub belongs to no section and dims with the outsiders.
+   */
+  .mapRoot:has(.mapTile[data-interactive]:hover) .mapTile:not(:hover):not([data-sds-group]) > .mapTileBody {
+    filter: saturate(0.5) brightness(0.58);
+  }
+  .mapRoot:has(.mapTile[data-interactive]:hover) .mapTile[data-sds-group]:not(:hover) > .mapTileBody {
+    filter: saturate(0.92) brightness(0.9);
+  }
+  .mapRoot:has(.mapTile[data-interactive]:hover) .mapName:not([data-sds-lit]) {
+    color: var(--sds-surfaces-text-tertiary);
+  }
+  .mapRoot:has(.mapTile[data-interactive]:hover) .mapName[data-sds-lit] {
+    color: var(--sds-surfaces-text-primary);
+  }
+}
+
+/* Focus mirrors hover, so the keyboard gets the same tile — and the same grouping, which is information. */
+.mapTile[data-interactive]:focus-visible { z-index: 800; }
+.mapTile[data-interactive]:focus-visible > .mapTileBody {
+  transform: scale(1.14);
+  background-image: radial-gradient(
+    140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    var(--sds-map-rim-from),
+    var(--sds-map-rim-to)
+  );
+}
+.mapTile[data-interactive]:focus-visible .mapTileSheen { opacity: 1; }
+.mapTile[data-interactive]:focus-visible .mapTileLabel { color: var(--sds-surfaces-text-primary); }
+.mapRoot:has(.mapTile[data-interactive]:focus-visible)
+  .mapTile:not(:focus-visible):not([data-sds-group])
+  > .mapTileBody {
+  filter: saturate(0.5) brightness(0.58);
+}
+.mapRoot:has(.mapTile[data-interactive]:focus-visible)
+  .mapTile[data-sds-group]:not(:focus-visible)
+  > .mapTileBody {
+  filter: saturate(0.92) brightness(0.9);
+}
+.mapRoot:has(.mapTile[data-interactive]:focus-visible) .mapName[data-sds-lit] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* Pressed: the growth settles back towards rest rather than going further. */
+.mapTile[data-interactive]:active > .mapTileBody {
+  transform: scale(1.07);
+  transition-duration: var(--sds-motion-press);
+}
+
+/*
+ * Reduced motion. The traces are only ever a moving dash, so they have nothing to say without motion and
+ * go entirely — except the connectors, which carry the topology and are worth keeping still and visible.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .mapTrace,
+  .mapTraceHalo,
+  .mapLoop,
+  .mapLoopHalo,
+  .mapLink,
+  .mapLinkHalo {
+    animation: none;
+  }
+
+  .mapTrace,
+  .mapTraceHalo,
+  .mapLoop,
+  .mapLoopHalo {
+    opacity: 0;
+  }
+
+  .mapLink { opacity: 0.34; stroke-dasharray: none; }
+  .mapLinkHalo { opacity: 0.08; stroke-dasharray: none; }
+
+  .mapTileBody { transition: none; }
+  .mapTile[data-interactive]:hover > .mapTileBody,
+  .mapTile[data-interactive]:focus-visible > .mapTileBody,
+  .mapTile[data-interactive]:active > .mapTileBody {
+    transform: none;
+  }
+}
+
+/*
+ * Forced colours: every gradient here is dropped by the OS, so a tile would lose its shape entirely. A
+ * real border brings it back and the hover becomes an outline the mode cannot discard.
+ */
+@media (forced-colors: active) {
+  .mapTile { border: 1px solid CanvasText; }
+
+  .mapTile[data-interactive]:hover,
+  .mapTile[data-interactive]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .mapWash,
+  .mapNetwork {
+    display: none;
+  }
+}

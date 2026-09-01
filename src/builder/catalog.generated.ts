@@ -68,6 +68,18 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "CapabilityMap",
+    doc: "CapabilityMap — the product constellation from the homepage redesign (`Homepage Redesign`, node `7703:16084`): sixteen products in four sections of four, around the platform they all sit on.",
+    props: [
+      { name: "hubIcon", kind: "slot", doc: "The thing at the centre: `IconGlassDXP` for the product map." },
+      { name: "hubLabel", kind: "slot", default: "DXP", doc: "The name under it." },
+      { name: "hubHref", kind: "text", doc: "Where the hub goes, if it is a target too." },
+      { name: "wash", kind: "boolean", default: "true", doc: "The gradient behind the hub — the light the whole figure sits in." },
+      { name: "network", kind: "boolean", default: "true", doc: "The network: traces walking the lattice, a loop around each section, and a connector from the hub out to each one." },
+    ],
+    unsupported: ["clusters"],
+  },
+  {
     name: "Card",
     doc: "Card — Figma `card-main` (node `16728:26513`), with `Surface` (`16953:109831`), `card-image`, `header-alignment` (`19097:9035`), `Card hero` (`17720:27408`) and `Content Text` (`20354:3820`).",
     props: [
@@ -186,6 +198,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Hero — Figma `Hero` component set (node `19110:9503`), with the slots the accompanying spreadsheet lists.",
     props: [
       { name: "background", kind: "enum", options: ["none", "full", "corner"], default: "corner", doc: "Figma's `Type` axis, and the spreadsheet's Background column: `full` is Bubble Full, `corner` is Corner Bubble, `none` is the plain surface." },
+      { name: "drawn", kind: "boolean", doc: "Draw the bubble instead of playing a file — the prototype the bubble lab exists to judge." },
       { name: "align", kind: "enum", options: ["left", "center"], default: "left", doc: "`center` centres the column and its text." },
       { name: "banner", kind: "slot", doc: "A full-width band above the content and the media, centred in the hero's own gutters. The Home page (node `24563:52720`) draws a solution finder there — a 1000px bar sitting over the bubble, above the heading and spanning both columns — which none of the content slots can hold, because every one of them lives inside the left column." },
       { name: "label", kind: "slot", doc: "Above the heading — a `Label`, an eyebrow, a breadcrumb." },
@@ -284,6 +297,7 @@ export const CATALOG: ComponentSpec[] = [
     props: [
       { name: "spacing", kind: "enum", options: ["default", "tight", "none"], default: "default" },
       { name: "bleed", kind: "boolean", doc: "Lets the body run to the viewport's edges while the heading and the footer keep the gutter — which is how Figma's `Integrations Section` and `Carousel` sections are built, so a marquee or a card track can bleed off the side of the page." },
+      { name: "reveal", kind: "boolean", doc: "Drift the section up into place as it scrolls into view." },
       { name: "title", kind: "slot", doc: "The heading block. A `SectionTitle`, normally." },
       { name: "footer", kind: "slot", doc: "Below the body — Figma's `Call to Action` and carousel controls both sit here." },
       { name: "gap", kind: "number", doc: "Between the heading, the body and the footer. Figma uses 24, and 32 in the integrations section." },

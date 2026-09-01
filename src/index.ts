@@ -12,6 +12,12 @@ export {
 } from './components/Accordion'
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
+export {
+  CapabilityMap,
+  type CapabilityMapProps,
+  type CapabilityCluster,
+  type CapabilityItem,
+} from './components/CapabilityMap'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
 export { Chip, type ChipProps } from './components/Chip'
 export { Divider, type DividerProps, type DividerTone } from './components/Divider'

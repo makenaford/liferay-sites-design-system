@@ -87,6 +87,78 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'gradient-card-purple': scheme === 'light' ? color['accent-product-accent'] : '#7414ff',
 
     /**
+     * The four stops of `CapabilityMap`'s wash — the pulsing glow behind the hub, in `Brand/Primary` and
+     * `Accent/Product Accent`.
+     *
+     * Tokens rather than a `color-mix` at the point of use, because the strength has to change with the
+     * scheme and an alpha buried in a `color-mix` percentage cannot. The same alpha that reads as a lit
+     * core on the near-black canvas is a purple blob on a white one: light needs roughly a third of it to
+     * say the same thing.
+     *
+     * Stronger than they were, because nothing in the figure pulses any more — the centre's presence has
+     * to come from the wash being there rather than from it moving.
+     */
+    'map-wash-core': scheme === 'light' ? 'rgba(11, 95, 255, 0.2)' : 'rgba(11, 95, 255, 0.52)',
+    'map-wash-halo': scheme === 'light' ? 'rgba(116, 20, 255, 0.13)' : 'rgba(116, 20, 255, 0.4)',
+    'map-wash-inner': scheme === 'light' ? 'rgba(55, 124, 255, 0.22)' : 'rgba(55, 124, 255, 0.6)',
+    /** The network's resting outline. Dark wants a lit line; light wants a shadow of one. */
+    'map-grid-line': scheme === 'light' ? 'rgba(11, 95, 255, 0.14)' : 'rgba(99, 153, 255, 0.22)',
+
+    /**
+     * `CapabilityMap`'s tile edge: `Components/Glass Line` at about half its token value.
+     *
+     * The token is calibrated for one card on a page. Sixteen tiles ringing a single hub is a different
+     * problem — at full strength the edges were the brightest thing in the figure and the centre, which
+     * is the subject, read as the dimmest. The hub keeps the full `glass-line-*` values, so the
+     * hierarchy runs core, then tiles, then network. Recorded in README.md.
+     */
+    'map-tile-line-from':
+      scheme === 'light' ? 'rgba(111, 160, 255, 0.34)' : 'rgba(255, 255, 255, 0.09)',
+    'map-tile-line-to':
+      scheme === 'light' ? 'rgba(111, 160, 255, 0.22)' : 'rgba(255, 255, 255, 0.062)',
+
+    /** The tile's ground, and the firmer version it takes on hover so the rim stays a rim. */
+    'map-tile-fill': scheme === 'light' ? 'rgba(255, 255, 255, 0.62)' : 'rgba(11, 17, 33, 0.72)',
+    'map-tile-fill-hover': scheme === 'light' ? 'rgba(255, 255, 255, 0.78)' : 'rgba(16, 25, 48, 0.8)',
+
+    /** `Glass Step 01` and `02`, halved on a tile for the same reason the edge is. */
+    'map-tile-sheen-from':
+      scheme === 'light' ? 'rgba(173, 201, 255, 0.05)' : 'rgba(255, 255, 255, 0.026)',
+    'map-tile-sheen-to': 'rgba(140, 150, 169, 0.016)',
+
+    /**
+     * The hub's fill. Opaque, which is what lets the network cross the middle and vanish behind it.
+     * Light mode gets a near-white rather than a tint, so the platform still reads as solid.
+     */
+    'map-hub-fill': scheme === 'light' ? '#f4f7ff' : '#0c1326',
+
+    /**
+     * The socket: the even shadow inside a tile's outline, and the shallower one inside the hub's.
+     *
+     * Tokens because black does not translate. 66% black on the near-black canvas is a well; on a white
+     * one it is a smudge that turns every tile into a grey blob and buries the icons. Light mode uses a
+     * fifth of the strength, in the neutral the rest of the light theme shades with rather than pure
+     * black.
+     */
+    'map-well-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.045)' : 'rgba(0, 0, 0, 0.2)',
+    'map-well-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.13)' : 'rgba(0, 0, 0, 0.66)',
+    'map-well-hub-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.03)' : 'rgba(0, 0, 0, 0.14)',
+    'map-well-hub-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.07)' : 'rgba(0, 0, 0, 0.34)',
+
+    /** The core: `Brand/Primary` lighting the hub from within. */
+    'map-core-from': scheme === 'light' ? 'rgba(11, 95, 255, 0.2)' : 'rgba(11, 95, 255, 0.36)',
+    'map-core-to': scheme === 'light' ? 'rgba(11, 95, 255, 0.07)' : 'rgba(11, 95, 255, 0.13)',
+
+    /**
+     * The hover outline — `card-Focus Ring`, one step down at both ends: `Brand/Primary` into a darkened
+     * `Accent/Product Accent` rather than `Lighten/1` into the full accent. The lit version was the
+     * brightest thing on the page by some margin, which put the emphasis on the rim instead of on the
+     * tile it is drawn around.
+     */
+    'map-rim-from': color['brand-primary-primary'],
+    'map-rim-to': scheme === 'light' ? color['accent-product-accent'] : '#5a10c9',
+
+    /**
      * The lit top edge that raises a glass card on the dark canvas. Not a Figma value.
      *
      * Light mode takes nothing here — its own shadow does the work.

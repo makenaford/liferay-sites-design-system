@@ -1,18 +1,27 @@
 {
   "$comment": [
     "The illustrative 'glass' icons this library ships, by their path under assets/glass-icons/.",
-    "These are the 64px illustrations the Figma card puts in a 48px container \u2014 a different set from",
+    "These are the 64px illustrations the Figma card puts in a 48px container — a different set from",
     "the MingCute UI glyphs in manifest.json, and not interchangeable with them.",
     "Run `pnpm glass-icons` after editing. Set \"icons\" to \"*\" to generate all 165.",
     "Two icons whose file names match (Dashboard, Analytics, Integration, Pricing, Global Services)",
     "need an { \"path\": \"...\", \"as\": \"...\" } entry to tell their components apart."
   ],
   "icons": [
-    "Business/Dashboard",
+    {
+      "path": "Business/Dashboard",
+      "as": "Dashboard"
+    },
     "Business/Enterprise Website 4",
     "Business/Proof of Value",
+    "Commerce/PIM",
+    "Content/CMS/Content Management",
     "Content/Search",
     "Content/Sites",
+    {
+      "path": "Customer Support/Global Services",
+      "as": "GlobalServices"
+    },
     "Customer Support/Support",
     "Customer/Customer Portals",
     "Data/DAM",
@@ -20,11 +29,42 @@
     "Education/Documentation",
     "General/Composable",
     "General/Developer Tools",
+    "General/Liferay Data Platform",
     "General/Mail",
     "General/Performance",
+    "General/Personalization",
+    {
+      "path": "General/ai",
+      "as": "AiHub"
+    },
     "Industries/Financial Services",
+    {
+      "path": "Industries/Integration",
+      "as": "IntegrationIndustry"
+    },
+    {
+      "path": "Performance/Analytics",
+      "as": "AnalyticsPerformance"
+    },
     "Platform/Premium Security",
+    {
+      "path": "Product Modules/Analytics",
+      "as": "Analytics"
+    },
+    "Product Modules/Cloud Native Experience",
     "Product Modules/Commerce",
+    "Product Modules/Content Marketing Platform",
+    {
+      "path": "Product Modules/Content Performance/CDN",
+      "as": "ContentPerformance"
+    },
+    "Product Modules/Digital Sales Rooms",
+    {
+      "path": "Product Modules/Integration",
+      "as": "Integration"
+    },
+    "Product Modules/Low-Code",
+    "Product/DXP",
     "Security/Security & Compliance",
     "Services/Intranets",
     "Solutions/Partner Portals",
