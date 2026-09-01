@@ -10,6 +10,13 @@ export {
   type AccordionProps,
   type AccordionSize,
 } from './components/Accordion'
+export {
+  Banner,
+  type BannerProps,
+  type BannerTone,
+  type BannerAlign,
+  type BannerPosition,
+} from './components/Banner'
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export {

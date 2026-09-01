@@ -6,6 +6,7 @@ import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { CapabilityMap } from '../components/CapabilityMap'
 import { Carousel } from '../components/Carousel'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import { Hero } from '../components/Hero'
@@ -15,6 +16,7 @@ import { Link } from '../components/Link'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
+import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { Quotee, SiteFooter, SiteHeader, VendorTile, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -26,6 +28,7 @@ import {
   IconDepartment,
   IconGlassCommerce,
   IconGlassCustomerPortals,
+  IconGlassDXP,
   IconGlassEnterpriseWebsite4,
   IconGlassFinancialServices,
   IconGlassIntranets,
@@ -47,7 +50,6 @@ import heroAnimation from '../../assets/home/hero-animation.webm'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
-import platformDiagram from '../../assets/home/platform-diagram.png'
 import teamsMedia from '../../assets/home/teams-media.png'
 
 
@@ -823,18 +825,28 @@ function HomePage() {
         />
       </Section>
 
-      {/* 7. Everything You Need in One Platform — the product map, drawn at 1000×806. */}
+      {/*
+        7. Everything You Need in One Platform — the product map.
+
+        Drawn rather than exported: this was `platform-diagram.png` at 1000×806, and is now the
+        `CapabilityMap` component, so the sixteen products are real tiles with real links, real labels
+        and a keyboard path through them. The section names sit outside the tiles on their own leader
+        lines — `Homepage Redesign` node `8144:21713` — which is why this section bleeds: that
+        arrangement is 8.9 tiles across and a 1280 column would pay for the width in card size.
+        `maxHeight` is what keeps the whole figure inside the window.
+      */}
       <Section
         reveal
-        maxWidth={1000}
+        bleed
         gap={40}
         title={<SectionTitle align="center" title="Everything You Need in One Platform" />}
       >
-        <Image
-          src={platformDiagram}
-          alt="DXP at the centre of four groups: Content & Experience, Commerce & Sales, Platform & Infrastructure, and Intelligence & AI"
-          ratio="auto"
-          fit="contain"
+        <CapabilityMap
+          clusters={PRODUCT_CLUSTERS}
+          names="outside"
+          hubIcon={<IconGlassDXP />}
+          hubLabel="DXP"
+          maxHeight={PRODUCT_MAP_MAX_HEIGHT}
         />
       </Section>
 

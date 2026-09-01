@@ -58,6 +58,23 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "Banner",
+    doc: "Banner — the announcement band across the top of the site.",
+    props: [
+      { name: "tone", kind: "enum", options: ["brand", "accent", "neutral"], default: "brand", doc: "The wash and the pill colour." },
+      { name: "label", kind: "slot", default: "New", doc: "The pill before the message — `New`, `Event`, `Beta`. Two or three words at most: it is a category, not a headline." },
+      { name: "icon", kind: "slot", doc: "A glyph before the pill. One of the 20px icons; it is decorative and hidden from assistive tech." },
+      { name: "children", kind: "slot", default: "Liferay DXP 2026.Q3 is generally available — self-hosted and SaaS.", doc: "The announcement itself. One sentence — the band is 40px and does not grow gracefully." },
+      { name: "action", kind: "slot", doc: "Where the announcement leads — a `Link`, normally. It sits inline after the message on a wide band and wraps under it on a narrow one." },
+      { name: "closeLabel", kind: "text", default: "Dismiss announcement", doc: "The dismiss button's accessible name." },
+      { name: "align", kind: "enum", options: ["center", "left"], default: "center", doc: "Centred under the band, or ranged left in the page gutter with the dismiss button pushed to the far edge. Centred reads as an announcement; left reads as part of the page." },
+      { name: "position", kind: "enum", options: ["static", "sticky"], default: "static", doc: "`sticky` keeps the band at the top of the viewport as the page scrolls." },
+      { name: "maxWidth", kind: "number", default: "1280", doc: "The content's ceiling, matching whatever the page uses." },
+      { name: "regionLabel", kind: "text", default: "Announcement", doc: "The accessible name of the region." },
+      { name: "onClose", kind: "slot", source: "story" },
+    ],
+  },
+  {
     name: "Button",
     doc: "Button — Figma `Button` component set (node `16123:189647`).",
     props: [
@@ -75,6 +92,8 @@ export const CATALOG: ComponentSpec[] = [
       { name: "hubLabel", kind: "slot", default: "DXP", doc: "The name under it." },
       { name: "hubHref", kind: "text", doc: "Where the hub goes, if it is a target too." },
       { name: "wash", kind: "boolean", default: "true", doc: "The gradient behind the hub — the light the whole figure sits in." },
+      { name: "names", kind: "enum", options: ["nested", "outside"], default: "nested", doc: "Where each section's name goes." },
+      { name: "maxHeight", kind: "number", doc: "A ceiling on how tall the figure may be — a length, or a number of pixels." },
       { name: "network", kind: "boolean", default: "true", doc: "The network: traces walking the lattice, a loop around each section, and a connector from the hub out to each one." },
     ],
     unsupported: ["clusters"],

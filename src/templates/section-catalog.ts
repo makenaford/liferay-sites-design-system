@@ -122,6 +122,36 @@ export const SECTION_TYPES: SectionType[] = [
     }),
   },
   {
+    type: 'capabilityMap',
+    label: 'Capability map',
+    hint: 'A hub with up to four groups of four products around it.',
+    blank: () => ({
+      type: 'capabilityMap',
+      title: 'Section title',
+      hub: { icon: 'dxp', label: 'DXP' },
+      clusters: [
+        {
+          label: 'First group',
+          items: [
+            { label: 'Sites', icon: 'sites', href: '#' },
+            { label: 'CMS', icon: 'cms', href: '#' },
+            { label: 'CMP', icon: 'cmp', href: '#' },
+            { label: 'Search', icon: 'search', href: '#' },
+          ],
+        },
+        {
+          label: 'Second group',
+          items: [
+            { label: 'Commerce', icon: 'commerce', href: '#' },
+            { label: 'PIM', icon: 'pim', href: '#' },
+            { label: 'DSR', icon: 'dsr', href: '#' },
+            { label: 'Personalization', icon: 'personalization', href: '#' },
+          ],
+        },
+      ],
+    }),
+  },
+  {
     type: 'logoMarquee',
     label: 'Logo marquee',
     hint: 'A scrolling logo row, flush against the band above.',

@@ -54,15 +54,69 @@ interface Cell {
 const rowOf = (q: number, r: number) => (Math.abs(q) % 2 === 1 ? r + 0.5 : r)
 
 /**
- * Where each section's four tiles sit, clockwise from the top left, read top → left → right → bottom.
+ * Where each section's four tiles sit, and the cell they leave empty in the middle.
  *
- * A section is a **diamond around an empty cell** — the shape the Figma frame draws. Of the twelve
- * mirror-symmetric arrangements this lattice allows without two sections touching, it is the tightest:
- * the nearest tile is 1.5 cells from the hub where a 2×2 block managed 1.732, and the figure comes out
- * 5.8 cells wide rather than 6.3. It is also symmetric in both axes by construction, so nothing needs
- * shifting to centre it.
+ * A section is **four tiles ringing a hollow**, and the hollow holds the section's name — the shape
+ * `Homepage Redesign` node `7435:7003` draws. It is a ring of five neighbours with two left open, and
+ * the two left open are the pair facing the hub, so each section reads as a C turned toward the middle
+ * and the connector has somewhere to arrive.
+ *
+ * Naming a group by sitting inside it is what the old arrangement could not do. The name used to be set
+ * above or below the whole figure, which left the pairing to be inferred from position, and it cost two
+ * rows of canvas that came straight off the size of the hexagons.
+ *
+ * Listed in the order a section's four products are read: the tile beyond the hollow first, then its
+ * two flanks, then the one that hangs on the hub side.
  */
-const CLUSTER_CELLS: readonly (readonly Cell[])[] = [
+const CELLS_NESTED: readonly (readonly Cell[])[] = [
+  /* Upper left — the hollow is (-2,-1), and (-1,-2) / (-2,0) are left open toward the hub. */
+  [
+    { q: -2, r: -2 },
+    { q: -3, r: -2 },
+    { q: -1, r: -2 },
+    { q: -3, r: -1 },
+  ],
+  /* Upper right — the same ring mirrored, hollow (2,-1). */
+  [
+    { q: 2, r: -2 },
+    { q: 1, r: -2 },
+    { q: 3, r: -2 },
+    { q: 3, r: -1 },
+  ],
+  /*
+   * Lower right — hollow (2,2), a row further out than the upper pair.
+   *
+   * Not the upper ring mirrored, which is what it looks like it should be. A mirrored ring puts its
+   * hub-side tile one row from the upper ring's, and one row *is* touching on this lattice: the two
+   * sections would fuse into one eight-tile mass. Dropping the lower hollows to r=2 buys the row back
+   * and costs the figure its top-to-bottom symmetry, which `--sds-map-oy` then re-centres.
+   */
+  [
+    { q: 2, r: 1 },
+    { q: 3, r: 1 },
+    { q: 1, r: 1 },
+    { q: 1, r: 2 },
+  ],
+  /* Lower left — hollow (-2,2), mirroring the lower right. */
+  [
+    { q: -2, r: 1 },
+    { q: -3, r: 1 },
+    { q: -1, r: 1 },
+    { q: -1, r: 2 },
+  ],
+]
+
+/**
+ * The tight arrangement, for when the names are **outside**: four tiles that touch, with no hollow.
+ *
+ * A section that carries its own name needs a hole to put it in; a section whose name is out on the
+ * lattice does not, and a hole it does not need is a hole in the drawing. So this is the diamond the
+ * figure was originally built on — a centre column of two with a flank on each side — which is what
+ * `Homepage Redesign` node `8144:21713` draws beside each of its outside names.
+ *
+ * Listed top, left, right, bottom.
+ */
+const CELLS_TIGHT: readonly (readonly Cell[])[] = [
   [
     { q: -2, r: -2 },
     { q: -3, r: -2 },
@@ -89,22 +143,59 @@ const CLUSTER_CELLS: readonly (readonly Cell[])[] = [
   ],
 ]
 
-/** Where each section's name sits, in tiles from the centre. Clockwise from the top left. */
+/**
+ * Where each section's name sits, in tiles from the centre: **the hollow its four tiles ring**.
+ *
+ * `x` is the hollow cell's column step and `y` its row, so the name is placed by the same arithmetic as
+ * the tiles rather than by a measurement that could drift away from them.
+ */
 const NAME_AT = [
-  { x: -1.5, y: -2.36 },
-  { x: 1.5, y: -2.36 },
-  { x: 1.5, y: 2.36 },
-  { x: -1.5, y: 2.36 },
+  { x: -1.5, y: -0.8660254 },
+  { x: 1.5, y: -0.8660254 },
+  { x: 1.5, y: 1.7320508 },
+  { x: -1.5, y: 1.7320508 },
 ] as const
 
 /**
  * The map's box, in tiles.
  *
- * Tiles reach 2.69 across and 2.11 down from the centre; the section names sit at 2.36 down. The box's
- * width divided by `w` **is** the tile, so every tile of slack here comes straight off the size of the
- * hexagons and the 14px text inside them.
+ * Tiles reach 2.73 across, 2.17 above the hub and 2.60 below it, and the section names are inside the
+ * figure now rather than beyond it, so nothing sits outside the tiles and the box is theirs alone. The
+ * box's width divided by `w` **is** the tile, so every tile of slack here comes straight off the size of
+ * the hexagons and the 14px text inside them.
+ *
+ * 5.6 x 4.9, down from 8.6 x 5.1. Both dimensions shrank because the sections came back in to +/-2
+ * columns and the names stopped needing rows of their own, and a card is the page divided by these
+ * numbers: the same window now draws a considerably bigger hexagon.
+ *
+ * The height is the full 4.763-tile spread plus the usual slack, and `--sds-map-oy` shifts the drawing
+ * inside it — the box is centred on the figure, not on the hub.
  */
-const CANVAS = { w: 5.8, h: 5.4 }
+const CANVAS = { w: 5.6, h: 4.9 }
+
+/**
+ * The box an outside name needs, in tiles.
+ *
+ * Narrow, and close in. The name is a label on the group beside it, not a heading for that side of the
+ * figure, so it wants to be near enough that the leader reads as a tie rather than a journey — but not
+ * so near that the line disappears and the name looks like it fell off the diamond. 1.15 wide at 3.7
+ * out leaves the leader about a third of a tile, which is enough to see and short enough to belong.
+ */
+const NAME_OUTSIDE_W = 1.15
+
+/**
+ * The box when the names are outside.
+ *
+ * A different figure, not the same one with margins: the sections are the tight diamonds there, which
+ * are shorter than the rings — 4.33 tiles of tiles rather than 4.76 — and the names then claim about
+ * four tiles of width on each side, glow included: the box has to hold that too, or the figure pushes
+ * the page sideways. The result is close to 2:1, which is wider than any window, so
+ * **height is what binds** and the figure answers the window's height at every ordinary width.
+ */
+const CANVAS_OUTSIDE = { w: 8.9, h: 4.5 }
+
+/** How far the drawing is lifted inside its box, in tiles. Mirrors `--sds-map-oy` in the stylesheet. */
+const CANVAS_OY = -0.2165
 
 /** A flat-top hexagon of width 1, centred on the origin: the corner offsets, in tiles. */
 const CORNERS = [
@@ -129,8 +220,9 @@ const vkey = (x: number, y: number) => `${x.toFixed(3)},${y.toFixed(3)}`
 const { VERT, ADJ } = (() => {
   const vert = new Map<string, [number, number]>()
   const adj = new Map<string, Set<string>>()
-  for (let q = -5; q <= 5; q += 1) {
-    for (let r = -5; r <= 5; r += 1) {
+  /* Wider than the canvas — ±5 is the outermost tile column, so the graph has to reach past it. */
+  for (let q = -8; q <= 8; q += 1) {
+    for (let r = -8; r <= 8; r += 1) {
       const c = pos(q, r)
       const corners = CORNERS.map(([vx, vy]) => [c.x + vx, c.y + vy] as [number, number])
       corners.forEach((p, i) => {
@@ -244,10 +336,58 @@ function sectionLoop(cells: readonly Cell[]): string {
   return ring.map((v) => at.get(v)!).map((p) => `${p[0].toFixed(4)},${p[1].toFixed(4)}`).join(' ')
 }
 
-const SECTION_LOOPS = CLUSTER_CELLS.map(sectionLoop)
+const LOOPS_NESTED = CELLS_NESTED.map(sectionLoop)
+const LOOPS_TIGHT = CELLS_TIGHT.map(sectionLoop)
+
+/**
+ * Where a section's name sits when it is set **outside** the figure — `Homepage Redesign` node
+ * `8144:21713`. Level with its own group, out past the tiles, on the empty lattice beyond them.
+ */
+const NAME_AT_OUTSIDE = [
+  { x: -3.7, y: -1.2990381 },
+  { x: 3.7, y: -1.2990381 },
+  { x: 3.7, y: 1.2990381 },
+  { x: -3.7, y: 1.2990381 },
+] as const
+
+/**
+ * The leader from an outside name to the section it names.
+ *
+ * It ends **on the section's own outline** — the same loop the figure already draws — rather than
+ * pointing vaguely at the group, so the name and the four tiles read as one object: the line arrives at
+ * a corner of the shape and the shape closes around the tiles.
+ *
+ * Two segments, and the second one takes the lattice's angle. A horizontal run out from the name, then a
+ * 60-degree leg to the corner, which is the slope every hexagon edge here already has. A straight line
+ * from the name to the corner would be the only stroke in the drawing that ignores the grid, and it
+ * looks like it: the whole figure is built out of two directions and a diagonal that is neither reads as
+ * a mistake.
+ */
+const LEADERS: string[] = CELLS_TIGHT.map((cells, i) => {
+  const name = NAME_AT_OUTSIDE[i]
+  const dir = name.x < 0 ? 1 : -1
+  const start = { x: name.x + dir * (NAME_OUTSIDE_W / 2), y: name.y }
+
+  /* The loop corner nearest the name — the point the leader is trying to reach. */
+  const corners = cells.flatMap((cell) => {
+    const c = pos(cell.q, cell.r)
+    return CORNERS.map(([vx, vy]) => ({ x: c.x + vx, y: c.y + vy }))
+  })
+  const target = corners.reduce((a, b) =>
+    Math.hypot(a.x - start.x, a.y - start.y) < Math.hypot(b.x - start.x, b.y - start.y) ? a : b,
+  )
+
+  /* The elbow: back off along the run by however far the 60-degree leg has to climb. */
+  const rise = target.y - start.y
+  const elbow = { x: target.x - dir * Math.abs(rise) / 1.7320508, y: start.y }
+
+  return [start, elbow, target]
+    .map((p) => `${p.x.toFixed(4)},${p.y.toFixed(4)}`)
+    .join(' ')
+})
 
 /** The hub's own loop, at 1.10 of its silhouette so it rides just outside the solid edge. */
-const HUB_LOOP = CORNERS.map(([x, y]) => [x * 1.8 * 0.88 * 1.1, y * 1.8 * 0.88 * 1.1])
+const HUB_LOOP = CORNERS.map(([x, y]) => [x * 1.9 * 0.95 * 1.1, y * 1.9 * 0.95 * 1.1])
   .map((p) => `${p[0].toFixed(4)},${p[1].toFixed(4)}`)
   .join(' ')
 
@@ -279,7 +419,7 @@ function pathBetween(from: string, to: string): [number, number][] | null {
  * is the lattice's neighbour distance, not a vertex radius, and anchoring to it matched nothing and
  * produced four empty strings with no error at all.
  */
-const CONNECTORS: string[] = CLUSTER_CELLS.map((cells) => {
+const connectorsFor = (all: readonly (readonly Cell[])[]): string[] => all.map((cells) => {
   const inner = cells.reduce((a, b) => {
     const pa = pos(a.q, a.r)
     const pb = pos(b.q, b.r)
@@ -309,6 +449,37 @@ const CONNECTORS: string[] = CLUSTER_CELLS.map((cells) => {
   return route.map((p) => `${p[0].toFixed(4)},${p[1].toFixed(4)}`).join(' ')
 }).filter(Boolean)
 
+const CONNECTORS_NESTED = connectorsFor(CELLS_NESTED)
+const CONNECTORS_TIGHT = connectorsFor(CELLS_TIGHT)
+
+/**
+ * The two arrangements, each complete: where the tiles go, where the names go, how big the box is, and
+ * the lines that follow from those. Nothing is shared between them but the lattice itself, because a
+ * section's outline, its connector and its leader are all *computed from its cells* — change the cells
+ * and every line follows, which is the property that makes a second arrangement cheap.
+ */
+const LAYOUTS = {
+  nested: {
+    cells: CELLS_NESTED,
+    nameAt: NAME_AT,
+    canvas: CANVAS,
+    oy: CANVAS_OY,
+    loops: LOOPS_NESTED,
+    connectors: CONNECTORS_NESTED,
+    leaders: null as string[] | null,
+  },
+  outside: {
+    cells: CELLS_TIGHT,
+    nameAt: NAME_AT_OUTSIDE,
+    canvas: CANVAS_OUTSIDE,
+    /* The tight diamonds mirror top to bottom, so this figure needs no lifting inside its box. */
+    oy: 0,
+    loops: LOOPS_TIGHT,
+    connectors: CONNECTORS_TIGHT,
+    leaders: LEADERS,
+  },
+} as const
+
 export interface CapabilityMapProps extends BoxProps, Omit<ElementProps<'div'>, 'title'> {
   /**
    * The four sections, clockwise from the top left. Fewer than four is fine — the map draws the ones it
@@ -333,6 +504,45 @@ export interface CapabilityMapProps extends BoxProps, Omit<ElementProps<'div'>, 
    */
   wash?: boolean
 
+  /**
+   * Where each section's name goes.
+   *
+   * `nested` sets it in the hollow its four tiles ring — `Homepage Redesign` node `7435:7003`. The name
+   * is inside the thing it names, and the figure is compact, which is what makes the card big.
+   *
+   * `outside` sets it out past the tiles on the empty lattice, joined to the section by a leader that
+   * lands on the section's own outline — node `8144:21713`. The name gets a whole line to itself and can
+   * be as long as it likes, and the four groups read as four labelled objects rather than four
+   * arrangements. It costs card size: the names claim about four tiles of width, and width is what binds
+   * the card on a normal window.
+   *
+   * @default 'nested'
+   */
+  names?: 'nested' | 'outside'
+  /**
+   * A ceiling on how tall the figure may be — a length, or a number of pixels.
+   *
+   * The map is square-ish and sized by its column, so a wide page gives it a height nobody asked for:
+   * at 1100 across it is a little over 1000 tall, which is more than most windows have. This caps the
+   * height and lets the **width** come down to meet it, so the figure stays whole and in proportion
+   * instead of being cropped or scrolled through.
+   *
+   * It is a max-width underneath — `height × 5.8/5.4` — because a box with an `aspect-ratio` takes its
+   * height from its width and not the other way round. Clamping the height directly would squash the
+   * lattice.
+   *
+   * Any CSS length works, including one that reads the viewport:
+   *
+   * ```tsx
+   * <CapabilityMap maxHeight="calc(100svh - 260px)" … />
+   * ```
+   *
+   * Give a short window a floor rather than letting it shrink without limit, and work that floor back
+   * from the card you want: a hexagon is `fill × height / 5.1`, so `max(860px, …)` is a 160px card. A
+   * label scales with the figure down to 14px and then stops; below that the words wrap inside the
+   * hexagon instead, and at about 75px per hexagon they start breaking mid-word.
+   */
+  maxHeight?: number | string
   /**
    * The network: traces walking the lattice, a loop around each section, and a connector from the hub
    * out to each one.
@@ -453,9 +663,24 @@ const DIRS: Record<string, [number, number]> = {
  * stylesheet.
  */
 export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(function CapabilityMap(
-  { clusters, hubIcon, hubLabel, hubHref, wash = true, network = true, className, ...props },
+  {
+    clusters,
+    hubIcon,
+    hubLabel,
+    hubHref,
+    names = 'nested',
+    maxHeight,
+    wash = true,
+    network = true,
+    className,
+    style,
+    ...props
+  },
   ref,
 ) {
+  const layout = LAYOUTS[names === 'outside' ? 'outside' : 'nested']
+  const { canvas, nameAt } = layout
+
   const HubTag: ElementType = hubHref ? 'a' : 'div'
   const fieldRef = useRef<HTMLDivElement | null>(null)
   const tiles = useRef<(HTMLElement | null)[]>([])
@@ -463,7 +688,7 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
   const cells = clusters
     .slice(0, 4)
     .flatMap((cluster, ci) =>
-      cluster.items.slice(0, 4).map((item, ii) => ({ item, cell: CLUSTER_CELLS[ci][ii], group: ci })),
+      cluster.items.slice(0, 4).map((item, ii) => ({ item, cell: layout.cells[ci][ii], group: ci })),
     )
 
   /**
@@ -527,7 +752,8 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
     if (best >= 0) tiles.current[best]?.focus()
   }
 
-  const viewBox = `${-CANVAS.w / 2} ${-CANVAS.h / 2} ${CANVAS.w} ${CANVAS.h}`
+  /* The same lift the tiles get, applied to the window rather than to the paths inside it. */
+  const viewBox = `${-canvas.w / 2} ${-canvas.h / 2 - layout.oy} ${canvas.w} ${canvas.h}`
 
   return (
     <Box
@@ -537,6 +763,7 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
         else if (ref) ref.current = node
       }}
       className={[classes.mapRoot, className].filter(Boolean).join(' ')}
+      data-names={layout.leaders ? 'outside' : undefined}
       onKeyDown={onKeyDown}
       onPointerLeave={() => markSection(null)}
       /*
@@ -544,12 +771,24 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
        * duplicated in the stylesheet: the box's proportions and the tile's share of its width both come
        * out of `CANVAS`, and a change to either cannot get halfway applied.
        */
-      style={
-        {
-          aspectRatio: `${CANVAS.w} / ${CANVAS.h}`,
-          '--sds-map-tile': `${100 / CANVAS.w}cqw`,
-        } as CSSProperties
-      }
+      style={{
+        ...({
+          aspectRatio: `${canvas.w} / ${canvas.h}`,
+          '--sds-map-tile': `${100 / canvas.w}cqw`,
+          /*
+           * The height budget, spent as width. Parenthesised because `maxHeight` may itself be an
+           * expression — `100svh - 260px` is only a valid calc operand once it is bracketed.
+           */
+          ...(maxHeight === undefined
+            ? null
+            : {
+                '--sds-map-max-w': `calc((${
+                  typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight
+                }) * ${canvas.w / canvas.h})`,
+              }),
+        } as CSSProperties),
+        ...style,
+      }}
       {...props}
     >
       {wash ? (
@@ -589,7 +828,7 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
             )
           })}
 
-          {[HUB_LOOP, ...SECTION_LOOPS].map((points, i) => {
+          {[HUB_LOOP, ...layout.loops].map((points, i) => {
             const style = { '--sds-map-delay': `${(i * -4.75).toFixed(1)}s` } as CSSProperties
             return (
               <g key={`loop-${i}`}>
@@ -600,7 +839,11 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
             )
           })}
 
-          {CONNECTORS.map((points, i) => {
+          {layout.leaders?.map((points, i) => (
+            <polyline key={`leader-${i}`} className={classes.mapLeader} points={points} />
+          ))}
+
+          {layout.connectors.map((points, i) => {
             const style = { '--sds-map-delay': `${(i * -1.6).toFixed(1)}s` } as CSSProperties
             return (
               <g key={`link-${i}`}>
@@ -617,7 +860,7 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
           key={cluster.label}
           className={classes.mapName}
           data-sds-name={i}
-          style={{ '--sds-map-nx': NAME_AT[i].x, '--sds-map-ny': NAME_AT[i].y } as CSSProperties}
+          style={{ '--sds-map-nx': nameAt[i].x, '--sds-map-ny': nameAt[i].y } as CSSProperties}
         >
           {cluster.label}
         </div>

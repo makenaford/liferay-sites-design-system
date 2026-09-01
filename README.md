@@ -340,6 +340,60 @@ component never needs to know which mode is active.
 Typography is responsive: Figma ships three modes (Mobile 0+, Tablet 576+, Desktop 1200+) and all
 three are emitted as media-queried variables, so the type scale follows the viewport on its own.
 
+## Banner
+
+**Not from Figma.** There is no Banner cell in `Solutions Library- 2026`, so this is the one component
+whose axes are a proposal rather than a transcription — and the one with no Code Connect mapping. If a
+Banner is drawn later, what needs reconciling is the three tones, the two alignments, and whether the
+category pill is a `Label` instance or its own thing. Listed under *Known gaps in the design source*.
+
+The announcement band across the top of the site: a 40px strip holding one sentence, an optional
+category pill, one link and a dismiss button.
+
+| Prop | What it is |
+| --- | --- |
+| `tone` — `brand` / `accent` / `neutral` | the wash and the pill colour |
+| `label` | the category pill — `New`, `Event`, `Beta` |
+| `icon` | a glyph before the pill, decorative |
+| `action` | where the announcement leads, normally a `Link` |
+| `onClose` | shows the dismiss button and reports the press |
+| `align` — `center` / `left` | centred under the band, or ranged left in the gutter |
+| `position` — `static` / `sticky` | pinned to the top of the viewport, or in the flow |
+
+### The wash is a tint of the page, not a fill
+
+Both stops are `color-mix()` against `Surfaces/Page BG base/Default` — the brand at 10% on one side, 4%
+or `Accent/Product Accent` on the other. Mixing rather than picking a pale token is what lets **one**
+declaration serve both colour schemes: the result is a barely-blue white on the light canvas and a
+barely-blue near-black on the dark one, and neither is maintained separately. `Brand/Primary/Lighten 5`
+would have needed a per-scheme swap and would still have been louder than the `Header` sitting under
+it, whose glass is that same page background at 60%.
+
+The `neutral` pill is the one place where a second variable earns its keep. Its fill is
+`Surfaces/Text/Secondary`, which flips with the scheme, so white text works in one mode and vanishes in
+the other; `--sds-banner-pill-text` puts the page background on it instead, which flips with it.
+
+### Dismissal is the caller's to keep
+
+`onClose` fires and nothing else happens: the banner does not hide itself and does not remember. Only
+the page knows which announcement this is and how long *dismissed* should last — this session, this
+browser, this account — so it drops the banner from the tree and persists that decision itself. A band
+that remembered on its own would need an id it has no way to be given.
+
+### Not a live region
+
+The band is present when the page loads, so announcing it as if it had just arrived would interrupt a
+screen reader for something the reading order already reaches first. It is a labelled `aside`, which
+lands in the landmark list. A message about something that *just happened* — a save that failed, a page
+that published — is a different component and wants `role="status"`.
+
+### Where it goes relative to the header
+
+With a static header the banner precedes it and the two scroll away together. With a **fixed** header
+the banner cannot simply precede it — the header is pinned to the viewport's top edge and would cover
+the band — so put both in one fixed container and leave the header `position="static"` inside it.
+`position="sticky"` is for the third case: a band that outlives a static header by pinning itself.
+
 ## Button
 
 From the Figma `Button` component set (node `16123:189647`).
@@ -800,27 +854,111 @@ Three constants turn a cell into a position: a column step is `0.75 × tile` acr
 `0.866 × tile` down, and odd columns hang half a row lower.
 
 That is the whole non-overlap guarantee, and it is structural rather than careful: two different cells
-are at least one hexagon apart because the arithmetic says so. A tile then fills 88% of its cell, which
-turns the leftover into an even gap on all six sides.
+are at least one hexagon apart because the arithmetic says so. A tile then fills **95%** of its cell,
+which turns the leftover into an even gap on all six sides. It was 88%, which drew a comfortable lattice
+and a small card; the card is the thing being read, and the gap is only there to stop two hexagons
+reading as one, so the ratio is set by how little gap does that job.
 
-A section is a **diamond of four cells around an empty one** — the shape the Figma frame draws. Of the
-twelve mirror-symmetric arrangements the lattice allows without two sections touching, it is the
-tightest: the nearest tile is 1.5 cells from the hub where a 2×2 block managed 1.732, and the figure
-comes out 5.8 cells wide rather than 6.3. It is symmetric in both axes by construction, so nothing
-needs shifting to centre it.
+**The hub is 2.5 cells across**, up from 1.8. Pushing the sections out to ±4 columns opened a gap the
+old hub was not big enough to hold: the figure read as four groups with something small in the middle
+rather than as a platform they sit on. Its icon and label keep the same share of it that they had at
+1.8, so only the hexagon grew.
 
-`CANVAS` in the component is the single source of the figure's proportions — the box's aspect ratio and
-the tile's share of its width both come off it, so neither can be half-changed.
+A section is **four tiles ringing a hollow, with the section's name in the hollow** — the shape
+`Homepage Redesign` node `7435:7003` draws. The ring is five neighbours of one cell with two left open,
+and the two left open are the pair facing the hub, so each section reads as a C turned toward the middle
+and the connector has somewhere to arrive.
+
+Naming a group by sitting inside it is the thing the earlier arrangements could not do. The name used to
+be set above or below the whole figure, which left the pairing to be inferred from position, and it cost
+two rows of canvas that came straight off the size of the hexagons. Nesting it also let the four sections
+come back to ±2 columns without the field reading as one undifferentiated mass, which is what pushed them
+out to ±4 in the first place.
+
+The lower two sections are **not** the upper two mirrored, which is what they look like they should be.
+A mirrored ring puts its hub-side tile one row from the upper ring's, and one row *is* touching on this
+lattice — the two sections fuse into one eight-tile mass. So the lower hollows drop a row, to `r=2`, which
+buys the separation and costs the figure its top-to-bottom symmetry; `--sds-map-oy` lifts the drawing
+inside its box to put it back in the middle, since the hub is no longer the centre of what is drawn.
+
+The canvas is **5.6 × 4.9 tiles**, down from 8.6 × 5.1. Both dimensions shrank — the sections came back
+in, and the names stopped needing rows of their own — and since a card is the page divided by these
+numbers, the same window now draws a considerably bigger hexagon. **Height is what binds** at every width
+down to about 1000, which is a comfortable place to be: it is the dimension `maxHeight` controls.
+
+The hub is **1.9 cells** across, the largest that clears the nearest tile at 2.14 cells with the gap the
+lattice gives everything else, and what the file draws.
+
+### `names="outside"` — the other drawing in the file
+
+`Homepage Redesign` node `8144:21713` draws the same sixteen products with the section names set **out
+past the tiles**, each joined to its group by a short leader. `names="outside"` is that arrangement, and
+it is a different figure rather than the nested one with margins:
+
+- **The sections are tight diamonds, not rings.** A section that carries its own name needs a hollow to
+  put it in; a section whose name is out on the lattice does not, and a hollow it does not need is a
+  hole in the drawing. So the four tiles touch — a centre column of two with a flank each side, the
+  diamond the figure was originally built on.
+- **The leader lands on a corner of the section's own outline**, the loop the figure already computes,
+  so the name and the four tiles close into one object rather than reading as a caption near an
+  arrangement. It is two segments, and the second takes the lattice's angle: a horizontal run out from
+  the name, then a 60-degree leg, which is the slope every hexagon edge here already has. A straight
+  line to the corner would be the only stroke in the drawing that ignores the grid, and it looks like
+  it. Where the nearest corner is level with the name — which it usually is — the second segment has
+  nothing to do and the leader is simply horizontal.
+- It is drawn in **the loop's own gradient**, not the lattice's grey, which at 22% was too faint to read
+  as connected to anything; and it **does not animate**. It is a bracket, not traffic: a travelling
+  highlight would make it read as another connector carrying something to the hub.
+
+The canvas is **8.9 × 4.5** — the diamonds are shorter than the rings, 4.33 tiles of tiles rather than
+4.76, and the names then claim about four tiles of width on each side — glow included, since the box has to
+hold that too or the figure pushes the page sideways, which is a bug the layout suite caught at 1440. That is close to 2:1, wider than
+any window, so **height is what binds** and this arrangement answers the window's height at every
+ordinary width. It wants a different ceiling for that reason: 860 is a card size worked back through the
+*nested* canvas, and a floor that tall here would put the figure wider than any window and stop the
+height from ever binding. The story passes `max(420px, 100svh - 120px)`.
+
+The name sits 3.7 tiles out in a box 1.15 wide, which leaves the leader about a third of a tile: enough
+to see, and short enough that the name reads as a label on the group beside it rather than a heading for
+that side of the figure.
+
+**The home page draws this arrangement.** Because the canvas is close to 2:1 the height binds at every
+ordinary width, so the figure answers the window instead of sitting at a fixed size — which is why the
+page's ceiling is `max(520px, 100svh - 320px)` and not the 860 the nested arrangement wanted. 860 is a
+card size worked back through that taller canvas; here it would put the figure wider than any window and
+stop the height binding at all.
+
+| Window | Figure | Card | Labels wrapping |
+| --- | --- | --- | --- |
+| 1440 × 900 | 1147 × 580 | 122px | `Personalization` |
+| 1440 × 1080 | — | ~152px | none |
+
+The card is smaller than the nested arrangement's 167 — four tiles of names is what it costs — and what
+it buys is a full line of text per section and four cleanly labelled objects.
+
+`nested` stays the component's default. Nothing but the lattice is shared between the two: a section's
+outline, its connector and its leader are all computed from its cells, so a second arrangement is a
+table of cells and the lines follow.
 
 ### 14px is the floor, and it sizes the hexagons
 
 `Paragraph/Small Caps` is the label's **minimum**, not its ceiling: a product name is the one thing here
 a reader must be able to read, so it never scales below the token however narrow the column.
 
-That requirement sizes everything else. 14px of text and an icon have to fit inside a hexagon's middle
-band, which is why the canvas is only 5.8 tiles wide. At a 1100px column the tiles are 167px and all
-sixteen names sit on one line; **below roughly 850px the two longest wrap to two lines**, which is the
-honest floor for this figure. A page with less room than that should show a list.
+That requirement sizes everything else: 14px of text and an icon have to fit inside a hexagon's middle
+band, so the tile size is the constraint and the canvas is measured in tiles. All sixteen names sit on
+one line at about 160px per tile, and the two longest — `Cloud Native` at a space, `Personalization` at
+its soft hyphen — start wrapping below about 120px. A page with room for less than about 100px per tile
+should show a list instead.
+
+Measured on the home page, after the sections came in and the names went inside them:
+
+| Window | Figure | Card | Labels wrapping |
+| --- | --- | --- | --- |
+| 1440 × 900 | 983 × 860 | **167px** | none |
+
+For comparison, the same window drew a 150px card when the canvas was 8.6 tiles wide with the names set
+outside it, and 106px before the card fill and the height floor were raised.
 
 ### The network
 
@@ -2300,6 +2438,65 @@ trademarks rather than design-system assets, so the marquee, the carousel tiles 
 stand-ins at the drawn size. The Gartner "Leader / Summer 2026" shield is omitted for the same reason; the
 rating, the stars and the attribution line are real.
 
+### The platform diagram is drawn, not exported
+
+*Everything You Need in One Platform* was `assets/home/platform-diagram.png` — the sixteen products and
+their hub as one 1000×806 image with one alt string. It is now `CapabilityMap`, so each product is a
+tile with its own label, its own initialism spelled out for a screen reader, its own destination and a
+keyboard path through the figure. **The section bleeds**, where the media band was capped at 1000. That mattered while the
+lattice was 8.6 tiles wide and width was what bound the card; with the sections back at ±2 the figure is
+983 across on a 1440 window and the bleed is doing nothing at that size. It is kept for the window that
+is tall enough to want more, and it costs nothing: the title keeps the gutter either way.
+
+The sixteen products live in `src/templates/product-map.tsx`, because two places draw them — the Home
+template and `CapabilityMap`'s own stories — and sixteen products in two files is sixteen chances for
+them to disagree about what Liferay sells. The schema gained a `capabilityMap` section beside
+`mediaBand` so the page builder can place one too.
+
+### It is fitted to the window, not to the column
+
+A figure sized by its column alone is a little over 1000px tall at 1100 across, which is more than most
+windows have: the reader meets it a third at a time and never sees the shape the drawing is about. So
+`CapabilityMap` gained a **`maxHeight`**, and the page passes `max(860px, 100svh - 320px)` — the window
+less the section's own furniture, being 120px of block padding at each end, the 40px gap under the title,
+and the title.
+
+It is a `max-width` underneath, `height × 5.6/4.9`. A box with an `aspect-ratio` takes its height from
+its width and never the reverse, so clamping the height directly would squash the lattice; converting the
+height budget into a width brings the whole figure down in proportion.
+
+**`hyphens: auto` is not enough, so the break is in the data.** `Personalization` is the one product
+name too long for a hexagon once the figure is fitted to a window, and the stylesheet's `hyphens: auto`
+is supposed to break it with a hyphen. It does not always: Chromium ships hyphenation dictionaries
+through the component updater, and a build that has not received them — an embedded browser, a fresh
+container — finds no hyphenation opportunity and falls through to `overflow-wrap: break-word`, which
+breaks the word with no hyphen at all. The label therefore carries a soft hyphen (`\u00AD`) at the point
+the dictionary would have chosen, which draws a hyphen when the word wraps and nothing when it does not,
+and a `description` holding the unbroken name, which is what the tile announces.
+
+**The 860px floor is a card size written as a height.** 860 is a **167px hexagon** worked back through
+the canvas — 860 ÷ 4.9 cells tall × 0.95 fill — so the number to change is the card, not the height. A
+card that size fits every one of the sixteen product names on one line.
+
+It is a floor and not a target: a tall window still gets a bigger figure, a short one keeps the card.
+Worth being plain about the consequence — **a 167px card does not fit a 900px-tall window.** 860 of
+figure plus 320 of furniture wants 1180, so on a laptop this section is scrolled rather than taken in at
+a glance, and above about 1180 tall the two agree. The card won that argument deliberately.
+
+Measured, on the home page:
+
+| Window | Figure | Hexagon | Labels wrapping |
+| --- | --- | --- | --- |
+| 1728 × 1080 | 1450 × 860 | 160px | none |
+| 1440 × 900 | 1361 × 807 | 150px | none |
+| 1280 × 800 | 1201 × 712 | 133px | `Personalization` |
+
+Below about 1450 wide the **width** binds before the height does — the figure can never be wider than the
+page — so the card comes in under 160 and the two longest names start wrapping again.
+
+`platform-diagram.png` is still committed and is now unused by any story. It is worth keeping until the
+drawn figure has been checked against the file, and worth deleting after.
+
 ### Fixed here — the components the page changed
 
 **`Hero` gained a `banner` slot.** The page opens with a 1000×60 glass bar — a label, two selects and a
@@ -2724,6 +2921,17 @@ repo and stay valid — they just won't appear in Figma until the plan supports 
 These are places where the Figma library is ambiguous, inconsistent, or incomplete. Each is
 implemented the way the component itself is drawn, and listed here so the decision is visible rather
 than buried.
+
+### `Banner` has no cell at all
+
+The announcement band across the top of the site is not in the file. It was built from the tokens —
+the wash is `Brand/Primary` and `Accent/Product Accent` mixed into the page background, the pill is
+`Label`'s shape at `Border Radius/round`, the type is `Paragraph/Small` and `Paragraph/X-Small` — so
+nothing in it is invented, but its axes are this library's proposal and not Figma's.
+
+It is consequently the only component with **no Code Connect mapping**, since there is no node to map
+to. Drawing the set in Figma would settle three questions: whether there are three tones or two,
+whether the pill is a `Label` instance, and whether the left-aligned variant exists at all.
 
 ### `Content Text`'s description has no text property
 

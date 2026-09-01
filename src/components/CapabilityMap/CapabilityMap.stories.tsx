@@ -1,84 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CapabilityMap, type CapabilityCluster } from './CapabilityMap'
-import {
-  IconGlassAiHub,
-  IconGlassAnalytics,
-  IconGlassCloudNativeExperience,
-  IconGlassCommerce,
-  IconGlassContentManagement,
-  IconGlassContentMarketingPlatform,
-  IconGlassContentPerformance,
-  IconGlassDXP,
-  IconGlassDigitalSalesRooms,
-  IconGlassIntegration,
-  IconGlassLiferayDataPlatform,
-  IconGlassLowCode,
-  IconGlassPIM,
-  IconGlassPersonalization,
-  IconGlassPremiumSecurity,
-  IconGlassSearch,
-  IconGlassSites,
-} from '../../icons'
-
-/**
- * The sixteen products, clockwise from the top left, each cluster read top → left → right → bottom.
- *
- * Every icon is the product's own from `assets/glass-icons` — `Commerce/PIM`, `General/ai`,
- * `General/Liferay Data Platform` and so on — rather than a UI glyph standing in for it. SEO Studio is
- * the one product with no icon of its own in the set, and borrows
- * `Product Modules/Content Performance/CDN`, since content performance is what it is for. The design
- * draws a magnifier with sparkles there; that icon does not exist yet, and is worth asking for.
- */
-const PRODUCTS: CapabilityCluster[] = [
-  {
-    label: 'Commerce & Sales',
-    items: [
-      { label: 'PIM', icon: <IconGlassPIM />, href: '#pim', description: 'Product Information Management' },
-      { label: 'Personalization', icon: <IconGlassPersonalization />, href: '#personalization' },
-      { label: 'DSR', icon: <IconGlassDigitalSalesRooms />, href: '#dsr', description: 'Digital Sales Rooms' },
-      { label: 'Commerce', icon: <IconGlassCommerce />, href: '#commerce' },
-    ],
-  },
-  {
-    label: 'Content & Experience',
-    items: [
-      { label: 'Sites', icon: <IconGlassSites />, href: '#sites' },
-      { label: 'CMS', icon: <IconGlassContentManagement />, href: '#cms', description: 'Content Management System' },
-      {
-        label: 'CMP',
-        icon: <IconGlassContentMarketingPlatform />,
-        href: '#cmp',
-        description: 'Content Marketing Platform',
-      },
-      { label: 'SEO Studio', icon: <IconGlassContentPerformance />, href: '#seo-studio' },
-    ],
-  },
-  {
-    label: 'Intelligence & AI',
-    items: [
-      { label: 'LDP', icon: <IconGlassLiferayDataPlatform />, href: '#ldp', description: 'Liferay Data Platform' },
-      { label: 'AI Hub', icon: <IconGlassAiHub />, href: '#ai-hub' },
-      { label: 'Search', icon: <IconGlassSearch />, href: '#search' },
-      { label: 'Analytics', icon: <IconGlassAnalytics />, href: '#analytics' },
-    ],
-  },
-  {
-    label: 'Platform & Infrastructure',
-    items: [
-      { label: 'Cloud Native', icon: <IconGlassCloudNativeExperience />, href: '#cloud-native' },
-      { label: 'Security', icon: <IconGlassPremiumSecurity />, href: '#security' },
-      { label: 'Low-Code', icon: <IconGlassLowCode />, href: '#low-code' },
-      { label: 'Integration', icon: <IconGlassIntegration />, href: '#integration' },
-    ],
-  },
-]
+import { CapabilityMap } from './CapabilityMap'
+import { PRODUCT_CLUSTERS } from '../../templates/product-map'
+import { IconGlassDXP } from '../../icons'
 
 const meta = {
   title: 'Components/CapabilityMap',
   component: CapabilityMap,
+  argTypes: {
+    names: {
+      options: ['nested', 'outside'],
+      control: 'inline-radio',
+      description: "Where each section's name goes: in the hollow its tiles ring, or out past them on a leader.",
+    },
+  },
   parameters: { frame: { width: 1100 } },
   args: {
-    clusters: PRODUCTS,
+    clusters: PRODUCT_CLUSTERS,
     hubIcon: <IconGlassDXP />,
     hubLabel: 'DXP',
   },
@@ -102,7 +39,7 @@ export const HubLinked: Story = {
  */
 export const PartiallyLinked: Story = {
   args: {
-    clusters: PRODUCTS.map((cluster, index) =>
+    clusters: PRODUCT_CLUSTERS.map((cluster, index) =>
       index % 2
         ? { ...cluster, items: cluster.items.map(({ href: _href, ...item }) => item) }
         : cluster,
@@ -135,5 +72,45 @@ export const Narrow: Story = {
 
 /** Two clusters, four items each — the map drawn with only half its groups. */
 export const TwoClusters: Story = {
-  args: { clusters: PRODUCTS.slice(0, 2) },
+  args: { clusters: PRODUCT_CLUSTERS.slice(0, 2) },
+}
+
+/**
+ * `maxHeight` — the figure fitted to the window rather than to its column.
+ *
+ * Sized by width alone the map is a little over 1000px tall in an 1100px section, which is more than
+ * most windows have: the reader meets it a third at a time and never sees the shape the drawing is
+ * about. A height ceiling brings the **width** down to meet it, so the whole figure stays in proportion
+ * instead of being cropped or scrolled through. Resize the window and watch it settle.
+ *
+ * The Home page passes `max(860px, 100svh - 320px)` — the window less the section's own furniture, with a
+ * floor of 860, which is a **167px hexagon** worked back through the canvas: 860 ÷ 4.9 cells tall × 0.95
+ * fill. A card that size fits every product name on one line.
+ */
+export const FittedToTheWindow: Story = {
+  args: { maxHeight: 'max(860px, 100svh - 120px)' },
+}
+
+/**
+ * `names="outside"` — the section names set out past the tiles, each joined to its group by a leader
+ * that lands on the group's own outline (`Homepage Redesign` node `8144:21713`).
+ *
+ * The name gets a line to itself and can be as long as it likes, and the four groups read as four
+ * labelled objects rather than four arrangements. It is paid for in width: the names claim about four
+ * tiles on each side, and width is what binds the card on an ordinary window — compare the card here
+ * with `FittedToTheWindow`, which is the same figure with the names nested in their hollows.
+ */
+export const NamesOutside: Story = {
+  /*
+   * No 860 floor here. That number is a card size worked back through the *nested* canvas; this one is
+   * close to 2:1, so a floor that tall would put the figure wider than any window and the height would
+   * never bind. Left to the window, it answers it.
+   */
+  args: { names: 'outside', maxHeight: 'max(420px, 100svh - 120px)' },
+  /*
+   * Wider than the other stories — the names claim four tiles a side, and a 1100 frame starves them —
+   * but not wider than the narrowest desktop the layout suite checks. At 1500 the frame itself pushed a
+   * 1440 viewport 4px sideways, which is the story overflowing rather than the component.
+   */
+  parameters: { frame: { width: 1400 } },
 }

@@ -16,7 +16,6 @@ import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import industryMedia from '../../assets/home/industry-media.png'
-import platformDiagram from '../../assets/home/platform-diagram.png'
 import teamsMedia from '../../assets/home/teams-media.png'
 
 /*
@@ -406,13 +405,61 @@ export const HOME_PAGE: PageSpec = {
       },
     },
 
+    /*
+     * The product map, drawn rather than exported.
+     *
+     * This was `platform-diagram.png` — the same figure as one 1000×806 image with one alt string. As
+     * data it is sixteen products with names, initialisms spelled out and destinations of their own,
+     * which is what lets a tile be a link and the figure be read rather than described.
+     */
     {
-      type: 'mediaBand',
+      type: 'capabilityMap',
       title: 'Everything You Need in One Platform',
-      image: {
-        src: platformDiagram,
-        alt: 'DXP at the centre of four groups: Content & Experience, Commerce & Sales, Platform & Infrastructure, and Intelligence & AI',
-      },
+      hub: { icon: 'dxp', label: 'DXP' },
+      clusters: [
+        {
+          label: 'Commerce & Sales',
+          items: [
+            { label: 'PIM', icon: 'pim', href: '#pim', description: 'Product Information Management' },
+            /* The soft hyphen is deliberate — see `product-map.tsx`. `description` keeps the announced name whole. */
+            {
+              label: 'Personali\u00ADzation',
+              description: 'Personalization',
+              icon: 'personalization',
+              href: '#personalization',
+            },
+            { label: 'DSR', icon: 'dsr', href: '#dsr', description: 'Digital Sales Rooms' },
+            { label: 'Commerce', icon: 'commerce', href: '#commerce' },
+          ],
+        },
+        {
+          label: 'Content & Experience',
+          items: [
+            { label: 'Sites', icon: 'sites', href: '#sites' },
+            { label: 'CMS', icon: 'cms', href: '#cms', description: 'Content Management System' },
+            { label: 'CMP', icon: 'cmp', href: '#cmp', description: 'Content Marketing Platform' },
+            { label: 'SEO Studio', icon: 'content-performance', href: '#seo-studio' },
+          ],
+        },
+        {
+          label: 'Intelligence & AI',
+          items: [
+            { label: 'LDP', icon: 'ldp', href: '#ldp', description: 'Liferay Data Platform' },
+            { label: 'AI Hub', icon: 'ai-hub', href: '#ai-hub' },
+            { label: 'Search', icon: 'search', href: '#search' },
+            { label: 'Analytics', icon: 'analytics', href: '#analytics' },
+          ],
+        },
+        {
+          label: 'Platform & Infrastructure',
+          items: [
+            { label: 'Cloud Native', icon: 'cloud-native', href: '#cloud-native' },
+            { label: 'Security', icon: 'security', href: '#security' },
+            { label: 'Low-Code', icon: 'low-code', href: '#low-code' },
+            { label: 'Integration', icon: 'integration', href: '#integration' },
+          ],
+        },
+      ],
     },
 
     {

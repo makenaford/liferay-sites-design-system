@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
+import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
 import { Hero, type HeroMediaSource } from '../components/Hero'
@@ -37,6 +38,20 @@ import {
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
+  IconGlassAiHub,
+  IconGlassAnalytics,
+  IconGlassCloudNativeExperience,
+  IconGlassContentManagement,
+  IconGlassContentMarketingPlatform,
+  IconGlassContentPerformance,
+  IconGlassDXP,
+  IconGlassDigitalSalesRooms,
+  IconGlassIntegration,
+  IconGlassLiferayDataPlatform,
+  IconGlassLowCode,
+  IconGlassPIM,
+  IconGlassPersonalization,
+  IconGlassPremiumSecurity,
   IconGlassSearch,
   IconGlassSites,
   IconGlassSupplierPortals,
@@ -45,6 +60,7 @@ import {
   IconStarFilled,
   IconUser1,
 } from '../icons'
+import { PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { Quotee, VendorTile, Wordmark, unit } from './shared'
 import { isVideo } from './page-schema'
 import type {
@@ -98,6 +114,20 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   mail: (s) => <IconGlassMail width={s} height={s} />,
   search: (s) => <IconGlassSearch width={s} height={s} />,
   sites: (s) => <IconGlassSites width={s} height={s} />,
+  dxp: (s) => <IconGlassDXP width={s} height={s} />,
+  pim: (s) => <IconGlassPIM width={s} height={s} />,
+  personalization: (s) => <IconGlassPersonalization width={s} height={s} />,
+  dsr: (s) => <IconGlassDigitalSalesRooms width={s} height={s} />,
+  cms: (s) => <IconGlassContentManagement width={s} height={s} />,
+  cmp: (s) => <IconGlassContentMarketingPlatform width={s} height={s} />,
+  'content-performance': (s) => <IconGlassContentPerformance width={s} height={s} />,
+  ldp: (s) => <IconGlassLiferayDataPlatform width={s} height={s} />,
+  'ai-hub': (s) => <IconGlassAiHub width={s} height={s} />,
+  analytics: (s) => <IconGlassAnalytics width={s} height={s} />,
+  'cloud-native': (s) => <IconGlassCloudNativeExperience width={s} height={s} />,
+  security: (s) => <IconGlassPremiumSecurity width={s} height={s} />,
+  'low-code': (s) => <IconGlassLowCode width={s} height={s} />,
+  integration: (s) => <IconGlassIntegration width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -664,6 +694,42 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
   )
 }
 
+/**
+ * The product constellation — *Everything You Need in One Platform*.
+ *
+ * `bleed`, unlike the media band's 1000 column: `names="outside"` is 8.9 tiles across, and a cap would be
+ * paid for out of card size rather than out of the gutter. The title keeps the gutter — that is what
+ * `bleed` means here — and only the figure runs to the edges.
+ *
+ * The glass icons come out of the same `GLASS` table every other section uses, at the size the tile
+ * sets — `CapabilityMap` sizes what it is given, so nothing is passed here.
+ *
+ * `maxHeight` spends the window's height rather than the column's width, so the whole figure is visible
+ * at once on a laptop instead of being scrolled through. See `PRODUCT_MAP_MAX_HEIGHT`.
+ */
+function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'capabilityMap' }> }) {
+  return (
+    <Section reveal bleed gap={40} title={<SectionTitle align="center" title={spec.title} />}>
+      <CapabilityMap
+        names="outside"
+        clusters={spec.clusters.map((cluster) => ({
+          label: cluster.label,
+          items: cluster.items.map((item) => ({
+            label: item.label,
+            description: item.description,
+            href: item.href,
+            icon: GLASS[item.icon](48),
+          })),
+        }))}
+        maxHeight={PRODUCT_MAP_MAX_HEIGHT}
+        hubIcon={GLASS[spec.hub.icon](56)}
+        hubLabel={spec.hub.label}
+        hubHref={spec.hub.href}
+      />
+    </Section>
+  )
+}
+
 /** A centred band holding one wide graphic. The column is capped at the drawn 1000. */
 function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaBand' }> }) {
   return (
@@ -739,6 +805,8 @@ function renderSection(spec: SectionSpec, index: number) {
       return <FullCardSection key={index} spec={spec} />
     case 'mediaBand':
       return <MediaBandSection key={index} spec={spec} />
+    case 'capabilityMap':
+      return <CapabilityMapSection key={index} spec={spec} />
     case 'integrations':
       return <IntegrationsSection key={index} spec={spec} />
     default: {

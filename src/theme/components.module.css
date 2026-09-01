@@ -7086,6 +7086,14 @@
 .mapRoot {
   position: relative;
   width: 100%;
+  /*
+   * `maxHeight` arrives as a width, because a box with an `aspect-ratio` derives its height from its
+   * width and never the reverse — clamping `max-height` here would squash the lattice rather than
+   * shrink it. The component converts the height budget into `--sds-map-max-w`; centring is what makes
+   * the narrower figure sit under its own title rather than ranging left in the column.
+   */
+  max-width: var(--sds-map-max-w, none);
+  margin-inline: auto;
   container-type: inline-size;
   /*
    * The hexagon. 25%/75% are the corner cuts that make all six edges equal, which is what lets four
@@ -7094,8 +7102,24 @@
   --sds-map-hex: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   --sds-map-step-x: calc(var(--sds-map-tile) * 0.75);
   --sds-map-step-y: calc(var(--sds-map-tile) * 0.8660254);
-  /* How much of its cell a tile fills. The remaining 12% is the gap, even on all six sides. */
-  --sds-map-fill: 0.88;
+  /*
+   * The figure's own vertical centring.
+   *
+   * The four sections are not a mirror pair top to bottom — the lower two hang a row further out so
+   * their rings clear the upper two's — so the tiles run from -2.165 tiles above the hub to 2.598
+   * below, and the hub is not in the middle of them. This lifts everything placed by cell, the hub
+   * included, by half that difference, which is what puts the *drawing* in the middle of its box rather
+   * than the origin it happens to be measured from. The network's viewBox carries the same shift.
+   */
+  --sds-map-oy: calc(var(--sds-map-tile) * -0.2165);
+  /*
+   * How much of its cell a tile fills. The remaining 5% is the gap, even on all six sides.
+   *
+   * It was 0.88, which drew a comfortable lattice and a small card. The card is the thing being read —
+   * an icon and a product name — and the gap is only there to keep two hexagons from reading as one, so
+   * the ratio is set by how little gap does that job rather than by how much looks balanced empty.
+   */
+  --sds-map-fill: 0.95;
   --sds-map-w: calc(var(--sds-map-tile) * var(--sds-map-fill));
   --sds-map-h: calc(var(--sds-map-w) * 0.8660254);
 }
@@ -7230,6 +7254,59 @@
 .mapLink { stroke-width: calc(0.016 * var(--sds-map-tw, 1)); }
 .mapLinkHalo { stroke-width: calc(0.062 * var(--sds-map-tw, 1)); }
 
+/*
+ * The leader from an outside section name to that section's outline.
+ *
+ * Still, and a touch stronger than the resting outline it lands on: it is not traffic, it is a bracket —
+ * the thing that says these four tiles and that name are one object. Animating it would make it read as
+ * another connector carrying something to the hub, which is the one thing it is not.
+ */
+.mapLeader {
+  fill: none;
+  /*
+   * The section outline's own stroke, not the lattice's. The leader is part of the shape the loop draws
+   * — it arrives at one of its corners — so it is the one line in the figure that has to match the loop
+   * rather than the grid, which at `map-grid-line`'s 22% was too faint to read as connected to anything.
+   */
+  stroke: url(#sds-map-line);
+  stroke-width: calc(0.018 * var(--sds-map-tw, 1));
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.75;
+  shape-rendering: geometricPrecision;
+}
+
+/* An outside name has room for one line and no hexagon to stay inside, so it takes the room. */
+/* The tight diamonds mirror top to bottom, so this arrangement needs no lifting inside its box. */
+.mapRoot[data-names='outside'] {
+  --sds-map-oy: 0px;
+}
+
+.mapRoot[data-names='outside'] .mapName {
+  width: calc(var(--sds-map-tile) * 1.15);
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * The glow the file draws behind an outside name — the same light the hub sits in, at a section's scale.
+ * On the cell rather than the text, so it reads as the name occupying a place on the lattice.
+ */
+.mapRoot[data-names='outside'] .mapName::before {
+  content: '';
+  position: absolute;
+  /*
+   * Vertically generous, horizontally tight. The glow is the only thing in this arrangement that sits
+   * outside the tiles *and* outside its own box, and at -30% it reached past the canvas edge and pushed
+   * the document 4px sideways at 1440 — an overflow the layout suite catches and a real one.
+   */
+  inset: -60% -12%;
+  z-index: -1;
+  border-radius: 50%;
+  background-image: radial-gradient(closest-side at 50% 50%, var(--sds-map-wash-halo) 0%, transparent 70%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 /* The resting outline, just enough for a highlight to have something to travel along. */
 .mapLoopRest {
   fill: none;
@@ -7331,9 +7408,14 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(var(--sds-map-tile) * 1.65);
+  /*
+   * The hollow is one cell wide, and the name lives in it. 0.86 keeps the two or three words inside the
+   * hexagon-shaped gap its four tiles leave — wider and the text runs under their edges, which is what
+   * the old 1.65 did when the name sat outside the figure and had the whole margin to spread into.
+   */
+  width: calc(var(--sds-map-tile) * 0.86);
   translate: calc(var(--sds-map-nx) * var(--sds-map-tile) - 50%)
-    calc(var(--sds-map-ny) * var(--sds-map-tile) - 50%);
+    calc(var(--sds-map-ny) * var(--sds-map-tile) + var(--sds-map-oy) - 50%);
   z-index: 700;
   pointer-events: none;
   text-align: center;
@@ -7358,7 +7440,7 @@
   width: var(--sds-map-w);
   height: var(--sds-map-h);
   translate: calc(var(--sds-map-q) * var(--sds-map-step-x) - 50%)
-    calc(var(--sds-map-r) * var(--sds-map-step-y) - 50%);
+    calc(var(--sds-map-r) * var(--sds-map-step-y) + var(--sds-map-oy) - 50%);
   z-index: calc(100 + var(--sds-map-r) * 10);
   display: block;
   border: 0;
@@ -7472,14 +7554,15 @@
 }
 
 .mapTileIcon > svg { width: 100%; height: 100%; }
-.mapTileIcon[data-hub] { width: calc(var(--sds-map-tile) * 0.34); height: calc(var(--sds-map-tile) * 0.34); }
+/* The same share of the hub's own width it has always had: 0.34 x 1.9/1.8. */
+.mapTileIcon[data-hub] { width: calc(var(--sds-map-tile) * 0.36); height: calc(var(--sds-map-tile) * 0.36); }
 
 /*
  * The label. `Paragraph/Small Caps` — 14px — is the **floor**, not the ceiling: a product name is the one
  * thing here a reader must be able to read, so it never scales below the token however narrow the column.
  *
- * This is what sizes the hexagons. 14px of text and an icon have to fit inside a hexagon's middle band,
- * which is why the canvas is only 5.8 tiles wide.
+ * This is what sizes the hexagons: 14px of text and an icon have to fit inside a hexagon's middle band,
+ * so the tile is the constraint and the canvas is measured in tiles.
  */
 .mapTileLabel {
   position: relative;
@@ -7505,8 +7588,14 @@
 .mapHub {
   --sds-map-q: 0;
   --sds-map-r: 0;
-  width: calc(var(--sds-map-tile) * 1.8 * var(--sds-map-fill));
-  height: calc(var(--sds-map-tile) * 1.8 * var(--sds-map-fill) * 0.8660254);
+  /*
+   * 1.9 cells across. It went to 2.5 while the sections were pushed out to ±4 columns and the middle was
+   * empty; with them back at ±2 and their names inside them, 2.5 reached the section names. 1.9 is the
+   * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
+   * else. It is what `Homepage Redesign` draws, too.
+   */
+  width: calc(var(--sds-map-tile) * 1.9 * var(--sds-map-fill));
+  height: calc(var(--sds-map-tile) * 1.9 * var(--sds-map-fill) * 0.8660254);
   z-index: 95;
   cursor: default;
 }
@@ -7559,7 +7648,7 @@
 }
 
 .mapHub .mapTileLabel {
-  font-size: calc(var(--sds-map-tile) * 0.15);
+  font-size: calc(var(--sds-map-tile) * 0.16);
   font-weight: 700;
   color: var(--sds-surfaces-text-primary);
 }
@@ -7687,5 +7776,226 @@
   .mapWash,
   .mapNetwork {
     display: none;
+  }
+}
+
+/* ============================================================================= Banner
+ *
+ * The announcement band across the top of the site. Not a Figma component set — there is no Banner
+ * cell in `Solutions Library- 2026` — so every value here is either a token or derived from one.
+ *
+ * The wash is `color-mix()` against `Surfaces/Page BG base/Default` rather than a pale token, for the
+ * same reason the Header mixes its glass: one declaration then serves both colour schemes. Brand at
+ * 10% over a white page is a barely-blue white; over the dark page it is a barely-blue near-black.
+ * A pale token like `Brand/Primary/Lighten 5` would have to be swapped per scheme and would still be
+ * louder than the Header sitting under it.
+ *
+ * Sized 40px tall to match Figma's small controls, with the hairline and no shadow: the band announces
+ * itself by being a different ground, not by casting one.
+ */
+
+.banner {
+  --sds-banner-wash-from: color-mix(
+    in srgb,
+    var(--sds-brand-primary-primary) 10%,
+    var(--sds-surfaces-page-bg-base-default)
+  );
+  --sds-banner-wash-to: color-mix(
+    in srgb,
+    var(--sds-brand-primary-primary) 4%,
+    var(--sds-surfaces-page-bg-base-default)
+  );
+  --sds-banner-pill: var(--sds-brand-primary-primary);
+
+  position: relative;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-8);
+  min-height: 40px;
+  /*
+   * The same fluid gutter the Section uses — `clamp(20px, 5.56cqi, 80px)` passes through Figma's 80 at
+   * 1440 and its 20 at 390 — halved, because a 40px band cannot carry an 80px inset without the message
+   * ending up in a keyhole.
+   */
+  padding-inline: clamp(16px, 2.78cqi, 40px);
+  padding-block: var(--mantine-spacing-8);
+  container-type: inline-size;
+  background-image: linear-gradient(
+    90deg,
+    var(--sds-banner-wash-from),
+    var(--sds-banner-wash-to)
+  );
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--sds-brand-primary-primary) 18%, transparent);
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * `accent` carries the wash from blue to `Accent/Product Accent` — the gradient Label's move, at a
+ * tenth of its strength — for the campaign that has to be told apart from the ordinary release note.
+ */
+.banner[data-tone='accent'] {
+  --sds-banner-wash-to: color-mix(
+    in srgb,
+    var(--sds-accent-product-accent) 10%,
+    var(--sds-surfaces-page-bg-base-default)
+  );
+  --sds-banner-pill: var(--sds-accent-product-accent);
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--sds-accent-product-accent) 18%,
+    transparent
+  );
+}
+
+/* The quietest of the three: procedural news — a maintenance window, a moved URL. */
+.banner[data-tone='neutral'] {
+  --sds-banner-wash-from: color-mix(
+    in srgb,
+    var(--sds-neutral-06) 12%,
+    var(--sds-surfaces-page-bg-base-default)
+  );
+  --sds-banner-wash-to: color-mix(
+    in srgb,
+    var(--sds-neutral-06) 5%,
+    var(--sds-surfaces-page-bg-base-default)
+  );
+  --sds-banner-pill: var(--sds-surfaces-text-secondary);
+  /*
+   * The one tone whose pill is not a saturated colour: `Surfaces/Text/Secondary` is dark on the light
+   * canvas and light on the dark one, so white text works on it in one mode and vanishes in the other.
+   * The page background is its exact counterpart — it flips with it — and reads as a knockout in both.
+   */
+  --sds-banner-pill-text: var(--sds-surfaces-page-bg-base-default);
+  border-bottom-color: color-mix(in srgb, var(--sds-neutral-06) 25%, transparent);
+}
+
+.banner[data-position='sticky'] {
+  position: sticky;
+  inset-block-start: 0;
+}
+
+/*
+ * The message column is centred in the band, and the dismiss button is taken out of that centring by
+ * being a sibling rather than a child — otherwise the sentence sits off-centre by half a button
+ * whenever the banner is dismissible, which is most of the time.
+ */
+.bannerInner {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--sds-banner-max, 1280px);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-8) var(--mantine-spacing-12);
+}
+
+.banner[data-align='left'] .bannerInner {
+  justify-content: flex-start;
+}
+
+.bannerIcon {
+  display: inline-flex;
+  flex: none;
+  font-size: 16px;
+  color: var(--sds-banner-pill);
+}
+
+.bannerLabel {
+  flex: none;
+  border-radius: var(--mantine-radius-round);
+  padding-inline: var(--mantine-spacing-10);
+  padding-block: 1px;
+  background: var(--sds-banner-pill);
+  color: var(--sds-banner-pill-text, var(--sds-action-neutral-inverted));
+  font-size: var(--sds-size-paragraph-x-small);
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bannerMessage {
+  margin: 0;
+  font-size: var(--sds-size-paragraph-small);
+  line-height: var(--sds-line-height-paragraph-small);
+  color: var(--sds-surfaces-text-primary);
+  text-wrap: balance;
+}
+
+.bannerAction {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bannerClose {
+  flex: none;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--mantine-radius-sm);
+  background: transparent;
+  color: var(--sds-surfaces-text-tertiary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.bannerClose:hover {
+  background: color-mix(in srgb, var(--sds-surfaces-text-primary) 8%, transparent);
+  color: var(--sds-surfaces-text-primary);
+}
+
+.bannerClose:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-primary);
+  outline-offset: 2px;
+}
+
+/*
+ * Below 700px the band stops pretending to be one line: the message wraps under the pill and ranges
+ * left, because a centred two-line sentence next to a corner button reads as broken rather than as
+ * centred.
+ */
+@container (max-width: 700px) {
+  .bannerInner {
+    justify-content: flex-start;
+  }
+
+  .bannerMessage {
+    text-wrap: pretty;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bannerClose {
+    transition: none;
+  }
+}
+
+/*
+ * Forced colours: the wash and the hairline are both dropped by the OS, so the band would merge into
+ * the page. A real border brings the separation back, and the pill needs a stroke once its fill goes.
+ */
+@media (forced-colors: active) {
+  .banner {
+    border-bottom: 1px solid CanvasText;
+  }
+
+  .bannerLabel {
+    border: 1px solid CanvasText;
+  }
+
+  .bannerClose:focus-visible {
+    outline-color: Highlight;
   }
 }

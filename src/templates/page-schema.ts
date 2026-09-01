@@ -145,6 +145,21 @@ export type GlassIconName =
   | 'mail'
   | 'search'
   | 'sites'
+  /* The product map's sixteen, plus the hub. Every one is that product's own icon in the set. */
+  | 'dxp'
+  | 'pim'
+  | 'personalization'
+  | 'dsr'
+  | 'cms'
+  | 'cmp'
+  | 'content-performance'
+  | 'ldp'
+  | 'ai-hub'
+  | 'analytics'
+  | 'cloud-native'
+  | 'security'
+  | 'low-code'
+  | 'integration'
 
 export interface CardSpec {
   title: string
@@ -289,8 +304,27 @@ export type SectionSpec =
         media?: ImageRef
       }
     }
-  /** A centred band holding one wide graphic — the product map, drawn at 1000 across. */
+  /** A centred band holding one wide graphic — a diagram or a screenshot, drawn at 1000 across. */
   | { type: 'mediaBand'; title: string; image: ImageRef }
+  /**
+   * The product constellation: a hub, and up to four sections of four products around it.
+   *
+   * This is *Everything You Need in One Platform*, which used to be `mediaBand` holding a PNG of the
+   * same figure. As data it is sixteen products with names and destinations rather than one image with
+   * one alt string, which is what lets a tile be a link and the whole figure be read.
+   *
+   * Four items per section: a section is a diamond of four cells on the lattice, so a fifth has nowhere
+   * to go and `CapabilityMap` drops it. Fewer than four sections is fine.
+   */
+  | {
+      type: 'capabilityMap'
+      title: string
+      hub: { icon: GlassIconName; label: string; href?: string }
+      clusters: {
+        label: string
+        items: { label: string; icon: GlassIconName; href?: string; description?: string }[]
+      }[]
+    }
   /**
    * Figma `Type=Integrations Section`. A title with an action beside it, over a wrapping row of 64px
    * glass tiles — not a marquee, which is the separate `Logos scrolling section`.
