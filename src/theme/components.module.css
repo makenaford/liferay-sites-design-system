@@ -6756,17 +6756,22 @@
 }
 
 /*
- * `Small Caps/Small Caps Default/Semi Bold` in `Surfaces/Text/Secondary` — 14/20 at 600 and 6% tracking.
+ * `Small Caps/Small Caps Default/Semi Bold` — 14/20 at 600 and 6% tracking — in the band's own white.
  *
- * These were `Paragraph/Default/Heavier` in white, which made every heading compete with the links under
- * it: eighteen-point bold white against sixteen-point regular white is the heading winning an argument it
- * should not be having. Small caps in the secondary colour is what the file draws and what the rest of
- * this library already does for the same job — the mega menu's column headings and `Stat`'s label are
- * both this style.
+ * The *type* is what stops a heading competing with the links under it, and that was the point of moving
+ * these off `Paragraph/Default/Heavier`: eighteen-point bold against sixteen-point regular is a heading
+ * winning an argument it should not be having, while small caps at 14 reads as a label at any colour.
+ *
+ * The colour that came with that change was `Surfaces/Text/Secondary`, and it was a bug for the same
+ * reason the links here were pinned: the token is **mode-aware** and this band is dark in *both* modes,
+ * so in light mode the headings resolved to `#363e4c` on `#070b13` — about 1.6:1, a heading nobody could
+ * read, and only ever visible to someone looking at the light canvas. They take `--sds-footer-text` now,
+ * the same white the links beside them are pinned to, which is `Link variant="secondary"`'s dark-canvas
+ * value and the one colour this band is allowed to reason about.
  */
 .footerColumnTitle {
   margin: 0;
-  color: var(--sds-surfaces-text-secondary);
+  color: var(--sds-footer-text);
   font-size: var(--sds-size-paragraph-small-caps);
   line-height: var(--sds-line-height-paragraph-small-caps);
   font-weight: 600;
