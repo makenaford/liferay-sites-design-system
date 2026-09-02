@@ -805,6 +805,13 @@ padding scale:
   margins involved.
 - `none` — `Padding=False`. The Resource card.
 
+The image's corners follow from that. Under `content` the image's bottom corners are square, because it
+meets a card body it shares a surface with and rounding them would open two slivers of card between the
+picture and the text it belongs to. Under `none` **all four are round**: there is no body under the
+image, only the page and then a tag and a title sitting on it, so the picture is a free-standing
+photograph rather than the top half of a panel — and a photograph with two square corners and two round
+ones looks cropped by something that is not there.
+
 ### Where the hover goes
 
 Figma's `Surface` has a `State=Hover` cell and it is **byte-for-byte its `State=Default`** — same fill,
@@ -812,11 +819,16 @@ same 1px hairline. `State=Focus` is the only state the file actually distinguish
 thing: the ring goes from 1px to 2px. So the hover is inferred, and it follows one rule taken from the
 layout rather than from a style:
 
-- **The image runs to the card's edge** (`padding="none"` or `"content"`) — the hover is **on the image
-  alone**: it scales to 1.06 inside its own box and lifts its brightness. Nothing else reacts: no lift, no
-  ring, no glow. The whole card is still the click target — the root is the anchor, so a click on the
-  label or the title reaches it — but a ring drawn around a `no-bg` card outlines a box that has no edge at
-  rest, which reads as a border appearing from nowhere rather than as the image lighting up.
+- **The image runs to the card's edge** (`padding="none"`) — the hover is **on the image**: it scales to
+  1.06 inside its own box, lifts its brightness, and the gradient ring is drawn **round the picture**
+  rather than round the card. The card itself still does not move, and it is still the whole click target
+  — the root is the anchor, so a click on the label or the title reaches it.
+
+  The ring used to be absent here entirely, on the argument that a ring around a `no-bg` card outlines a
+  box with no edge at rest and reads as a border appearing from nowhere. That argument is right about the
+  *card* and wrong about the *picture*: the image is already a rectangle with corners, so lighting its
+  edge is the same gesture the padded cards make, aimed at the only thing on the card that can carry it.
+  It is also why this padding rounds all four of the image's corners — see below.
 - **Everything is padded** (`padding="all"`) — the hover is on the **card**: it rises 2px, the ring warms
   to the brand gradient, and a glow appears beneath it. An image inside the padding scales too, at 1.03,
   because the card is what leads. The glow is deliberately tight and faint — 24px at a third — because a

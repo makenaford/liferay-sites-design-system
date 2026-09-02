@@ -764,6 +764,7 @@
 /* ---------------------------------------------------------------------- the image */
 
 .cardImage {
+  position: relative;
   display: block;
   overflow: hidden;
   min-width: 0;
@@ -772,20 +773,30 @@
 }
 
 /*
- * `Padding=none` / `content`: the image is the card's top edge, so only its top corners are round and it
- * has to bleed past the body's padding. There is no negative margin involved — the image is a sibling of
- * the padded body, not inside it, which is exactly how Figma's `no image padding` frame is built.
+ * `Padding=content`: the image is the card's top edge, so only its top corners are round and it has to
+ * bleed past the body's padding. There is no negative margin involved — the image is a sibling of the
+ * padded body, not inside it, which is exactly how Figma's `no image padding` frame is built.
+ *
+ * A square bottom is right *here* and only here: the image meets a body it shares a surface with, so a
+ * rounded bottom edge would open two slivers of card between the picture and the text it belongs to.
  */
-.cardRoot[data-padding='content'] > .cardImage,
-.cardRoot[data-padding='none'] > .cardImage {
+.cardRoot[data-padding='content'] > .cardImage {
   border-start-start-radius: inherit;
   border-start-end-radius: inherit;
   border-end-start-radius: 0;
   border-end-end-radius: 0;
 }
 
-/* A card that is *only* an image keeps all four corners. */
-.cardRoot[data-padding='none'] > .cardImage:only-child {
+/*
+ * `Padding=none` keeps all four corners, whether or not the card has anything under the image.
+ *
+ * It used to square the bottom alongside `content`, and the two are not the same case. A `none` card
+ * carries no surface: there is no card body under the image, only the page and then a tag and a title
+ * sitting on it. The picture is a free-standing photograph rather than the top half of a panel, and a
+ * photograph with two square corners and two round ones looks like it has been cropped by something —
+ * except there is nothing there to have cropped it.
+ */
+.cardRoot[data-padding='none'] > .cardImage {
   border-radius: inherit;
 }
 
@@ -1132,6 +1143,38 @@
   pointer-events: none;
 }
 
+/*
+ * The image-led card's ring, on the image box rather than the card. Everything about it matches the
+ * card's ring above except what it is drawn around; see the hover rule for why that is the whole point.
+ */
+.cardRoot[data-align][data-padding='none'][data-interactive] > .cardImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: radial-gradient(
+    140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    var(--sds-action-primary-hover) 0%,
+    var(--sds-accent-product-accent) 100%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
+  /* Above the picture, which scales underneath it. */
+  z-index: 1;
+}
+
+/* Keyboard focus lights the same edge the pointer does, at the 2px the focus ring uses everywhere. */
+.cardRoot[data-align][data-padding='none'][data-interactive]:focus-visible > .cardImage::after {
+  opacity: 1;
+  padding: 2px;
+}
+
 @media (hover: hover) {
   /*
    * The ring on hover belongs to any card that has an edge at rest — `all` and `content`.
@@ -1167,6 +1210,23 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 24px -12px
       color-mix(in srgb, var(--sds-action-primary-hover) 34%, transparent);
+  }
+
+  /*
+   * Full-bleed: the ring goes **round the picture**, not round the card.
+   *
+   * A `none` card has no surface — under the image there is only the page, a tag and a title sitting on
+   * it — so a card-shaped ring would draw a box around text that has no box at rest, which is the
+   * reason this padding had no ring at all before. The picture, though, *is* an edge: it is already a
+   * rectangle with corners, and lighting that edge is the same gesture the padded cards make, aimed at
+   * the only thing here that can carry it.
+   *
+   * Same gradient, same mask, same 140% reach as the card's own ring, lit from `--sds-card-x/y`. Those
+   * are written on the card root in pixels from its top-left corner — which is the image's top-left
+   * corner too on this padding, so the light lands where the pointer is without a second listener.
+   */
+  .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage::after {
+    opacity: 1;
   }
 
   /*
@@ -1222,6 +1282,7 @@
 @media (prefers-reduced-motion: reduce) {
   .cardRoot[data-align][data-interactive],
   .cardRoot[data-align][data-interactive]::after,
+  .cardRoot[data-align][data-interactive] > .cardImage::after,
   .cardImage > :where(img, picture, video, svg, div, span) {
     transition: none;
   }
