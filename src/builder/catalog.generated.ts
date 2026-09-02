@@ -93,6 +93,8 @@ export const CATALOG: ComponentSpec[] = [
       { name: "hubHref", kind: "text", doc: "Where the hub goes, if it is a target too." },
       { name: "wash", kind: "boolean", default: "true", doc: "The gradient behind the hub — the light the whole figure sits in." },
       { name: "names", kind: "enum", options: ["nested", "outside"], default: "nested", doc: "Where each section's name goes." },
+      { name: "shape", kind: "enum", options: ["hexagon", "octagon"], default: "hexagon", doc: "The tile, and the lattice under it." },
+      { name: "grid", kind: "boolean", default: "true", doc: "The lattice itself, revealed under the pointer." },
       { name: "maxHeight", kind: "number", doc: "A ceiling on how tall the figure may be — a length, or a number of pixels." },
       { name: "network", kind: "boolean", default: "true", doc: "The network: traces walking the lattice, a loop around each section, and a connector from the hub out to each one." },
     ],
