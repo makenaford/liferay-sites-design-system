@@ -12,6 +12,11 @@ const meta = {
       control: 'inline-radio',
       description: "Where each section's name goes: in the hollow its tiles ring, or out past them on a leader.",
     },
+    shape: {
+      options: ['hexagon', 'octagon'],
+      control: 'inline-radio',
+      description: 'The tile, and the lattice under it.',
+    },
   },
   parameters: { frame: { width: 1100 } },
   args: {
@@ -26,6 +31,44 @@ type Story = StoryObj<typeof meta>
 
 /** The homepage figure: sixteen products around DXP, every tile a link. */
 export const Default: Story = {}
+
+/**
+ * The same sixteen products on an **octagonal** grid — the `dxp-grid` iteration's shape, drawn by the
+ * component rather than placed by hand.
+ *
+ * Worth looking at with the honeycomb open beside it, because the difference is not really the tile.
+ * Octagons cannot tile a plane on their own: the arrangement leaves a small square at every diagonal, so
+ * the figure reads as sixteen things set down on a grid, where the honeycomb reads as one surface that
+ * has been divided up. Which is right depends on what the picture is claiming — a platform whose parts
+ * are cut from one thing, or a platform things are placed on.
+ *
+ * It costs size, and the cost is structural rather than a matter of tuning: a hexagon column advances
+ * three-quarters of a tile because the columns interlock, an octagon column advances a whole one, and
+ * the sections need a clear row between them, so the box goes from 5.6 x 4.9 tiles to 7.1 x 7.1. Since
+ * the tile is the box divided by those numbers, every octagon is about a fifth smaller than the hexagon
+ * it replaces at the same width — and the 14px label floor is what that eventually runs into.
+ */
+export const Octagons: Story = {
+  args: { shape: 'octagon', names: 'outside' },
+}
+
+/**
+ * The octagons with each name in the hollow its four tiles ring, the way the hexagon figure carries its
+ * own. It is the more compact of the two — the names cost no width at all — but on this lattice the
+ * hollow is a whole empty cell rather than a hexagon's narrow gap, so the name sits in more space than
+ * it needs and the group reads as five things rather than four around a label.
+ */
+export const OctagonsNamesInside: Story = {
+  args: { shape: 'octagon' },
+}
+
+/**
+ * Without the grid reveal. The lattice stays hidden, which is the right call where the map sits on a
+ * page that already has a texture of its own.
+ */
+export const NoGrid: Story = {
+  args: { grid: false },
+}
 
 /** The hub as a target too, for a page that has somewhere to send someone who clicks the middle. */
 export const HubLinked: Story = {

@@ -7100,12 +7100,16 @@
   margin-inline: auto;
   container-type: inline-size;
   /*
-   * The hexagon. 25%/75% are the corner cuts that make all six edges equal, which is what lets four
-   * cells meet without a seam.
+   * The tile's silhouette and the lattice's steps. The component writes all of these — it is the one
+   * place that knows which lattice is being drawn — and the values here are the honeycomb's, which is
+   * what a `mapRoot` rendered without them would want: 25%/75% are the corner cuts that make all six
+   * edges equal, which is what lets four cells meet without a seam.
    */
-  --sds-map-hex: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  --sds-map-hex: var(--sds-map-shape, polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%));
   --sds-map-step-x: calc(var(--sds-map-tile) * 0.75);
   --sds-map-step-y: calc(var(--sds-map-tile) * 0.8660254);
+  --sds-map-ratio: 0.8660254;
+  --sds-map-hub-w: 1.9;
   /*
    * The figure's own vertical centring.
    *
@@ -7125,7 +7129,7 @@
    */
   --sds-map-fill: 0.95;
   --sds-map-w: calc(var(--sds-map-tile) * var(--sds-map-fill));
-  --sds-map-h: calc(var(--sds-map-w) * 0.8660254);
+  --sds-map-h: calc(var(--sds-map-w) * var(--sds-map-ratio));
 }
 
 /* ---- the wash -------------------------------------------------------------------------------
@@ -7137,6 +7141,72 @@
  * was the version that failed, and one thing pulsing in the middle of sixteen still ones is the version
  * that reads as a centre rather than as a screensaver.
  */
+/* ---- the lattice, revealed under the pointer ------------------------------------------------
+ *
+ * The figure draws sixteen cells of a grid that carries on past the canvas in every direction. This is
+ * the rest of it, shown through a circle that follows the cursor: the structure is uncovered by moving
+ * across the map and put away on leaving, so it is available without being decoration the whole time.
+ *
+ * Two masks, multiplied. The **pointer's** circle is what reveals, and a second, static ellipse fades
+ * the whole layer out before the canvas edge — without it the revealed cells end on a straight cut
+ * wherever the box does, which reads as a crop rather than as a grid running on underneath.
+ *
+ * `opacity` carries the enter and leave rather than the mask, so nothing has to animate a gradient
+ * position: at rest the layer is simply not painted, and the reveal is one composited property.
+ */
+.mapGrid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  /*
+   * Clipped, unlike the network above it. The grid is drawn wider than the canvas on purpose — the
+   * lattice has to run off every edge rather than stop at one — and an SVG set to `overflow: visible`
+   * paints those cells outside its own box, where they widen the *document*. The layout suite caught it
+   * as a horizontal overflow on every capability-map story at all three widths. The mask already fades
+   * the grid out before the edge, so nothing is lost by clipping it there.
+   */
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--sds-motion-slow, 400ms) var(--sds-motion-ease-out);
+  mask-image:
+    radial-gradient(circle at var(--sds-map-gx, 50%) var(--sds-map-gy, 50%), #000 0%, transparent 62%),
+    radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    radial-gradient(circle at var(--sds-map-gx, 50%) var(--sds-map-gy, 50%), #000 0%, transparent 62%),
+    radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+
+.mapGrid path {
+  fill: none;
+  stroke: var(--sds-map-grid-line);
+  /*
+   * A device pixel, because of `non-scaling-stroke`: with it, the width is read in device pixels rather
+   * than in the viewBox's units, and the 0.008-of-a-tile this was first written as — correct for every
+   * other stroke in the figure — resolved to eight thousandths of a pixel and drew nothing at all. The
+   * pairing is deliberate here: the empty lattice wants the same hairline at every figure size, where the
+   * network's lines want to thicken with the drawing.
+   */
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/*
+ * A pointer is what reveals it, so a device without one never shows it — and `hover: hover` is also what
+ * keeps a phone from painting the layer at the last place a finger happened to touch.
+ */
+@media (hover: hover) {
+  .mapRoot:hover .mapGrid { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapGrid { transition: none; }
+}
+
 .mapWash {
   position: absolute;
   inset: 0;
@@ -7487,7 +7557,7 @@
   align-items: center;
   justify-content: center;
   gap: calc(var(--sds-map-tile) * 0.04);
-  padding: calc(var(--sds-map-tile) * 0.05) calc(var(--sds-map-tile) * 0.11);
+  padding: calc(var(--sds-map-tile) * 0.05) var(--sds-map-pad-x, calc(var(--sds-map-tile) * 0.11));
   text-align: center;
   background-image: linear-gradient(
     225deg,
@@ -7566,8 +7636,29 @@
 }
 
 .mapTileIcon > svg { width: 100%; height: 100%; }
-/* The same share of the hub's own width it has always had: 0.34 x 1.9/1.8. */
-.mapTileIcon[data-hub] { width: calc(var(--sds-map-tile) * 0.36); height: calc(var(--sds-map-tile) * 0.36); }
+
+/*
+ * The hub's mark, as large as the hub can hold.
+ *
+ * It was 0.36 of a tile inside a hub 1.9 tiles across — a fifth of the width of the one block the figure
+ * is about, with the rest of it empty. The ceiling is not the hub's width, though, it is the silhouette:
+ * the icon and the label are a centred column, so the icon's top corners sit well above the middle,
+ * where a hexagon has already begun narrowing toward its flat top.
+ *
+ * Half-width at height y, for a flat-top hexagon of width W and height 0.866W, is `W/2 - 0.576|y|`. With
+ * the label and the gap under it taking 0.22 of a tile, the icon's own top corners land at
+ * `-(s + 0.22)/2`, and solving `s/2 <= W/2 - 0.576(s + 0.22)/2` puts them on the edge just past a whole
+ * tile — which the rendered figure agrees with: stepped through in the browser, 1.00 has all four
+ * corners inside the silhouette and 1.05 does not. 0.96 is that with the margin the padding wants, and
+ * it makes the mark 55% of the hub's width where it used to be 20%.
+ *
+ * The octagon has more room at that height than the hexagon does, so this one number is safe on both and
+ * the figure does not need a second.
+ */
+.mapTileIcon[data-hub] {
+  width: calc(var(--sds-map-tile) * 0.96);
+  height: calc(var(--sds-map-tile) * 0.96);
+}
 
 /*
  * The label. `Paragraph/Small Caps` — 14px — is the **floor**, not the ceiling: a product name is the one
@@ -7606,8 +7697,10 @@
    * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
    * else. It is what `Homepage Redesign` draws, too.
    */
-  width: calc(var(--sds-map-tile) * 1.9 * var(--sds-map-fill));
-  height: calc(var(--sds-map-tile) * 1.9 * var(--sds-map-fill) * 0.8660254);
+  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill));
+  height: calc(
+    var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill) * var(--sds-map-ratio)
+  );
   z-index: 95;
   cursor: default;
 }
