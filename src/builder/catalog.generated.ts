@@ -131,7 +131,7 @@ export const CATALOG: ComponentSpec[] = [
     props: [
       { name: "label", kind: "text", default: "Customer stories", doc: "Names the carousel for a screen reader — \"Customer stories\", \"Featured products\". Required, and not optional-with-a-default for the same reason `Image`'s `alt` is not: a region announced as \"carousel\" with no name tells someone nothing about what they have landed in." },
       { name: "slideSize", kind: "number", default: "310", doc: "The width of one slide. Figma's cards are **310px**; a number is pixels, a string is any CSS length, so `'80%'` gives the one-card-at-a-time layout where the next card peeks in." },
-      { name: "gap", kind: "number", default: "13", doc: "The gap between slides. Figma's `List` uses 13px, which is not a step on the spacing scale." },
+      { name: "gap", kind: "number", default: "20", doc: "The gap between slides." },
       { name: "arrows", kind: "boolean", default: "true", doc: "Figma's `Type=arrows`: the pair of 44×40 outline buttons under the track. They step one slide at a time and disable at each end." },
       { name: "indicators", kind: "enum", options: ["dots", "lines", "none"], default: "dots", doc: "Figma's two indicator styles. `dots` is the 12px dot row inside the `Type=arrows` cell; `lines` is the `Type=lines` cell, where the active bar is 64px against the inactive 24px." },
       { name: "fade", kind: "boolean", default: "true", doc: "Figma's `Overlay`: the track fades out at the edges, so a half-scrolled card reads as continuing rather than as cut off." },

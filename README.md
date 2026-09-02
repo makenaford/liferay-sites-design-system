@@ -1900,7 +1900,8 @@ The `card carousel` section (node `24465:66866`) and the Figma `Carousel` contro
 
 | Figma | Prop |
 | --- | --- |
-| `List` — 310px cards, 13px gap, clipped | `slideSize`, `gap` |
+| `List` — 310px cards, clipped | `slideSize` |
+| `List` — 13px gap | `gap`, **defaulting to 20** — see below |
 | `Overlay` — the edge fade | `fade`, `fadeWidth` |
 | `Carousel` `Type=arrows` — two 44×40 outline buttons | `arrows` |
 | `Carousel` `Type=arrows` — the 12px dot row between them | `indicators="dots"` |
@@ -1919,7 +1920,14 @@ Each child becomes a slide — cards go in directly, with no wrapper component t
 lets the slide carry its own `role="group"`, `aria-roledescription="slide"` and "3 of 7" label without
 anybody having to pass them.
 
-### It scrolls; it does not animate
+### The gap is 20, not Figma's 13
+
+A deviation. 13 is on no step of the spacing scale, and it reads as tight once the slides carry a
+photograph rather than a swatch — two thumbnails a thumb's width apart start to read as one strip
+rather than as separate cards. 20 is the step above it on the scale, and it is what the customer
+stories row is drawn with. `gap={13}` gets the file's number back.
+
+### It scrolls; it does not animate — but the arrows do
 
 The track is a **scroll container with CSS scroll snapping**, not a transformed strip. The alternative
 was `@mantine/carousel`, which brings `embla-carousel-react` into a library whose only dependencies are
@@ -1929,8 +1937,18 @@ Snapping gets touch and trackpad momentum, overscroll, keyboard scrolling, `scro
 respects `prefers-reduced-motion`, and the browser's own scroll-into-view when something inside a slide
 takes focus — all native, none of it re-implemented. What it does not get is **mouse drag, autoplay or an
 infinite loop**. If any of those three is wanted, this is the component to swap for `@mantine/carousel`;
-nothing else in the library would change. The arrows and indicators are the only JavaScript here, and
-they call `scrollTo`.
+nothing else in the library would change.
+
+The arrows and indicators are the only JavaScript here, and the **travel they cause is animated by the
+component**, not by the browser. `scrollTo({ behavior: 'smooth' })` was one line and left the duration
+and the curve to the engine: the same press takes a different time and carries a different weight in
+each browser, and none of them uses the easing the rest of this library moves on. A card row is the
+largest thing on a page that moves when something is clicked, which makes it the worst place to leave
+that unspecified. It is a `requestAnimationFrame` tween over `--sds-motion-slow` on the same
+decelerating curve as everything else, writing `scrollLeft` directly — which is also why the track's
+`scroll-behavior` is `auto`: with `smooth` the browser would ease toward each frame of the tween and the
+two would fight. A wheel, a touch or a pointer press cancels it mid-flight, and
+`prefers-reduced-motion` jumps.
 
 Two consequences worth knowing:
 

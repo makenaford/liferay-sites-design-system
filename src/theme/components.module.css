@@ -4839,7 +4839,13 @@
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
+  /*
+   * `auto`, and it matters: the component animates arrow and indicator presses itself, writing
+   * `scrollLeft` every frame on this library's own curve. With `scroll-behavior: smooth` the browser
+   * would ease *toward each of those frames*, so the track would chase a target that keeps moving and
+   * arrive late and soft — two animations of the same distance, neither of them the one anyone chose.
+   */
+  scroll-behavior: auto;
   overscroll-behavior-x: contain;
   /* Figma's list is clipped with no scrollbar; the arrows and indicators are the affordance. */
   scrollbar-width: none;

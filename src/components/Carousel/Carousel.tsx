@@ -23,7 +23,16 @@ export interface CarouselProps extends BoxProps, Omit<ElementProps<'div'>, 'titl
    * @default 310
    */
   slideSize?: number | string
-  /** The gap between slides. Figma's `List` uses 13px, which is not a step on the spacing scale. */
+  /**
+   * The gap between slides.
+   *
+   * 20px, which is **a deviation**: Figma's `List` draws 13, a number that is on no step of the spacing
+   * scale and reads as tight once the cards carry a photograph rather than a swatch — two thumbnails a
+   * thumb's width apart start to look like one strip. 20 is the scale's own step either side of it, and
+   * it is what the customer stories row is drawn with. Recorded in README.md.
+   *
+   * @default 20
+   */
   gap?: number | string
   /**
    * Figma's `Type=arrows`: the pair of 44×40 outline buttons under the track. They step one slide at a
@@ -119,7 +128,7 @@ export interface CarouselProps extends BoxProps, Omit<ElementProps<'div'>, 'titl
 export function Carousel({
   label,
   slideSize = 310,
-  gap = 13,
+  gap = 20,
   arrows = true,
   indicators = 'dots',
   fade = true,
@@ -200,18 +209,96 @@ export function Carousel({
     }
   }, [measure, slides.length])
 
+  /**
+   * The travel between slides, animated here rather than handed to the browser.
+   *
+   * `scrollTo({ behavior: 'smooth' })` is one line and was what this did. What it is not is *specified*:
+   * the duration and the curve belong to the engine, so the same click takes a different time and reads
+   * with a different weight in each browser, and none of them is the easing the rest of this library
+   * moves on. A card row is the largest thing on the page that moves on a click, which makes it the
+   * worst place to leave that to chance.
+   *
+   * So: `requestAnimationFrame` over `--sds-motion-slow`, on the same decelerating curve as everything
+   * else here — fast away from the press, settling into the new position rather than stopping at it.
+   * Written straight to `scrollLeft`, which no browser eases, or the two would fight.
+   *
+   * The tween **yields to the reader**. A wheel, a touch or a drag cancels it mid-flight: the animation
+   * is a convenience for someone who pressed an arrow, and it has no business holding the track against
+   * someone who has taken hold of it. `instant` under `prefers-reduced-motion`.
+   */
+  const tween = useRef<number | null>(null)
+
+  /**
+   * Snapping has to be off while the tween runs, and this is not a detail — it is the whole reason a
+   * hand-written scroll animation on a snapping track usually "does not work".
+   *
+   * `scroll-snap-type: x mandatory` means the track must rest on a snap point at all times, so every
+   * intermediate `scrollLeft` this writes is immediately snapped to the nearest one. Measured, the first
+   * cut of this jumped 80 -> 410 inside a frame and sat there for the remaining half second: a tween
+   * that ran perfectly and was never once seen. (The browser's own `behavior: 'smooth'` does not have
+   * this problem because it coordinates with the snap engine internally, which is exactly the part that
+   * is not exposed.)
+   *
+   * So snapping is suspended for the flight and restored on landing — and the landing is a snap point
+   * by construction, so restoring it moves nothing.
+   */
+  const stopTween = useCallback(() => {
+    if (tween.current) cancelAnimationFrame(tween.current)
+    tween.current = null
+    const el = trackRef.current
+    if (el) el.style.scrollSnapType = ''
+  }, [])
+
+  useEffect(() => {
+    const el = trackRef.current
+    if (!el) return undefined
+    const cancel = () => stopTween()
+    /* Passive: these only ever cancel, so nothing here needs to be able to preventDefault. */
+    el.addEventListener('wheel', cancel, { passive: true })
+    el.addEventListener('touchstart', cancel, { passive: true })
+    el.addEventListener('pointerdown', cancel, { passive: true })
+    return () => {
+      el.removeEventListener('wheel', cancel)
+      el.removeEventListener('touchstart', cancel)
+      el.removeEventListener('pointerdown', cancel)
+      stopTween()
+    }
+  }, [stopTween])
+
   const scrollTo = useCallback(
     (page: number) => {
       const { el, starts } = offsets()
       if (!el) return
       const target = starts[Math.max(0, Math.min(page, starts.length - 1))]
-      /*
-       * `instant`, not `auto`: `auto` means "use the element's own scroll-behavior", which is `smooth`
-       * here, so it would animate anyway for someone who asked it not to.
-       */
-      el.scrollTo({ left: target, behavior: reducedMotion ? 'instant' : 'smooth' })
+
+      stopTween()
+      const from = el.scrollLeft
+      const distance = target - from
+      if (reducedMotion || Math.abs(distance) < 1) {
+        el.scrollLeft = target
+        return
+      }
+
+      el.style.scrollSnapType = 'none'
+      const duration = 520
+      let start: number | null = null
+      const step = (now: number) => {
+        if (start === null) start = now
+        const t = Math.min(1, (now - start) / duration)
+        /* The same shape as `--sds-motion-ease-out`, as arithmetic: most of the distance early, no bounce. */
+        const eased = 1 - Math.pow(1 - t, 3)
+        el.scrollLeft = from + distance * eased
+        if (t < 1) {
+          tween.current = requestAnimationFrame(step)
+        } else {
+          tween.current = null
+          /* Landed on a snap point, so this hands the track back without moving it. */
+          el.style.scrollSnapType = ''
+        }
+      }
+      tween.current = requestAnimationFrame(step)
     },
-    [offsets, reducedMotion],
+    [offsets, reducedMotion, stopTween],
   )
 
   const showControls = arrows || (indicators !== 'none' && state.pages > 1)
