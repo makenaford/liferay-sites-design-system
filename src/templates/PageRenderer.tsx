@@ -62,6 +62,7 @@ import {
 } from '../icons'
 import { PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
+import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
 import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit } from './shared'
 import classes from '../theme/components.module.css'
 import { isVideo } from './page-schema'
@@ -495,7 +496,11 @@ function ResourceGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'res
   )
 }
 
-/** The 270×180 logo tile a customer-story card carries. A stand-in: the marks are not ours to ship. */
+/**
+ * The 270x180 tile a customer-story card carries when there is no thumbnail for that customer — a drawn
+ * stand-in, so a story can be written before its artwork exists. The eight the file draws have real
+ * marks now; see `customer-thumbnails.ts`.
+ */
 const logoTile = (name: string) => {
   const hue = [...name].reduce((total, ch) => total + ch.charCodeAt(0), 0) % 360
   return `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -515,7 +520,18 @@ function StoryCard({ story }: { story: StorySpec }) {
     <Card
       /* A quote is content, not a destination. */
       surface="static"
-      image={<Image src={logoTile(story.customer)} alt={story.customer} ratio="3:2" radius="sm" />}
+      image={
+        <Image
+          src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer)}
+          alt={
+            CUSTOMER_THUMBNAILS[story.customer]
+              ? customerThumbnailAlt(story.customer)
+              : story.customer
+          }
+          ratio="3:2"
+          radius="sm"
+        />
+      }
       top={
         <Stat
           value={

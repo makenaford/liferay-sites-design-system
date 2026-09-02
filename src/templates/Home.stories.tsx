@@ -19,6 +19,7 @@ import { Stat, StatBar } from '../components/Stat'
 import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
+import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
 import { MeshBackdrop, Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -126,7 +127,9 @@ const GOALS: Record<string, { title: string; image: string; alt: string }[]> = {
  * to another under a made-up name. Mueller is now its own entry with that quote, and Sky has the one the
  * sheet gives it.
  *
- * `hue` is the card's tile, and is the only field here that is not from the sheet.
+ * `hue` is the drawn stand-in's colour, and is the only field here that is not from the sheet — it is
+ * used only for a customer with no thumbnail in `customer-thumbnails.ts`, which at present is none of
+ * them.
  */
 const STORIES = [
   {
@@ -687,8 +690,12 @@ function HomePage() {
               key={story.customer}
               image={
                 <Image
-                  src={logoTile(story.customer, story.hue)}
-                  alt={story.customer}
+                  src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer, story.hue)}
+                  alt={
+                    CUSTOMER_THUMBNAILS[story.customer]
+                      ? customerThumbnailAlt(story.customer)
+                      : story.customer
+                  }
                   ratio="3:2"
                   radius="sm"
                 />
