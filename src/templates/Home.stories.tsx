@@ -9,7 +9,8 @@ import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Carousel } from '../components/Carousel'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
-import { Hero } from '../components/Hero'
+import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
+import { Hero, HeroHighlight } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
@@ -473,6 +474,13 @@ function HomePage() {
       <Hero
         background="full"
         video={bubbleFull}
+        /*
+         * The light canvas has its own export. Without it the hero falls back to the gradient there,
+         * which is correct and built from the same tokens — but the renderer passes both, and a story
+         * that stands in for the page should show what the page shows.
+         */
+        videoLight={bubbleFullLight}
+        entrance
         banner={
           <Card
             surface="glass"
@@ -523,14 +531,7 @@ function HomePage() {
         title={
           <h1>
             Launch Digital Experiences That{' '}
-            <Text
-              span
-              inherit
-              variant="gradient"
-              gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
-            >
-              Convert, Scale and Grow
-            </Text>
+            <HeroHighlight>Convert, Scale and Grow</HeroHighlight>
           </h1>
         }
         description={

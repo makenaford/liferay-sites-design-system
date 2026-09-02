@@ -161,6 +161,23 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   form?: ReactNode
   /** The Gartner logo and its tags, or any other proof that sits under the actions. */
   proof?: ReactNode
+  /**
+   * The entrance: each part of the hero fades up as the page arrives, a beat after the one before it.
+   *
+   * Off by default. A hero is the first thing on a page and the animation plays on load, so it is the
+   * one piece of motion in the library with no second chance to be judged — a docs page or an app shell
+   * that happens to use this component should not get it uninvited. `Templates/Home` and `PageRenderer`
+   * turn it on.
+   *
+   * The order is the reading order — banner, label, heading, description, form, actions, proof — because
+   * the delays come from the DOM rather than from a list of slots, so a hero without a label starts its
+   * cascade at the heading instead of holding an empty beat for the part that is not there.
+   *
+   * Nothing under `prefers-reduced-motion`: the parts are simply there.
+   *
+   * @default false
+   */
+  entrance?: boolean
   /** Figma's `Image=Yes`: the media column beside the content. An image, a video card, anything. */
   media?: ReactNode
   children?: ReactNode
@@ -403,6 +420,24 @@ function HeroWaves({ background }: { background: HeroBackground }) {
  * scheme and remounts on a flip. A scheme with no file gets the gradient, which is built from the same
  * tokens.
  */
+/**
+ * The heading's highlighted tail — Home's `Launch Digital Experiences That **Convert, Scale and Grow**`.
+ *
+ * The brand-to-accent gradient, clipped to the text, with a slow sweep travelling along it. The sweep is
+ * what the demo adds and it needs the gradient to be **three stops rather than two**: `brand → accent →
+ * brand`, at two and a half times the text's width. A two-stop gradient slid under a mask has to jump
+ * back when it reaches the end, and the jump is visible on a 44px heading; with the first colour
+ * repeated at the far end, the position can run continuously and the loop has no seam.
+ *
+ * A component rather than a class, because the two facts that make it work — the stop order and the
+ * background size — are not things a caller should have to know to use the page's own highlight. It also
+ * replaces a Mantine `Text variant="gradient"`, whose gradient is inline and two-stop, and therefore
+ * cannot be animated from the stylesheet at all.
+ */
+export function HeroHighlight({ children }: { children?: ReactNode }) {
+  return <span className={classes.heroHighlight}>{children}</span>
+}
+
 export function Hero({
   background = 'none',
   video,
@@ -418,6 +453,7 @@ export function Hero({
   form,
   proof,
   media,
+  entrance,
   children,
   className,
   ...props
@@ -480,6 +516,7 @@ export function Hero({
       data-video={showBubble || undefined}
       data-bubble-css={drawn || undefined}
       data-align={align === 'center' ? 'center' : undefined}
+      data-entrance={entrance || undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
       {...props}

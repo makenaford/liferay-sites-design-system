@@ -7,7 +7,7 @@ import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
-import { Hero, type HeroMediaSource } from '../components/Hero'
+import { Hero, HeroHighlight, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
@@ -222,15 +222,19 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
+      /*
+       * The page's own arrival. A rendered page is a marketing page by definition — it is what this
+       * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
+       * the same way sections carry their reveal.
+       */
+      entrance
       title={
         <h1>
           {hero.title.text}
           {hero.title.highlight ? (
             <>
               {' '}
-              <Text span inherit variant="gradient" gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}>
-                {hero.title.highlight}
-              </Text>
+              <HeroHighlight>{hero.title.highlight}</HeroHighlight>
             </>
           ) : null}
         </h1>

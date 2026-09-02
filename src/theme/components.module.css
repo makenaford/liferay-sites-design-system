@@ -4243,6 +4243,100 @@
   width: min(480px, 100%);
 }
 
+/* ---- the entrance -----------------------------------------------------------------------------
+ *
+ * Each part of the hero fades up as the page arrives, a beat after the one before it.
+ *
+ * **The delays come from the DOM, not from a list of slots.** `nth-child` rather than one rule per
+ * slot: a hero with no label would otherwise hold an empty beat where the label's delay was, and the
+ * cascade would start late for no visible reason. This way the first thing present is the first thing
+ * in, whatever it happens to be.
+ *
+ * 0.05s, then 0.1 apart, on an 0.8s curve — the demo's numbers. The parts overlap heavily: the heading
+ * begins before the label has finished, which is what makes it read as one movement arriving rather
+ * than as five things queuing. `both`, so a part holds at `from` through its own delay instead of
+ * flashing at full opacity before its turn.
+ *
+ * The banner leads at 0.05 because it sits above everything, and the media column comes in at 0.35 —
+ * with the actions, not after the proof line. It is beside the text rather than below it, so pinning it
+ * to the end of the column's cascade would leave the largest thing on screen arriving last.
+ *
+ * A hero animating itself in is a bet that the page is worth waiting a second for, and it only pays
+ * once — there is no scroll position to tie it to and no second chance to see it. That is the argument
+ * for keeping the whole thing under a second and for `prefers-reduced-motion` taking it away entirely.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .hero[data-entrance] .heroBanner,
+  .hero[data-entrance] .heroContent > *,
+  .hero[data-entrance] .heroMedia {
+    animation: sds-hero-rise 0.8s cubic-bezier(0.16, 0.8, 0.3, 1) both;
+  }
+
+  .hero[data-entrance] .heroBanner { animation-delay: 0.05s; }
+  .hero[data-entrance] .heroMedia { animation-delay: 0.35s; }
+
+  .hero[data-entrance] .heroContent > :nth-child(1) { animation-delay: 0.05s; }
+  .hero[data-entrance] .heroContent > :nth-child(2) { animation-delay: 0.15s; }
+  .hero[data-entrance] .heroContent > :nth-child(3) { animation-delay: 0.25s; }
+  .hero[data-entrance] .heroContent > :nth-child(4) { animation-delay: 0.35s; }
+  .hero[data-entrance] .heroContent > :nth-child(5) { animation-delay: 0.45s; }
+  .hero[data-entrance] .heroContent > :nth-child(n + 6) { animation-delay: 0.55s; }
+}
+
+@keyframes sds-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- the highlighted tail, and its sweep -------------------------------------------------------
+ *
+ * `Brand/Primary/Lighten 1` to `Accent/Product Accent` and back to the brand, clipped to the text.
+ *
+ * **Three stops, not two.** The sweep is a `background-position` animation under a text mask, and a
+ * two-stop gradient has to jump back to its start when it reaches the end — visible, on a heading this
+ * size. Repeating the first colour at the far end means the position can run from one end to the other
+ * and land on an identical picture, so the loop has no seam. `250%` is what gives it somewhere to
+ * travel; at `100%` there is nothing off-screen to bring in.
+ *
+ * `linear`, and slow. An eased sweep reads as something sliding back and forth; a constant one reads as
+ * light moving across a surface, which is the thing being imitated.
+ *
+ * Under `prefers-reduced-motion` the gradient stays and only the travel stops — the highlight is the
+ * page's own colour, not the animation, and taking it away would change what the heading says.
+ */
+.heroHighlight {
+  background-image: linear-gradient(
+    90deg,
+    var(--sds-brand-primary-lighten-1) 0%,
+    var(--sds-accent-product-accent) 50%,
+    var(--sds-brand-primary-lighten-1) 100%
+  );
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: sds-hero-shimmer 3s linear infinite;
+}
+
+@keyframes sds-hero-shimmer {
+  from { background-position: 200% center; }
+  to { background-position: 0% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroHighlight {
+    animation: none;
+    background-position: 100% center;
+  }
+}
+
 .heroProof {
   display: flex;
   flex-wrap: wrap;

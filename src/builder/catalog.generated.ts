@@ -216,7 +216,6 @@ export const CATALOG: ComponentSpec[] = [
   },
   {
     name: "Hero",
-    doc: "Hero — Figma `Hero` component set (node `19110:9503`), with the slots the accompanying spreadsheet lists.",
     props: [
       { name: "background", kind: "enum", options: ["none", "full", "corner"], default: "corner", doc: "Figma's `Type` axis, and the spreadsheet's Background column: `full` is Bubble Full, `corner` is Corner Bubble, `none` is the plain surface." },
       { name: "drawn", kind: "boolean", doc: "Draw the bubble instead of playing a file — the prototype the bubble lab exists to judge." },
@@ -228,6 +227,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "actions", kind: "slot", doc: "Buttons and links, in the order they should be read." },
       { name: "form", kind: "slot", doc: "The `Form` type: an email field with a contained button, in place of the buttons. Both can be present, but one of them is usually the point." },
       { name: "proof", kind: "slot", doc: "The Gartner logo and its tags, or any other proof that sits under the actions." },
+      { name: "entrance", kind: "boolean", default: "false", doc: "The entrance: each part of the hero fades up as the page arrives, a beat after the one before it." },
       { name: "media", kind: "slot", doc: "Figma's `Image=Yes`: the media column beside the content. An image, a video card, anything." },
       { name: "children", kind: "slot" },
       { name: "videoLight", kind: "slot", source: "story" },
