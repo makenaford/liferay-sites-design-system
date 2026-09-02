@@ -6756,17 +6756,22 @@
 }
 
 /*
- * `Small Caps/Small Caps Default/Semi Bold` in `Surfaces/Text/Secondary` — 14/20 at 600 and 6% tracking.
+ * `Small Caps/Small Caps Default/Semi Bold` — 14/20 at 600 and 6% tracking — in the band's own white.
  *
- * These were `Paragraph/Default/Heavier` in white, which made every heading compete with the links under
- * it: eighteen-point bold white against sixteen-point regular white is the heading winning an argument it
- * should not be having. Small caps in the secondary colour is what the file draws and what the rest of
- * this library already does for the same job — the mega menu's column headings and `Stat`'s label are
- * both this style.
+ * The *type* is what stops a heading competing with the links under it, and that was the point of moving
+ * these off `Paragraph/Default/Heavier`: eighteen-point bold against sixteen-point regular is a heading
+ * winning an argument it should not be having, while small caps at 14 reads as a label at any colour.
+ *
+ * The colour that came with that change was `Surfaces/Text/Secondary`, and it was a bug for the same
+ * reason the links here were pinned: the token is **mode-aware** and this band is dark in *both* modes,
+ * so in light mode the headings resolved to `#363e4c` on `#070b13` — about 1.6:1, a heading nobody could
+ * read, and only ever visible to someone looking at the light canvas. They take `--sds-footer-text` now,
+ * the same white the links beside them are pinned to, which is `Link variant="secondary"`'s dark-canvas
+ * value and the one colour this band is allowed to reason about.
  */
 .footerColumnTitle {
   margin: 0;
-  color: var(--sds-surfaces-text-secondary);
+  color: var(--sds-footer-text);
   font-size: var(--sds-size-paragraph-small-caps);
   line-height: var(--sds-line-height-paragraph-small-caps);
   font-weight: 600;
@@ -8226,6 +8231,55 @@
   height: 190%;
   background-image: radial-gradient(closest-side, var(--sds-bubble-sky) 0%, transparent 90%);
   animation: sds-mesh-drift-c 52s ease-in-out infinite alternate;
+}
+
+/* ---- `tone="wash"` — the capability map's light -----------------------------------------------
+ *
+ * The same three colours the map's wash is built from, and more to the point the same *shape*: a wide
+ * blue core, a violet halo offset against it so the two cross rather than sit concentric, and a small,
+ * much brighter lift in the middle. The hero tone's three blobs are all roughly one size, which is what
+ * makes it a field; these are 120%, 80% and 44%, which is what makes it a source.
+ *
+ * The offsets are the map's, halved. There the two large blobs are pushed about 9% apart, which on a
+ * 500px figure is a few dozen pixels and reads as depth; at a page's width the same percentage separates
+ * them by a third of the screen and the pool stops having a centre at all.
+ *
+ * **No blur, unlike the map's.** The map can afford `filter: blur(50px)` over a small box that is
+ * usually still; three blurred layers drifting across a full-width band have to be re-rasterised every
+ * frame, and that is the cost that showed up as a timeout in the layout suite when the hero tone was
+ * first written. The falloff does the softening here: `transparent` by 78% on the core, which is a
+ * gentler ramp than the hero tone's 90% and is what stands in for the blur.
+ *
+ * Held at 0.5 rather than 0.19. The map's colours are alpha-laden already — the core is 52% blue where
+ * the hero tone's is a solid — so the same restraint applied twice would leave nothing on the page.
+ */
+.meshBackdrop[data-tone='wash'] {
+  opacity: 0.5;
+}
+
+:where([data-mantine-color-scheme='light']) .meshBackdrop[data-tone='wash'] {
+  opacity: 0.6;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(1) {
+  width: min(120%, 1500px);
+  height: 300%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-core) 0%, transparent 78%);
+  translate: -54% -52%;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(2) {
+  width: min(80%, 1050px);
+  height: 250%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-halo) 0%, transparent 74%);
+  translate: -46% -46%;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(3) {
+  width: min(44%, 580px);
+  height: 150%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-inner) 0%, transparent 72%);
+  translate: -50% -50%;
 }
 
 /*

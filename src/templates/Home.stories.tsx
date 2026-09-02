@@ -953,7 +953,7 @@ function HomePage() {
           </Button>
         }
       >
-        <MeshBackdrop />
+        <MeshBackdrop tone="wash" />
         <Marquee
           label="Integrations"
           gap={16}
