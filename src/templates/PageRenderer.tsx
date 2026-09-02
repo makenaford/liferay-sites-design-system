@@ -819,7 +819,7 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
     <Section
       bleed
       gap={32}
-      className={classes.meshHost}
+      className={spec.backdrop ? classes.meshHost : undefined}
       title={
         <SectionTitle
           align="center"
@@ -840,7 +840,7 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
         ) : undefined
       }
     >
-      <MeshBackdrop tone="wash" />
+      {spec.backdrop ? <MeshBackdrop tone={spec.backdrop} /> : null}
       <Marquee label="Integrations" gap={16} logoWidth={64} size="lg" speed={38} fade fadeWidth={120}>
         {spec.logos.map((name, i) => {
           const logo = VENDOR_LOGOS.find((v) => v.name === name)

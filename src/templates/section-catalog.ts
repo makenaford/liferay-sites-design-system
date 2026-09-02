@@ -164,7 +164,7 @@ export const SECTION_TYPES: SectionType[] = [
   {
     type: 'integrations',
     label: 'Integrations',
-    hint: 'A title with an action, over a row of 64px glass tiles.',
+    hint: 'A title with an action, over a row of 64px glass tiles. `backdrop` lights the ground behind it.',
     blank: () => ({
       type: 'integrations',
       title: 'Section title',

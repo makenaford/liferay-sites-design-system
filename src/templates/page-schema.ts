@@ -361,6 +361,18 @@ export type SectionSpec =
   | {
       type: 'integrations'
       title: string
+      /**
+       * A pool of brand light behind the band — `MeshBackdrop`.
+       *
+       * Off unless asked for. It was on this section by default and is not any more: the section's own
+       * job is a strip of logos and a heading, and a lit ground behind them is a page-level decision
+       * rather than something the section type should decide for every page that uses it.
+       *
+       * `hero` is the hero's palette at near-parity sizes, which reads as a *field* — the page is not
+       * flat here. `wash` is `CapabilityMap`'s: a wide core, an offset halo and a small brighter lift,
+       * which reads as light arriving from a point. Both are held well back; see `MeshBackdrop`.
+       */
+      backdrop?: 'hero' | 'wash'
   /** The phrase inside `title` that carries the brand gradient — see `customerStories`. */
   titleHighlight?: string
       description?: string

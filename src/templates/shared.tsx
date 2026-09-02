@@ -89,6 +89,11 @@ export function VendorTile({ name }: { name: string }) {
  * positioned and masked to nothing at its own edges, so it needs no knowledge of the page colour behind
  * it and leaves no seam to keep in sync when the scheme changes.
  *
+ * **Nothing turns this on by default.** It was on the integrations band and is not any more: a lit
+ * ground behind a section is a decision about a page, not a property of the section type, and every
+ * page using that type inherited it. `SectionSpec` carries a `backdrop` field for the pages that want
+ * one — see `Blocks/Sections`, where the option is drawn.
+ *
  * Decoration, and marked as such: `aria-hidden`, no content, and it stops drifting under
  * `prefers-reduced-motion` rather than disappearing — it is a ground, not a message.
  *
