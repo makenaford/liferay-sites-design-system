@@ -21,11 +21,8 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
    * Off by default: it belongs to a long marketing page reading as a sequence, and a section in an app
    * shell or a docs page has no such sequence to join. `Templates/Home` turns it on throughout.
    *
-   * Scroll-driven where the browser has `animation-timeline: view()` — no JavaScript, and scrolling back
-   * up plays it backwards, because the timeline *is* the scroll position. Where it does not (Safari,
-   * Firefox), an `IntersectionObserver` sets `data-in-view` once, the first time the section crosses 12%
-   * into the viewport, and a transition draws the same rise. Nothing happens under
-   * `prefers-reduced-motion` on either path.
+   * An `IntersectionObserver` trips once as the section reaches the fold and a 0.8s transition draws the
+   * rise, as in the demo this comes from. Nothing happens under `prefers-reduced-motion`.
    */
   reveal?: boolean
   /** The heading block. A `SectionTitle`, normally. */
@@ -105,33 +102,31 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
 ) {
   const localRef = useRef<HTMLElement>(null)
   const mergedRef = useMergedRef(ref, localRef)
-  const [fallback, setFallback] = useState<'pending' | 'in' | undefined>(undefined)
+  const [state, setState] = useState<'pending' | 'in' | undefined>(undefined)
 
   /*
-   * The observer fallback, and only where it is needed: a browser with `animation-timeline: view()`
-   * already runs the reveal off the main thread from CSS alone, so it never allocates an observer, and
-   * a reader who asked for less motion gets neither path. It fires once at a 12% threshold and
-   * unobserves — this path has no timeline to run backwards.
+   * The reveal is time-based rather than scroll-linked, and deliberately: an animation tied to
+   * `animation-timeline: view()` advances at the reader's scroll speed, so a trackpad flick crosses its
+   * whole range in one frame and the page below arrives already finished. This plays for its own 0.8s
+   * however fast the reader got here.
    *
-   * The offset start state is keyed on `data-fallback`, which only this effect ever sets, so a page that
-   * is served but never hydrated — SSR before the bundle lands, JavaScript off — renders every section
-   * at rest rather than permanently dimmed.
+   * `data-reveal-state` is set from here and nowhere else, so a document that is served but never
+   * hydrated has no offset start state to be stuck in — every section renders at rest.
    */
   useEffect(() => {
     if (!reveal || typeof window === 'undefined') return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    if (CSS.supports?.('animation-timeline: view()')) return
 
     const el = localRef.current
     if (!el) return
 
-    setFallback('pending')
+    setState('pending')
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return
-          setFallback('in')
+          setState('in')
           observer.unobserve(entry.target)
         })
       },
@@ -139,7 +134,7 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
        * A bottom margin rather than a threshold: "12% of the section is visible" is a different scroll
        * position for every section height, and on a tall one it never fires until the section already
        * fills the screen. Pulling the root's bottom edge up 15% fires when the section's top crosses
-       * that line — the same trigger point regardless of how tall it is.
+       * that line — one trigger point regardless of how tall it is.
        */
       { threshold: 0, rootMargin: '0px 0px -15% 0px' },
     )
@@ -154,7 +149,7 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
       className={[classes.sectionRoot, className].filter(Boolean).join(' ')}
       data-spacing={spacing}
       data-reveal={reveal || undefined}
-      data-fallback={fallback}
+      data-reveal-state={state}
       data-bleed={bleed || undefined}
       style={{
         '--sds-section-max': typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,

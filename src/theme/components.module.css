@@ -5569,97 +5569,37 @@
 /*
  * `reveal` — the section drifts up into place as it arrives.
  *
- * A **scroll-driven** animation, not an observer: `animation-timeline: view()` ties the animation's
- * progress to where the section sits in the viewport, which means there is no JavaScript, nothing to
- * unobserve, and the whole thing runs off the main thread. Scrolling back up plays it backwards, because
- * the timeline is the scroll position rather than an event that happened once.
+ * An `IntersectionObserver` trips once as the section reaches the fold, and a transition draws the rise
+ * at its own pace. The first cut of this was scroll-driven instead — `animation-timeline: view()`, the
+ * animation's progress tied to the section's position in the viewport — which is prettier on paper and
+ * measured perfectly, and which nobody could see.
  *
- * Three guards, and all three matter:
+ * The reason is worth keeping: a scroll-linked animation runs at the reader's scroll speed, not its own.
+ * Flick a trackpad and its whole range is crossed in a single frame, so every section below is simply
+ * already there — no motion, at exactly the moment a reader is moving fast enough to want the page to
+ * feel alive. A time-based transition plays for 0.8s whether it was reached by a flick or a slow drag.
+ * That is the difference between an effect that is correct and an effect anyone notices, and it is why
+ * `03-scroll-reveal.html` reads as animated. Same trade in reverse: this one only plays forwards, and
+ * scrolling back up does not rewind it. Worth it.
  *
- *   `prefers-reduced-motion: no-preference` — asked for less motion and there is none. Nothing else here
- *   depends on the animation having run, so the section simply sits where it belongs.
+ * Both states hang off `data-reveal-state`, which the observer effect is the only thing that sets, so
+ * the offset start state is never a style a page can get stuck in: a document served and not hydrated
+ * has no attribute at all, and every section renders at rest.
  *
- *   `@supports (animation-timeline: view())` — Safari and Firefox do not have this yet. Without the
- *   query the `from` keyframe would apply as a static style and every section below the fold would be
- *   permanently dimmed and offset. This is the guard that turns a broken page into no effect at all.
- *
- *   `animation-range: entry 80px entry 460px` — a **fixed** stretch of scroll, not a percentage. `entry` runs
- *   from the section's top touching the viewport's bottom to its bottom clearing that edge, so its
- *   length is the section's own height plus a viewport: any percentage of it is a different distance for
- *   every section, and on the tall ones the whole reveal completes below the fold, where nobody sees it.
- *   That is exactly how a correctly-wired reveal ends up looking like no reveal at all. Lengths keep the
- *   arrival identical whether the section is a logo strip or a full-height grid: it starts 80px after
- *   the section's top crosses the fold — just enough that nothing fades in right on the edge — and is
- *   settled 380px later, with the section's top around the middle of the screen and the reader's eye on
- *   it.
- *
- * `both`, so a section that has not arrived holds the `from` state and one already in view on load is
- * past `entry` and renders at `to` — no flash of dimmed content on a deep link.
+ * `prefers-reduced-motion` is honoured in the effect rather than here — asked for less motion and the
+ * observer is never created, so the attribute never appears and nothing below applies.
  */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .sectionRoot[data-reveal] > .sectionInner {
-      /*
-       * Longhands, and `animation-duration: auto` in particular.
-       *
-       * `animation: sds-section-rise linear both` looks equivalent and is not: the shorthand sets every
-       * property it omits to its initial value, and `animation-duration`'s initial value is `0s`. A
-       * scroll-driven animation with a zero duration sits at its end state at every scroll position — so
-       * it reads as correctly configured in the inspector, `animation-timeline` and all, and does
-       * absolutely nothing. `auto` is what makes the animation span its timeline.
-       */
-      animation-name: sds-section-rise;
-      animation-duration: auto;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: entry 80px entry 460px;
-    }
-  }
+.sectionRoot[data-reveal][data-reveal-state] > .sectionInner {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 0.8, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 0.8, 0.3, 1);
 }
 
-/*
- * The fallback, for Safari and Firefox: same 24px and same sixth of the opacity, drawn by a transition
- * rather than a timeline. `Section` only allocates the observer that drives it where this branch is the
- * live one, so the two paths can never both run.
- *
- * Both states hang off `data-fallback`, which the observer effect is the only thing that sets. That is
- * deliberate: the offset start state must never be a style a page can get stuck in, so a document that
- * is served but never hydrated has no `data-fallback` at all and every section renders at rest.
- */
-@media (prefers-reduced-motion: no-preference) {
-  @supports not (animation-timeline: view()) {
-    .sectionRoot[data-reveal][data-fallback] > .sectionInner {
-      opacity: 0;
-      transform: translateY(28px);
-      transition:
-        opacity 0.8s cubic-bezier(0.16, 0.8, 0.3, 1),
-        transform 0.8s cubic-bezier(0.16, 0.8, 0.3, 1);
-    }
-
-    .sectionRoot[data-reveal][data-fallback='in'] > .sectionInner {
-      opacity: 1;
-      transform: none;
-    }
-  }
-}
-
-/*
- * 28px, from nothing. The first pass ran from `0.6` opacity and 24px across the first third of entry,
- * which measured correctly and read as no effect at all: by the time a section is far enough up the
- * viewport to look at, it has already finished, and a sixth of the opacity is not a difference anyone
- * catches in peripheral vision. These are the demo's numbers — a section arrives, rather than firming up.
- */
-@keyframes sds-section-rise {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.sectionRoot[data-reveal][data-reveal-state='in'] > .sectionInner {
+  opacity: 1;
+  transform: none;
 }
 
 .sectionInner {
