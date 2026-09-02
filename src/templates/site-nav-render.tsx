@@ -158,7 +158,22 @@ export const SITE_ACTIONS = (
       data={SITE_DRAWER_CONTROLS.language.options}
       rightSection={<IconDown />}
     />
-    <Link href="#" size="md" leftSection={<IconUser1Filled />} rightSection={<IconDown />}>
+    {/*
+     * `secondary`, so Log In is the same colour as the language picker beside it.
+     *
+     * The default style is the blue link accent, which made one of the three things in the bar's right
+     * cluster a different colour from the other two for no reason a reader could name — the picker and
+     * the caret next to it are `Surfaces/Text/Primary`, and so is this now. `secondary` *is* that token,
+     * mode-aware, so the pairing holds on the light canvas too, and the blue comes back on hover, which
+     * is where it says something.
+     */}
+    <Link
+      href="#"
+      size="md"
+      variant="secondary"
+      leftSection={<IconUser1Filled />}
+      rightSection={<IconDown />}
+    >
       Log In
     </Link>
     <Button size="sm">Contact Sales</Button>
