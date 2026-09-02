@@ -1905,6 +1905,41 @@ so the failure is the environment, not the CSS. What was verified instead: every
 selector matches its intended element with the pseudo-class stripped, and every colour they set was
 measured for contrast in both modes (the table above). Worth a real pointer before release.
 
+## GradientText
+
+A phrase inside a heading, filled with `Brand/Primary/Lighten 1` -> `Accent/Product Accent` and clipped
+to the text. `Homepage Redesign` uses it in six places: the hero's `Convert, Scale and Grow`, and one
+phrase in each of five section headings.
+
+| Heading | The phrase in the gradient |
+| --- | --- |
+| `1,200+ Enterprises Move the Needle With Liferay` | `1,200+ Enterprises` |
+| `Different Teams. One Platform.` | `One Platform.` |
+| `Designed for Your Industry. Built for Growth.` | `Built for Growth.` |
+| `Everything You Need in One Platform` | `One Platform` |
+| `Extend Your platform. Integrate without limits.` | `Integrate without limits.` |
+
+**The phrase is not always the tail** — the carousel's is the first two words of its heading — so this
+wraps a phrase wherever it falls rather than appending one after the title. `highlightPhrase(title,
+phrase, animate)` does the same for a heading that arrives as data: it matches the phrase verbatim and
+once, and returns the title unchanged if it is not found, because a heading gets edited and a page that
+loses its gradient over a fixed typo is a far better failure than one that does not render.
+
+### The sweep is opt-in, and the hero does not take it
+
+`animate` runs the gradient along the phrase, continuously. The five section headings use it; the hero
+does not. A heading that shimmers to itself while the reader is on the first sentence of the page is the
+animation with the weakest claim on their attention and the strongest pull on it — and the file draws
+the hero's fill as static. Further down, where a heading has to catch an eye travelling past it, the
+same movement is doing a job.
+
+The sweep needs **three stops** where the static fill has two — `brand -> accent -> brand` at 250% of the
+text's width — because a two-stop gradient has to jump back to its start when its travel ends, and at
+heading size that jump is visible. The two fills are therefore declared separately rather than one
+extending the other. `linear`, since a constant sweep reads as light crossing a surface and an eased one
+as something sliding back and forth. Under `prefers-reduced-motion` the gradient stays and only the
+travel stops: the colour is what the heading says.
+
 ## Carousel
 
 The `card carousel` section (node `24465:66866`) and the Figma `Carousel` control set (node

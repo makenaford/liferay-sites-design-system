@@ -10,7 +10,8 @@ import { CapabilityMap } from '../components/CapabilityMap'
 import { Carousel } from '../components/Carousel'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
-import { Hero, HeroHighlight } from '../components/Hero'
+import { GradientText } from '../components/GradientText'
+import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
@@ -534,7 +535,7 @@ function HomePage() {
         title={
           <h1>
             Launch Digital Experiences That{' '}
-            <HeroHighlight>Convert, Scale and Grow</HeroHighlight>
+            <GradientText>Convert, Scale and Grow</GradientText>
           </h1>
         }
         description={
@@ -683,7 +684,16 @@ function HomePage() {
       <Section
         reveal
         bleed
-        title={<SectionTitle align="center" title="1,200+ Enterprises Move the Needle With Liferay" />}
+        title={
+          <SectionTitle
+            align="center"
+            title={
+              <>
+                <GradientText animate>1,200+ Enterprises</GradientText> Move the Needle With Liferay
+              </>
+            }
+          />
+        }
       >
         <Carousel label="Customer stories" gutter={80} indicators="none" arrows>
           {STORIES.map((story) => (
@@ -726,7 +736,11 @@ function HomePage() {
         title={
           <SectionTitle
             align="center"
-            title="Different Teams. One Platform."
+            title={
+              <>
+                Different Teams. <GradientText animate>One Platform.</GradientText>
+              </>
+            }
             description="Whether you drive campaigns, build infrastructure, or grow partnerships – Liferay empowers your success."
           />
         }
@@ -799,7 +813,15 @@ function HomePage() {
       <Section
         reveal
         gap={24}
-        title={<SectionTitle title="Designed for Your Industry. Built for Growth." />}
+        title={
+          <SectionTitle
+            title={
+              <>
+                Designed for Your Industry. <GradientText animate>Built for Growth.</GradientText>
+              </>
+            }
+          />
+        }
         footer={
           /*
            * `w="100%"` so the bar fills the footer row rather than being centred at its own
@@ -873,7 +895,16 @@ function HomePage() {
         reveal
         bleed
         gap={40}
-        title={<SectionTitle align="center" title="Everything You Need in One Platform" />}
+        title={
+          <SectionTitle
+            align="center"
+            title={
+              <>
+                Everything You Need in <GradientText animate>One Platform</GradientText>
+              </>
+            }
+          />
+        }
       >
         <CapabilityMap
           clusters={PRODUCT_CLUSTERS}
@@ -947,7 +978,11 @@ function HomePage() {
         title={
           <SectionTitle
             align="center"
-            title="Extend Your platform. Integrate without limits."
+            title={
+              <>
+                Extend Your platform. <GradientText animate>Integrate without limits.</GradientText>
+              </>
+            }
             description="Liferay connects flexibly with the platforms and vendors your team relies on every day."
           />
         }

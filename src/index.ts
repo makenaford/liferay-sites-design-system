@@ -36,6 +36,7 @@ export {
   type FooterBrandProps,
 } from './components/Footer'
 export { Form, type FormProps, type FormRowProps } from './components/Form'
+export { GradientText, highlightPhrase, type GradientTextProps } from './components/GradientText'
 export { Hero, type HeroProps, type HeroBackground, type HeroAlign } from './components/Hero'
 export {
   Image,

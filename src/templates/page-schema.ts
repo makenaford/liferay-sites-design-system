@@ -264,6 +264,15 @@ export type SectionSpec =
   | {
       type: 'customerStories'
       title: string
+  /**
+   * The phrase inside `title` that carries the brand gradient — `1,200+ Enterprises` in
+   * `**1,200+ Enterprises** Move the Needle With Liferay`.
+   *
+   * A phrase rather than a flag, and matched verbatim inside the title rather than appended to it,
+   * because the file does not always put it at the end: the carousel's gradient is the *first* two words
+   * of its heading. Anything that assumes a tail cannot draw that one.
+   */
+  titleHighlight?: string
       stories: StorySpec[]
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
@@ -275,6 +284,15 @@ export type SectionSpec =
   | {
       type: 'tabbedContent'
       title: string
+  /**
+   * The phrase inside `title` that carries the brand gradient — `1,200+ Enterprises` in
+   * `**1,200+ Enterprises** Move the Needle With Liferay`.
+   *
+   * A phrase rather than a flag, and matched verbatim inside the title rather than appended to it,
+   * because the file does not always put it at the end: the carousel's gradient is the *first* two words
+   * of its heading. Anything that assumes a tail cannot draw that one.
+   */
+  titleHighlight?: string
       description?: string
       /**
        * Figma's `Content Left Image` / `Content- Right Image` cells. A **named** choice the file
@@ -294,6 +312,15 @@ export type SectionSpec =
   | {
       type: 'fullCard'
       title: string
+  /**
+   * The phrase inside `title` that carries the brand gradient — `1,200+ Enterprises` in
+   * `**1,200+ Enterprises** Move the Needle With Liferay`.
+   *
+   * A phrase rather than a flag, and matched verbatim inside the title rather than appended to it,
+   * because the file does not always put it at the end: the carousel's gradient is the *first* two words
+   * of its heading. Anything that assumes a tail cannot draw that one.
+   */
+  titleHighlight?: string
       tabs?: string[]
       card: {
         icon?: GlassIconName
@@ -319,6 +346,8 @@ export type SectionSpec =
   | {
       type: 'capabilityMap'
       title: string
+  /** The phrase inside `title` that carries the brand gradient — see `customerStories`. */
+  titleHighlight?: string
       hub: { icon: GlassIconName; label: string; href?: string }
       clusters: {
         label: string
@@ -332,6 +361,8 @@ export type SectionSpec =
   | {
       type: 'integrations'
       title: string
+  /** The phrase inside `title` that carries the brand gradient — see `customerStories`. */
+  titleHighlight?: string
       description?: string
       action?: LinkRef
       logos: string[]

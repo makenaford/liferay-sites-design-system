@@ -420,50 +420,6 @@ function HeroWaves({ background }: { background: HeroBackground }) {
  * scheme and remounts on a flip. A scheme with no file gets the gradient, which is built from the same
  * tokens.
  */
-/**
- * The heading's highlighted tail — Home's `Launch Digital Experiences That **Convert, Scale and Grow**`.
- *
- * `Brand/Primary/Lighten 1` to `Accent/Product Accent`, clipped to the text, running left to right
- * across it: the gradient `Homepage Redesign` draws on the hero's own heading (node `7655:14922`), which
- * is the only gradient text on that page.
- *
- * **It does not animate.** It did for a day — a sweep travelling along a three-stop gradient — and the
- * file does not draw one: the hero's gradient is a static fill, and a heading that shimmers on its own
- * while the reader is trying to read the first sentence on the page is the animation with the least
- * claim on their attention and the most of it. `animate` is there for the places a sweep *is* wanted;
- * nothing passes it yet, and the note below the component says why.
- *
- * A component rather than a class, because the facts that make it work — the stop order, and the
- * background size the sweep needs — are not things a caller should have to know to use the page's own
- * highlight. It also replaces a Mantine `Text variant="gradient"`, whose gradient is written inline and
- * has two stops, so the stylesheet can neither animate it nor give it the third stop a seamless sweep
- * needs.
- */
-export function HeroHighlight({
-  children,
-  animate,
-}: {
-  children?: ReactNode
-  /**
-   * Sweep the gradient along the text, continuously.
-   *
-   * The sweep needs the gradient to be **three stops rather than two** — `brand → accent → brand`, at
-   * two and a half times the text's width. A two-stop gradient slid under a text mask has to jump back
-   * when it reaches the end, and at 44px that jump is visible; repeating the first colour at the far end
-   * lets the position run from one end to the other and land on an identical picture, so the loop has no
-   * seam. `linear`, because an eased sweep reads as something sliding back and forth rather than as
-   * light crossing a surface. Off under `prefers-reduced-motion`, where the gradient stays — the colour
-   * is what the heading says, and taking it away would change the sentence.
-   */
-  animate?: boolean
-}) {
-  return (
-    <span className={classes.heroHighlight} data-animate={animate || undefined}>
-      {children}
-    </span>
-  )
-}
-
 export function Hero({
   background = 'none',
   video,
