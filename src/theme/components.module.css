@@ -1742,6 +1742,45 @@
 .fieldRoot .fieldWrapper {
   position: relative;
   border-radius: var(--input-radius);
+  /*
+   * The lift and the glow, on the wrapper rather than the ring: the ring is a masked pseudo-element and
+   * a shadow on it would be masked away with everything else. Both properties are composited, so the
+   * whole of `State=Active` is one paint-free transition.
+   */
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * `State=Active`, beyond the gradient ring Figma draws: the field rises a pixel and a soft brand glow
+ * appears under it.
+ *
+ * **One pixel, and a glow that stays inside the field's own footprint.** A form is a column of these;
+ * anything more and focusing the second of three fields shoves a whole page of layout around in the
+ * reader's peripheral vision. The same argument the card's hover makes at 2px, made smaller because a
+ * field is smaller and there are usually several of them.
+ *
+ * 18% of `Action/Primary/Hover`, at 18px and 6px down — tight enough to read as the field lifting off
+ * the page rather than as a light behind it, which is the failure mode the card's shadow had at 32px.
+ */
+.fieldRoot .fieldWrapper:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--sds-action-primary-hover) 42%, transparent);
+}
+
+/*
+ * Reduced motion keeps the glow and drops the travel. The glow is the state; the pixel is the flourish,
+ * and it is the part that moves.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .fieldRoot .fieldWrapper {
+    transition: none;
+  }
+
+  .fieldRoot .fieldWrapper:focus-within {
+    transform: none;
+  }
 }
 
 /* The resting border: `Neutral/04` -> `Neutral/05`, 1px, by the same masked ring as everywhere else. */
@@ -4302,6 +4341,29 @@
 /* The `Form` cell: a single field with a contained button, which wants a width of its own. */
 .heroForm {
   width: min(480px, 100%);
+}
+
+/*
+ * The hero's field is glass, because of what is behind it.
+ *
+ * Everywhere else an input sits on the page's own surface, so the resting fill can be nothing at all
+ * and the 1px ring is enough to say where the field is. Here it sits on the bubble artwork — a moving,
+ * brightly coloured gradient — where a transparent field has no edge a placeholder can be read against,
+ * and its brightest moments wash straight through the type.
+ *
+ * Black at 20% and a blur behind it. The black is what recovers the contrast, and it is `#000` rather
+ * than the page token on purpose: it has to darken *whatever* frame of the animation is under it,
+ * including the light canvas's own bubble, and a page-coloured scrim only works over the page. The blur
+ * is what keeps it from reading as a grey rectangle pasted onto the artwork — the colour behind still
+ * comes through, defocused, so the field looks cut out of the glass rather than laid on it.
+ *
+ * `saturate` alongside the blur for the same reason `Card`'s glass carries it: blurring alone drains
+ * colour, and a scrim over this artwork without it turns the violet behind the field grey.
+ */
+.heroForm .fieldWrapper {
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
 
 /* ---- the entrance -----------------------------------------------------------------------------
@@ -8460,15 +8522,25 @@
  * first written. The falloff does the softening here: `transparent` by 78% on the core, which is a
  * gentler ramp than the hero tone's 90% and is what stands in for the blur.
  *
- * Held at 0.5 rather than 0.19. The map's colours are alpha-laden already — the core is 52% blue where
- * the hero tone's is a solid — so the same restraint applied twice would leave nothing on the page.
+ * **0.2, down from 0.5.** The first number was set by looking at the pool and not at the words over it.
+ * Measured: at 0.5 the wash lifted the ground under the heading from the page's own #070b13 to a peak
+ * of rgb(57,71,117) — ten times the luminance — which put white text at 7.98:1 and the heading's
+ * gradient phrase at **2.76:1**, under the 3:1 floor for large text. A band that says
+ * `Integrate without limits.` in the brand's own violet cannot be the band where that violet stops
+ * being readable.
+ *
+ * At 0.2 the peak is rgb(36,45,68): white 12.13:1, the violet 4.19:1, and the pool is still plainly a
+ * pool. It lands within a hundredth of the hero tone's 0.19, which is the tell that the earlier
+ * reasoning — "the map's colours are alpha-laden, so they need twice the strength" — was wrong. The map
+ * shows its wash through a 50px blur at the centre of a 500px figure with nothing written over it. A
+ * page band has text on it, and text is what sets the ceiling.
  */
 .meshBackdrop[data-tone='wash'] {
-  opacity: 0.5;
+  opacity: 0.2;
 }
 
 :where([data-mantine-color-scheme='light']) .meshBackdrop[data-tone='wash'] {
-  opacity: 0.6;
+  opacity: 0.24;
 }
 
 .meshBackdrop[data-tone='wash'] > span:nth-child(1) {
