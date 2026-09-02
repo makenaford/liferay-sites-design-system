@@ -165,6 +165,25 @@ export const Default: Story = {
 }
 
 /**
+ * The entrance: each part of the hero fades up as the page arrives, a beat after the one before it —
+ * banner, label, heading, description, actions, proof, with the media column coming in alongside the
+ * actions rather than after everything else.
+ *
+ * The delays are read off the DOM rather than assigned per slot, so a hero missing a label starts its
+ * cascade at the heading instead of holding an empty beat. The whole thing is under a second: it plays
+ * on load, which means nobody can choose to watch it again, and a page that makes a reader wait for its
+ * own first sentence has spent something it cannot earn back. Off under `prefers-reduced-motion`.
+ *
+ * `Templates/Home` and `PageRenderer` turn it on; the component's own default is off, since a docs page
+ * or an app shell that happens to use a hero should not get it uninvited.
+ *
+ * Reload the story to see it again.
+ */
+export const Entrance: Story = {
+  args: { entrance: true },
+}
+
+/**
  * **A moving poster.** `videoPoster` takes a video as readily as an image.
  *
  * HTML's own `poster` attribute takes an image and nothing else, so a motion poster is rendered as a
