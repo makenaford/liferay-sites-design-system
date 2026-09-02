@@ -774,7 +774,8 @@ function HomePage() {
             title={team.title}
             description={team.description}
             media={
-              <Stack gap={0}>
+              /* The picture and its figures as one panel — see `.mediaStats`. */
+              <div className={classes.mediaStats}>
                 <Image
                   src={teamsMedia}
                   alt="Two colleagues building an AI agent in Liferay"
@@ -786,7 +787,7 @@ function HomePage() {
                   <Stat value="24" label="Industries served" align="center" />
                   <Stat value="77" label="Countries served" align="center" />
                 </StatBar>
-              </Stack>
+              </div>
             }
           >
             {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
@@ -1053,7 +1054,12 @@ function HomePage() {
                 <Image src={item.image} alt={item.alt} ratio="3:2" radius="sm" />
               }
               top={
-                <Label variant="glass" size="sm">
+                /*
+                 * Gradient, always: the tag is the one piece of colour on a card that is otherwise a
+                 * photograph and two lines of type, and `glass` on top of a photograph is whatever the
+                 * photograph happens to be underneath it.
+                 */
+                <Label variant="gradient" size="sm">
                   {item.tag}
                 </Label>
               }

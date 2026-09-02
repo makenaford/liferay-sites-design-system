@@ -119,6 +119,16 @@ export const unit = (u: string) => (
   </Text>
 )
 
+/**
+ * The same unit, keeping `Accent/Primary Blue Accent` where the figure beside it does not — the footer's
+ * `1,200` is white and its `+` is blue, which is what `Number Footer` draws.
+ */
+export const unitAccent = (u: string) => (
+  <Text span inherit fz={20} fw={600} c="var(--sds-accent-primary-blue-accent)">
+    {u}
+  </Text>
+)
+
 export function Quotee({ name, title }: { name: string; title: string }) {
   return (
     <Stack gap={4}>
@@ -219,11 +229,23 @@ const SOCIALS: [string, ReactNode][] = [
 
 /* ------------------------------------------------------------------ the chrome */
 
-/** `LRDC Primary Nav` — the same header on every template. */
+/**
+ * `LRDC Primary Nav` — the same header on every template.
+ *
+ * **Fixed, and it overlays the hero.** The file draws the bubble as the first thing on the page — node
+ * `7655:14899` sits at y=0, and the nav at y=0 on top of it — so the artwork starts at the very top and
+ * the bar rides on it. A static header cannot do that: it takes a band of its own above the hero, and
+ * the bubble then begins 64px down with a strip of flat page above it, which is the one place on this
+ * page where the artwork should be at its fullest.
+ *
+ * `condense` is what makes that readable: the bar is transparent over the artwork at the top of the
+ * page and takes its glass the moment the page moves, so it is a bar over a picture while the picture is
+ * there and a bar over content once content arrives under it.
+ */
 export function SiteHeader() {
   return (
     <Header
-      position="static"
+      position="fixed"
       items={SITE_NAV_ITEMS}
       drawerControls={SITE_DRAWER_CONTROLS}
       actions={SITE_ACTIONS}
@@ -319,8 +341,13 @@ export function SiteFooter() {
     stats={
       <Box maw={1280} mx="auto">
         <StatBar align="center">
-          <Stat size="sm" value={<>1,200{unit('+')}</>} label="Enterprise Customers" />
-          <Stat size="sm" value={<>17{unit('+')}</>} label="Years of Innovation" />
+          <Stat
+            size="sm"
+            layout="inline"
+            value={<>1,200{unitAccent('+')}</>}
+            label="Enterprise Customers"
+          />
+          <Stat size="sm" layout="inline" value={<>17{unitAccent('+')}</>} label="Years of Innovation" />
         </StatBar>
       </Box>
     }

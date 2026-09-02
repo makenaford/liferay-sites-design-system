@@ -647,12 +647,17 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             }
             media={
               panel.media ? (
-                <Stack gap={0}>
+                /*
+                 * One object, not two stacked. The container and the gap are what make the stat row
+                 * read as belonging to the picture rather than sitting under it — see `.mediaStats`.
+                 * Without stats there is nothing to contain, so the frame does not appear.
+                 */
+                <div className={panel.stats?.length ? classes.mediaStats : undefined}>
                   <Image src={panel.media.src} alt={panel.media.alt} ratio="3:2" radius="md" />
                   {panel.stats?.length ? (
                     <StatBar align="center">{panel.stats.map((st) => renderStat(st, 'center'))}</StatBar>
                   ) : null}
-                </Stack>
+                </div>
               ) : undefined
             }
           >

@@ -5,14 +5,14 @@ import type { TabsProps as MantineTabsProps } from '@mantine/core'
 export interface TabsProps extends MantineTabsProps {}
 
 /**
- * Keeps the sliding pill under the active tab.
+ * Keeps the sliding indicator under — or over — the active tab.
  *
  * The active tab is read from the DOM rather than from a prop, because `Tabs` is uncontrolled as often as
  * not — the value lives inside Mantine and this wrapper never re-renders when it changes. Mantine marks the
  * active tab `data-active`, so a `MutationObserver` on that attribute is the one signal that works for both
  * controlled and uncontrolled use.
  */
-function usePillIndicator(enabled: boolean) {
+function useTabIndicator(enabled: boolean) {
   const rootRef = useRef<HTMLDivElement>(null)
 
   const measure = useCallback(() => {
@@ -66,7 +66,13 @@ const TabsBase = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
   ref,
 ) {
   const isPills = variant === 'pills'
-  const rootRef = usePillIndicator(isPills)
+  /*
+   * Both variants measure. The pill slides because it always did; the underline slides now for the same
+   * reason — it is one line that moves to the tab you chose, rather than a line per tab fading out where
+   * it was while another fades in somewhere else. Two crossfades read as a flicker between two places;
+   * one line travelling reads as the selection moving, which is what it is.
+   */
+  const rootRef = useTabIndicator(true)
 
   return (
     <MantineTabs

@@ -761,6 +761,18 @@
   gap: 16px;
 }
 
+/*
+ * The Resource card's tag sits 8 above its title, not 16.
+ *
+ * 16 is the gap between the *blocks* of a card — the image, the text, the footer — and the tag is not
+ * one of those. It is a label on the title: at 16 it floats between the picture above it and the words
+ * it belongs to, closer to neither, and the card reads as three loose rows. At 8 it groups with the
+ * title and the picture keeps the wider gap, so the card reads as a picture and then a titled block.
+ */
+.cardRoot[data-align='vertical'][data-padding='none'] > .cardBody > .cardTop {
+  margin-block-end: -8px;
+}
+
 /* ---------------------------------------------------------------------- the image */
 
 .cardImage {
@@ -1343,6 +1355,35 @@
 }
 
 /*
+ * `layout="inline"` — the caption beside the figure, as `Number Footer` (node `7655:19963`) draws it.
+ *
+ * `baseline`, not `center`: the number is 32px and the caption 12, and centring their boxes leaves the
+ * small caps floating in the middle of the digits' height. On the baseline they sit on the same line the
+ * digits stand on, which is what makes `1,200+ ENTERPRISE CUSTOMERS` read as one phrase rather than as
+ * two things next to each other.
+ *
+ * The caption goes back to small caps at this layout whatever the size. `size="sm"` drops the uppercase
+ * because a stacked small stat is a caption under a number and sentence case reads better there; on the
+ * line, next to 32px digits, lowercase 11px reads as a stray word.
+ */
+.stat[data-layout='inline'] {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat[data-layout='inline'][data-align='center'] {
+  justify-content: center;
+}
+
+.stat[data-size][data-layout='inline'] .statLabel {
+  font-size: var(--sds-size-paragraph-small-caps-xs);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/*
  * The value row: icon, number, icon. Figma sets no gap between them at all, which is why the icons
  * sit tight against the digits.
  */
@@ -1530,6 +1571,11 @@
  */
 
 .tabsRoot:not([data-pills]) .tabsList {
+  position: relative;
+  /* Set by the component from the active tab's geometry, exactly as the pill menu's are. */
+  --sds-pill-x: 0px;
+  --sds-pill-w: 0px;
+  --sds-pill-opacity: 0;
   /* Figma's tab bar has no gap: the cells meet, and the rule runs unbroken behind them. */
   gap: 0;
   flex-wrap: nowrap;
@@ -1593,15 +1639,52 @@
   font-weight: 700;
 }
 
-.tabsRoot:not([data-pills]) .tabsTab[data-active]::after {
-  opacity: 1;
-  transform: scaleX(1);
-  background-color: transparent;
+/*
+ * `State=Active` is drawn **once, on the list**, and travels.
+ *
+ * The per-tab line above still does hover, where there is nothing to travel between. The active line is
+ * a single element sized and positioned from the active tab's own geometry — the same measurement the
+ * pill menu has always used, and the reason this is a few lines rather than a second implementation.
+ *
+ * The alternative, and what this was: a line per tab, the old one fading out where it stood while the
+ * new one faded in somewhere else. Two crossfades in two places read as a flicker; one line moving reads
+ * as the selection moving, which is what happened.
+ *
+ * `transform` and `width` on `--sds-motion-medium`. Width is the one property here that cannot be
+ * composited — a gradient line has to be re-rasterised as it stretches — but it is 3px tall and the
+ * alternative is scaling the gradient, which would squash the stops instead of moving them.
+ */
+.tabsRoot:not([data-pills]) .tabsList[role='tablist']::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: var(--sds-pill-w);
+  transform: translateX(var(--sds-pill-x));
+  opacity: var(--sds-pill-opacity);
+  border-radius: 999px;
   background-image: linear-gradient(
     to right,
     var(--sds-action-primary-active) 50%,
     var(--sds-accent-product-accent) 100%
   );
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    width var(--sds-motion-medium) var(--sds-motion-ease-out),
+    opacity var(--sds-motion-fast) var(--sds-motion-ease);
+  pointer-events: none;
+}
+
+/* The active tab keeps its label treatment and gives up its own line to the one that travels. */
+.tabsRoot:not([data-pills]) .tabsTab[data-active]::after {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabsRoot:not([data-pills]) .tabsList[role='tablist']::after {
+    transition: none;
+  }
 }
 
 /* `State=Hover` — the same line at 1px, and the label takes the link's hover colour. */
@@ -4211,6 +4294,22 @@
  * inside the content column. It shares the hero's gutters so it lines up with everything below it,
  * and it never stretches past the width it is given.
  */
+/*
+ * The banner's top padding is the file's 40 — plus the bar's own height when a fixed header is over it.
+ *
+ * `:has()` rather than a prop: the hero cannot be told what is above it without every page having to
+ * pass that down, and the one thing that reliably knows is the document. A fixed header reserves no
+ * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it,
+ * and 64 + 40 is exactly where `Hero` sits under `LRDC Primary Nav` in the file.
+ */
+body:has(.headerShell[data-position='fixed']) .heroBanner {
+  padding-block-start: calc(40px + 64px);
+}
+
+body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
+  padding-block-start: 64px;
+}
+
 .heroBanner {
   display: flex;
   justify-content: center;
@@ -6966,6 +7065,20 @@
   }
 }
 
+/*
+ * The stats strip — `Number Footer`, node `7655:19963`.
+ *
+ * The figure is the band's white rather than `Accent/Primary Blue Accent`, and the unit beside it keeps
+ * the blue: on a dark band under a page of blue accents, a 32px blue number reads as another link, and
+ * the mockup draws exactly this — a white figure with a blue `+` on its shoulder.
+ *
+ * Pinned here for the same reason the links and the headings above are: this band is dark in both
+ * schemes, so a mode-aware token would invert underneath it on the light canvas.
+ */
+.footerStats .statValue {
+  color: var(--sds-footer-text);
+}
+
 .footerInner {
   display: flex;
   flex-direction: column;
@@ -8399,6 +8512,44 @@
   .bannerClose:focus-visible {
     outline-color: Highlight;
   }
+}
+
+/* ============================================================================ Media + stats
+ *
+ * The image and the stat row from `Image Stats` (node `7655:15207`), held as one object.
+ *
+ * The file butts them together — the image ends at 413 and the bar starts at 413.34 — and read at size
+ * that is two things stacked, not one: the bar looks like a caption that happens to be underneath. So
+ * this puts a gap between them and a container around both, which is the change the pairing needed and
+ * the file does not draw.
+ *
+ * The gap is what the container buys back. Once there is a border and a ground behind the pair, the
+ * space between them stops reading as a seam and starts reading as the panel's own padding — the same
+ * reason a `Card` with `padding="all"` insets its image rather than bleeding it.
+ *
+ * 16 inside a 16 radius, with the image at 8: an inner corner should be tighter than the outer one it
+ * sits inside, or the two curves fight where they are closest.
+ */
+.mediaStats {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: var(--sds-surfaces-card-bg-grey);
+  /* The same hairline every glass surface in this library carries, at the tile's half strength. */
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-map-tile-line-from) 1%,
+    var(--sds-map-tile-line-to) 92%
+  );
+  background-origin: border-box;
+  border: 1px solid transparent;
+}
+
+.mediaStats > :where(div, figure, img):first-child {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* ============================================================================ MeshBackdrop
