@@ -101,6 +101,17 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'map-wash-core': scheme === 'light' ? 'rgba(11, 95, 255, 0.2)' : 'rgba(11, 95, 255, 0.52)',
     'map-wash-halo': scheme === 'light' ? 'rgba(116, 20, 255, 0.13)' : 'rgba(116, 20, 255, 0.4)',
     'map-wash-inner': scheme === 'light' ? 'rgba(55, 124, 255, 0.22)' : 'rgba(55, 124, 255, 0.6)',
+    /**
+     * The highlight that passes over gradient heading text.
+     *
+     * White on the dark canvas, where lightening the phrase brightens it. **Not** white on the light
+     * one: there the gradient is blue-to-violet on a near-white page, and a white sheen would wash the
+     * text toward its background exactly where it is meant to catch the eye. Light mode brightens by
+     * *saturating* instead — the accent's own blue at a low alpha, which lifts the phrase without
+     * lowering its contrast.
+     */
+    'gradient-sheen':
+      scheme === 'light' ? 'rgba(99, 153, 255, 0.55)' : 'rgba(255, 255, 255, 0.62)',
     /** The network's resting outline. Dark wants a lit line; light wants a shadow of one. */
     'map-grid-line': scheme === 'light' ? 'rgba(11, 95, 255, 0.14)' : 'rgba(99, 153, 255, 0.22)',
 
