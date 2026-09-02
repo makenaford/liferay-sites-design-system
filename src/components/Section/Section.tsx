@@ -1,5 +1,6 @@
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Box } from '@mantine/core'
+import { useMergedRef } from '@mantine/hooks'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
@@ -20,9 +21,11 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
    * Off by default: it belongs to a long marketing page reading as a sequence, and a section in an app
    * shell or a docs page has no such sequence to join. `Templates/Home` turns it on throughout.
    *
-   * A scroll-driven animation rather than an observer — no JavaScript, and scrolling back up plays it
-   * backwards, because the timeline *is* the scroll position. It does nothing at all where
-   * `animation-timeline` is unsupported, and nothing under `prefers-reduced-motion`.
+   * Scroll-driven where the browser has `animation-timeline: view()` — no JavaScript, and scrolling back
+   * up plays it backwards, because the timeline *is* the scroll position. Where it does not (Safari,
+   * Firefox), an `IntersectionObserver` sets `data-in-view` once, the first time the section crosses 12%
+   * into the viewport, and a transition draws the same rise. Nothing happens under
+   * `prefers-reduced-motion` on either path.
    */
   reveal?: boolean
   /** The heading block. A `SectionTitle`, normally. */
@@ -100,13 +103,52 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
   },
   ref,
 ) {
+  const localRef = useRef<HTMLElement>(null)
+  const mergedRef = useMergedRef(ref, localRef)
+  const [fallback, setFallback] = useState<'pending' | 'in' | undefined>(undefined)
+
+  /*
+   * The observer fallback, and only where it is needed: a browser with `animation-timeline: view()`
+   * already runs the reveal off the main thread from CSS alone, so it never allocates an observer, and
+   * a reader who asked for less motion gets neither path. It fires once at a 12% threshold and
+   * unobserves — this path has no timeline to run backwards.
+   *
+   * The offset start state is keyed on `data-fallback`, which only this effect ever sets, so a page that
+   * is served but never hydrated — SSR before the bundle lands, JavaScript off — renders every section
+   * at rest rather than permanently dimmed.
+   */
+  useEffect(() => {
+    if (!reveal || typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (CSS.supports?.('animation-timeline: view()')) return
+
+    const el = localRef.current
+    if (!el) return
+
+    setFallback('pending')
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          setFallback('in')
+          observer.unobserve(entry.target)
+        })
+      },
+      { threshold: 0.12 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [reveal])
+
   return (
     <Box
       component="section"
-      ref={ref}
+      ref={mergedRef}
       className={[classes.sectionRoot, className].filter(Boolean).join(' ')}
       data-spacing={spacing}
       data-reveal={reveal || undefined}
+      data-fallback={fallback}
       data-bleed={bleed || undefined}
       style={{
         '--sds-section-max': typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,

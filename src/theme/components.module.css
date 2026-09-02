@@ -5614,6 +5614,32 @@
 }
 
 /*
+ * The fallback, for Safari and Firefox: same 24px and same sixth of the opacity, drawn by a transition
+ * rather than a timeline. `Section` only allocates the observer that drives it where this branch is the
+ * live one, so the two paths can never both run.
+ *
+ * Both states hang off `data-fallback`, which the observer effect is the only thing that sets. That is
+ * deliberate: the offset start state must never be a style a page can get stuck in, so a document that
+ * is served but never hydrated has no `data-fallback` at all and every section renders at rest.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports not (animation-timeline: view()) {
+    .sectionRoot[data-reveal][data-fallback] > .sectionInner {
+      opacity: 0.6;
+      transform: translateY(24px);
+      transition:
+        opacity 0.8s cubic-bezier(0.16, 0.8, 0.3, 1),
+        transform 0.8s cubic-bezier(0.16, 0.8, 0.3, 1);
+    }
+
+    .sectionRoot[data-reveal][data-fallback='in'] > .sectionInner {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/*
  * 24px and a sixth of the opacity. Subtle is the brief: enough that the page feels like it is assembling
  * as you go, not enough that anyone waits for it or notices a section arriving late.
  */

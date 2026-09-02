@@ -16,7 +16,7 @@ import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
 import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
 import bubbleCornerLight from '../../assets/bubbles/bubble_corner_light.webm'
 import { Marquee } from '../components/Marquee'
-import { ContentMedia, Section, SectionTitle } from '../components/Section'
+import { ContentMedia, Section as SDSSection, SectionTitle, type SectionProps } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -429,6 +429,19 @@ function GridCard({ card }: { card: CardSpec }) {
   )
 }
 
+/**
+ * `Section`, with the scroll reveal already on.
+ *
+ * A template page *is* the sequence the reveal was written for — every section here opted into it one by
+ * one, which made it a thing to remember rather than a property of the page. It is the default at this
+ * layer instead: a new section type gets the same arrival as the ten around it without asking, and a
+ * section that genuinely should not move passes `reveal={false}`. The component's own default stays off,
+ * because an app shell or a docs page has no such sequence to join.
+ */
+function Section({ reveal = true, ...props }: SectionProps) {
+  return <SDSSection reveal={reveal} {...props} />
+}
+
 /** `Type=Card Grid` — four columns at a 32px section gap, optionally behind a pill bar. */
 function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGrid' }> }) {
   const [tab, setTab] = useState(spec.tabs?.[0]?.value ?? '')
@@ -436,7 +449,6 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
 
   return (
     <Section
-      reveal
       gap={32}
       title={
         <SectionTitle
@@ -472,7 +484,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
 /** `Type=Resources` — three columns at the drawn 24px gap, icon- or tag-led cards. */
 function ResourceGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'resourceGrid' }> }) {
   return (
-    <Section reveal title={<SectionTitle title={spec.title} description={spec.description} />}>
+    <Section title={<SectionTitle title={spec.title} description={spec.description} />}>
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
         {spec.cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
@@ -529,7 +541,7 @@ function CustomerStoriesSection({
   spec: Extract<SectionSpec, { type: 'customerStories' }>
 }) {
   return (
-    <Section reveal bleed title={<SectionTitle align="center" title={spec.title} />}>
+    <Section bleed title={<SectionTitle align="center" title={spec.title} />}>
       <Carousel label={spec.title} gutter={80} indicators="none" arrows>
         {spec.stories.map((story) => (
           <StoryCard key={story.customer} story={story} />
@@ -542,7 +554,7 @@ function CustomerStoriesSection({
 /** `Logos scrolling section` — 64px monochrome logos, flush against the band above. */
 function LogoMarqueeSection({ spec }: { spec: Extract<SectionSpec, { type: 'logoMarquee' }> }) {
   return (
-    <Section reveal spacing="none" pt={24}>
+    <Section spacing="none" pt={24}>
       <Marquee label={spec.label} monochrome size="lg">
         {spec.logos.map((name) => (
           <Wordmark key={name} name={name} />
@@ -564,7 +576,6 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
 
   return (
     <Section
-      reveal
       title={<SectionTitle align="center" title={spec.title} description={spec.description} />}
     >
       {/*
@@ -646,7 +657,6 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
 
   return (
     <Section
-      reveal
       gap={24}
       title={<SectionTitle title={spec.title} />}
       footer={
@@ -711,7 +721,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
  */
 function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'capabilityMap' }> }) {
   return (
-    <Section reveal bleed gap={40} title={<SectionTitle align="center" title={spec.title} />}>
+    <Section bleed gap={40} title={<SectionTitle align="center" title={spec.title} />}>
       <CapabilityMap
         names="outside"
         clusters={spec.clusters.map((cluster) => ({
@@ -735,7 +745,7 @@ function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'ca
 /** A centred band holding one wide graphic. The column is capped at the drawn 1000. */
 function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaBand' }> }) {
   return (
-    <Section reveal maxWidth={1000} gap={40} title={<SectionTitle align="center" title={spec.title} />}>
+    <Section maxWidth={1000} gap={40} title={<SectionTitle align="center" title={spec.title} />}>
       <Image src={spec.image.src} alt={spec.image.alt} ratio="auto" fit="contain" />
     </Section>
   )
@@ -756,7 +766,6 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
 function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'integrations' }> }) {
   return (
     <Section
-      reveal
       bleed
       gap={32}
       className={classes.meshHost}
