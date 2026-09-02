@@ -1,5 +1,6 @@
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Box } from '@mantine/core'
+import { useMergedRef } from '@mantine/hooks'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
@@ -20,9 +21,8 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
    * Off by default: it belongs to a long marketing page reading as a sequence, and a section in an app
    * shell or a docs page has no such sequence to join. `Templates/Home` turns it on throughout.
    *
-   * A scroll-driven animation rather than an observer — no JavaScript, and scrolling back up plays it
-   * backwards, because the timeline *is* the scroll position. It does nothing at all where
-   * `animation-timeline` is unsupported, and nothing under `prefers-reduced-motion`.
+   * An `IntersectionObserver` trips once as the section reaches the fold and a 0.8s transition draws the
+   * rise, as in the demo this comes from. Nothing happens under `prefers-reduced-motion`.
    */
   reveal?: boolean
   /** The heading block. A `SectionTitle`, normally. */
@@ -100,13 +100,56 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
   },
   ref,
 ) {
+  const localRef = useRef<HTMLElement>(null)
+  const mergedRef = useMergedRef(ref, localRef)
+  const [state, setState] = useState<'pending' | 'in' | undefined>(undefined)
+
+  /*
+   * The reveal is time-based rather than scroll-linked, and deliberately: an animation tied to
+   * `animation-timeline: view()` advances at the reader's scroll speed, so a trackpad flick crosses its
+   * whole range in one frame and the page below arrives already finished. This plays for its own 0.8s
+   * however fast the reader got here.
+   *
+   * `data-reveal-state` is set from here and nowhere else, so a document that is served but never
+   * hydrated has no offset start state to be stuck in — every section renders at rest.
+   */
+  useEffect(() => {
+    if (!reveal || typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const el = localRef.current
+    if (!el) return
+
+    setState('pending')
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          setState('in')
+          observer.unobserve(entry.target)
+        })
+      },
+      /*
+       * A bottom margin rather than a threshold: "12% of the section is visible" is a different scroll
+       * position for every section height, and on a tall one it never fires until the section already
+       * fills the screen. Pulling the root's bottom edge up 15% fires when the section's top crosses
+       * that line — one trigger point regardless of how tall it is.
+       */
+      { threshold: 0, rootMargin: '0px 0px -15% 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [reveal])
+
   return (
     <Box
       component="section"
-      ref={ref}
+      ref={mergedRef}
       className={[classes.sectionRoot, className].filter(Boolean).join(' ')}
       data-spacing={spacing}
       data-reveal={reveal || undefined}
+      data-reveal-state={state}
       data-bleed={bleed || undefined}
       style={{
         '--sds-section-max': typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
