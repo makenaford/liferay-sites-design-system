@@ -141,6 +141,127 @@ export const PAGE_PRESETS: PagePreset[] = [
       ],
     }),
   },
+  {
+    id: 'product',
+    label: 'Product detail',
+    hint: 'What the product does, then the proof, then the questions, then the ways out.',
+    create: () => ({
+      /*
+       * `Solutions Library- 2026` -> `Detail Pages` -> `Product Info` (node `24631:68532`), read section
+       * by section off the file's own stack.
+       *
+       * The run is an argument in order: what it does (`tabbedContent`), what it comes with
+       * (`cardGrid`), who else uses it (`mediaBand`), the one paragraph worth reading
+       * (`highlightText`), the questions that stop a sale (`faq`), what to read next (`resourceGrid`),
+       * and where to go (`quickLinks`). The last two are what make it a *detail* page rather than a
+       * landing one: it ends by handing the reader on rather than asking for an address.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Product Title' },
+        description: { text: LOREM },
+        buttons: [
+          { label: 'Book a Demo', href: '#' },
+          { label: 'Contact Sales', href: '#', variant: 'outline' },
+        ],
+        media: { src: heroMedia, alt: 'Replace with this product’s own shot', ratio: '4:3' },
+      },
+      sections: [
+        blank('tabbedContent'),
+        blank('cardGrid'),
+        blank('mediaBand'),
+        blank('highlightText'),
+        blank('faq'),
+        blank('resourceGrid'),
+        blank('quickLinks'),
+      ],
+    }),
+  },
+  {
+    id: 'solution',
+    label: 'Solution detail',
+    hint: 'A shorter detail page: the claim, what it includes, the proof, and what to read next.',
+    create: () => ({
+      /*
+       * `Detail Pages` -> `Solution` (node `24631:68574`). The same family as the product page and
+       * deliberately shorter: five sections against seven, with no FAQ and no quick links.
+       *
+       * A solution page is read *before* a product page, by someone still working out whether this is
+       * their problem — so it makes the claim, shows what is in it, and hands over. The questions
+       * someone asks once they have decided belong on the page they land on next.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Solution Title' },
+        description: { text: LOREM },
+        buttons: [
+          { label: 'Book a Demo', href: '#' },
+          { label: 'Read the guide', href: '#', variant: 'outline' },
+        ],
+        media: { src: heroMedia, alt: 'Replace with this solution’s own shot', ratio: '4:3' },
+      },
+      sections: [
+        blank('mediaBand'),
+        blank('cardGrid'),
+        blank('mediaBand'),
+        blank('resourceGrid'),
+        blank('customerStories'),
+      ],
+    }),
+  },
+  {
+    id: 'contact',
+    label: 'Contact sales',
+    hint: 'A form hero over the numbers, the logos, and the questions people ask before writing in.',
+    create: () => ({
+      /*
+       * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants of this page; they
+       * differ in what sits under the form, not in the shape above it, so this is the common spine.
+       *
+       * **The proof is stacked directly under the hero, and that is the page.** A contact page has one
+       * job and everything below the fold is there to make the form worth filling in: the figures, then
+       * the logos, then what the platform does, then the questions that stop someone writing in. There
+       * is nothing to read *after* the form, so the page ends at the FAQ rather than handing on.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Talk to sales' },
+        description: { text: LOREM },
+        form: { placeholder: 'Work email', submit: 'Contact sales' },
+        media: { src: heroMedia, alt: 'Replace with a shot of the team or the product', ratio: '4:3' },
+      },
+      sections: [
+        blank('statsBar'),
+        blank('logoMarquee'),
+        blank('tabbedContent'),
+        blank('faq'),
+      ],
+    }),
+  },
+  {
+    id: 'catalog',
+    label: 'Customer story catalog',
+    hint: 'A short hero, the stories worth leading with, then the whole grid of them.',
+    create: () => ({
+      /*
+       * `Customer Story Catalog` -> `Customer Stories` (node `24581:69991`).
+       *
+       * A catalog hero is **short** — 433 in the file against the 624 every detail page uses — because
+       * the page's content is the list, and a hero that fills the screen puts the first row of it below
+       * the fold. So: no media, no buttons, one line of description.
+       *
+       * The file's grid carries pagination, which this does not have yet: `resourceGrid` renders every
+       * card it is given. That is the one thing on this page the schema cannot express — noted in
+       * README.md rather than faked with a row of dead controls.
+       */
+      hero: {
+        background: 'none',
+        title: { text: 'Customer Stories' },
+        description: { text: 'How teams like yours build with Liferay.' },
+      },
+      sections: [blank('customerStories'), blank('resourceGrid'), blank('mediaBand')],
+    }),
+  },
 ]
 
 export const presetFor = (id: string) => PAGE_PRESETS.find((preset) => preset.id === id)

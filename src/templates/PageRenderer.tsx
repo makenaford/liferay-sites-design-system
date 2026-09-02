@@ -796,8 +796,19 @@ function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'ca
 /** A centred band holding one wide graphic. The column is capped at the drawn 1000. */
 function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaBand' }> }) {
   return (
-    <Section maxWidth={1000} gap={40} title={<SectionTitle align="center" title={spec.title} />}>
-      <Image src={spec.image.src} alt={spec.image.alt} ratio="auto" fit="contain" />
+    <Section
+      maxWidth={1000}
+      gap={40}
+      title={<SectionTitle align="center" title={spec.title} />}
+    >
+      {/*
+        * No `src`, no `img`. An empty `src` resolves to the document's own URL, so the browser asks for
+        * the page again — the section renders nothing until it has a graphic, which is also the honest
+        * picture of a section nobody has filled in yet.
+        */}
+      {spec.image.src ? (
+        <Image src={spec.image.src} alt={spec.image.alt} ratio="auto" fit="contain" />
+      ) : null}
     </Section>
   )
 }
@@ -814,6 +825,118 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
  * Logos arrive as names. A name in the invented set draws its lockup; anything else falls back to the
  * initial tile, so a page carrying real vendor names still renders.
  */
+/**
+ * `Type=FAQ` — a centred title over an accordion, in a column narrower than the page's.
+ *
+ * 780 rather than the section's own 1280. A question and its answer are one line of prose each; at full
+ * width the chevron ends up a hand's width from the question it belongs to, and the eye has to travel
+ * the whole measure to find out whether a row is open.
+ *
+ * No `autoplay`, unlike the tabbed section's accordion. That one is the page showing what it can do and
+ * opening itself is how it does the showing; someone reading an FAQ came for one answer, and moving it
+ * out from under them after five seconds is the opposite of helping.
+ */
+function FaqSection({ spec }: { spec: Extract<SectionSpec, { type: 'faq' }> }) {
+  return (
+    <Section
+      maxWidth={780}
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+    >
+      <Accordion size="lg" order={3} defaultValue={spec.items[0]?.question}>
+        {spec.items.map((item) => (
+          <Accordion.Item key={item.question} value={item.question}>
+            <Accordion.Control>{item.question}</Accordion.Control>
+            <Accordion.Panel>
+              <p>{item.answer}</p>
+            </Accordion.Panel>
+          </Accordion.Item>
+        ))}
+      </Accordion>
+    </Section>
+  )
+}
+
+/**
+ * `Type=Quick Links` — a left title over a grid of small horizontal cards.
+ *
+ * `align="horizontal"` on `Card` is what the file draws: an icon and a label on one line, at a card's
+ * own height rather than a grid cell's. They are the page's exits, so every one is a link and the grid
+ * is three across, wrapping to whatever the content needs.
+ */
+function QuickLinksSection({ spec }: { spec: Extract<SectionSpec, { type: 'quickLinks' }> }) {
+  return (
+    <Section
+      gap={24}
+      title={<SectionTitle title={highlightPhrase(spec.title, spec.titleHighlight, true)} />}
+    >
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={16}>
+        {spec.links.map((link) => (
+          <Card
+            key={link.label}
+            component="a"
+            href={link.href}
+            surface="glass"
+            padding="all"
+            /*
+             * The icon and the label share a line, which is the whole shape of this cell — a row of
+             * exits, each one line tall. `hero` would stack them, because a hero is a block above a
+             * title rather than something beside it, so the pair is composed in the title itself.
+             */
+            title={
+              <Group gap={12} wrap="nowrap" align="center">
+                {link.icon ? GLASS[link.icon](24) : null}
+                <span>{link.label}</span>
+              </Group>
+            }
+          />
+        ))}
+      </SimpleGrid>
+    </Section>
+  )
+}
+
+/**
+ * `Type=Highlight Text` — one wide card on the brand gradient, led by a glass icon.
+ *
+ * `spacing="tight"`, which is the file's own 40px block padding on this cell and on `Quote`: it is a
+ * paragraph lifted out of the page rather than a section of its own, so it sits closer to what comes
+ * before and after than a section would.
+ */
+function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'highlightText' }> }) {
+  return (
+    <Section spacing="tight">
+      <Card
+        /* `highlighted` is the card set's own gradient cell — the ground this section is drawn on. */
+        surface="highlighted"
+        padding="all"
+        hero={spec.icon ? GLASS[spec.icon](40) : undefined}
+        title={spec.title}
+        description={spec.body}
+      />
+    </Section>
+  )
+}
+
+/**
+ * A `Stats Bar` as a band of its own — what `Contact Sales` puts directly under its hero.
+ *
+ * `spacing="tight"` for the same reason `Highlight Text` uses it, and no title: the figures are the
+ * claim, and a heading over them would be a second one.
+ */
+function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBar' }> }) {
+  return (
+    <Section spacing="tight">
+      <StatBar align="center">{spec.stats.map((st) => renderStat(st, 'center'))}</StatBar>
+    </Section>
+  )
+}
+
 function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'integrations' }> }) {
   return (
     <Section
@@ -891,6 +1014,14 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CapabilityMapSection key={index} spec={spec} />
     case 'integrations':
       return <IntegrationsSection key={index} spec={spec} />
+    case 'faq':
+      return <FaqSection key={index} spec={spec} />
+    case 'quickLinks':
+      return <QuickLinksSection key={index} spec={spec} />
+    case 'highlightText':
+      return <HighlightTextSection key={index} spec={spec} />
+    case 'statsBar':
+      return <StatsBarSection key={index} spec={spec} />
     default: {
       /* A new section type in the data with no renderer is a mistake worth failing the build over. */
       const never: never = spec

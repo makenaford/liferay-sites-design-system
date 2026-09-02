@@ -1,3 +1,4 @@
+import platformDiagram from '../../assets/home/platform-diagram.png'
 import type { SectionSpec } from './page-schema'
 
 /**
@@ -118,7 +119,13 @@ export const SECTION_TYPES: SectionType[] = [
     blank: () => ({
       type: 'mediaBand',
       title: 'Section title',
-      image: { src: '', alt: 'Describe the graphic' },
+      /*
+       * A real graphic, not an empty `src`. The blank shipped one, which rendered `<img src="">` — and
+       * an empty `src` does not mean "no image" to a browser, it means *this page's own URL*, so every
+       * blank media band asked for the document again. A placeholder that has to be replaced is a
+       * visible job; a broken request is an invisible one.
+       */
+      image: { src: platformDiagram, alt: 'Replace with this section’s own graphic' },
     }),
   },
   {
@@ -159,6 +166,57 @@ export const SECTION_TYPES: SectionType[] = [
       type: 'logoMarquee',
       label: 'Customers',
       logos: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX'],
+    }),
+  },
+  {
+    type: 'faq',
+    label: 'FAQ',
+    hint: 'A centred title over an accordion, in a narrower column.',
+    blank: () => ({
+      type: 'faq',
+      title: 'Frequently Asked Questions',
+      items: Array.from({ length: 4 }, (_, i) => ({
+        question: `This is my question for the FAQ ${i + 1}`,
+        answer: LOREM,
+      })),
+    }),
+  },
+  {
+    type: 'quickLinks',
+    label: 'Quick links',
+    hint: 'A title over a grid of small icon-and-label cards — the page’s exits.',
+    blank: () => ({
+      type: 'quickLinks',
+      title: 'Section title',
+      links: Array.from({ length: 6 }, (_, i) => ({
+        label: `Link ${i + 1}`,
+        href: '#',
+        icon: 'sites' as const,
+      })),
+    }),
+  },
+  {
+    type: 'highlightText',
+    label: 'Highlight text',
+    hint: 'One wide gradient card, led by a glass icon — a paragraph to be read, not skimmed.',
+    blank: () => ({
+      type: 'highlightText',
+      title: 'Card Title',
+      body: LOREM,
+      icon: 'sites' as const,
+    }),
+  },
+  {
+    type: 'statsBar',
+    label: 'Stats bar',
+    hint: 'A row of figures as a band of its own.',
+    blank: () => ({
+      type: 'statsBar',
+      stats: [
+        { value: '45', suffix: '%', label: 'The measure' },
+        { value: '2x', label: 'The second measure' },
+        { value: '600', suffix: '+', label: 'The third measure' },
+      ],
     }),
   },
   {

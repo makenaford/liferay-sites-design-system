@@ -275,6 +275,48 @@ export type SectionSpec =
   titleHighlight?: string
       stories: StorySpec[]
     }
+  /**
+   * Figma `Type=FAQ` (node `24263:34081`). A centred title over an accordion in a narrower column.
+   *
+   * Deliberately **not** `tabbedContent`'s accordion, which is a panel showing what the platform does.
+   * Someone reading an FAQ arrived with one question, which is also why this is the section that does
+   * not autoplay.
+   */
+  | {
+      type: 'faq'
+      title: string
+      titleHighlight?: string
+      description?: string
+      items: { question: string; answer: string }[]
+    }
+  /**
+   * Figma `Type=Quick Links` (node `24263:34142`). A left title over a grid of small horizontal cards,
+   * each an icon and a label — the shortcuts row a detail page ends on.
+   */
+  | {
+      type: 'quickLinks'
+      title: string
+      titleHighlight?: string
+      links: { label: string; href: string; icon?: GlassIconName }[]
+    }
+  /**
+   * Figma `Type=Highlight Text` (node `24263:68390`). One wide card on the brand gradient, led by a
+   * glass icon: a paragraph the page wants read rather than skimmed.
+   */
+  | {
+      type: 'highlightText'
+      title: string
+      body: string
+      icon?: GlassIconName
+    }
+  /**
+   * Figma's `Stats Bar` as a band of its own — the row of figures the `Contact Sales` page puts
+   * directly under its hero, before anything else has been claimed.
+   */
+  | {
+      type: 'statsBar'
+      stats: StatSpec[]
+    }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
   | { type: 'logoMarquee'; label: string; logos: string[] }
   /**
