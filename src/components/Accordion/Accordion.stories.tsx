@@ -82,6 +82,27 @@ export const Large: Story = { ...Playground, args: { size: 'lg' } }
 /** **`Size=Condensed`** — 40px, `Paragraph/Default/Semi Bold`, a 24px arrow. */
 export const Small: Story = { ...Playground, args: { size: 'sm' } }
 
+/**
+ * `autoplay` — each row opens in turn, 5.5s apart, and the open row's rule fills as its time runs out.
+ *
+ * The progress bar is that rule rather than a bar of its own: Figma already draws a gradient under the
+ * open row, and the component already owns a line whose job is to say which row is open, so the timer
+ * rides it. It thickens to 2px while it is carrying a clock — at a hairline a fill reads as a line
+ * getting longer rather than as time passing.
+ *
+ * **Opening a row yourself stops it, for good.** A reader choosing a row is saying which one they want,
+ * and advancing off it a few seconds later is what makes a carousel infuriating. Hover or focus pauses
+ * instead, and it resumes on leaving; it only runs while it is on screen; and under
+ * `prefers-reduced-motion` it never starts. That is WCAG 2.2.2 satisfied by the rows themselves rather
+ * than by a pause button bolted to a list of questions.
+ *
+ * It needs to own the value, so it does nothing with `multiple` or with a `value` you control.
+ *
+ * `Templates/Home` uses it for `Different Teams. One Platform.` — a section showing what the platform
+ * does. The FAQ block deliberately does not: someone reading an FAQ came for one answer.
+ */
+export const Autoplay: Story = { ...Playground, args: { autoplay: true } }
+
 /** The two sizes together, which is the clearest way to see which one a layout wants. */
 export const Sizes: Story = {
   render: (args) => (

@@ -4515,6 +4515,37 @@
   opacity: 1;
 }
 
+/* ---- `autoplay` — the rule as the timer -------------------------------------------------------
+ *
+ * The open row's gradient rule grows from its leading edge over the row's time, and the next row opens
+ * when it reaches the end. That is the whole of the progress bar: the component already draws a line
+ * whose job is to say which row is open, so the timer rides it rather than adding a second line a pixel
+ * below the first.
+ *
+ * `scaleX` on the pseudo-element, so a frame of this is a compositor transform and not a repaint of a
+ * gradient. `--sds-acc-progress` is written to the root by `requestAnimationFrame`, and it is the one
+ * value in this component that moves without a render.
+ *
+ * 2px while it is a timer. At 1px the fill is hard to read as travelling — it is a hairline that gets
+ * longer — and this is the one moment the rule is carrying information rather than marking a boundary.
+ *
+ * No `transition`. The property is already being written every frame; easing it as well would put the
+ * bar behind its own clock, so the row would advance with the fill still short of the end.
+ */
+.accRoot[data-autoplay] .accItem[data-active] > .accItemTitle::before,
+.accRoot[data-autoplay] .accItem[data-active] > .accControl::before {
+  height: 2px;
+  transform: scaleX(var(--sds-acc-progress, 0));
+  transform-origin: left center;
+  transition: none;
+}
+
+/* Right-to-left reads its own direction: the fill starts at the edge the text starts at. */
+.accRoot[data-autoplay]:dir(rtl) .accItem[data-active] > .accItemTitle::before,
+.accRoot[data-autoplay]:dir(rtl) .accItem[data-active] > .accControl::before {
+  transform-origin: right center;
+}
+
 /*
  * The heading wrapper `order` adds. It has to carry the rule as well, since it becomes the control's
  * parent — hence the pair of selectors above rather than one.

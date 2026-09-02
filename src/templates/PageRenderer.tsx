@@ -642,7 +642,12 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             }
           >
             {panel.items?.length ? (
-              <Accordion size="lg" order={4} defaultValue={panel.items[0].question}>
+              /*
+               * The panel opens itself, row by row. A tabbed section is the page showing what it can do
+               * rather than answering a question the reader arrived with — the FAQ block is the other
+               * one, and it deliberately does not do this: someone reading an FAQ came for one answer.
+               */
+              <Accordion size="lg" order={4} autoplay defaultValue={panel.items[0].question}>
                 {panel.items.map((item) => (
                   <Accordion.Item key={item.question} value={item.question}>
                     <Accordion.Control>{item.question}</Accordion.Control>

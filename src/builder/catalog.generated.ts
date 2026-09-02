@@ -56,6 +56,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "value", kind: "slot", source: "story" },
       { name: "defaultValue", kind: "slot", default: "hosting", source: "story" },
     ],
+    unsupported: ["autoplay"],
   },
   {
     name: "Banner",
