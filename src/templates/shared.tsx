@@ -238,14 +238,17 @@ const SOCIALS: [string, ReactNode][] = [
  * the bubble then begins 64px down with a strip of flat page above it, which is the one place on this
  * page where the artwork should be at its fullest.
  *
- * `condense` is what makes that readable: the bar is transparent over the artwork at the top of the
- * page and takes its glass the moment the page moves, so it is a bar over a picture while the picture is
- * there and a bar over content once content arrives under it.
+ * `condense={false}`, so the bar keeps its glass from the first frame. Condensing was the other reading
+ * of "the nav sits on the artwork" — transparent at rest, glass once the page moves — and it costs the
+ * header its container: at the top of the page, which is where a reader arrives, there was a row of
+ * links floating on a picture with no surface under it. The band is translucent, so the bubble is still
+ * visible through it and still starts at the very top; what it stops doing is disappearing.
  */
 export function SiteHeader() {
   return (
     <Header
       position="fixed"
+      condense={false}
       items={SITE_NAV_ITEMS}
       drawerControls={SITE_DRAWER_CONTROLS}
       actions={SITE_ACTIONS}
