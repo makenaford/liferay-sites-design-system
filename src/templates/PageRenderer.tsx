@@ -783,7 +783,7 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
         ) : undefined
       }
     >
-      <MeshBackdrop />
+      <MeshBackdrop tone="wash" />
       <Marquee label="Integrations" gap={16} logoWidth={64} size="lg" speed={38} fade fadeWidth={120}>
         {spec.logos.map((name, i) => {
           const logo = VENDOR_LOGOS.find((v) => v.name === name)

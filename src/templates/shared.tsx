@@ -91,10 +91,20 @@ export function VendorTile({ name }: { name: string }) {
  *
  * Decoration, and marked as such: `aria-hidden`, no content, and it stops drifting under
  * `prefers-reduced-motion` rather than disappearing — it is a ground, not a message.
+ *
+ * `tone` picks which light it is:
+ *
+ * `hero` — three blobs of the hero's own palette at about the same size, which is a *field*: the page
+ * is not flat here, and no part of it is the source.
+ *
+ * `wash` — `CapabilityMap`'s: a blue core, a violet halo set off against it and a brighter lift where
+ * they cross, at three quite different sizes. That difference in size is what makes it read as light
+ * arriving from a point rather than as coloured air, and it is why a band carrying one centred object —
+ * the integrations strip, the map itself — wants this one.
  */
-export function MeshBackdrop() {
+export function MeshBackdrop({ tone = 'hero' }: { tone?: 'hero' | 'wash' } = {}) {
   return (
-    <div className={classes.meshBackdrop} aria-hidden>
+    <div className={classes.meshBackdrop} data-tone={tone === 'wash' ? 'wash' : undefined} aria-hidden>
       <span />
       <span />
       <span />

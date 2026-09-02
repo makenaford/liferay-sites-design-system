@@ -8228,6 +8228,55 @@
   animation: sds-mesh-drift-c 52s ease-in-out infinite alternate;
 }
 
+/* ---- `tone="wash"` — the capability map's light -----------------------------------------------
+ *
+ * The same three colours the map's wash is built from, and more to the point the same *shape*: a wide
+ * blue core, a violet halo offset against it so the two cross rather than sit concentric, and a small,
+ * much brighter lift in the middle. The hero tone's three blobs are all roughly one size, which is what
+ * makes it a field; these are 120%, 80% and 44%, which is what makes it a source.
+ *
+ * The offsets are the map's, halved. There the two large blobs are pushed about 9% apart, which on a
+ * 500px figure is a few dozen pixels and reads as depth; at a page's width the same percentage separates
+ * them by a third of the screen and the pool stops having a centre at all.
+ *
+ * **No blur, unlike the map's.** The map can afford `filter: blur(50px)` over a small box that is
+ * usually still; three blurred layers drifting across a full-width band have to be re-rasterised every
+ * frame, and that is the cost that showed up as a timeout in the layout suite when the hero tone was
+ * first written. The falloff does the softening here: `transparent` by 78% on the core, which is a
+ * gentler ramp than the hero tone's 90% and is what stands in for the blur.
+ *
+ * Held at 0.5 rather than 0.19. The map's colours are alpha-laden already — the core is 52% blue where
+ * the hero tone's is a solid — so the same restraint applied twice would leave nothing on the page.
+ */
+.meshBackdrop[data-tone='wash'] {
+  opacity: 0.5;
+}
+
+:where([data-mantine-color-scheme='light']) .meshBackdrop[data-tone='wash'] {
+  opacity: 0.6;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(1) {
+  width: min(120%, 1500px);
+  height: 300%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-core) 0%, transparent 78%);
+  translate: -54% -52%;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(2) {
+  width: min(80%, 1050px);
+  height: 250%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-halo) 0%, transparent 74%);
+  translate: -46% -46%;
+}
+
+.meshBackdrop[data-tone='wash'] > span:nth-child(3) {
+  width: min(44%, 580px);
+  height: 150%;
+  background-image: radial-gradient(closest-side, var(--sds-map-wash-inner) 0%, transparent 72%);
+  translate: -50% -50%;
+}
+
 /*
  * The drift is deliberately below the threshold where an eye tracks it, and smaller again now the blobs
  * are this large: a couple of per cent, on three different periods so the three never return to the same
