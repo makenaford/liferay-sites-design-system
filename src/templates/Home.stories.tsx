@@ -22,7 +22,7 @@ import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
-import { MeshBackdrop, Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
+import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
@@ -975,7 +975,6 @@ function HomePage() {
         reveal
         bleed
         gap={32}
-        className={classes.meshHost}
         title={
           <SectionTitle
             align="center"
@@ -998,7 +997,6 @@ function HomePage() {
           </Button>
         }
       >
-        <MeshBackdrop tone="wash" />
         <Marquee
           label="Integrations"
           gap={16}
