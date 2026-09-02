@@ -4356,23 +4356,40 @@
   }
 }
 
-/* ---- the highlighted tail, and its sweep -------------------------------------------------------
+/* ---- the highlighted tail --------------------------------------------------------------------
  *
- * `Brand/Primary/Lighten 1` to `Accent/Product Accent` and back to the brand, clipped to the text.
+ * `Brand/Primary/Lighten 1` to `Accent/Product Accent`, clipped to the text and running left to right
+ * across it — the gradient the file draws on the hero's heading, and the only gradient text on that
+ * page. Two stops, static, exactly as drawn.
  *
- * **Three stops, not two.** The sweep is a `background-position` animation under a text mask, and a
- * two-stop gradient has to jump back to its start when it reaches the end — visible, on a heading this
- * size. Repeating the first colour at the far end means the position can run from one end to the other
- * and land on an identical picture, so the loop has no seam. `250%` is what gives it somewhere to
- * travel; at `100%` there is nothing off-screen to bring in.
- *
- * `linear`, and slow. An eased sweep reads as something sliding back and forth; a constant one reads as
- * light moving across a surface, which is the thing being imitated.
- *
- * Under `prefers-reduced-motion` the gradient stays and only the travel stops — the highlight is the
- * page's own colour, not the animation, and taking it away would change what the heading says.
+ * The sweep below is opt-in and nothing asks for it yet. It was on the hero for a day: the file draws a
+ * static fill there, and a heading that shimmers to itself while the reader is on the first sentence of
+ * the page is the animation with the weakest claim on their attention and the strongest pull on it.
  */
 .heroHighlight {
+  background-image: linear-gradient(
+    90deg,
+    var(--sds-brand-primary-lighten-1) 0%,
+    var(--sds-accent-product-accent) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/*
+ * `animate` — the sweep, for a heading that should catch the light.
+ *
+ * **Three stops, not two**, and the gradient is redeclared here rather than extended: a sweep is a
+ * `background-position` animation under a text mask, and a two-stop gradient has to jump back to its
+ * start when it reaches the end — visible, at heading size. Repeating the first colour at the far end
+ * lets the position run from one end to the other and land on an identical picture, so the loop has no
+ * seam. `250%` is what gives it somewhere to travel; at `100%` there is nothing off-screen to bring in.
+ *
+ * `linear`, and slow: a constant sweep reads as light moving across a surface, an eased one as something
+ * sliding back and forth.
+ */
+.heroHighlight[data-animate] {
   background-image: linear-gradient(
     90deg,
     var(--sds-brand-primary-lighten-1) 0%,
@@ -4380,9 +4397,6 @@
     var(--sds-brand-primary-lighten-1) 100%
   );
   background-size: 250% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
   animation: sds-hero-shimmer 3s linear infinite;
 }
 
@@ -4391,8 +4405,12 @@
   to { background-position: 0% center; }
 }
 
+/*
+ * Reduced motion keeps the gradient and drops only the travel: the colour is what the heading says, and
+ * taking it away would change the sentence.
+ */
 @media (prefers-reduced-motion: reduce) {
-  .heroHighlight {
+  .heroHighlight[data-animate] {
     animation: none;
     background-position: 100% center;
   }
