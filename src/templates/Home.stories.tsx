@@ -767,7 +767,8 @@ function HomePage() {
               </Stack>
             }
           >
-            <Accordion size="lg" order={4} defaultValue={team.items[0].q}>
+            {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
+            <Accordion size="lg" order={4} autoplay defaultValue={team.items[0].q}>
               {team.items.map((item) => (
                 <Accordion.Item key={item.q} value={item.q}>
                   <Accordion.Control>{item.q}</Accordion.Control>
