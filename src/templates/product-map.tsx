@@ -44,7 +44,7 @@ import {
  *
  * ## Why the floor is low, and why that is the point
  *
- * The page draws `names="outside"`, whose canvas is 8.9 x 4.5 tiles — about 2:1, wider than any window.
+ * The page draws `names="outside"`, whose canvas is 8.2 x 4.5 tiles — about 2:1, wider than any window.
  * That is what makes **height** the binding dimension at every ordinary width, and it is the whole
  * reason this arrangement answers the window at all: the figure gets shorter when the window does,
  * rather than sitting at a fixed size and being scrolled past.
@@ -103,7 +103,15 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
     ],
   },
   {
-    label: 'Intelligence & AI',
+    /*
+     * The one section name with an explicit break in it.
+     *
+     * The other three run out of room and wrap after the ampersand on their own; `Intelligence & AI` is
+     * short enough to sit on one line, and one label a line shorter than the three beside it reads as an
+     * oversight rather than as a fit. The break is here rather than in the component because it is a fact
+     * about *this* set of names — a different four might all fit, or none of them.
+     */
+    label: 'Intelligence &\nAI',
     items: [
       { label: 'LDP', icon: <IconGlassLiferayDataPlatform />, href: '#ldp', description: 'Liferay Data Platform' },
       { label: 'AI Hub', icon: <IconGlassAiHub />, href: '#ai-hub' },

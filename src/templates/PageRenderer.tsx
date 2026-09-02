@@ -699,7 +699,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
 /**
  * The product constellation — *Everything You Need in One Platform*.
  *
- * `bleed`, unlike the media band's 1000 column: `names="outside"` is 8.9 tiles across, and a cap would be
+ * `bleed`, unlike the media band's 1000 column: `names="outside"` is 8.2 tiles across, and a cap would be
  * paid for out of card size rather than out of the gutter. The title keeps the gutter — that is what
  * `bleed` means here — and only the figure runs to the edges.
  *

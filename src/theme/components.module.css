@@ -7133,10 +7133,9 @@
  * The light the whole figure sits in: three blobs of the brand's dark steps, screened together, blurred,
  * and masked to the middle so the field has no visible boundary.
  *
- * Static, and strong. Nothing in this figure pulses — not the tiles, not the hub, not this — so the
- * centre's presence has to come from the wash being *there*. A slow pulse on it would read as the centre
- * breathing, which is the thing being left out. Every keyframe for that is gone; bringing it back means
- * writing one.
+ * Strong, and it breathes — slowly, with the hub. The tiles are still: seventeen things pulsing at once
+ * was the version that failed, and one thing pulsing in the middle of sixteen still ones is the version
+ * that reads as a centre rather than as a screensaver.
  */
 .mapWash {
   position: absolute;
@@ -7287,29 +7286,31 @@
 }
 
 .mapRoot[data-names='outside'] .mapName {
-  width: calc(var(--sds-map-tile) * 1.15);
+  width: calc(var(--sds-map-tile) * 1);
   color: var(--sds-surfaces-text-primary);
 }
 
 /*
- * The glow the file draws behind an outside name — the same light the hub sits in, at a section's scale.
- * On the cell rather than the text, so it reads as the name occupying a place on the lattice.
+ * Aligned toward the figure: ranged right on the left side, left on the right, so the words end where
+ * the leader begins. Centred, a short name stopped a third of a tile short of its own line and read as
+ * much further out than it was.
  */
-.mapRoot[data-names='outside'] .mapName::before {
-  content: '';
-  position: absolute;
-  /*
-   * Vertically generous, horizontally tight. The glow is the only thing in this arrangement that sits
-   * outside the tiles *and* outside its own box, and at -30% it reached past the canvas edge and pushed
-   * the document 4px sideways at 1440 — an overflow the layout suite catches and a real one.
-   */
-  inset: -60% -12%;
-  z-index: -1;
-  border-radius: 50%;
-  background-image: radial-gradient(closest-side at 50% 50%, var(--sds-map-wash-halo) 0%, transparent 70%);
-  opacity: 0.55;
-  pointer-events: none;
+.mapRoot[data-names='outside'] .mapName[data-side='start'] {
+  text-align: end;
 }
+
+.mapRoot[data-names='outside'] .mapName[data-side='end'] {
+  text-align: start;
+}
+
+/*
+ * No glow behind an outside name.
+ *
+ * There was one — a soft radial on the cell, on the argument that it echoed the light the hub sits in.
+ * At the size the names ended up it read as a box shadow around the text instead: a shape with an edge,
+ * on four labels that are supposed to be quiet. The name has a leader tying it to its section; it does
+ * not also need a halo saying it is important.
+ */
 
 /* The resting outline, just enough for a highlight to have something to travel along. */
 .mapLoopRest {
@@ -7425,6 +7426,13 @@
   text-align: center;
   font-size: min(var(--sds-size-paragraph-small-caps), calc(var(--sds-map-tile) * 0.088));
   line-height: 1.3;
+  /*
+   * `pre-line`, so a section name can carry its own line break and still wrap on its own where it has
+   * to. Three of the four break after the ampersand because they run out of room; the fourth is short
+   * enough not to, and a row of labels where one is a line shorter than its neighbours reads as an
+   * oversight rather than as a fit. See `PRODUCT_CLUSTERS`.
+   */
+  white-space: pre-line;
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -7620,6 +7628,52 @@
   background-image: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/*
+ * The breath, back — on the hub alone.
+ *
+ * It went from all seventeen tiles, to the hub, to nothing, and this is the hub version deliberately:
+ * one thing moving in the middle of sixteen still ones reads as a centre, where seventeen moving at once
+ * read as a screensaver.
+ *
+ * **`ease-in-out` with `alternate`, not the library's `motion-ease-out`.** That was the fault last time
+ * and it is worth not repeating: `cubic-bezier(0.05, 0.7, 0.1, 1)` is a decelerate curve built for
+ * one-way transitions, and looped it snaps to the peak then sits at rest for a third of every cycle. A
+ * symmetric curve played forwards and back has no rest in it, which is what makes this read as breathing
+ * rather than as a pulse.
+ *
+ * 3.5% over four and a half seconds. The tile fills 95% of its cell, so that is most of the room there
+ * is to grow into before the hub starts touching the gap the lattice gives everything else.
+ */
+.mapHub > .mapTileBody {
+  animation: sds-map-breathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes sds-map-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.035); }
+}
+
+/*
+ * The light it sits in breathes with it, on a longer period so the two never quite line up — the wash
+ * reaching its brightest a little after the hub reaches its widest is what keeps the pair from reading
+ * as one object being scaled.
+ */
+.mapWash {
+  animation: sds-map-wash-breathe 7.3s ease-in-out infinite alternate;
+}
+
+@keyframes sds-map-wash-breathe {
+  from { opacity: 0.78; }
+  to { opacity: 0.96; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapHub > .mapTileBody,
+  .mapWash {
+    animation: none;
+  }
 }
 
 /* Shallower: the hub is what the others are set around, not another socket, and at full strength the

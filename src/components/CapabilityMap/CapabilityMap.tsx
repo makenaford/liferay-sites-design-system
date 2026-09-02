@@ -178,10 +178,15 @@ const CANVAS = { w: 5.6, h: 4.9 }
  *
  * Narrow, and close in. The name is a label on the group beside it, not a heading for that side of the
  * figure, so it wants to be near enough that the leader reads as a tie rather than a journey — but not
- * so near that the line disappears and the name looks like it fell off the diamond. 1.15 wide at 3.7
- * out leaves the leader about a third of a tile, which is enough to see and short enough to belong.
+ * so near that the line disappears and the name looks like it fell off the diamond. 1.0 wide at 3.45 out
+ * leaves the leader a fifth of a tile: short, and still unmistakably a line.
+ *
+ * The box being *narrow* is only half of it. The name is also aligned toward the figure — ranged right
+ * on the left side, left on the right — so the words end where the leader begins. Centred in its box, a
+ * short name like `Search` stopped a third of a tile short of its own line and read as much further out
+ * than it was, which is the distance that actually wanted closing.
  */
-const NAME_OUTSIDE_W = 1.15
+const NAME_OUTSIDE_W = 1
 
 /**
  * The box when the names are outside.
@@ -192,7 +197,7 @@ const NAME_OUTSIDE_W = 1.15
  * the page sideways. The result is close to 2:1, which is wider than any window, so
  * **height is what binds** and the figure answers the window's height at every ordinary width.
  */
-const CANVAS_OUTSIDE = { w: 8.9, h: 4.5 }
+const CANVAS_OUTSIDE = { w: 8.2, h: 4.5 }
 
 /** How far the drawing is lifted inside its box, in tiles. Mirrors `--sds-map-oy` in the stylesheet. */
 const CANVAS_OY = -0.2165
@@ -344,10 +349,10 @@ const LOOPS_TIGHT = CELLS_TIGHT.map(sectionLoop)
  * `8144:21713`. Level with its own group, out past the tiles, on the empty lattice beyond them.
  */
 const NAME_AT_OUTSIDE = [
-  { x: -3.7, y: -1.2990381 },
-  { x: 3.7, y: -1.2990381 },
-  { x: 3.7, y: 1.2990381 },
-  { x: -3.7, y: 1.2990381 },
+  { x: -3.45, y: -1.2990381 },
+  { x: 3.45, y: -1.2990381 },
+  { x: 3.45, y: 1.2990381 },
+  { x: -3.45, y: 1.2990381 },
 ] as const
 
 /**
@@ -368,11 +373,14 @@ const LEADERS: string[] = CELLS_TIGHT.map((cells, i) => {
   const dir = name.x < 0 ? 1 : -1
   const start = { x: name.x + dir * (NAME_OUTSIDE_W / 2), y: name.y }
 
-  /* The loop corner nearest the name — the point the leader is trying to reach. */
-  const corners = cells.flatMap((cell) => {
-    const c = pos(cell.q, cell.r)
-    return CORNERS.map(([vx, vy]) => ({ x: c.x + vx, y: c.y + vy }))
-  })
+  /*
+   * The **end tile** — the one furthest out on the name's side — and the corner of it that faces the
+   * name. Picked by which cell it is rather than by which corner happens to be nearest, so the line
+   * always arrives at the same place in every section: the outer tip of the tile at the end of the row.
+   */
+  const end = cells.reduce((a, b) => (dir * pos(a.q, a.r).x < dir * pos(b.q, b.r).x ? a : b))
+  const c = pos(end.q, end.r)
+  const corners = CORNERS.map(([vx, vy]) => ({ x: c.x + vx, y: c.y + vy }))
   const target = corners.reduce((a, b) =>
     Math.hypot(a.x - start.x, a.y - start.y) < Math.hypot(b.x - start.x, b.y - start.y) ? a : b,
   )
@@ -860,6 +868,7 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
           key={cluster.label}
           className={classes.mapName}
           data-sds-name={i}
+          data-side={nameAt[i].x < 0 ? 'start' : 'end'}
           style={{ '--sds-map-nx': nameAt[i].x, '--sds-map-ny': nameAt[i].y } as CSSProperties}
         >
           {cluster.label}

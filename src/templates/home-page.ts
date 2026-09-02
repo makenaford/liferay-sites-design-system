@@ -449,7 +449,8 @@ export const HOME_PAGE: PageSpec = {
           ],
         },
         {
-          label: 'Intelligence & AI',
+          /* The explicit break keeps it two lines like the three beside it — see `product-map.tsx`. */
+          label: 'Intelligence &\nAI',
           items: [
             { label: 'LDP', icon: 'ldp', href: '#ldp', description: 'Liferay Data Platform' },
             { label: 'AI Hub', icon: 'ai-hub', href: '#ai-hub' },

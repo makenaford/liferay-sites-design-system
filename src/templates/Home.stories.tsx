@@ -857,7 +857,7 @@ function HomePage() {
         `CapabilityMap` component, so the sixteen products are real tiles with real links, real labels
         and a keyboard path through them. The section names sit outside the tiles on their own leader
         lines — `Homepage Redesign` node `8144:21713` — which is why this section bleeds: that
-        arrangement is 8.9 tiles across and a 1280 column would pay for the width in card size.
+        arrangement is 8.2 tiles across and a 1280 column would pay for the width in card size.
         `maxHeight` is what keeps the whole figure inside the window.
       */}
       <Section

@@ -910,7 +910,7 @@ it is a different figure rather than the nested one with margins:
   as connected to anything; and it **does not animate**. It is a bracket, not traffic: a travelling
   highlight would make it read as another connector carrying something to the hub.
 
-The canvas is **8.9 × 4.5** — the diamonds are shorter than the rings, 4.33 tiles of tiles rather than
+The canvas is **8.2 × 4.5** — the diamonds are shorter than the rings, 4.33 tiles of tiles rather than
 4.76, and the names then claim about four tiles of width on each side — glow included, since the box has to
 hold that too or the figure pushes the page sideways, which is a bug the layout suite caught at 1440. That is close to 2:1, wider than
 any window, so **height is what binds** and this arrangement answers the window's height at every
@@ -918,9 +918,16 @@ ordinary width. It wants a different ceiling for that reason: 860 is a card size
 *nested* canvas, and a floor that tall here would put the figure wider than any window and stop the
 height from ever binding. The story passes `max(420px, 100svh - 120px)`.
 
-The name sits 3.7 tiles out in a box 1.15 wide, which leaves the leader about a third of a tile: enough
-to see, and short enough that the name reads as a label on the group beside it rather than a heading for
-that side of the figure.
+The name sits 3.45 tiles out in a box 1.0 wide, which leaves the leader a fifth of a tile — short, and
+still unmistakably a line. The box being narrow is only half of it: the name is also **aligned toward the
+figure**, ranged right on the left side and left on the right, so the words end where the leader begins.
+Centred in its box, a short name stopped a third of a tile short of its own line and read as much further
+out than it was, which is the distance that actually wanted closing. Measured on the page, all four names
+now end a uniform 29px from their tile.
+
+The leader lands on the **end tile** — the one furthest out on the name's side — picked by which cell it
+is rather than by which corner happens to be nearest, so the line arrives at the same place in every
+section: the outer tip of the tile at the end of the row.
 
 **The home page draws this arrangement.** Because the canvas is close to 2:1 the height binds at every
 ordinary width, so the figure answers the window instead of sitting at a fixed size — which is why the
@@ -1042,18 +1049,25 @@ is about.
 It sits on the lattice cell at the origin that no section may use, 1.8 cells wide, which clears its
 nearest neighbour by a fifth of a tile.
 
-### Nothing pulses
+### The hub breathes, and nothing else does
 
-The breath went from all seventeen tiles, to the hub alone, to nothing. The centre's presence comes from
-the wash being *there* instead: static, and considerably stronger for it — `--sds-map-wash-*` at 0.52
-and 0.4 in dark mode, blobs at 52% of the field.
+The breath went from all seventeen tiles, to the hub alone, to nothing, and it is back on **the hub
+alone**. One thing moving in the middle of sixteen still ones reads as a centre; seventeen moving at once
+read as a screensaver, which is what the first pass was.
 
-Two findings from the passes that got there are worth keeping. The tiles were **already** perfectly
-synchronised when they looked staggered — all seventeen shared one timeline with identical scale and
-`currentTime` at every sample — and the fault was the curve: `cubic-bezier(0.05, 0.7, 0.1, 1)` is a
-decelerate curve for one-way transitions, and looped it snaps to the peak then sits at rest for a third
-of every cycle. And a swell's amplitude comes from the tiles rather than the animation: the 88% fill is
-what left room to grow into.
+3.5% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
+the two never quite line up — the light reaching its brightest a little after the hub reaches its widest
+is what stops the pair reading as one object being scaled.
+
+**`ease-in-out` with `alternate`, not the library's `motion-ease-out`.** That was the fault that killed
+the first version and it is worth not repeating: `cubic-bezier(0.05, 0.7, 0.1, 1)` is a decelerate curve
+built for one-way transitions, and looped it snaps to the peak then sits at rest for a third of every
+cycle. A symmetric curve played forwards and back has no rest in it. The other finding from those passes
+still holds: the tiles were **already** perfectly synchronised when they looked staggered — all seventeen
+shared one timeline with identical scale and `currentTime` at every sample — and a swell's amplitude
+comes from the fill, since 95% is what leaves room to grow into.
+
+Off under `prefers-reduced-motion`, both of them.
 
 ### Interaction
 
