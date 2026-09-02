@@ -4,6 +4,7 @@ import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 
 export type StatSize = 'md' | 'sm'
+export type StatLayout = 'stacked' | 'inline'
 export type StatAlign = 'left' | 'center'
 
 export interface StatProps extends BoxProps, ElementProps<'div'> {
@@ -19,6 +20,21 @@ export interface StatProps extends BoxProps, ElementProps<'div'> {
   rightSection?: ReactNode
   /** Left as drawn, or centred for a stat sitting alone in a card. */
   align?: StatAlign
+
+  /**
+   * How the figure and its caption sit together.
+   *
+   * `stacked` is Figma's `Stats Item` — the caption under the number, which is what a column of stats
+   * beside an image wants.
+   *
+   * `inline` puts the caption beside the figure on one line, which is what `Number Footer`
+   * (node `7655:19963`) draws: a row of two, each `1,200+ ENTERPRISE CUSTOMERS`, split by a divider. In
+   * a band that is one line tall, a stacked stat has to shrink its number to fit; laid along the line it
+   * keeps its size and the row keeps its height.
+   *
+   * @default 'stacked'
+   */
+  layout?: StatLayout
 }
 
 /**
@@ -44,7 +60,17 @@ export interface StatProps extends BoxProps, ElementProps<'div'> {
  * number went up rather than down — say so in the label.
  */
 export const Stat = forwardRef<HTMLDivElement, StatProps>(function Stat(
-  { value, label, size = 'md', leftSection, rightSection, align = 'left', className, ...props },
+  {
+    value,
+    label,
+    size = 'md',
+    leftSection,
+    rightSection,
+    align = 'left',
+    layout = 'stacked',
+    className,
+    ...props
+  },
   ref,
 ) {
   return (
@@ -53,6 +79,7 @@ export const Stat = forwardRef<HTMLDivElement, StatProps>(function Stat(
       className={[classes.stat, className].filter(Boolean).join(' ')}
       data-size={size === 'sm' ? 'sm' : undefined}
       data-align={align === 'center' ? 'center' : undefined}
+      data-layout={layout === 'inline' ? 'inline' : undefined}
       style={{'gap': 'var(--mantine-spacing-4)'}}
       {...props}
     >

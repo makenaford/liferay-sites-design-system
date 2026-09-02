@@ -365,6 +365,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "leftSection", kind: "slot", doc: "Icon before the number — Figma's `Show Stat Icon Left`." },
       { name: "rightSection", kind: "slot", doc: "Icon after the number — Figma's `Show Stat Icon Right`." },
       { name: "align", kind: "enum", options: ["left", "center"], doc: "Left as drawn, or centred for a stat sitting alone in a card." },
+      { name: "layout", kind: "enum", options: ["stacked", "inline"], default: "stacked", doc: "How the figure and its caption sit together." },
     ],
   },
   {
