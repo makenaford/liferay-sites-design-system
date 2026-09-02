@@ -5583,10 +5583,15 @@
  *   query the `from` keyframe would apply as a static style and every section below the fold would be
  *   permanently dimmed and offset. This is the guard that turns a broken page into no effect at all.
  *
- *   `animation-range: entry 0% entry 35%` — the reveal happens over the first third of the section's
- *   entry rather than across the whole of it. `entry` ends when the section's *bottom* clears the
- *   viewport's bottom, so on a tall section the full range would still be finishing long after the
- *   reader arrived.
+ *   `animation-range: entry 80px entry 460px` — a **fixed** stretch of scroll, not a percentage. `entry` runs
+ *   from the section's top touching the viewport's bottom to its bottom clearing that edge, so its
+ *   length is the section's own height plus a viewport: any percentage of it is a different distance for
+ *   every section, and on the tall ones the whole reveal completes below the fold, where nobody sees it.
+ *   That is exactly how a correctly-wired reveal ends up looking like no reveal at all. Lengths keep the
+ *   arrival identical whether the section is a logo strip or a full-height grid: it starts 80px after
+ *   the section's top crosses the fold — just enough that nothing fades in right on the edge — and is
+ *   settled 380px later, with the section's top around the middle of the screen and the reader's eye on
+ *   it.
  *
  * `both`, so a section that has not arrived holds the `from` state and one already in view on load is
  * past `entry` and renders at `to` — no flash of dimmed content on a deep link.
@@ -5608,7 +5613,7 @@
       animation-timing-function: linear;
       animation-fill-mode: both;
       animation-timeline: view();
-      animation-range: entry 0% entry 35%;
+      animation-range: entry 80px entry 460px;
     }
   }
 }
@@ -5625,8 +5630,8 @@
 @media (prefers-reduced-motion: no-preference) {
   @supports not (animation-timeline: view()) {
     .sectionRoot[data-reveal][data-fallback] > .sectionInner {
-      opacity: 0.6;
-      transform: translateY(24px);
+      opacity: 0;
+      transform: translateY(28px);
       transition:
         opacity 0.8s cubic-bezier(0.16, 0.8, 0.3, 1),
         transform 0.8s cubic-bezier(0.16, 0.8, 0.3, 1);
@@ -5640,13 +5645,15 @@
 }
 
 /*
- * 24px and a sixth of the opacity. Subtle is the brief: enough that the page feels like it is assembling
- * as you go, not enough that anyone waits for it or notices a section arriving late.
+ * 28px, from nothing. The first pass ran from `0.6` opacity and 24px across the first third of entry,
+ * which measured correctly and read as no effect at all: by the time a section is far enough up the
+ * viewport to look at, it has already finished, and a sixth of the opacity is not a difference anyone
+ * catches in peripheral vision. These are the demo's numbers — a section arrives, rather than firming up.
  */
 @keyframes sds-section-rise {
   from {
-    opacity: 0.6;
-    transform: translateY(24px);
+    opacity: 0;
+    transform: translateY(28px);
   }
 
   to {

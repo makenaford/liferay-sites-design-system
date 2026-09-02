@@ -135,7 +135,13 @@ export const Section = forwardRef<HTMLElement, SectionProps>(function Section(
           observer.unobserve(entry.target)
         })
       },
-      { threshold: 0.12 },
+      /*
+       * A bottom margin rather than a threshold: "12% of the section is visible" is a different scroll
+       * position for every section height, and on a tall one it never fires until the section already
+       * fills the screen. Pulling the root's bottom edge up 15% fires when the section's top crosses
+       * that line — the same trigger point regardless of how tall it is.
+       */
+      { threshold: 0, rootMargin: '0px 0px -15% 0px' },
     )
     observer.observe(el)
     return () => observer.disconnect()
