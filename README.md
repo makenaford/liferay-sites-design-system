@@ -1933,12 +1933,30 @@ animation with the weakest claim on their attention and the strongest pull on it
 the hero's fill as static. Further down, where a heading has to catch an eye travelling past it, the
 same movement is doing a job.
 
-The sweep needs **three stops** where the static fill has two — `brand -> accent -> brand` at 250% of the
-text's width — because a two-stop gradient has to jump back to its start when its travel ends, and at
-heading size that jump is visible. The two fills are therefore declared separately rather than one
-extending the other. `linear`, since a constant sweep reads as light crossing a surface and an eased one
-as something sliding back and forth. Under `prefers-reduced-motion` the gradient stays and only the
-travel stops: the colour is what the heading says.
+**The colour does not move; a highlight moves over it.** The first version slid a three-stop
+`brand -> accent -> brand` gradient across the phrase, which meant the words themselves changed colour
+every three seconds — `One` and `Platform.` trading blue for violet and back, on a loop, in the reader's
+peripheral vision. That is what read as mechanical: not the speed, but the fact that the phrase kept
+becoming a different phrase.
+
+So the fill underneath is the same static two stops it has at rest, and a second background layer rides
+over it — a soft band of light, transparent at both ends, and the only thing whose position animates.
+Both layers are clipped to the text. What travels is a highlight, which is what catching the light
+actually looks like: the object keeps its colour and the light moves across it.
+
+**It rests.** The pass takes the first 55% of a 9s cycle and the rest is a hold, so a highlight crosses
+in about five seconds and then nothing happens for four. A highlight that runs continuously is a
+metronome; one that comes round occasionally is weather. `ease-in-out`, because light crossing a surface
+arrives and leaves rather than starting at full speed, and the band is set at 100deg rather than 90 so it
+crosses the letterforms on a slight diagonal instead of brightening one flat column.
+
+The sheen is **white on the dark canvas and blue on the light one**. Lightening blue-to-violet text on a
+near-white page pushes it toward its own background exactly where it is meant to catch the eye; the light
+mode sheen saturates instead. Measured through a pass, the light-mode phrase holds 5.17:1 -> 5.03:1
+against the page.
+
+Under `prefers-reduced-motion` the highlight is parked off the end and the fill stays: the colour is what
+the heading says.
 
 ## Carousel
 

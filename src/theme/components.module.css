@@ -4539,41 +4539,74 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
- * `animate` — the sweep, for a heading that should catch the light.
+ * `animate` — a highlight passing over the phrase, for a heading that should catch the light.
  *
- * **Three stops, not two**, and the gradient is redeclared here rather than extended: a sweep is a
- * `background-position` animation under a text mask, and a two-stop gradient has to jump back to its
- * start when it reaches the end — visible, at heading size. Repeating the first colour at the far end
- * lets the position run from one end to the other and land on an identical picture, so the loop has no
- * seam. `250%` is what gives it somewhere to travel; at `100%` there is nothing off-screen to bring in.
+ * **The colour does not move.** The first version slid a three-stop `brand -> accent -> brand` gradient
+ * across the text, which meant the phrase itself changed colour every three seconds: `One` and
+ * `Platform.` traded blue for violet and back, on a loop, in the reader's peripheral vision. That is the
+ * part that read as mechanical — not the speed, the fact that the words kept becoming different words.
  *
- * `linear`, and slow: a constant sweep reads as light moving across a surface, an eased one as something
- * sliding back and forth.
+ * So the gradient underneath is the static two-stop fill, exactly as at rest, and a second layer rides
+ * over it: a narrow band of the page's own light, transparent at both ends. Two backgrounds, both
+ * clipped to the text, and only the top one's position animates. What travels is a highlight, which is
+ * what "catching the light" actually looks like — the object keeps its colour and the light moves.
+ *
+ * **It rests.** The sweep occupies the first 55% of a 9s cycle and the rest is a hold, so a pass takes
+ * about five seconds and then nothing happens for four. A highlight that runs continuously is a
+ * metronome; one that comes round occasionally is weather. `ease-in-out` on the pass, because light
+ * crossing a surface arrives and leaves rather than starting at full speed.
+ *
+ * 100deg rather than 90: the band is very slightly off-vertical, so it crosses the letterforms on a
+ * diagonal and the phrase does not brighten in one flat column.
  */
 .gradientText[data-animate] {
-  background-image: linear-gradient(
-    90deg,
-    var(--sds-brand-primary-lighten-1) 0%,
-    var(--sds-accent-product-accent) 50%,
-    var(--sds-brand-primary-lighten-1) 100%
-  );
-  background-size: 250% 100%;
-  animation: sds-gradient-sweep 3s linear infinite;
+  background-image:
+    linear-gradient(
+      100deg,
+      transparent 34%,
+      var(--sds-gradient-sheen) 50%,
+      transparent 66%
+    ),
+    linear-gradient(
+      90deg,
+      var(--sds-brand-primary-lighten-1) 0%,
+      var(--sds-accent-product-accent) 100%
+    );
+  background-size:
+    300% 100%,
+    100% 100%;
+  background-position:
+    140% center,
+    0 0;
+  animation: sds-gradient-sheen 9s ease-in-out infinite;
 }
 
-@keyframes sds-gradient-sweep {
-  from { background-position: 200% center; }
-  to { background-position: 0% center; }
+@keyframes sds-gradient-sheen {
+  0% {
+    background-position:
+      140% center,
+      0 0;
+  }
+
+  55%,
+  100% {
+    background-position:
+      -40% center,
+      0 0;
+  }
 }
 
 /*
- * Reduced motion keeps the gradient and drops only the travel: the colour is what the heading says, and
- * taking it away would change the sentence.
+ * Reduced motion drops the highlight and keeps the fill: the colour is what the heading says, and taking
+ * it away would change the sentence. The sheen layer is parked off the end rather than removed, so the
+ * two states are the same two layers in different places.
  */
 @media (prefers-reduced-motion: reduce) {
   .gradientText[data-animate] {
     animation: none;
-    background-position: 100% center;
+    background-position:
+      140% center,
+      0 0;
   }
 }
 
