@@ -1,4 +1,5 @@
 import type { PageSpec, PanelSpec } from './page-schema'
+import { VENDOR_NAMES } from './vendor-logos'
 
 /*
  * The Home page, as data.
@@ -17,6 +18,12 @@ import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import industryMedia from '../../assets/home/industry-media.png'
 import teamsMedia from '../../assets/home/teams-media.png'
+import trendingAi from '../../assets/home/trending/ai-transformation.jpg'
+import trendingB2b from '../../assets/home/trending/b2b-ecommerce.jpg'
+import trendingKms from '../../assets/home/trending/knowledge-management.jpg'
+import trendingLowCode from '../../assets/home/trending/low-code.jpg'
+import trendingStrategy from '../../assets/home/trending/digital-strategy.jpg'
+import trendingPortals from '../../assets/home/trending/web-portals.jpg'
 
 /*
  * The whole Home page, expressed as data instead of JSX.
@@ -145,7 +152,7 @@ const CAPABILITY_MEDIA = {
   alt: 'A financial-services website built on Liferay',
 }
 
-const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', 'Figma', 'Payhip']
+
 
 export const HOME_PAGE: PageSpec = {
   hero: {
@@ -552,20 +559,68 @@ export const HOME_PAGE: PageSpec = {
       title: 'Extend Your platform. Integrate without limits.',
       description:
         'Liferay connects flexibly with the platforms and vendors your team relies on every day.',
-      action: { label: 'Explore our integration capabilities', href: '#' },
-      logos: [...VENDORS, ...VENDORS],
+      action: { label: 'Explore integrations', href: '#' },
+      logos: VENDOR_NAMES,
     },
 
+    /*
+     * The file's six resources, thumbnails included — node `7655:15414`. It carried six identical
+     * `Card Title` / lorem placeholders with a mail icon, from before the cell was drawn.
+     */
     {
       type: 'resourceGrid',
       title: 'Trending Now',
       description: 'Latest insights and resources from Liferay.',
-      cards: Array.from({ length: 6 }, () => ({
-        title: 'Card Title',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        icon: 'mail' as const,
-        href: '#',
-      })),
+      cards: [
+        {
+          title: 'What is AI Transformation?',
+          tag: 'Guide',
+          href: '#',
+          image: {
+            src: trendingAi,
+            alt: 'Hands at a laptop keyboard under a blue overlay of circuitry and data',
+          },
+        },
+        {
+          title: 'What is the Purpose of a Knowledge Management System?',
+          tag: 'Blog',
+          href: '#',
+          image: {
+            src: trendingKms,
+            alt: 'Flat illustration of a woman beside a lightbulb, a video player and message cards',
+          },
+        },
+        {
+          title: 'What is Low-Code and No-Code?',
+          tag: 'Blog',
+          href: '#',
+          image: { src: trendingLowCode, alt: 'Someone at a monitor reading a screen of code' },
+        },
+        {
+          title: 'What is Digital Strategy?',
+          tag: 'Article',
+          href: '#',
+          image: {
+            src: trendingStrategy,
+            alt: 'Two colleagues at a whiteboard covered in sticky notes',
+          },
+        },
+        {
+          title: '16 Awesome Web Portal Examples',
+          tag: 'Blog',
+          href: '#',
+          image: {
+            src: trendingPortals,
+            alt: 'A 3D render of a lit platform ringed by Create, Find, Share, Trust and Improve tiles',
+          },
+        },
+        {
+          title: 'What Is B2B Ecommerce?',
+          tag: 'Blog',
+          href: '#',
+          image: { src: trendingB2b, alt: 'A laptop keyboard from above with a hand resting on it' },
+        },
+      ],
     },
 
     {

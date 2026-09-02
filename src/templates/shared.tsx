@@ -16,6 +16,7 @@ import {
   IconSocialX,
   IconYoutube,
 } from '../icons'
+import classes from '../theme/components.module.css'
 import { logoTile } from './logo-tile'
 
 /* Re-exported: it used to live here, and the templates import it from here. */
@@ -80,6 +81,26 @@ export function VendorTile({ name }: { name: string }) {
  * a `Stat` whose figure carries a unit, and the attribution under a customer quote — which the
  * `Common Cards` Code Connect snippet used to call `Quotee`, a component that never existed.
  */
+
+/**
+ * A slow mesh of brand light behind a section, with its edges dissolved into the page.
+ *
+ * Wrap the section in `meshHost` and drop this in as its first child. The backdrop is absolutely
+ * positioned and masked to nothing at its own edges, so it needs no knowledge of the page colour behind
+ * it and leaves no seam to keep in sync when the scheme changes.
+ *
+ * Decoration, and marked as such: `aria-hidden`, no content, and it stops drifting under
+ * `prefers-reduced-motion` rather than disappearing — it is a ground, not a message.
+ */
+export function MeshBackdrop() {
+  return (
+    <div className={classes.meshBackdrop} aria-hidden>
+      <span />
+      <span />
+      <span />
+    </div>
+  )
+}
 
 /** The small unit that rides beside a `Stat`'s figure — the `%` in `140%`, the `+` in `+100M`. */
 export const unit = (u: string) => (

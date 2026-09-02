@@ -33,8 +33,8 @@
   /*
    * A label longer than the space it is given wraps and the button grows, instead of running out of
    * its container. Mantine's button is a fixed height with a `nowrap` label, so a long call to
-   * action — the Home page's `Explore our integration capabilities` — overflows the gutter on a
-   * phone rather than reflowing. The drawn height is the floor, so every button that does fit on one
+   * action — the Home page's integrations CTA, then reading `Explore our integration capabilities` —
+   * overflows the gutter on a phone rather than reflowing. The drawn height is the floor, so every button that does fit on one
    * line is unchanged.
    */
   height: auto;
@@ -3927,17 +3927,10 @@
 
 .hero[data-bubble-css] .heroBubble {
   /*
-   * The drawing's own colours, given rather than sampled.
-   *
-   * `#0b5fff` is `Brand/Primary/Primary` exactly, so the mesh takes that one from the token and these
-   * four carry the rest. None of them has a home in the ramp yet — there is no violet this deep, no
-   * sky this light and nothing near `#070d52` — so they live here, once, and are flagged for `Accent/*`
-   * in the file if the drawn bubble ships.
+   * The drawing's colours now come from `cssVariables.ts` — `--sds-bubble-magenta`, `-violet`, `-sky`
+   * and `-deep`, with `Brand/Primary/Primary` for the blue. They moved there when `MeshBackdrop` took
+   * the same palette: the page's ambient light should be the light the hero is made of.
    */
-  --sds-bubble-magenta: #9500f2;
-  --sds-bubble-violet: #6f0bd2;
-  --sds-bubble-sky: #3fa2f7;
-  --sds-bubble-deep: #070d52;
   background-image: none;
   /*
    * A field has no frame, but it does have a bottom edge, and one crossing into the next section reads
@@ -5695,12 +5688,25 @@
   gap: 12px 24px;
 }
 
+/*
+ * The measure, and it is 900 in both alignments.
+ *
+ * A section heading is one line of display type and its description is one or two of prose, and neither
+ * wants the full 1280 content column: at that width a heading runs long enough to lose its shape and a
+ * paragraph loses the reader between line ends. 900 is where the page's own headings sit on one line and
+ * their descriptions on one or two, rather than breaking a word or two onto a line of their own.
+ *
+ * It **raises** the centred cap, which was 46rem — narrow enough that a description ended with a single
+ * word stranded underneath — and lowers the left-aligned one, which had no cap of its own and could run
+ * the whole column when a section had no action beside it.
+ */
 .sectionTitleText {
   display: flex;
   flex-direction: column;
   /* `Content Text` gap 8, at both sizes. */
   gap: 8px;
   flex: 1 1 min(100%, 34rem);
+  max-width: 900px;
   min-width: 0;
 }
 
@@ -5712,8 +5718,6 @@
 
 .sectionTitleRoot[data-align='center'] .sectionTitleText {
   flex: 0 1 auto;
-  /* A centred paragraph needs a measure, or it runs the full 1280 and stops being readable. */
-  max-width: 46rem;
 }
 
 /*
@@ -7998,4 +8002,165 @@
   .bannerClose:focus-visible {
     outline-color: Highlight;
   }
+}
+
+/* ============================================================================ MeshBackdrop
+ *
+ * A soft pool of brand light in the middle of a section, big enough to reach past it.
+ *
+ * Not a Figma component. The file draws a static mesh behind the footer — `Footer/mesh 1..3`, which is
+ * where these three colours come from — and this is that idea at a page's scale.
+ *
+ * ## The falloff is the fade — there is no mask
+ *
+ * The first version cut the pool off with a mask, which is what gave it an edge to notice: a mask ends a
+ * thing, and anything that ends inside a flat band reads as a shape. A radial that is already at zero
+ * before it reaches the element's edge has no end to see, so the mask came out and the stops did the
+ * work instead — full colour at the centre, gone by 90%.
+ *
+ * That is also why the blobs are far bigger than the band they sit in. A gradient wide enough to fade
+ * properly needs room to fade *in*, and once it has that room the light naturally carries above and
+ * below the section, which is the point: the glow belongs to the page, not to one band, and a highlight
+ * that stops exactly where a section stops announces the section.
+ *
+ * ## Bleeding without widening the page
+ *
+ * `overflow-x: clip` with `overflow-y: visible` — the one combination CSS allows — lets the pool run
+ * into the sections above and below while nothing can reach past the viewport's sides. An element wider
+ * than the page would grow `document.scrollWidth` and drag the whole page sideways, which is exactly
+ * what the layout suite fails on, and it is a real bug rather than a test being fussy.
+ */
+.meshBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Bleed up and down into the neighbouring sections; never sideways past the page. */
+  overflow-x: clip;
+  overflow-y: visible;
+  pointer-events: none;
+  /*
+   * Held well back. These are full-strength hues, and this is meant to be noticed as the page not being
+   * flat rather than as a light in the room — half of what it was when the colours were the footer's
+   * pre-diluted ones.
+   */
+  opacity: 0.19;
+}
+
+/*
+ * Lighter again on the light canvas: screened over a near-white page the same numbers read as a coloured
+ * cloud sitting on the content rather than as light behind it. This puts the two schemes at the same
+ * *apparent* strength.
+ */
+:where([data-mantine-color-scheme='light']) .meshBackdrop {
+  opacity: 0.11;
+}
+
+/*
+ * Three blobs, screened together so the overlaps brighten instead of stacking into an opaque slab — the
+ * same reason the map's wash uses it.
+ *
+ * **The hero's palette, not the footer's.** `Brand/Primary/Primary` for the blue, `--sds-bubble-violet`
+ * for the purple and `--sds-bubble-sky` for the lift where they cross — the same colours the drawn
+ * bubble is made of, so the light on the page reads as coming from the same source as the light in the
+ * hero. The footer's mesh values it used before are a *dark band's* colours, mixed to sit over
+ * near-black, and on the page they read as ink rather than as light.
+ *
+ * They are given at full strength here and held back by the container's `opacity`, rather than being
+ * pre-diluted the way the footer's are. One number to turn, and it is the one you would reach for.
+ *
+ * All three are centred and differ only in size, proportion and period, which is what keeps the pool
+ * from reading as one flat circle: they drift a few per cent against each other and the middle changes
+ * hue without anything appearing to move.
+ *
+ * **No `filter: blur()`.** It is the obvious way to soften these and it is the wrong one: a blurred
+ * layer has to be re-rasterised as it moves, and three of them drifting forever cost enough to show up
+ * as a timeout in the layout suite — seven Chromium instances doing what a slow laptop would do. A
+ * radial that reaches zero before its own edge is already soft. No `will-change` either: it promotes a
+ * layer for the life of the page to speed up an animation nobody is watching closely.
+ */
+.meshBackdrop > span {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  translate: -50% -50%;
+}
+
+.meshBackdrop > span:nth-child(1) {
+  width: min(120%, 1500px);
+  height: 300%;
+  background-image: radial-gradient(closest-side, var(--sds-brand-primary-primary) 0%, transparent 90%);
+  animation: sds-mesh-drift-a 46s ease-in-out infinite alternate;
+}
+
+.meshBackdrop > span:nth-child(2) {
+  width: min(84%, 1100px);
+  height: 240%;
+  background-image: radial-gradient(closest-side, var(--sds-bubble-violet) 0%, transparent 90%);
+  animation: sds-mesh-drift-b 58s ease-in-out infinite alternate;
+}
+
+.meshBackdrop > span:nth-child(3) {
+  width: min(62%, 820px);
+  height: 190%;
+  background-image: radial-gradient(closest-side, var(--sds-bubble-sky) 0%, transparent 90%);
+  animation: sds-mesh-drift-c 52s ease-in-out infinite alternate;
+}
+
+/*
+ * The drift is deliberately below the threshold where an eye tracks it, and smaller again now the blobs
+ * are this large: a couple of per cent, on three different periods so the three never return to the same
+ * arrangement. A mesh that visibly moves is a distraction behind text; one that has changed while you
+ * were reading is atmosphere.
+ *
+ * `translate` carries the centring, so these animate `transform` on top of it and the two do not fight.
+ */
+@keyframes sds-mesh-drift-a {
+  from { transform: translate3d(-2%, 1%, 0) scale(1); }
+  to { transform: translate3d(3%, -1%, 0) scale(1.06); }
+}
+
+@keyframes sds-mesh-drift-b {
+  from { transform: translate3d(2%, -1%, 0) scale(1.04); }
+  to { transform: translate3d(-3%, 2%, 0) scale(1); }
+}
+
+@keyframes sds-mesh-drift-c {
+  from { transform: translate3d(0, 2%, 0) scale(1); }
+  to { transform: translate3d(2%, -2%, 0) scale(1.08); }
+}
+
+/* Reduced motion: the pool stays, the drift stops. It is a ground, not a message. */
+@media (prefers-reduced-motion: reduce) {
+  .meshBackdrop > span {
+    animation: none;
+  }
+}
+
+/*
+ * Forced colours drop every gradient here, so the backdrop would be an empty box. It is decoration with
+ * nothing left to decorate, so it goes.
+ */
+@media (forced-colors: active) {
+  .meshBackdrop {
+    display: none;
+  }
+}
+
+/*
+ * The section that sits on it. The backdrop is absolute, so the content needs a layer above it.
+ *
+ * `isolation: isolate` is deliberately **not** here: it would make the section a stacking context, and
+ * the pool is supposed to reach into the sections above and below rather than being sealed into this
+ * one. `z-index: 0` on the backdrop and 1 on everything else keeps the order right within the section
+ * without closing it off.
+ */
+.meshHost {
+  position: relative;
+}
+
+.meshHost > *:not(.meshBackdrop) {
+  position: relative;
+  z-index: 1;
 }

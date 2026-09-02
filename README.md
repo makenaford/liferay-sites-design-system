@@ -2232,6 +2232,15 @@ there is room and drops full-width beneath it when there is not. It lands on bot
 `align-items: flex-end` is Figma's `MAX` counter-axis alignment: the action sits on the heading block's
 bottom edge, not its middle.
 
+**The text column is capped at 900px in both alignments.** A section heading is one line of display type
+and its description one or two of prose, and neither wants the full 1280 content column: at that width a
+heading runs long enough to lose its shape and a paragraph loses the reader between line ends. 900 is
+where every heading on the Home page sits on one line and its description on one or two.
+
+It **raises** the centred cap, which was 46rem — narrow enough that the integrations description ended
+with `day.` stranded on a line of its own — and lowers the left-aligned one, which had no cap and could
+run the whole column whenever a section had no action beside it.
+
 `order` defaults to **2**, unlike `Hero`'s title which has no default. A section heading under a page's
 `h1` is `h2` almost every time, and making every call site say so produces call sites that say nothing and
 render a `div`.
@@ -2429,14 +2438,77 @@ the industry stats, the six capability cells, the two report tags, the whole foo
 disclaimer. Where the file has not been written yet, that is said below rather than papered over with
 invented copy.
 
+### The integrations row scrolls, and its logos are invented
+
+**A deliberate divergence from the file.** Figma's `Type=Integrations Section` is a static wrapping row
+of 64px glass tiles. A fixed row can only ever show as many integrations as fit across, and the claim
+the section makes is that there are more than that — so the row scrolls. It is `Marquee`, the library's
+existing strip, which brings a measured speed (pixels per second, so the pace does not change as logos
+are added), the edge fade, and the pause button WCAG 2.2.2 requires of motion that starts on its own.
+The tile grows from 64 square to 188 x 64 to hold a mark *and* its name.
+
+The eight vendors are **made up** — Northwind, Cadence, Parcelly, Lumengrid, Orbita, Kestrel, Mosaicly,
+Halcyon — and live in `src/templates/vendor-logos.tsx`. Real vendor marks are other companies'
+trademarks, the same rule the customer marquee follows, and inventing them is better than initials in a
+box: the section is about lockups sitting in a row, and it can only be judged with lockups in it. Each
+mark is geometry in `currentColor`, so `monochrome` inks them the way it would ink a real logo, and
+swapping one for a real vendor is replacing a `mark` and a `name`.
+
+The title is centred and the call to action sits in the section's **footer** — Figma's `Call to Action`
+cell — rather than beside the heading, so it reads as the thing to do after looking at the logos.
+
+Behind it is a **`MeshBackdrop`**: three radials stacked in the middle of the band and screened together, drifting on three different periods slow enough that the movement is
+noticed only in the having-happened.
+
+**The falloff is the fade — there is no mask.** The first version cut the pool off with one, and that is
+what gave it an edge to notice: a mask *ends* a thing, and anything that ends inside a flat band reads as
+a shape. A radial already at zero before it reaches its own element's edge has no end to see, so the mask
+came out and the stops do the work — full colour at the centre, gone by 90%.
+
+That is also why the blobs are far bigger than the band: a gradient wide enough to fade properly needs
+room to fade *in*, and once it has that room the light carries above and below the section on its own.
+Which is the point — the glow belongs to the page, not to one band, and a highlight that stops exactly
+where a section stops announces the section. It reaches about 500px past each edge.
+
+**Bleeding without widening the page:** `overflow-x: clip` with `overflow-y: visible`, the one
+combination CSS allows. An element wider than the page grows `document.scrollWidth` and drags the whole
+page sideways — which the layout suite fails on, and rightly. `.meshHost` deliberately does *not* set
+`isolation: isolate` for the same reason: that would seal the pool into the one section.
+
+**It runs the hero's palette, not the footer's** — `Brand/Primary/Primary` for the blue,
+`--sds-bubble-violet` for the purple and `--sds-bubble-sky` for the lift where they cross, the same
+colours the drawn bubble is made of, so the light on the page reads as coming from the same source as
+the light in the hero. Those four hexes used to be declared on the hero's own rule; they moved to
+`cssVariables.ts` when the mesh took them, because two copies of five hexes is two places to change it.
+They are still flagged for `Accent/*` in the file if the drawn bubble ships.
+
+The footer's mesh values it used at first are a *dark band's* colours, pre-mixed to sit over near-black,
+and on the page they read as ink rather than as light. The hues are now given at full strength and held
+back by the container's `opacity` instead — one number to turn, and the one you would reach for.
+
+It is held well back: **0.19 on the dark canvas, 0.11 on the light one**, half of what the footer's
+pre-diluted values needed. Light is lighter again because screened over a near-white page the same
+numbers read as a coloured cloud sitting on the content rather than as light behind it. Under
+`prefers-reduced-motion` the pool stays and the drift stops: it is a ground, not a message.
+
 ### What is committed, and what is not
 
 The product screenshots and the platform diagram are the design's own assets and are committed under
-`assets/home/` (2.3MB, exported at the drawn size or 2×). **Customer and vendor logos are not** — Airbus,
-Sky, Broadcom, Unilever, Stadt Wien, Carrefour, Petrobras, OpenAI, Asana and the rest are other companies'
-trademarks rather than design-system assets, so the marquee, the carousel tiles and the integration row use
-stand-ins at the drawn size. The Gartner "Leader / Summer 2026" shield is omitted for the same reason; the
-rating, the stars and the attribution line are real.
+`assets/home/`, exported at the drawn size or 2×. **Customer and vendor logos are not** — Airbus, Sky,
+Broadcom, Unilever, Stadt Wien, Carrefour and Petrobras are other companies' trademarks rather than
+design-system assets, so the marquee and the carousel tiles use stand-ins at the drawn size, and the
+integration row runs eight invented vendors. The Gartner "Leader / Summer 2026" shield is omitted for the
+same reason; the rating, the stars and the attribution line are real.
+
+**`Trending Now`'s six thumbnails are committed, and they are the exception worth flagging.** They come
+straight out of the `card-image` fills in node `7655:15414` — centre-cropped to the card's 3:2, saved at
+820×547 as JPEG q82, 281KB for the six — and they live in `assets/home/trending/`. Four are stock
+photography and two are illustration; none of them is a design-system asset, and this is a public
+repository. They were deliberately left out until now for that reason, with a generated gradient tile in
+their place, and the argument for changing course is that this is the one section a placeholder actually
+broke: the cards are mostly picture, so six flat panels said nothing about whether the section works.
+**If the photography is not licensed for redistribution, this is where to undo it** — delete the folder
+and put `resourceTile` back.
 
 ### The platform diagram is drawn, not exported
 
@@ -2510,7 +2582,8 @@ the stat row was clipped away entirely — present in the DOM, invisible on the 
 off and lets the column be as tall as what is in it.
 
 **A `Button` label longer than its container now wraps instead of overflowing.** Mantine's button is a fixed
-height with a `nowrap` label, so `Explore our integration capabilities` ran straight out through the gutter
+height with a `nowrap` label, so the integrations CTA, then reading `Explore our integration capabilities`, ran straight out through
+the gutter
 at 375px. The root is now `height: auto; min-height: var(--button-height)` and the label wraps — the drawn
 height is the floor, so every button that fits on one line is unchanged.
 

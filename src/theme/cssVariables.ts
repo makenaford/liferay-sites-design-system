@@ -230,6 +230,21 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
      * three the file's gradient runs through. Mode-independent like the rest of the band: it is dark in
      * both colour modes, so a mode-aware hue would turn it inside out in light mode.
      */
+    /*
+     * The drawn bubble's own colours, given rather than sampled.
+     *
+     * `Brand/Primary/Primary` carries the blue; these four carry the rest, and none of them has a home
+     * in the ramp yet — there is no violet this deep, no sky this light and nothing near `#070d52` — so
+     * they live here, once, and are flagged for `Accent/*` in the file if the drawn bubble ships.
+     *
+     * Published rather than declared on the hero's own rule because the `MeshBackdrop` runs the same
+     * palette: the page's ambient light should be the light the hero is made of, and two copies of five
+     * hexes is two places to change it.
+     */
+    '--sds-bubble-magenta': '#9500f2',
+    '--sds-bubble-violet': '#6f0bd2',
+    '--sds-bubble-sky': '#3fa2f7',
+    '--sds-bubble-deep': '#070d52',
     '--sds-footer-mesh-1': 'rgba(116, 20, 255, 0.55)',
     '--sds-footer-mesh-2': 'rgba(11, 95, 255, 0.45)',
     '--sds-footer-mesh-3': 'rgba(1, 23, 174, 0.5)',

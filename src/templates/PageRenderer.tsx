@@ -61,7 +61,9 @@ import {
   IconUser1,
 } from '../icons'
 import { PRODUCT_MAP_MAX_HEIGHT } from './product-map'
-import { Quotee, VendorTile, Wordmark, unit } from './shared'
+import { VENDOR_LOGOS } from './vendor-logos'
+import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit } from './shared'
+import classes from '../theme/components.module.css'
 import { isVideo } from './page-schema'
 import type {
   CardSpec,
@@ -740,51 +742,65 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
 }
 
 /**
- * `Type=Integrations Section` — a wrapping row of 64px glass tiles, not a marquee.
+ * `Type=Integrations Section`, scrolling — a **deliberate divergence from the file.**
  *
- * The tile is `card-main` at 64x64 and padding 12, which is not a value on the `Padding` axis, so the
- * box is sized here. Recorded in the README.
+ * Figma draws a static wrapping row of 64px glass tiles. A fixed row can only ever show as many
+ * integrations as fit across, and the claim the section is making is that there are more than that, so
+ * the row scrolls instead: `Marquee`, which brings a measured speed, the edge fade and the pause button
+ * WCAG 2.2.2 requires, and a `MeshBackdrop` behind it. The tile stays the drawn 64 square and holds the
+ * mark alone. Recorded in the README.
+ *
+ * Logos arrive as names. A name in the invented set draws its lockup; anything else falls back to the
+ * initial tile, so a page carrying real vendor names still renders.
  */
 function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'integrations' }> }) {
   return (
     <Section
       reveal
+      bleed
       gap={32}
-      title={
-        <SectionTitle
-          title={spec.title}
-          description={spec.description}
-          actions={
-            spec.action ? (
-              <Button
-                variant="outline"
-                size="md"
-                w={{ base: '100%', md: 'auto' }}
-                rightSection={<IconArrowRight />}
-              >
-                {spec.action.label}
-              </Button>
-            ) : undefined
-          }
-        />
+      className={classes.meshHost}
+      title={<SectionTitle align="center" title={spec.title} description={spec.description} />}
+      /*
+       * The call to action sits in the section's footer — Figma's `Call to Action` cell, centred by the
+       * Section — rather than beside the heading. Below the strip it reads as the thing to do after
+       * looking at the logos.
+       */
+      footer={
+        spec.action ? (
+          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+            {spec.action.label}
+          </Button>
+        ) : undefined
       }
     >
-      <Group gap={16} wrap="wrap">
-        {spec.logos.map((name, i) => (
-          <Card
-            // eslint-disable-next-line react/no-array-index-key
-            key={`${name}-${i}`}
-            surface="glass"
-            padding="none"
-            w={64}
-            h={64}
-            /* `flex: none` so a tile never shrinks below its 64px — a fixed box, not a column. */
-            style={{ display: 'grid', placeItems: 'center', flex: 'none' }}
-          >
-            <VendorTile name={name} />
-          </Card>
-        ))}
-      </Group>
+      <MeshBackdrop />
+      <Marquee label="Integrations" gap={16} logoWidth={64} size="lg" speed={38} fade fadeWidth={120}>
+        {spec.logos.map((name, i) => {
+          const logo = VENDOR_LOGOS.find((v) => v.name === name)
+          return (
+            <Card
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${name}-${i}`}
+              surface="glass"
+              padding="none"
+              w={64}
+              h={64}
+            >
+              <Group justify="center" align="center" h="100%">
+                {logo ? (
+                  <svg viewBox="0 0 24 24" width={28} height={28} role="img" aria-label={name}>
+                    {logo.mark}
+                  </svg>
+                ) : (
+                  /* A name the invented set does not cover — the initial tile still stands in for it. */
+                  <VendorTile name={name} />
+                )}
+              </Group>
+            </Card>
+          )
+        })}
+      </Marquee>
     </Section>
   )
 }

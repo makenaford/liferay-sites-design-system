@@ -17,7 +17,9 @@ import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
-import { Quotee, SiteFooter, SiteHeader, VendorTile, Wordmark, logoTile, unit } from './shared'
+import { VENDOR_LOGOS } from './vendor-logos'
+import classes from '../theme/components.module.css'
+import { MeshBackdrop, Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
@@ -51,6 +53,12 @@ import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
 import teamsMedia from '../../assets/home/teams-media.png'
+import trendingAi from '../../assets/home/trending/ai-transformation.jpg'
+import trendingB2b from '../../assets/home/trending/b2b-ecommerce.jpg'
+import trendingKms from '../../assets/home/trending/knowledge-management.jpg'
+import trendingLowCode from '../../assets/home/trending/low-code.jpg'
+import trendingStrategy from '../../assets/home/trending/digital-strategy.jpg'
+import trendingPortals from '../../assets/home/trending/web-portals.jpg'
 
 
 /* ------------------------------------------------------------------ the page's content */
@@ -382,44 +390,61 @@ const CUSTOMERS = [
   'Carrefour',
 ]
 
-const VENDORS = ['Asana', 'Postmark', 'Trello', 'OpenAI', 'Mixpanel', 'Auth0', 'Figma', 'Payhip']
-
 /*
- * `Trending Now` — node `7655:15414`, now that the cell has been drawn.
+ * `Trending Now` — node `7655:15414`.
  *
- * Six resource cards: a label over a title, under an image, on the page's own ground. The design's
- * thumbnails are stock photography that is not ours to commit, so the tile below stands in for them the
- * way `logoTile` stands in for customer marks — same shape, same ratio, obviously a placeholder. The
- * titles and labels are the file's.
+ * Six resource cards: a label over a title, under an image, on the page's own ground. Titles, labels and
+ * **thumbnails are the file's** — exported from the `card-image` fills rather than stood in for, which is
+ * the one section where a placeholder was doing real damage: the cards are mostly picture, so six flat
+ * gradient panels said nothing about whether the section works.
+ *
+ * Each is centre-cropped to the card's 3:2 and saved at 820x547 — twice the ~410px the card renders at —
+ * as JPEG at quality 82. 281KB for the six.
+ *
+ * **They are photography and illustration from the design, not design-system assets.** Four are stock
+ * photographs, and committing them here puts them in a public repository. Recorded in README.md under
+ * *What is committed, and what is not*, which until now said this section's thumbnails were deliberately
+ * left out for exactly that reason.
  */
 const TRENDING = [
-  { tag: 'Guide', title: 'What is AI Transformation?' },
-  { tag: 'Blog', title: 'What is the Purpose of a Knowledge Management System?' },
-  { tag: 'Blog', title: 'What is Low-Code and No-Code?' },
-  { tag: 'Article', title: 'What is Digital Strategy?' },
-  { tag: 'Blog', title: '16 Awesome Web Portal Examples' },
-  { tag: 'Blog', title: 'What Is B2B Ecommerce?' },
+  {
+    tag: 'Guide',
+    title: 'What is AI Transformation?',
+    image: trendingAi,
+    alt: 'Hands at a laptop keyboard under a blue overlay of circuitry and data',
+  },
+  {
+    tag: 'Blog',
+    title: 'What is the Purpose of a Knowledge Management System?',
+    image: trendingKms,
+    alt: 'Flat illustration of a woman beside a lightbulb, a video player and message cards',
+  },
+  {
+    tag: 'Blog',
+    title: 'What is Low-Code and No-Code?',
+    image: trendingLowCode,
+    alt: 'Someone at a monitor reading a screen of code',
+  },
+  {
+    tag: 'Article',
+    title: 'What is Digital Strategy?',
+    image: trendingStrategy,
+    alt: 'Two colleagues at a whiteboard covered in sticky notes',
+  },
+  {
+    tag: 'Blog',
+    title: '16 Awesome Web Portal Examples',
+    image: trendingPortals,
+    alt: 'A 3D render of a lit platform ringed by Create, Find, Share, Trust and Improve tiles',
+  },
+  {
+    tag: 'Blog',
+    title: 'What Is B2B Ecommerce?',
+    image: trendingB2b,
+    alt: 'A laptop keyboard from above with a hand resting on it',
+  },
 ]
 
-/**
- * A 3:2 stand-in for a resource thumbnail.
- *
- * Hued off the title so the six are told apart, but **inside the brand's own arc** — 200° to 280°, which
- * is where the bubble artwork lives. `logoTile` takes the hue modulo 360 and lands wherever it lands,
- * which is fine for a customer mark standing in for someone else's colour and wrong here: six panels of
- * arbitrary olive and magenta across a marketing section read as a bug rather than as placeholders.
- */
-const resourceTile = (title: string) => {
-  const hue = 200 + ([...title].reduce((total, ch) => total + ch.charCodeAt(0), 0) % 80)
-  return `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="540" height="360" viewBox="0 0 540 360">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="hsl(${hue} 58% 30%)"/>
-    <stop offset="1" stop-color="hsl(${hue + 24} 64% 14%)"/>
-  </linearGradient></defs>
-  <rect width="540" height="360" fill="url(#g)"/>
-</svg>`)}`
-}
 
 const RESEARCH = [
   { tag: 'CMS Trends', title: '2026 Liferay Digital Content Management Report' },
@@ -894,47 +919,69 @@ function HomePage() {
       </Section>
 
       {/*
-       * 9. Integrations — Figma's `Type=Integrations Section` is a `List` of 64px glass tiles at gap
-       * 16, not a logo marquee. The tile is `card-main` 64×64 at padding 12, which is not a value on
-       * the `Padding` axis, so the box is sized here rather than by the component. In the README.
+       * 9. Integrations — a scrolling row of vendor lockups on a drifting mesh.
+       *
+       * **A deliberate divergence from the file.** Figma's `Type=Integrations Section` is a static
+       * `List` of 64px glass tiles at gap 16, not a marquee; the row here scrolls instead, because a
+       * fixed row can only ever show as many integrations as fit and the point of the section is that
+       * there are more than that. `Marquee` is the library's existing strip — measured speed, edge fade,
+       * and the pause button WCAG 2.2.2 asks for — so this is a composition rather than new motion.
+       *
+       * The logos are invented. Real vendor marks are other companies' trademarks and are not committed
+       * here, the same rule the customer marquee follows; `vendor-logos.tsx` says so at more length.
        */}
       <Section
         reveal
+        bleed
         gap={32}
+        className={classes.meshHost}
         title={
           <SectionTitle
+            align="center"
             title="Extend Your platform. Integrate without limits."
             description="Liferay connects flexibly with the platforms and vendors your team relies on every day."
-            actions={
-              <Button
-                variant="outline"
-                size="md"
-                /* Full width once the row has wrapped, so the label has somewhere to go. */
-                w={{ base: '100%', md: 'auto' }}
-                rightSection={<IconArrowRight />}
-              >
-                Explore our integration capabilities
-              </Button>
-            }
           />
         }
+        /*
+         * The call to action goes in the section's own footer rather than the title's slot — Figma's
+         * `Call to Action` cell, which the Section already centres. Below the strip it reads as the
+         * thing to do *after* looking at the logos, which is the order the section actually asks for.
+         */
+        footer={
+          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+            Explore integrations
+          </Button>
+        }
       >
-        <Group gap={16} wrap="wrap">
-          {[...VENDORS, ...VENDORS].map((name, i) => (
-            <Card
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${name}-${i}`}
-              surface="glass"
-              padding="none"
-              w={64}
-              h={64}
-              /* `flex: none` so a tile never shrinks below its 64px — a fixed box, not a column. */
-              style={{ display: 'grid', placeItems: 'center', flex: 'none' }}
-            >
-              <VendorTile name={name} />
+        <MeshBackdrop />
+        <Marquee
+          label="Integrations"
+          gap={16}
+          logoWidth={64}
+          size="lg"
+          speed={38}
+          /*
+           * The strip carries its own fade, so the tiles dissolve at the same edges the mesh does rather
+           * than sliding out from under a hard cut.
+           */
+          fade
+          fadeWidth={120}
+        >
+          {VENDOR_LOGOS.map((vendor) => (
+            <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
+              {/*
+               * The mark alone, so the name has to be *on the mark* rather than beside it: `role="img"`
+               * with the vendor's name, which is the only thing announcing this tile at all now that
+               * there is no text in it.
+               */}
+              <Group justify="center" align="center" h="100%">
+                <svg viewBox="0 0 24 24" width={28} height={28} role="img" aria-label={vendor.name}>
+                  {vendor.mark}
+                </svg>
+              </Group>
             </Card>
           ))}
-        </Group>
+        </Marquee>
       </Section>
 
       {/*
@@ -959,7 +1006,7 @@ function HomePage() {
               surface="none"
               padding="none"
               image={
-                <Image src={resourceTile(item.title)} alt="" ratio="3:2" radius="sm" />
+                <Image src={item.image} alt={item.alt} ratio="3:2" radius="sm" />
               }
               top={
                 <Label variant="glass" size="sm">
