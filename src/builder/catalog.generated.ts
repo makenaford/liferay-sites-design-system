@@ -202,6 +202,14 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "GradientText",
+    doc: "GradientText — a phrase inside a heading, filled with the brand gradient.",
+    props: [
+      { name: "children", kind: "slot", default: "One Platform." },
+      { name: "animate", kind: "boolean", doc: "Sweep the gradient along the text, continuously." },
+    ],
+  },
+  {
     name: "Header",
     doc: "Header — the primary navigation, with a mega menu per section.",
     props: [
@@ -217,6 +225,7 @@ export const CATALOG: ComponentSpec[] = [
   },
   {
     name: "Hero",
+    doc: "Hero — Figma `Hero` component set (node `19110:9503`), with the slots the accompanying spreadsheet lists.",
     props: [
       { name: "background", kind: "enum", options: ["none", "full", "corner"], default: "corner", doc: "Figma's `Type` axis, and the spreadsheet's Background column: `full` is Bubble Full, `corner` is Corner Bubble, `none` is the plain surface." },
       { name: "drawn", kind: "boolean", doc: "Draw the bubble instead of playing a file — the prototype the bubble lab exists to judge." },

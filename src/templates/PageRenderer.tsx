@@ -7,7 +7,8 @@ import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
-import { Hero, HeroHighlight, type HeroMediaSource } from '../components/Hero'
+import { GradientText, highlightPhrase } from '../components/GradientText'
+import { Hero, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
@@ -235,7 +236,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
           {hero.title.highlight ? (
             <>
               {' '}
-              <HeroHighlight>{hero.title.highlight}</HeroHighlight>
+              <GradientText>{hero.title.highlight}</GradientText>
             </>
           ) : null}
         </h1>
@@ -561,7 +562,15 @@ function CustomerStoriesSection({
   spec: Extract<SectionSpec, { type: 'customerStories' }>
 }) {
   return (
-    <Section bleed title={<SectionTitle align="center" title={spec.title} />}>
+    <Section
+      bleed
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+        />
+      }
+    >
       <Carousel label={spec.title} gutter={80} indicators="none" arrows>
         {spec.stories.map((story) => (
           <StoryCard key={story.customer} story={story} />
@@ -596,7 +605,13 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
 
   return (
     <Section
-      title={<SectionTitle align="center" title={spec.title} description={spec.description} />}
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
     >
       {/*
         * 24, which is what the file draws between the bar and the panel in *both* tabbed sections —
@@ -683,7 +698,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
   return (
     <Section
       gap={24}
-      title={<SectionTitle title={spec.title} />}
+      title={<SectionTitle title={highlightPhrase(spec.title, spec.titleHighlight, true)} />}
       footer={
         spec.tabs?.length ? (
           /* Full width so the bar fills the row and scrolls, rather than centring at its own width. */
@@ -746,7 +761,13 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
  */
 function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'capabilityMap' }> }) {
   return (
-    <Section bleed gap={40} title={<SectionTitle align="center" title={spec.title} />}>
+    <Section
+      bleed
+      gap={40}
+      title={
+        <SectionTitle align="center" title={highlightPhrase(spec.title, spec.titleHighlight, true)} />
+      }
+    >
       <CapabilityMap
         names="outside"
         clusters={spec.clusters.map((cluster) => ({
@@ -794,7 +815,13 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
       bleed
       gap={32}
       className={classes.meshHost}
-      title={<SectionTitle align="center" title={spec.title} description={spec.description} />}
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
       /*
        * The call to action sits in the section's footer — Figma's `Call to Action` cell, centred by the
        * Section — rather than beside the heading. Below the strip it reads as the thing to do after

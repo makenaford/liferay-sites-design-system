@@ -284,6 +284,7 @@ export const HOME_PAGE: PageSpec = {
     {
       type: 'customerStories',
       title: '1,200+ Enterprises Move the Needle With Liferay',
+      titleHighlight: '1,200+ Enterprises',
       stories: [
         /*
          * The eight from the `§4 Customer Testimonials` sheet, kept in step with `Home.stories.tsx`.
@@ -374,6 +375,7 @@ export const HOME_PAGE: PageSpec = {
     {
       type: 'tabbedContent',
       title: 'Different Teams. One Platform.',
+      titleHighlight: 'One Platform.',
       description:
         'Whether you drive campaigns, build infrastructure, or grow partnerships – Liferay empowers your success.',
       tabs: [
@@ -386,6 +388,7 @@ export const HOME_PAGE: PageSpec = {
     {
       type: 'fullCard',
       title: 'Designed for Your Industry. Built for Growth.',
+      titleHighlight: 'Built for Growth.',
       tabs: [
         'Financial Services',
         'Energy and Utilities',
@@ -422,6 +425,7 @@ export const HOME_PAGE: PageSpec = {
     {
       type: 'capabilityMap',
       title: 'Everything You Need in One Platform',
+      titleHighlight: 'One Platform',
       hub: { icon: 'dxp', label: 'DXP' },
       clusters: [
         {
@@ -558,6 +562,7 @@ export const HOME_PAGE: PageSpec = {
     {
       type: 'integrations',
       title: 'Extend Your platform. Integrate without limits.',
+      titleHighlight: 'Integrate without limits.',
       description:
         'Liferay connects flexibly with the platforms and vendors your team relies on every day.',
       action: { label: 'Explore integrations', href: '#' },

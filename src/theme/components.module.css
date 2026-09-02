@@ -4356,17 +4356,17 @@
   }
 }
 
-/* ---- the highlighted tail --------------------------------------------------------------------
+/* ---- GradientText ----------------------------------------------------------------------------
  *
- * `Brand/Primary/Lighten 1` to `Accent/Product Accent`, clipped to the text and running left to right
- * across it — the gradient the file draws on the hero's heading, and the only gradient text on that
- * page. Two stops, static, exactly as drawn.
+ * A phrase inside a heading, filled with `Brand/Primary/Lighten 1` to `Accent/Product Accent`, clipped
+ * to the text and running left to right across it. Two stops, static — the fill as the file draws it.
  *
- * The sweep below is opt-in and nothing asks for it yet. It was on the hero for a day: the file draws a
- * static fill there, and a heading that shimmers to itself while the reader is on the first sentence of
- * the page is the animation with the weakest claim on their attention and the strongest pull on it.
+ * The sweep is `[data-animate]`, below, and it is opt-in for a reason: the hero had it and does not now.
+ * A heading that shimmers to itself while the reader is on the first sentence of the page is the
+ * animation with the weakest claim on their attention and the strongest pull on it. Further down, where
+ * a section heading has to catch an eye travelling past it, the same movement is doing a job.
  */
-.heroHighlight {
+.gradientText {
   background-image: linear-gradient(
     90deg,
     var(--sds-brand-primary-lighten-1) 0%,
@@ -4389,7 +4389,7 @@
  * `linear`, and slow: a constant sweep reads as light moving across a surface, an eased one as something
  * sliding back and forth.
  */
-.heroHighlight[data-animate] {
+.gradientText[data-animate] {
   background-image: linear-gradient(
     90deg,
     var(--sds-brand-primary-lighten-1) 0%,
@@ -4397,10 +4397,10 @@
     var(--sds-brand-primary-lighten-1) 100%
   );
   background-size: 250% 100%;
-  animation: sds-hero-shimmer 3s linear infinite;
+  animation: sds-gradient-sweep 3s linear infinite;
 }
 
-@keyframes sds-hero-shimmer {
+@keyframes sds-gradient-sweep {
   from { background-position: 200% center; }
   to { background-position: 0% center; }
 }
@@ -4410,7 +4410,7 @@
  * taking it away would change the sentence.
  */
 @media (prefers-reduced-motion: reduce) {
-  .heroHighlight[data-animate] {
+  .gradientText[data-animate] {
     animation: none;
     background-position: 100% center;
   }
