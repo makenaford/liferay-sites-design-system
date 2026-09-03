@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
@@ -276,17 +276,12 @@ export function PanelMedia({ media }: { media: ImageRef }) {
         aspectRatio: media.ratio && media.ratio !== 'auto' ? undefined : 'auto',
         height: 'auto',
         /*
-         * The black ground blended away, the same way the hero does it for the bubble webms.
-         *
-         * These clips are a photograph inset in pure black padding. With the panel gone there is
-         * nothing to hide that against, and the page is `#070b13` rather than `#000`, so the clip sat
-         * on it as a slightly darker rectangle with a visible edge. `screen` composites pure black to
-         * exactly the backdrop, so the padding disappears into the page whatever the page is.
-         *
-         * It lifts the photograph's own blacks by the page colour — under 8% on the brightest channel
-         * here — which is the price, and it is the same price the hero already pays.
+         * The `screen` that blends the black ground away is on the *layer* in `CrossfadeMedia`, not
+         * here. It was here, and it stopped working the moment the crossfade arrived: the fade is a CSS
+         * animation, an animation creates a stacking context, and `animation-fill-mode: both` keeps
+         * that context for good — so the video was blending against its own transparent wrapper rather
+         * than against the page, and pure black over transparent is pure black.
          */
-        mixBlendMode: 'screen',
         borderRadius: 'var(--mantine-radius-md)',
       }}
     />
@@ -300,13 +295,19 @@ export function PanelMedia({ media }: { media: ImageRef }) {
  * a class on the element: a fade needs both pictures on screen at once, and React has thrown the old
  * one away by the time any CSS could run.
  *
- * **Both layers keep their own `screen` blend rather than sharing one on this wrapper.** A shared
- * wrapper would be tidier and is wrong: the still that rows without footage fall back to is an ordinary
- * photograph with no black in it, and screening that washes it out. So the blend stays a property of
- * the thing being blended, and the cost is that mid-fade the two layers screen against the page twice.
- * On imagery this dark that is arithmetic rather than something you can see — two frames at 0.2 over a
- * 0.03 page come out at 0.21 against the 0.20 either would give alone.
+ * **The `screen` that blends a clip's black ground away lives on the layer, per layer.** It has to: the
+ * fade is a CSS animation, an animation creates a stacking context, and `animation-fill-mode: both`
+ * keeps that context after the fade ends — so a blend on the video inside blends against its own
+ * transparent wrapper instead of the page, and pure black over transparent is pure black. The layer is
+ * the element that owns the stacking context, so it is the element that has to do the blending.
+ *
+ * Per layer rather than once on the outer box, because it is a property of *that clip*: rows without
+ * footage fall back to an ordinary photograph with no black in it, and screening that washes it out. So
+ * a video layer screens and a still layer does not, even mid-fade between the two.
  */
+const blendFor = (media: ImageRef): CSSProperties | undefined =>
+  isVideo(media.src) ? { mixBlendMode: 'screen' } : undefined
+
 export function CrossfadeMedia({ media }: { media: ImageRef }) {
   const [layers, setLayers] = useState<{ id: number; media: ImageRef }[]>([{ id: 0, media }])
   const nextId = useRef(0)
@@ -327,13 +328,14 @@ export function CrossfadeMedia({ media }: { media: ImageRef }) {
   return (
     <div className={classes.mediaFade}>
       {outgoing ? (
-        <div className={classes.mediaFadeOut} aria-hidden>
+        <div className={classes.mediaFadeOut} style={blendFor(outgoing.media)} aria-hidden>
           <PanelMedia media={outgoing.media} />
         </div>
       ) : undefined}
       <div
         key={incoming.id}
         className={classes.mediaFadeIn}
+        style={blendFor(incoming.media)}
         /* The fade is over, so the layer underneath has nothing left to show. */
         onAnimationEnd={() => setLayers((prev) => prev.slice(-1))}
       >
