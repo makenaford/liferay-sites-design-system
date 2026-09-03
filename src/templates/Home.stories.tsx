@@ -1011,21 +1011,23 @@ function HomePage() {
           fadeWidth={120}
         >
           {/*
-           * The logo *is* the tile — each file is a 200x200 artboard with its own rounded rect in it, so
-           * `Card`'s glass tile around one would be a tile inside a tile. The `alt` is the only thing
-           * announcing which vendor this is, since there is no text in the row.
+           * The mark inside the glass tile, at half its width. The `alt` is the only thing announcing
+           * which vendor this is, since there is no text in the row.
            */}
           {VENDOR_LOGOS.map((vendor) => (
-            <img
-              key={vendor.name}
-              src={vendor.src}
-              alt={vendor.name}
-              width={64}
-              height={64}
-              loading="lazy"
-              draggable={false}
-              style={{ display: 'block', borderRadius: 12 }}
-            />
+            <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
+              <Group justify="center" align="center" h="100%">
+                <img
+                  src={vendor.src}
+                  alt={vendor.name}
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  draggable={false}
+                  style={{ display: 'block' }}
+                />
+              </Group>
+            </Card>
           ))}
         </Marquee>
       </Section>

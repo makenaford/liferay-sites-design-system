@@ -1123,28 +1123,7 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
       <Marquee label="Integrations" gap={16} logoWidth={64} size="lg" speed={38} fade fadeWidth={120}>
         {spec.logos.map((name, i) => {
           const logo = VENDOR_LOGOS.find((v) => v.name === name)
-          /*
-           * The logo *is* the tile.
-           *
-           * Each file is a 200x200 artboard with its own rounded rect in it, so wrapping one in `Card`'s
-           * glass tile gives a tile inside a tile and shrinks the mark to something nobody can read. A
-           * name with no file still gets the glass tile, because an initial on bare page is not a tile
-           * at all.
-           */
-          return logo ? (
-            <img
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${name}-${i}`}
-              src={logo.src}
-              alt={name}
-              width={64}
-              height={64}
-              /* Decorative-ish but named: the row is a claim about which products these are. */
-              loading="lazy"
-              draggable={false}
-              style={{ display: 'block', borderRadius: 12 }}
-            />
-          ) : (
+          return (
             <Card
               // eslint-disable-next-line react/no-array-index-key
               key={`${name}-${i}`}
@@ -1153,8 +1132,32 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
               w={64}
               h={64}
             >
+              {/*
+               * The mark sits *in* the tile, at half its width.
+               *
+               * It was drawn at the full 64 for a while, on the grounds that each file is a 200x200
+               * artboard with its own rounded rect. Most of them are not — they are transparent marks —
+               * and the three that do carry a plate (HubSpot, Stripe, PayPal) carry it in brand colour
+               * rather than as chrome, so inside the tile they read as a plated logo and not as a tile
+               * inside a tile. Framing them all the same way is what makes the row a row.
+               *
+               * The `alt` is the only thing announcing which vendor this is: there is no text in the row.
+               */}
               <Group justify="center" align="center" h="100%">
-                <VendorTile name={name} />
+                {logo ? (
+                  <img
+                    src={logo.src}
+                    alt={name}
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    draggable={false}
+                    style={{ display: 'block' }}
+                  />
+                ) : (
+                  /* A name with no file. The initial tile still stands in for it. */
+                  <VendorTile name={name} />
+                )}
               </Group>
             </Card>
           )

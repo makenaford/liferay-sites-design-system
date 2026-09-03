@@ -25,10 +25,11 @@ import ups from '../../assets/integrations/ups.svg'
  * standing in. Naming a vendor you integrate with is ordinary nominative use; that is not a claim
  * about redistribution, which is the question this file's history is really about.
  *
- * **Each logo is its own tile.** They arrive as 200×200 artboards with a rounded rect already in them —
- * white for most, the brand's own colour for Stripe — so they are drawn at the tile size rather than as
- * a mark inside one of `Card`'s glass tiles. Putting these inside a glass card gives a tile in a tile,
- * and the mark ends up small enough to be unreadable.
+ * **Each mark is framed in the same glass tile**, at half its width, the way the rest of the page's
+ * logo rows are. Most of these files are transparent marks on a 200×200 artboard; the three that carry
+ * a plate — HubSpot, Stripe, PayPal — carry it in brand colour rather than as chrome, so inside the
+ * tile they read as a plated logo and not as a second tile. Framing them all the same way is what makes
+ * the row a row rather than twelve differently-shaped things in a line.
  *
  * That is also why there is no `monochrome` treatment here. The customer marquee inks its logos to one
  * colour, which is what a logo *wall* wants; an integration row is claiming these are the real products
