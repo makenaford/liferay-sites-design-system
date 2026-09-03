@@ -90,8 +90,8 @@ export interface MegaTileProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
  * A prompt across the top of a panel, above everything else in it — "What are you looking to
  * achieve?" over the Solutions columns.
  *
- * A full-width flex item, because `.megaBody` wraps: anything narrower would sit *beside* the columns
- * rather than above them.
+ * It takes the body grid's `heading` row, which spans the columns only — the featured rail spans that
+ * row and the columns' both, so a prompt no longer pushes the rail down the panel.
  */
 function Heading({ children }: { children: ReactNode }) {
   return <p className={classes.megaHeading}>{children}</p>

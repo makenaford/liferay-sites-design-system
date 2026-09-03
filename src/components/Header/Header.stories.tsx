@@ -101,6 +101,12 @@ export const ResourcesOpen: Story = {
 /**
  * `position="static"` for a header that sits in the flow rather than overlaying the page — the glass
  * still reads, but there is nothing scrolling under it to blur.
+ *
+ * The *bar* is what sits in the flow. The open panel still hangs over the page here, as it does when
+ * the header is fixed: it used to be a block in the document, so opening a menu pushed the page down
+ * by the panel's height and closing it pulled the page back up, jumping under the reader on every
+ * click. The story keeps `defaultOpen` so that is visible — the copy below starts under the bar, not
+ * under the panel.
  */
 export const Static: Story = {
   args: { position: 'static', defaultOpen: 'platform' },
