@@ -169,6 +169,16 @@ export const CATALOG: ComponentSpec[] = [
     unsupported: ["order"],
   },
   {
+    name: "CountUp",
+    doc: "CountUp — a number that counts up to itself when it first comes into view.",
+    props: [
+      { name: "value", kind: "number", doc: "The figure to arrive at." },
+      { name: "duration", kind: "number", default: "1200", doc: "How long the count takes, in milliseconds." },
+      { name: "decimals", kind: "number", doc: "Decimal places to hold while counting, so `12.5` does not flicker between one and none." },
+    ],
+    unsupported: ["format"],
+  },
+  {
     name: "Divider",
     doc: "Divider — Figma `divider` component set (node `16290:53873`).",
     props: [

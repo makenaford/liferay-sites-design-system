@@ -19,7 +19,7 @@ import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
 import bubbleCornerLight from '../../assets/bubbles/bubble_corner_light.webm'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section as SDSSection, SectionTitle, type SectionProps } from '../components/Section'
-import { Stat, StatBar } from '../components/Stat'
+import { Stat, StatBar, CountUp } from '../components/Stat'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
@@ -143,6 +143,9 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
  * times over — and keying by the label made React drop two of the three. Position is what actually
  * identifies a figure in a row that never reorders.
  */
+/** A value that is just a number, separators allowed — `1,200` yes, `24/7` and `A+` no. */
+const countable = (value: string) => /^\d[\d,]*(\.\d+)?$/.test(value.trim())
+
 function renderStat(stat: StatSpec, align?: 'center', index = 0) {
   return (
     <Stat
@@ -151,7 +154,14 @@ function renderStat(stat: StatSpec, align?: 'center', index = 0) {
       value={
         <>
           {stat.prefix ? unit(stat.prefix) : null}
-          {stat.value}
+          {/*
+           * Counted when the figure is a number, printed when it is not.
+           *
+           * `StatSpec.value` is a string, and most of them are figures — but not all: a spec is free to
+           * say `24/7` or `A+`, and counting up to those means nothing. Parsing is the test, so a page
+           * gets the animation by writing a number rather than by remembering a flag.
+           */}
+          {countable(stat.value) ? <CountUp value={Number(stat.value.replace(/,/g, ''))} /> : stat.value}
           {stat.suffix ? unit(stat.suffix) : null}
         </>
       }
@@ -702,7 +712,10 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                 <div className={panel.stats?.length ? classes.mediaStats : undefined}>
                   <Image src={panel.media.src} alt={panel.media.alt} ratio="3:2" radius="md" />
                   {panel.stats?.length ? (
-                    <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
+                    /* Keyed by the tab, so the figures count again when the panel changes. */
+                    <StatBar key={tab} align="center">
+                      {panel.stats.map((st, i) => renderStat(st, 'center', i))}
+                    </StatBar>
                   ) : null}
                 </div>
               ) : undefined

@@ -17,7 +17,7 @@ import { Label } from '../components/Label'
 import { Link } from '../components/Link'
 import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section, SectionTitle } from '../components/Section'
-import { Stat, StatBar } from '../components/Stat'
+import { Stat, StatBar, CountUp } from '../components/Stat'
 import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
@@ -782,10 +782,18 @@ function HomePage() {
                   ratio="3:2"
                   radius="md"
                 />
-                <StatBar align="center">
-                  <Stat value="56" label="Websites launched" align="center" />
-                  <Stat value="24" label="Industries served" align="center" />
-                  <Stat value="77" label="Countries served" align="center" />
+                {/*
+                 * Keyed by the tab, so the figures count again when the panel changes.
+                 *
+                 * `CountUp` runs on mount and holds; a `key` is how you say "this is a different thing
+                 * now", which is exactly the condition a replay wants. When these numbers differ per
+                 * team — they are the same three today — the count will be counting to a new figure
+                 * rather than repeating the last one, which is the point of replaying it at all.
+                 */}
+                <StatBar key={teamTab} align="center">
+                  <Stat value={<CountUp value={56} />} label="Websites launched" align="center" />
+                  <Stat value={<CountUp value={24} />} label="Industries served" align="center" />
+                  <Stat value={<CountUp value={77} />} label="Countries served" align="center" />
                 </StatBar>
               </div>
             }
