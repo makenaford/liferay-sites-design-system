@@ -1023,18 +1023,52 @@
   background-color: var(--sds-surfaces-card-bg-grey);
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
-  border: 1px solid var(--sds-card-static-line);
+}
+
+/*
+ * The outline **fades out** rather than ending.
+ *
+ * A flat `1px solid` draws the same value the whole way round, so the card is a rectangle with a line on
+ * it: at the bottom, where there is no light in the mesh, that line is the brightest thing on the card.
+ * This is the masked hairline the glass surface uses, with one change — the far end runs to transparent
+ * instead of to `Glass Line/02`, so the stroke is present where the mesh is lit and gone where it is
+ * not, and the card's edge dissolves into the page the way its fill does.
+ *
+ * 200deg rather than glass's 225: the mesh's light comes from the top corners, and the hairline should
+ * fade along the same axis it does.
+ */
+.cardRoot[data-align][data-surface='highlighted']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    200deg,
+    var(--sds-glass-line-from) 0%,
+    var(--sds-glass-line-to) 38%,
+    transparent 86%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /*
  * **The corners carry the colour and the middle stays dark**, which is the difference between a mesh and
  * a wash. The first cut of this spread the blue across the whole leading half; it looked like a tint,
- * and the paragraph — the thing the section exists for — sat on the brightest part of it. Weighted into
- * the corners, the card is unmistakably blue and violet at a glance and nearly the page's own ground
- * where the words are.
+ * and the paragraph — the thing the section exists for — sat on the brightest part of it.
  *
- * Blue leads from the leading corner and violet answers from the trailing one; the third bloom is the
- * violet again, low and to the trailing edge, which is what keeps the bottom from going flat.
+ * **One hue.** The mesh had violet in the trailing corner, and two hues in a card this size read as two
+ * things rather than as one lit surface — the eye goes to the seam between them. Three blues at
+ * different depths do the same job: `Brand/Primary` leading, `Lighten 1` answering, and the primary
+ * again low and trailing so the bottom does not go flat. What varies is the depth of the light, not its
+ * colour, which is what a single source looks like.
+ *
+ * `Gradient Purple` keeps the violet — it is a cell the file draws, and the two tones are the same mesh
+ * in the two brand colours.
  */
 .cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
   background-image:
@@ -1045,12 +1079,12 @@
     ),
     radial-gradient(
       60% 120% at 100% 0%,
-      color-mix(in srgb, var(--sds-accent-product-accent) 30%, transparent) 0%,
+      color-mix(in srgb, var(--sds-brand-primary-lighten-1) 26%, transparent) 0%,
       transparent 68%
     ),
     radial-gradient(
       80% 90% at 88% 110%,
-      color-mix(in srgb, var(--sds-accent-product-accent) 18%, transparent) 0%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 16%, transparent) 0%,
       transparent 74%
     );
 }
