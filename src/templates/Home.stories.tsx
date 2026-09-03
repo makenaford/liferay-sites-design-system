@@ -58,10 +58,12 @@ import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
 import teamsMedia from '../../assets/home/teams-media.png'
 /*
- * The marketers panel's footage, one clip per accordion row.
+ * The teams panel's footage.
  *
- * Matched to the claim each row makes rather than to its position, which is why the order reads oddly
- * beside the file names: `cmp` is the Content Marketing Platform and belongs to the campaigns row.
+ * Placed by the names the export carried — `t1c1`…`t1c4` and `t2c2`, meaning tab 1 cards 1 to 4 and
+ * tab 2 card 2 — rather than by reading the product names against the copy. Guessing from the product
+ * names put all five on Marketers, which is wrong twice over: `cms` belongs to IT/Developers, and
+ * Marketers' fifth row has no clip at all and keeps the still.
  */
 import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
 import cmpClip from '../../assets/home/teams/cmp.mp4'
@@ -261,7 +263,7 @@ const TEAMS: Record<
         q: 'Launch campaigns without waiting on IT',
         a: 'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: 'Explore the page builder',
-        media: { src: cmpClip, alt: 'A campaign being built and published without a release' },
+        media: { src: sitesClip, alt: 'A page being built and published from shared components' },
       },
       {
         q: 'Reach every visitor with the right message',
@@ -273,13 +275,12 @@ const TEAMS: Record<
         q: 'Keep content and assets consistent across every channel',
         a: 'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: 'Explore the DAM',
-        media: { src: cmsClip, alt: 'One content tree and asset library feeding several channels' },
+        media: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         q: 'Turn your site into a B2B revenue engine',
         a: 'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: 'Explore commerce',
-        media: { src: sitesClip, alt: 'A B2B site with catalogues and self-serve reordering' },
       },
     ],
   },
@@ -299,6 +300,7 @@ const TEAMS: Record<
         q: 'Run it where your policy says you can',
         a: 'The same distribution as SaaS, PaaS or self-hosted, with one upgrade path between them.',
         link: 'Compare deployment options',
+        media: { src: cmsClip, alt: 'The same platform running on SaaS, PaaS and self-hosted' },
       },
       {
         q: 'One identity, one audit surface',

@@ -42,11 +42,10 @@ import trendingPortals from '../../assets/home/trending/web-portals.jpg'
  */
 
 /*
- * The marketers panel's footage, one clip per accordion row.
+ * The teams panel's footage.
  *
- * Each is matched to the claim it shows rather than to the row's position, which is why the order here
- * looks arbitrary next to the file names: `cmp` is the Content Marketing Platform and belongs to the
- * campaigns row, not to the content one.
+ * Placed by the names the export carried — `t1c1`…`t1c4` and `t2c2`, meaning tab 1 cards 1 to 4 and
+ * tab 2 card 2 — rather than by reading the product names against the copy.
  */
 import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
 import cmpClip from '../../assets/home/teams/cmp.mp4'
@@ -71,7 +70,7 @@ const TEAM_PANELS = {
         answer:
           'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: { label: 'Explore the page builder', href: '#' },
-        media: { src: cmpClip, alt: 'A campaign being built and published without a release' },
+        media: { src: sitesClip, alt: 'A page being built and published from shared components' },
       },
       {
         question: 'Reach every visitor with the right message',
@@ -85,14 +84,13 @@ const TEAM_PANELS = {
         answer:
           'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: { label: 'Explore the DAM', href: '#' },
-        media: { src: cmsClip, alt: 'One content tree and asset library feeding several channels' },
+        media: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         question: 'Turn your site into a B2B revenue engine',
         answer:
           'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: { label: 'Explore commerce', href: '#' },
-        media: { src: sitesClip, alt: 'A B2B site with catalogues and self-serve reordering' },
       },
     ],
     media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
@@ -116,6 +114,7 @@ const TEAM_PANELS = {
         question: 'Run it where your policy says you can',
         answer: 'The same distribution as SaaS, PaaS or self-hosted, with one upgrade path between them.',
         link: { label: 'Compare deployment options', href: '#' },
+        media: { src: cmsClip, alt: 'The same platform running on SaaS, PaaS and self-hosted' },
       },
       {
         question: 'One identity, one audit surface',
