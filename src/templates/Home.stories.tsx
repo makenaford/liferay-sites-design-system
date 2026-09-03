@@ -1010,17 +1010,22 @@ function HomePage() {
           fade
           fadeWidth={120}
         >
+          {/*
+           * The mark inside the glass tile, at half its width. The `alt` is the only thing announcing
+           * which vendor this is, since there is no text in the row.
+           */}
           {VENDOR_LOGOS.map((vendor) => (
             <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
-              {/*
-               * The mark alone, so the name has to be *on the mark* rather than beside it: `role="img"`
-               * with the vendor's name, which is the only thing announcing this tile at all now that
-               * there is no text in it.
-               */}
               <Group justify="center" align="center" h="100%">
-                <svg viewBox="0 0 24 24" width={28} height={28} role="img" aria-label={vendor.name}>
-                  {vendor.mark}
-                </svg>
+                <img
+                  src={vendor.src}
+                  alt={vendor.name}
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  draggable={false}
+                  style={{ display: 'block' }}
+                />
               </Group>
             </Card>
           ))}

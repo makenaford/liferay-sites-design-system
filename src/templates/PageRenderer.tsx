@@ -1132,13 +1132,30 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
               w={64}
               h={64}
             >
+              {/*
+               * The mark sits *in* the tile, at half its width.
+               *
+               * It was drawn at the full 64 for a while, on the grounds that each file is a 200x200
+               * artboard with its own rounded rect. Most of them are not — they are transparent marks —
+               * and the three that do carry a plate (HubSpot, Stripe, PayPal) carry it in brand colour
+               * rather than as chrome, so inside the tile they read as a plated logo and not as a tile
+               * inside a tile. Framing them all the same way is what makes the row a row.
+               *
+               * The `alt` is the only thing announcing which vendor this is: there is no text in the row.
+               */}
               <Group justify="center" align="center" h="100%">
                 {logo ? (
-                  <svg viewBox="0 0 24 24" width={28} height={28} role="img" aria-label={name}>
-                    {logo.mark}
-                  </svg>
+                  <img
+                    src={logo.src}
+                    alt={name}
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    draggable={false}
+                    style={{ display: 'block' }}
+                  />
                 ) : (
-                  /* A name the invented set does not cover — the initial tile still stands in for it. */
+                  /* A name with no file. The initial tile still stands in for it. */
                   <VendorTile name={name} />
                 )}
               </Group>
