@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
@@ -248,7 +248,15 @@ export function PanelMedia({ media }: { media: ImageRef }) {
       /* Held on its first frame rather than dropped: the footage is the content of the row. */
       autoPlay={!reducedMotion}
       muted
-      loop
+      /*
+       * Once, on entering the row — not on a loop.
+       *
+       * A clip that restarts every few seconds competes with the row that is open: the reader's eye is
+       * pulled back to the picture each time it begins again, and these are 6 to 17 seconds long, so a
+       * loop is a fresh interruption before most people have finished the paragraph. It plays through
+       * and holds its last frame, and it plays again when the row is opened again — the crossfade mounts
+       * a fresh element each time, so entering a row it has seen before starts it from the beginning.
+       */
       playsInline
       preload="auto"
       onError={() => setFailed(true)}
@@ -282,6 +290,56 @@ export function PanelMedia({ media }: { media: ImageRef }) {
         borderRadius: 'var(--mantine-radius-md)',
       }}
     />
+  )
+}
+
+/**
+ * `PanelMedia`, with the swap between two of them faded rather than cut.
+ *
+ * Keeping the outgoing layer mounted is the whole trick, and it is why this is a component rather than
+ * a class on the element: a fade needs both pictures on screen at once, and React has thrown the old
+ * one away by the time any CSS could run.
+ *
+ * **Both layers keep their own `screen` blend rather than sharing one on this wrapper.** A shared
+ * wrapper would be tidier and is wrong: the still that rows without footage fall back to is an ordinary
+ * photograph with no black in it, and screening that washes it out. So the blend stays a property of
+ * the thing being blended, and the cost is that mid-fade the two layers screen against the page twice.
+ * On imagery this dark that is arithmetic rather than something you can see — two frames at 0.2 over a
+ * 0.03 page come out at 0.21 against the 0.20 either would give alone.
+ */
+export function CrossfadeMedia({ media }: { media: ImageRef }) {
+  const [layers, setLayers] = useState<{ id: number; media: ImageRef }[]>([{ id: 0, media }])
+  const nextId = useRef(0)
+
+  useEffect(() => {
+    setLayers((prev) => {
+      const current = prev[prev.length - 1]
+      if (current.media.src === media.src) return prev
+      nextId.current += 1
+      /* At most two: the one going out and the one coming in. A third would fade over an unfinished fade. */
+      return [current, { id: nextId.current, media }]
+    })
+  }, [media])
+
+  const incoming = layers[layers.length - 1]
+  const outgoing = layers.length > 1 ? layers[0] : undefined
+
+  return (
+    <div className={classes.mediaFade}>
+      {outgoing ? (
+        <div className={classes.mediaFadeOut} aria-hidden>
+          <PanelMedia media={outgoing.media} />
+        </div>
+      ) : undefined}
+      <div
+        key={incoming.id}
+        className={classes.mediaFadeIn}
+        /* The fade is over, so the layer underneath has nothing left to show. */
+        onAnimationEnd={() => setLayers((prev) => prev.slice(-1))}
+      >
+        <PanelMedia media={incoming.media} />
+      </div>
+    </div>
   )
 }
 
@@ -795,7 +853,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                    * remounts the element and the new clip starts from its own first frame rather than
                    * inheriting the last one's playback position.
                    */}
-                  <PanelMedia key={media.src} media={media} />
+                  <CrossfadeMedia media={media} />
                   {panel.stats?.length ? (
                     <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
                   ) : null}

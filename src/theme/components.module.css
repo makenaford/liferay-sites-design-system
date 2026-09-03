@@ -8711,6 +8711,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   gap: 24px;
 }
 
+/* ============================================================================ media crossfade
+ *
+ * Swapping the panel's media used to be a cut: the element was keyed by `src`, so React threw the old
+ * one away and mounted the new one in the same frame. On a row that opens itself on a timer that is a
+ * flicker every few seconds, which draws the eye to the swap rather than to the picture.
+ *
+ * Two layers instead. The outgoing one is taken out of the flow and left where it was; the incoming one
+ * sits in the flow — so the box keeps its height — and fades up over it. The outgoing layer is dropped
+ * when the fade ends, which is why nothing here needs a timer.
+ */
+.mediaFade {
+  position: relative;
+}
+
+.mediaFadeOut {
+  position: absolute;
+  inset: 0;
+}
+
+.mediaFadeIn {
+  animation: sds-media-fade var(--sds-motion-slow, 400ms) var(--sds-motion-ease-out, ease-out) both;
+}
+
+@keyframes sds-media-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Asked for less motion, and the new picture is simply there.
+ *
+ * The swap still happens — it is the content of the row, not decoration — it just stops being animated.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .mediaFadeIn {
+    animation: none;
+  }
+}
+
 /* ============================================================================ MeshBackdrop
  *
  * A soft pool of brand light in the middle of a section, big enough to reach past it.

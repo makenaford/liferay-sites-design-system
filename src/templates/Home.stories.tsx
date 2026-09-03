@@ -22,7 +22,7 @@ import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
-import { PanelMedia } from './PageRenderer'
+import { CrossfadeMedia } from './PageRenderer'
 import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -817,14 +817,11 @@ function HomePage() {
               /* The picture and its figures as one panel — see `.mediaStats`. */
               <div className={classes.mediaStats}>
                 {/*
-                 * `PanelMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
+                 * `CrossfadeMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
                  * the poster fallback for a missing file, and the held first frame under
-                 * `prefers-reduced-motion`. Keyed by `src`, so changing rows remounts the element and
-                 * the new clip starts from its own first frame instead of inheriting the last one's
-                 * playback position.
+                 * `prefers-reduced-motion`, and fades between rows rather than cutting.
                  */}
-                <PanelMedia
-                  key={teamMedia?.src ?? 'still'}
+                <CrossfadeMedia
                   media={
                     teamMedia ?? {
                       src: teamsMedia,
