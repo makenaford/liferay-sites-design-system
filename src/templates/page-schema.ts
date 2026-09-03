@@ -114,6 +114,35 @@ export interface HeroSpec {
   /** The email capture: a field with a contained button. */
   form?: { placeholder: string; submit: string }
   /**
+   * The full form card — Figma's `Form` instance in the hero's right column, where `media` would go.
+   *
+   * Distinct from `form`, which is the *inline* email field a marketing hero puts under its copy. This
+   * is the whole card: a heading, rows of labelled fields, a consent box, the reCAPTCHA line and a
+   * submit. A page has one or the other; a hero with both would be asking twice.
+   *
+   * `rows` is an array of arrays because the file's layout is rows of one or two fields — first and
+   * last name together, the message on its own — and that is a property of the row rather than of any
+   * field in it. Saying it as nesting means a page cannot describe a row that does not exist.
+   */
+  formCard?: {
+    title: string
+    description?: string
+    rows: {
+      label: string
+      type?: 'text' | 'email' | 'tel' | 'select' | 'textarea'
+      required?: boolean
+      /** For `select`. */
+      options?: string[]
+    }[][]
+    /** The checkbox above the terms — the partner-sharing agreement the file draws. */
+    consent?: string
+    /** The reCAPTCHA and privacy line, above the button because it is agreed to *by* submitting. */
+    terms?: string
+    submit: string
+    /** The line under the button — the file's "already have a trial?" link. */
+    footnote?: string
+  }
+  /**
    * The button row — Figma's `Bottom` slot on the hero's content block. The Industry hero (node
    * `24223:209534`) draws two: `Book a Demo` solid and `Contact Sales` outline.
    *

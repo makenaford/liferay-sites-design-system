@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
+import { Form } from '../components/Form'
 import { GradientText, highlightPhrase } from '../components/GradientText'
 import { Hero, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
@@ -21,7 +22,7 @@ import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section as SDSSection, SectionTitle, type SectionProps } from '../components/Section'
 import { Stat, StatBar, CountUp } from '../components/Stat'
 import { Tabs } from '../components/Tabs'
-import { Select, TextInput } from '../components/Input'
+import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
   IconArrowUp,
@@ -227,6 +228,7 @@ function HeroMedia({ media }: { media: ImageRef }) {
 }
 
 /**
+/**
  * A still or a clip, in a box of the given ratio.
  *
  * `HeroMedia` is not reusable here and it was a mistake to try: its `<video>` carries no sizing at all,
@@ -338,6 +340,58 @@ export function CrossfadeMedia({ media }: { media: ImageRef }) {
   )
 }
 
+/**
+ * The hero's form card — Figma's `Form` instance, in the column `media` would otherwise fill.
+ *
+ * Every slot here is one the `Form` component already draws, which is the point of it existing: the
+ * heading pair, `Form.Row` per row, the terms *above* the button because they are agreed to by pressing
+ * it, and the footnote under. Nothing about the card's surface, padding or breakpoints is decided here.
+ */
+function HeroFormCard({ spec }: { spec: NonNullable<HeroSpec['formCard']> }) {
+  return (
+    <Form
+      title={spec.title}
+      description={spec.description}
+      terms={spec.terms}
+      submit={
+        <Button size="md" fullWidth>
+          {spec.submit}
+        </Button>
+      }
+      footnote={spec.footnote}
+      onSubmit={(event) => event.preventDefault()}
+    >
+      {spec.rows.map((row, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <Form.Row key={i}>
+          {row.map((field) =>
+            field.type === 'textarea' ? (
+              <Textarea key={field.label} label={field.label} required={field.required} autosize minRows={3} />
+            ) : field.type === 'select' ? (
+              <Select key={field.label} label={field.label} required={field.required} data={field.options ?? []} />
+            ) : (
+              <TextInput
+                key={field.label}
+                label={field.label}
+                required={field.required}
+                type={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
+              />
+            ),
+          )}
+        </Form.Row>
+      ))}
+
+      {spec.consent ? (
+        /*
+         * Mantine's `Checkbox` — the library has no wrapper for one, and the theme styles Mantine's
+         * directly, so a pass-through here would be a component whose whole body is a re-export.
+         */
+        <Checkbox label={spec.consent} />
+      ) : null}
+    </Form>
+  )
+}
+
 function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
 
@@ -427,7 +481,14 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
         ) : undefined
       }
       proof={hero.proof ? renderProof(hero.proof) : undefined}
-      media={hero.media ? <HeroMedia media={hero.media} /> : undefined}
+      /* A form card takes the media column: the file draws one or the other there, never both. */
+      media={
+        hero.formCard ? (
+          <HeroFormCard spec={hero.formCard} />
+        ) : hero.media ? (
+          <HeroMedia media={hero.media} />
+        ) : undefined
+      }
     />
   )
 }
