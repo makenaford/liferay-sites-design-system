@@ -49,6 +49,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Accordion — Figma `Accordion` component set (node `17019:127517`).",
     props: [
       { name: "size", kind: "enum", options: ["sm", "lg"], default: "lg", doc: "Figma's `Size`: `lg` is `Default` (56px row, 21px label), `sm` is `Condensed` (40px, 18px)." },
+      { name: "spotlight", kind: "boolean", doc: "One row is the subject and the rest are the choices around it." },
       { name: "chevronPosition", kind: "enum", options: ["left", "right"], source: "story" },
       { name: "multiple", kind: "boolean", source: "story" },
       { name: "disableChevronRotation", kind: "boolean", source: "story" },

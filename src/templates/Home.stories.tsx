@@ -856,6 +856,8 @@ function HomePage() {
               size="lg"
               order={4}
               autoplay
+              /* The panel is showing what the platform does; the open row is what it is saying. */
+              spotlight
               defaultValue={team.items[0].q}
               onChange={(value) => setOpenRow(value)}
             >

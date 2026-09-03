@@ -873,6 +873,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                 size="lg"
                 order={4}
                 autoplay
+                /* The panel is showing what the platform does; the open row is what it is saying. */
+                spotlight
                 defaultValue={firstRow ?? undefined}
                 onChange={(value) => setOpenRow(value)}
               >
