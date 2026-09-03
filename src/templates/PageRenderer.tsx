@@ -217,6 +217,48 @@ function HeroMedia({ media }: { media: ImageRef }) {
   )
 }
 
+/**
+ * A still or a clip, in a box of the given ratio.
+ *
+ * `HeroMedia` is not reusable here and it was a mistake to try: its `<video>` carries no sizing at all,
+ * because inside the hero `.heroVideo` gives it one. Dropped into a content column it renders at its
+ * natural 1200x866 and takes the page's width with it. This gives the element the same `aspect-ratio`,
+ * radius and `object-fit` that `Image` gives a still, so a row that swaps a photo for a clip does not
+ * also change the shape of the column.
+ */
+export function PanelMedia({ media }: { media: ImageRef }) {
+  const reducedMotion = useReducedMotion()
+  const [failed, setFailed] = useState(false)
+  const ratio = media.ratio ?? '3:2'
+
+  if (!isVideo(media.src) || failed) {
+    return <Image src={failed && media.poster ? media.poster : media.src} alt={media.alt} ratio={ratio} radius="md" />
+  }
+
+  return (
+    <video
+      src={media.src}
+      poster={media.poster}
+      /* Held on its first frame rather than dropped: the footage is the content of the row. */
+      autoPlay={!reducedMotion}
+      muted
+      loop
+      playsInline
+      preload="auto"
+      onError={() => setFailed(true)}
+      aria-label={media.alt}
+      tabIndex={-1}
+      style={{
+        display: 'block',
+        width: '100%',
+        aspectRatio: ratio === '3:2' ? '3 / 2' : undefined,
+        objectFit: 'cover',
+        borderRadius: 'var(--mantine-radius-md)',
+      }}
+    />
+  )
+}
+
 function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
 
@@ -625,6 +667,22 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
   const [tab, setTab] = useState(spec.tabs[0]?.value ?? '')
   const panel: PanelSpec | undefined = spec.tabs.find((t) => t.value === tab)?.content
 
+  /*
+   * Which accordion row is open, so the media can follow it.
+   *
+   * The accordion is left to own its own value rather than being driven from here: owning `value` is
+   * what turns its autoplay off, and the panel opening itself row by row is the whole behaviour of this
+   * section. So it reports through `onChange` — including its automatic advances — and this is a mirror
+   * of its state rather than the source of it.
+   *
+   * Keyed by row, and reset when the tab changes: the panels have different rows, and a stale question
+   * from the last tab matches nothing and would leave the media on the fallback.
+   */
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const firstRow = panel?.items?.[0]?.question ?? null
+  const activeRow = panel?.items?.find((item) => item.question === openRow) ?? panel?.items?.[0]
+  const media = activeRow?.media ?? panel?.media
+
   return (
     <Section
       title={
@@ -657,7 +715,11 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
           w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
           maw="100%"
           value={tab}
-          onChange={(v) => setTab(v ?? '')}
+          onChange={(v) => {
+            setTab(v ?? '')
+            /* A new panel has different rows; keeping the old one would match nothing. */
+            setOpenRow(null)
+          }}
         >
           <Tabs.List grow={spec.tabs.length <= 3}>
             {spec.tabs.map((t) => (
@@ -693,14 +755,21 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
               ) : undefined
             }
             media={
-              panel.media ? (
+              media ? (
                 /*
                  * One object, not two stacked. The container and the gap are what make the stat row
                  * read as belonging to the picture rather than sitting under it — see `.mediaStats`.
                  * Without stats there is nothing to contain, so the frame does not appear.
                  */
                 <div className={panel.stats?.length ? classes.mediaStats : undefined}>
-                  <Image src={panel.media.src} alt={panel.media.alt} ratio="3:2" radius="md" />
+                  {/*
+                   * `HeroMedia` rather than `Image`, because a row's media can be a clip: it plays the
+                   * video, falls back to the poster or the still when the file is missing, and holds the
+                   * first frame under `prefers-reduced-motion`. Keyed by `src`, so switching rows
+                   * remounts the element and the new clip starts from its own first frame rather than
+                   * inheriting the last one's playback position.
+                   */}
+                  <PanelMedia key={media.src} media={{ ...media, ratio: media.ratio ?? '3:2' }} />
                   {panel.stats?.length ? (
                     <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
                   ) : null}
@@ -715,7 +784,13 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                * rather than answering a question the reader arrived with — the FAQ block is the other
                * one, and it deliberately does not do this: someone reading an FAQ came for one answer.
                */
-              <Accordion size="lg" order={4} autoplay defaultValue={panel.items[0].question}>
+              <Accordion
+                size="lg"
+                order={4}
+                autoplay
+                defaultValue={firstRow ?? undefined}
+                onChange={(value) => setOpenRow(value)}
+              >
                 {panel.items.map((item) => (
                   <Accordion.Item key={item.question} value={item.question}>
                     <Accordion.Control>{item.question}</Accordion.Control>

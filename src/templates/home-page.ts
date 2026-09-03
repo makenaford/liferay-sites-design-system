@@ -41,6 +41,19 @@ import trendingPortals from '../../assets/home/trending/web-portals.jpg'
  *   8px out, which is why `resourceGrid` exists separately from `cardGrid`.
  */
 
+/*
+ * The marketers panel's footage, one clip per accordion row.
+ *
+ * Each is matched to the claim it shows rather than to the row's position, which is why the order here
+ * looks arbitrary next to the file names: `cmp` is the Content Marketing Platform and belongs to the
+ * campaigns row, not to the content one.
+ */
+import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
+import cmpClip from '../../assets/home/teams/cmp.mp4'
+import personalizationClip from '../../assets/home/teams/personalization.mp4'
+import cmsClip from '../../assets/home/teams/cms.mp4'
+import sitesClip from '../../assets/home/teams/sites.mp4'
+
 const TEAM_PANELS = {
   marketers: {
     title: 'Launch faster. Convert more.',
@@ -51,30 +64,35 @@ const TEAM_PANELS = {
         answer:
           'Use AI to create and manage content faster, while agents auto-tag assets, translate pages, and segment visitors in real time – so every piece of content lands with the right audience automatically.',
         link: { label: 'Explore AI Hub', href: '#' },
+        media: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
       },
       {
         question: 'Launch campaigns without waiting on IT',
         answer:
           'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: { label: 'Explore the page builder', href: '#' },
+        media: { src: cmpClip, alt: 'A campaign being built and published without a release' },
       },
       {
         question: 'Reach every visitor with the right message',
         answer:
           'Segment on behaviour, account and locale, then personalise any fragment on the page against those segments.',
         link: { label: 'Explore personalization', href: '#' },
+        media: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
       },
       {
         question: 'Keep content and assets consistent across every channel',
         answer:
           'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: { label: 'Explore the DAM', href: '#' },
+        media: { src: cmsClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         question: 'Turn your site into a B2B revenue engine',
         answer:
           'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: { label: 'Explore commerce', href: '#' },
+        media: { src: sitesClip, alt: 'A B2B site with catalogues and self-serve reordering' },
       },
     ],
     media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },

@@ -22,6 +22,7 @@ import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
+import { PanelMedia } from './PageRenderer'
 import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -56,6 +57,17 @@ import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
 import teamsMedia from '../../assets/home/teams-media.png'
+/*
+ * The marketers panel's footage, one clip per accordion row.
+ *
+ * Matched to the claim each row makes rather than to its position, which is why the order reads oddly
+ * beside the file names: `cmp` is the Content Marketing Platform and belongs to the campaigns row.
+ */
+import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
+import cmpClip from '../../assets/home/teams/cmp.mp4'
+import personalizationClip from '../../assets/home/teams/personalization.mp4'
+import cmsClip from '../../assets/home/teams/cms.mp4'
+import sitesClip from '../../assets/home/teams/sites.mp4'
 import trendingAi from '../../assets/home/trending/ai-transformation.jpg'
 import trendingB2b from '../../assets/home/trending/b2b-ecommerce.jpg'
 import trendingKms from '../../assets/home/trending/knowledge-management.jpg'
@@ -224,7 +236,14 @@ const STORIES = [
 /** `Different Teams. One Platform.` — the accordion behind each pill. */
 const TEAMS: Record<
   string,
-  { icon: ReactNode; label: string; title: string; description: string; items: { q: string; a: string; link?: string }[] }
+  {
+    icon: ReactNode
+    label: string
+    title: string
+    description: string
+    /* `media` on a row replaces the panel's while that row is open; rows without one fall back to it. */
+    items: { q: string; a: string; link?: string; media?: { src: string; alt: string } }[]
+  }
 > = {
   marketers: {
     icon: <IconUser1 />,
@@ -236,26 +255,31 @@ const TEAMS: Record<
         q: 'Create smarter content. Convert more visitors.',
         a: 'Use AI to create and manage content faster, while agents auto-tag assets, translate pages, and segment visitors in real time – so every piece of content lands with the right audience automatically.',
         link: 'Explore AI Hub',
+        media: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
       },
       {
         q: 'Launch campaigns without waiting on IT',
         a: 'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: 'Explore the page builder',
+        media: { src: cmpClip, alt: 'A campaign being built and published without a release' },
       },
       {
         q: 'Reach every visitor with the right message',
         a: 'Segment on behaviour, account and locale, then personalise any fragment on the page against those segments.',
         link: 'Explore personalization',
+        media: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
       },
       {
         q: 'Keep content and assets consistent across every channel',
         a: 'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: 'Explore the DAM',
+        media: { src: cmsClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         q: 'Turn your site into a B2B revenue engine',
         a: 'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: 'Explore commerce',
+        media: { src: sitesClip, alt: 'A B2B site with catalogues and self-serve reordering' },
       },
     ],
   },
@@ -466,8 +490,18 @@ function HomePage() {
   const [teamTab, setTeamTab] = useState('marketers')
   const [capability, setCapability] = useState('enterprise-websites')
   const [industry, setIndustry] = useState(INDUSTRIES[0])
+  const [openRow, setOpenRow] = useState<string | null>(null)
 
   const team = TEAMS[teamTab]
+  /*
+   * Which accordion row is open, so the media can follow it.
+   *
+   * The accordion keeps ownership of its own value — taking it over is what turns its autoplay off, and
+   * the panel opening itself row by row is the behaviour of this section — so it reports through
+   * `onChange`, including its automatic advances, and this is a mirror rather than the source.
+   */
+  const teamRow = TEAMS[teamTab].items.find((item) => item.q === openRow) ?? TEAMS[teamTab].items[0]
+  const teamMedia = teamRow.media
   const panel = CAPABILITIES.find((c) => c.value === capability) ?? CAPABILITIES[3]
 
   return (
@@ -755,7 +789,11 @@ function HomePage() {
             variant="pills"
             w={{ base: '100%', md: 776 }}
             value={teamTab}
-            onChange={(v) => setTeamTab(v ?? 'marketers')}
+            onChange={(v) => {
+                  setTeamTab(v ?? 'marketers')
+                  /* A new panel has different rows; the old one would match nothing. */
+                  setOpenRow(null)
+                }}
           >
             <Tabs.List grow>
               {Object.entries(TEAMS).map(([value, t]) => (
@@ -776,11 +814,24 @@ function HomePage() {
             media={
               /* The picture and its figures as one panel — see `.mediaStats`. */
               <div className={classes.mediaStats}>
-                <Image
-                  src={teamsMedia}
-                  alt="Two colleagues building an AI agent in Liferay"
-                  ratio="3:2"
-                  radius="md"
+                {/*
+                 * `PanelMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
+                 * the poster fallback for a missing file, and the held first frame under
+                 * `prefers-reduced-motion`. Keyed by `src`, so changing rows remounts the element and
+                 * the new clip starts from its own first frame instead of inheriting the last one's
+                 * playback position.
+                 */}
+                <PanelMedia
+                  key={teamMedia?.src ?? 'still'}
+                  media={
+                    teamMedia
+                      ? { ...teamMedia, ratio: '3:2' }
+                      : {
+                          src: teamsMedia,
+                          alt: 'Two colleagues building an AI agent in Liferay',
+                          ratio: '3:2',
+                        }
+                  }
                 />
                 <StatBar align="center">
                   <Stat value="56" label="Websites launched" align="center" />
@@ -791,7 +842,13 @@ function HomePage() {
             }
           >
             {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
-            <Accordion size="lg" order={4} autoplay defaultValue={team.items[0].q}>
+            <Accordion
+              size="lg"
+              order={4}
+              autoplay
+              defaultValue={team.items[0].q}
+              onChange={(value) => setOpenRow(value)}
+            >
               {team.items.map((item) => (
                 <Accordion.Item key={item.q} value={item.q}>
                   <Accordion.Control>{item.q}</Accordion.Control>

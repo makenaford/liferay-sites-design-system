@@ -188,7 +188,21 @@ function AccordionBase<Multiple extends boolean = false>({
     () => (props.defaultValue as string | null | undefined) ?? values[0] ?? null,
   )
 
-  const advance = useCallback((value: string) => setCurrent(value), [])
+  /*
+   * An automatic advance is a change like any other.
+   *
+   * `onChange` used to fire only when a reader opened a row by hand, so a caller watching which row is
+   * open — the Home page's tabbed panel swaps its media with it — saw the manual opens and none of the
+   * automatic ones, and the media stuck on whichever row was open last. Autoplay cannot report through
+   * `value`, since owning `value` is exactly what turns autoplay off, so it reports here.
+   */
+  const onChangeRef = useRef(props.onChange)
+  onChangeRef.current = props.onChange
+
+  const advance = useCallback((value: string) => {
+    setCurrent(value)
+    ;(onChangeRef.current as ((value: string | null) => void) | undefined)?.(value)
+  }, [])
   const auto = useAutoplay(
     canAutoplay,
     typeof autoplay === 'number' ? autoplay : AUTOPLAY_MS,
