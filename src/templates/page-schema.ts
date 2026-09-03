@@ -321,6 +321,32 @@ export type SectionSpec =
       cards: CardSpec[]
     }
   /**
+   * `Customer Stories` -> `All Stories` (node `24581:69993`) — the whole catalog, filtered.
+   *
+   * `resourceGrid`'s neighbour and not the same type: that one renders every card it is given, and this
+   * one owns a filter bar, a result count and the subset those produce. Folding them together would put
+   * a filter bar on every grid in the library, which is the thing this schema exists to avoid.
+   *
+   * **The filters are faceted, and the schema says which way.** A card matches a filter when it carries
+   * *any* of that filter's selected values, and it is shown when it matches *every* filter that has a
+   * selection — OR within, AND across, which is what a reader means by picking Website and Customer
+   * Portal under Solutions and then narrowing by Industry. A filter with nothing selected narrows
+   * nothing.
+   */
+  | {
+      type: 'storyCatalog'
+      title: string
+      /** One multiselect each. The label is the pill's label *and* the key into a card's `facets`. */
+      filters: { label: string; options: string[] }[]
+      /**
+       * The cards, each carrying the values it holds per filter.
+       *
+       * Keyed by the filter's label rather than by an id: there is one name for a filter and this is it,
+       * so a card cannot reference a filter that does not exist without it being obvious in the data.
+       */
+      cards: (CardSpec & { facets?: Record<string, string[]> })[]
+    }
+  /**
    * Figma `Type=Carousel`. Always centre-titled and always bleeding off both edges, with arrows
    * rather than dots — the drawn cell has no dots.
    */

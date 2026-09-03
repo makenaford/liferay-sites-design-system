@@ -379,7 +379,12 @@ export const PAGE_PRESETS: PagePreset[] = [
         title: { text: 'Customer Stories' },
         description: { text: 'How teams like yours build with Liferay.' },
       },
-      sections: [blank('customerStories'), blank('resourceGrid'), blank('mediaBand')],
+      /*
+       * The stories worth leading with, then the whole list behind its filters. `storyCatalog` replaces
+       * the plain `resourceGrid` that stood here: the file's catalog has a filter bar and a result
+       * count, and a grid that renders everything it is given cannot express either.
+       */
+      sections: [blank('customerStories'), blank('storyCatalog'), blank('mediaBand')],
     }),
   },
 ]

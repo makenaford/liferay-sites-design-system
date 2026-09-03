@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text } from '@mantine/core'
@@ -68,6 +68,12 @@ import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails
 import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit, StarRating } from './shared'
 import classes from '../theme/components.module.css'
 import { isVideo } from './page-schema'
+import {
+  ResultCount,
+  StoryFilterBar,
+  matchesSelection,
+  type StorySelection,
+} from './story-filters'
 import type {
   CardSpec,
   GlassIconName,
@@ -755,6 +761,56 @@ function StoryCard({ story }: { story: StorySpec }) {
 }
 
 /** `Type=Carousel` — centre-titled, bleeding off both edges, arrows rather than dots. */
+/**
+ * `All Stories` — the whole catalog behind a filter bar.
+ *
+ * The selection lives here rather than in the bar, because the grid below is the thing it changes and
+ * a bar that owned it would have to hand it back out anyway. `useMemo` on the filtered list, not on
+ * taste: this runs on every keystroke of a checkbox against every card in the catalog.
+ */
+function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'storyCatalog' }> }) {
+  const [selection, setSelection] = useState<StorySelection>({})
+  const shown = useMemo(
+    () => spec.cards.filter((card) => matchesSelection(card.facets, selection)),
+    [spec.cards, selection],
+  )
+
+  return (
+    <Section
+      title={
+        <Stack gap={16} w="100%">
+          <Group justify="space-between" align="baseline" wrap="nowrap">
+            <SectionTitle title={spec.title} />
+            <ResultCount count={shown.length} />
+          </Group>
+          <StoryFilterBar
+            filters={spec.filters}
+            selection={selection}
+            onSelectionChange={setSelection}
+          />
+        </Stack>
+      }
+    >
+      {shown.length ? (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+          {shown.map((card, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <GridCard key={`${card.title}-${i}`} card={card} />
+          ))}
+        </SimpleGrid>
+      ) : (
+        /*
+         * An empty result is a state, not a blank. Without it the page just ends after the filter bar
+         * and reads as broken rather than as a filter that matched nothing.
+         */
+        <Text c="var(--sds-surfaces-text-secondary)" fz={18}>
+          No stories match these filters.
+        </Text>
+      )}
+    </Section>
+  )
+}
+
 function CustomerStoriesSection({
   spec,
 }: {
@@ -1390,6 +1446,8 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CardGridSection key={index} spec={spec} />
     case 'resourceGrid':
       return <ResourceGridSection key={index} spec={spec} />
+    case 'storyCatalog':
+      return <StoryCatalogSection key={index} spec={spec} />
     case 'customerStories':
       return <CustomerStoriesSection key={index} spec={spec} />
     case 'logoMarquee':
