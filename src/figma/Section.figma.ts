@@ -50,15 +50,22 @@ const body = instance.getEnum('Type', {
   Resources: '<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">{/* Card surface="none" */}</SimpleGrid>',
   'Content Left Image': '<ContentMedia mediaSide="left" media={/* … */} title="…" />',
   'Content- Right Image': '<ContentMedia mediaSide="right" media={/* … */} title="…" />',
-  FAQ: '<Accordion size="lg" order={3}>{/* Accordion.Item */}</Accordion>',
+  /*
+   * The three cells below stopped being sketches when `faq`, `quickLinks` and `highlightText` became
+   * section types in `PageRenderer`. The snippets are what that renderer emits, down to the 780 column
+   * an FAQ takes and the fact that its accordion is the one in this library that does *not* autoplay.
+   */
+  FAQ: '<Accordion size="lg" order={3} defaultValue="…">{/* Accordion.Item */}</Accordion>',
   'Integrations Section': '<Marquee label="Integrations" monochrome>{/* logos */}</Marquee>',
   Carousel: '<Carousel label="Customer stories" gutter={80}>{/* Card */}</Carousel>',
   'Tabbed- Content': '<Tabs variant="pills" defaultValue="…">{/* Tabs.List + Tabs.Panel */}</Tabs>',
   'Customer Story': '<Card align="horizontal" titleSize="full" />',
   'Full Card': '<Card align="horizontal" titleSize="full" />',
-  'Highlight Text': '<Card align="horizontal" titleSize="full" />',
+  'Highlight Text':
+    '<Card surface="highlighted" padding="all" hero={/* glass icon */} title="…" description="…" />',
   Quote: '{/* blockquote + attribution */}',
-  'Quick Links': '{/* a Card per link */}',
+  'Quick Links':
+    '<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="16">{/* Card component="a" surface="glass" padding="all", icon and label on one line */}</SimpleGrid>',
 })
 
 export default {

@@ -24,6 +24,7 @@ export type CardSurface = 'glass' | 'static' | 'highlighted' | 'none'
 export type CardTone = 'blue' | 'purple'
 
 /** Figma `card-main` `Align`. */
+export type CardImageSide = 'leading' | 'trailing'
 export type CardAlign = 'vertical' | 'horizontal'
 export type CardRadius = 'card' | 'pill'
 
@@ -72,6 +73,16 @@ export interface CardProps
   tone?: CardTone
   /** Figma `card-main` `Align`. @default 'vertical' */
   align?: CardAlign
+  /**
+   * Which side a horizontal card's image sits on.
+   *
+   * `trailing` is `Full Card`, where the picture closes the row. `leading` is the `Customer Story` cell,
+   * where it opens it — a logo the reader recognises before they read a word, which only works if it
+   * comes first. Vertical cards ignore it: there is no side there, only above.
+   *
+   * @default 'trailing'
+   */
+  imageSide?: CardImageSide
   /**
    * The corner.
    *
@@ -144,6 +155,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
     surface = 'glass',
     tone = 'blue',
     align = 'vertical',
+    imageSide = 'trailing',
     radius = 'card',
     padding = 'all',
     image,
@@ -207,6 +219,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
       data-surface={surface}
       data-tone={surface === 'highlighted' ? tone : undefined}
       data-align={align}
+      data-image-side={imageSide === 'leading' ? 'leading' : undefined}
       data-radius={radius === 'card' ? undefined : radius}
       data-padding={padding}
       data-image={image ? true : undefined}

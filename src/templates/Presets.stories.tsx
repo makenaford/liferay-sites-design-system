@@ -60,6 +60,82 @@ export const Industry: Story = {
 }
 
 /**
+ * `Detail Pages` -> `Product Info` (node `24631:68532`), section for section.
+ *
+ * The run is an argument in order: what it does, what it comes with, who else uses it, the one
+ * paragraph worth reading, the questions that stop a sale, what to read next, and where to go. The last
+ * two are what make it a detail page rather than a landing one — it ends by handing the reader on
+ * instead of asking for an address.
+ *
+ * It is also the page that needed the most new section types: `highlightText`, `faq` and `quickLinks`
+ * are all cells the Figma `Section` set draws and this library had not implemented.
+ */
+export const ProductDetail: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      <PageRenderer page={presetFor('product')!.create()} />
+      <SiteFooter />
+    </>
+  ),
+}
+
+/**
+ * `Detail Pages` -> `Solution` (node `24631:68574`). The same family as the product page and
+ * deliberately shorter — five sections against seven, with no FAQ and no quick links.
+ *
+ * A solution page is read *before* a product page, by someone still working out whether this is their
+ * problem. So it makes the claim, shows what is in it, and hands over; the questions someone asks once
+ * they have decided belong on the page they land on next.
+ */
+export const SolutionDetail: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      <PageRenderer page={presetFor('solution')!.create()} />
+      <SiteFooter />
+    </>
+  ),
+}
+
+/**
+ * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants; they differ in what
+ * sits under the form rather than in the shape above it, so this is their common spine.
+ *
+ * Everything below the fold exists to make the form worth filling in — the figures, the logos, what the
+ * platform does, the questions that stop someone writing in — and the page ends at the FAQ, because
+ * there is nothing to read after the form.
+ */
+export const ContactSales: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      <PageRenderer page={presetFor('contact')!.create()} />
+      <SiteFooter />
+    </>
+  ),
+}
+
+/**
+ * `Customer Story Catalog` (node `24581:69991`).
+ *
+ * A catalog hero is **short** — 433 in the file, against the 624 every detail page uses — because the
+ * page's content is the list, and a hero that fills the screen puts the first row of it below the fold.
+ *
+ * One thing the file has that this does not: the grid is paginated. `resourceGrid` renders every card
+ * it is given, and a row of controls that does not page anything is worse than none.
+ */
+export const CustomerStoryCatalog: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      <PageRenderer page={presetFor('catalog')!.create()} />
+      <SiteFooter />
+    </>
+  ),
+}
+
+/**
  * `backdrop` — the section background option, kept but no longer given away.
  *
  * A `MeshBackdrop` used to be part of the integrations band itself, so every page built from that

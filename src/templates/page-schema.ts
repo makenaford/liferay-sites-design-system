@@ -219,11 +219,25 @@ export interface TabGroup<T> {
  */
 export interface PanelSpec {
   eyebrow?: GlassIconName
+  /**
+   * The pill above the heading — Figma's `Label` instance, which the detail pages use where the Home
+   * page uses a glass icon. A panel draws one or the other, not both.
+   */
+  label?: string
   title: string
   description: string
   action?: LinkRef
   /** An accordion under the description. */
   items?: { question: string; answer: string; link?: LinkRef }[]
+  /**
+   * A checked list under the description — Figma's `Key Point Main List`, which is what the product and
+   * solution pages put in a panel where the Home page puts an accordion.
+   *
+   * The two are alternatives and the difference is what the panel is for: an accordion is a set of
+   * questions with answers folded away, a key-point list is a set of claims all of which are meant to be
+   * read. A panel with both would be asking the reader to do two things at once.
+   */
+  points?: { title: string; description?: string }[]
   media?: ImageRef
   /** A stat row under the media, inside the same column. */
   stats?: StatSpec[]
@@ -242,6 +256,16 @@ export type SectionSpec =
       type: 'cardGrid'
       title: string
       description?: string
+      /**
+       * How many across at desktop.
+       *
+       * Four is the file's `Card Grid` — the Home page's row of four. Three is
+       * `Card Grid- Non Clickable` and the detail pages' feature grids, where six cards read as two rows
+       * of three rather than a row of four and a stranded pair.
+       *
+       * @default 4
+       */
+      columns?: 3 | 4
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
@@ -254,7 +278,10 @@ export type SectionSpec =
   | {
       type: 'resourceGrid'
       title: string
+      titleHighlight?: string
       description?: string
+      /** The button on the heading's trailing edge — `Additional Resources` draws one. */
+      action?: LinkRef
       cards: CardSpec[]
     }
   /**
@@ -274,6 +301,93 @@ export type SectionSpec =
    */
   titleHighlight?: string
       stories: StorySpec[]
+    }
+  /**
+   * Figma `Type=Customer Story` (node `24263:27507`) — one story as a wide card.
+   *
+   * A logo on the **leading** edge, then the title, the paragraph, the figures and one link out. It is
+   * `fullCard`'s neighbour in the set and not the same cell: a full card closes its row with a
+   * photograph and stacks its links above its figures, and this one opens with the logo and puts the
+   * figures first, because the figures are the story.
+   */
+  | {
+      type: 'customerStory'
+      title: string
+      description?: string
+      media?: ImageRef
+      stats?: StatSpec[]
+      action?: LinkRef
+      /**
+       * Which side the logo sits on. The file draws it leading; `Product Info` reads better with the
+       * picture closing the row, because the section above it ends on a photograph of its own.
+       *
+       * @default 'left'
+       */
+      mediaSide?: 'left' | 'right'
+    }
+  /**
+   * Figma `Type=Content Left Image` / `Type=Content- Right Image` (nodes `24263:27790`, `24263:33597`).
+   *
+   * A 50/50 band: a label, a heading, a paragraph, a checked list of key points and a link on one side,
+   * a photograph on the other. The detail pages' workhorse — `Solution` alone uses it twice.
+   *
+   * Not `mediaBand`, which is a centred title over one wide graphic with no text column at all. The two
+   * were conflated in the first pass at these templates, and a page built from the wrong one loses every
+   * word of its argument.
+   */
+  | {
+      type: 'contentBlock'
+      label?: string
+      title: string
+      titleHighlight?: string
+      description?: string
+      points?: { title: string; description?: string }[]
+      action?: LinkRef
+      media?: ImageRef
+      /** @default 'right' */
+      mediaSide?: 'left' | 'right'
+    }
+  /**
+   * Figma `Type=FAQ` (node `24263:34081`). A centred title over an accordion in a narrower column.
+   *
+   * Deliberately **not** `tabbedContent`'s accordion, which is a panel showing what the platform does.
+   * Someone reading an FAQ arrived with one question, which is also why this is the section that does
+   * not autoplay.
+   */
+  | {
+      type: 'faq'
+      title: string
+      titleHighlight?: string
+      description?: string
+      items: { question: string; answer: string }[]
+    }
+  /**
+   * Figma `Type=Quick Links` (node `24263:34142`). A left title over a grid of small horizontal cards,
+   * each an icon and a label — the shortcuts row a detail page ends on.
+   */
+  | {
+      type: 'quickLinks'
+      title: string
+      titleHighlight?: string
+      links: { label: string; href: string; icon?: GlassIconName }[]
+    }
+  /**
+   * Figma `Type=Highlight Text` (node `24263:68390`). One wide card on the brand gradient, led by a
+   * glass icon: a paragraph the page wants read rather than skimmed.
+   */
+  | {
+      type: 'highlightText'
+      title: string
+      body: string
+      icon?: GlassIconName
+    }
+  /**
+   * Figma's `Stats Bar` as a band of its own — the row of figures the `Contact Sales` page puts
+   * directly under its hero, before anything else has been claimed.
+   */
+  | {
+      type: 'statsBar'
+      stats: StatSpec[]
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
   | { type: 'logoMarquee'; label: string; logos: string[] }

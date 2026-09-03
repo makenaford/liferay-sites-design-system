@@ -1,3 +1,6 @@
+import contentMedia from '../../assets/home/teams-media.png'
+import storyMedia from '../../assets/home/customers/sky.jpg'
+import platformDiagram from '../../assets/home/platform-diagram.png'
 import type { SectionSpec } from './page-schema'
 
 /**
@@ -118,7 +121,13 @@ export const SECTION_TYPES: SectionType[] = [
     blank: () => ({
       type: 'mediaBand',
       title: 'Section title',
-      image: { src: '', alt: 'Describe the graphic' },
+      /*
+       * A real graphic, not an empty `src`. The blank shipped one, which rendered `<img src="">` — and
+       * an empty `src` does not mean "no image" to a browser, it means *this page's own URL*, so every
+       * blank media band asked for the document again. A placeholder that has to be replaced is a
+       * visible job; a broken request is an invisible one.
+       */
+      image: { src: platformDiagram, alt: 'Replace with this section’s own graphic' },
     }),
   },
   {
@@ -159,6 +168,88 @@ export const SECTION_TYPES: SectionType[] = [
       type: 'logoMarquee',
       label: 'Customers',
       logos: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX'],
+    }),
+  },
+  {
+    type: 'customerStory',
+    label: 'Customer story',
+    hint: 'One story as a wide card: the logo, the figures and a link.',
+    blank: () => ({
+      type: 'customerStory',
+      title: 'Customer Story Title',
+      description: LOREM,
+      media: { src: storyMedia, alt: 'Replace with this customer’s own image' },
+      stats: Array.from({ length: 3 }, () => ({ value: '845', label: 'Months to launch' })),
+      action: { label: 'CTA Link', href: '#' },
+    }),
+  },
+  {
+    type: 'contentBlock',
+    label: 'Content block',
+    hint: 'A label, a heading, key points and a link beside a photograph — 50/50.',
+    blank: () => ({
+      type: 'contentBlock',
+      label: 'Label',
+      title: 'Content Block Title',
+      description: LOREM,
+      points: Array.from({ length: 3 }, () => ({
+        title: 'Key Point Main List',
+        description: 'Short description here',
+      })),
+      action: { label: 'Read More', href: '#' },
+      media: { src: contentMedia, alt: 'Replace with this block’s own photograph' },
+      mediaSide: 'right',
+    }),
+  },
+  {
+    type: 'faq',
+    label: 'FAQ',
+    hint: 'A centred title over an accordion, in a narrower column.',
+    blank: () => ({
+      type: 'faq',
+      title: 'Frequently Asked Questions',
+      items: Array.from({ length: 4 }, (_, i) => ({
+        question: `This is my question for the FAQ ${i + 1}`,
+        answer: LOREM,
+      })),
+    }),
+  },
+  {
+    type: 'quickLinks',
+    label: 'Quick links',
+    hint: 'A title over a grid of small icon-and-label cards — the page’s exits.',
+    blank: () => ({
+      type: 'quickLinks',
+      title: 'Section title',
+      links: Array.from({ length: 6 }, (_, i) => ({
+        label: `Link ${i + 1}`,
+        href: '#',
+        icon: 'sites' as const,
+      })),
+    }),
+  },
+  {
+    type: 'highlightText',
+    label: 'Highlight text',
+    hint: 'One wide gradient card, led by a glass icon — a paragraph to be read, not skimmed.',
+    blank: () => ({
+      type: 'highlightText',
+      title: 'Card Title',
+      body: LOREM,
+      icon: 'sites' as const,
+    }),
+  },
+  {
+    type: 'statsBar',
+    label: 'Stats bar',
+    hint: 'A row of figures as a band of its own.',
+    blank: () => ({
+      type: 'statsBar',
+      stats: [
+        { value: '45', suffix: '%', label: 'The measure' },
+        { value: '2x', label: 'The second measure' },
+        { value: '600', suffix: '+', label: 'The third measure' },
+      ],
     }),
   },
   {

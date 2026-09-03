@@ -648,6 +648,15 @@
  * radius rather than 8 — a bigger card gets a bigger corner, which is the file's own call and not a scale
  * step. Its columns share the width evenly and the image is the second one.
  */
+/*
+ * `imageSide="leading"` — the picture opens the row instead of closing it, which is the `Customer Story`
+ * cell. `row-reverse` rather than an `order` on the image, so the *whole* row reverses and the body's
+ * own margins follow it; ordering one child leaves the gap on the wrong side.
+ */
+.cardRoot[data-align='horizontal'][data-image-side='leading'] {
+  flex-direction: row-reverse;
+}
+
 .cardRoot[data-align='horizontal'] {
   flex-direction: row;
   align-items: center;
@@ -990,31 +999,114 @@
 }
 
 /*
- * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all `Surfaces/Card BG/Grey`
- * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
- * transform is a shallow diagonal, reproduced at the same angle.
+ * `Style=Gradient Blue` / `Gradient Purple` — a **mesh**, not a ramp.
+ *
+ * Figma draws four stops on a shallow diagonal, three of them `Surfaces/Card BG/Grey` and the fourth a
+ * saturated `#0117ae` or `#7414ff`, and transcribing that literally gave a card with a bright corner: on
+ * a page of dark glass cards it read as a different material rather than as the same one lit. The
+ * section it is used in is a paragraph somebody should read, and the copy sat on the brightest part of
+ * it.
+ *
+ * So the same two colours, arranged as light instead of as fill: the card keeps the grey every other
+ * card has, and three soft blooms sit over it — one from the leading corner, one from the trailing top,
+ * and a wider, fainter one rising from the bottom edge where they meet. None of them reaches full
+ * strength and none of them has an edge, so what changes across the card is the *tint*, not the colour.
+ *
+ * `color-mix` rather than pre-mixed tokens, because the mix has to be against transparency rather than
+ * against the card — a token would have to guess the surface underneath it, and this surface is also
+ * translucent.
+ *
+ * The blur and the hairline stay: it is still glass, and the point of the mesh is that it is glass with
+ * more colour in it than the cards around it, not a different kind of object.
  */
 .cardRoot[data-align][data-surface='highlighted'] {
+  background-color: var(--sds-surfaces-card-bg-grey);
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
 
-.cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
+/*
+ * The outline **fades out** rather than ending.
+ *
+ * A flat `1px solid` draws the same value the whole way round, so the card is a rectangle with a line on
+ * it: at the bottom, where there is no light in the mesh, that line is the brightest thing on the card.
+ * This is the masked hairline the glass surface uses, with one change — the far end runs to transparent
+ * instead of to `Glass Line/02`, so the stroke is present where the mesh is lit and gone where it is
+ * not, and the card's edge dissolves into the page the way its fill does.
+ *
+ * 200deg rather than glass's 225: the mesh's light comes from the top corners, and the hairline should
+ * fade along the same axis it does.
+ */
+.cardRoot[data-align][data-surface='highlighted']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
   background-image: linear-gradient(
-    134deg,
-    var(--sds-surfaces-card-bg-grey) 0%,
-    var(--sds-surfaces-card-bg-grey) 46%,
-    var(--sds-gradient-card-blue) 88%
+    200deg,
+    var(--sds-glass-line-from) 0%,
+    var(--sds-glass-line-to) 38%,
+    transparent 86%
   );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
+/*
+ * **The corners carry the colour and the middle stays dark**, which is the difference between a mesh and
+ * a wash. The first cut of this spread the blue across the whole leading half; it looked like a tint,
+ * and the paragraph — the thing the section exists for — sat on the brightest part of it.
+ *
+ * **One hue.** The mesh had violet in the trailing corner, and two hues in a card this size read as two
+ * things rather than as one lit surface — the eye goes to the seam between them. Three blues at
+ * different depths do the same job: `Brand/Primary` leading, `Lighten 1` answering, and the primary
+ * again low and trailing so the bottom does not go flat. What varies is the depth of the light, not its
+ * colour, which is what a single source looks like.
+ *
+ * `Gradient Purple` keeps the violet — it is a cell the file draws, and the two tones are the same mesh
+ * in the two brand colours.
+ */
+.cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
+  background-image:
+    radial-gradient(
+      70% 130% at 0% 0%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 34%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 120% at 100% 0%,
+      color-mix(in srgb, var(--sds-brand-primary-lighten-1) 26%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      80% 90% at 88% 110%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 16%, transparent) 0%,
+      transparent 74%
+    );
+}
+
+/* The same mesh with the two leads swapped, which is the whole of the tone difference. */
 .cardRoot[data-align][data-surface='highlighted'][data-tone='purple'] {
-  background-image: linear-gradient(
-    134deg,
-    var(--sds-surfaces-card-bg-grey) 0%,
-    var(--sds-surfaces-card-bg-grey) 46%,
-    var(--sds-gradient-card-purple) 61%
-  );
+  background-image:
+    radial-gradient(
+      70% 130% at 0% 0%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 34%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 120% at 100% 0%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 30%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      80% 90% at 88% 110%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 18%, transparent) 0%,
+      transparent 74%
+    );
 }
 
 /* `Style=none` — the box and its content with nothing drawn. The Resource card. */

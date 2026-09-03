@@ -1,5 +1,8 @@
 import heroMedia from '../../assets/home/hero-media.png'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
+import resourceA from '../../assets/home/trending/ai-transformation.jpg'
+import resourceB from '../../assets/home/trending/digital-strategy.jpg'
+import resourceC from '../../assets/home/trending/web-portals.jpg'
 import type { PageSpec, SectionSpec } from './page-schema'
 import { sectionTypeFor } from './section-catalog'
 
@@ -139,6 +142,212 @@ export const PAGE_PRESETS: PagePreset[] = [
         blank('resourceGrid'),
         blank('customerStories'),
       ],
+    }),
+  },
+  {
+    id: 'product',
+    label: 'Product detail',
+    hint: 'What it does, who it worked for, the questions, and the ways out.',
+    create: () => ({
+      /*
+       * `Detail Pages` -> `Product Info` (node `24631:68532`), section by section as the file draws it.
+       *
+       * The first pass at this preset was assembled from section *heights* without looking at the page,
+       * and three of the eight were wrong: the tabbed panel is a key-point list rather than an
+       * accordion, the grid is six icon cards rather than four image ones, and the band after it is a
+       * customer story — a photograph, a paragraph, three figures and a link — where a `mediaBand` had
+       * been guessed. A height identifies a cell; only the drawing says what is in it.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Hero Title' },
+        description: { text: LOREM },
+        buttons: [
+          { label: 'Book a Demo', href: '#' },
+          { label: 'Contact Sales', href: '#', variant: 'outline' },
+        ],
+        media: { src: heroMedia, alt: 'Replace with this product’s own shot', ratio: '3:2' },
+      },
+      sections: [
+        /* The pill bar over a panel of key points — five audiences, one claim each. */
+        (() => {
+          const section = blank('tabbedContent')
+          return {
+            ...section,
+            tabs: [
+              'Customer Portals',
+              'Supplier Portals',
+              'Financial Services',
+              'Digital Commerce',
+              'Intranets',
+            ].map((label) => ({
+              label,
+              value: label.toLowerCase().replace(/\s+/g, '-'),
+              content: {
+                label: 'Label',
+                title: 'Card Title',
+                description: LOREM,
+                points: Array.from({ length: 3 }, () => ({
+                  title: 'Key Point Main List',
+                  description: 'Short description here',
+                })),
+                media: { src: industryHeroMedia, alt: 'Replace with this tab’s own photograph' },
+              },
+            })),
+          }
+        })(),
+        /* `Feature Highlights (Clickable)` — six icon cards, two rows of three. */
+        (() => {
+          const section = blank('cardGrid')
+          return {
+            ...section,
+            title: 'Feature Highlights (Clickable)',
+            columns: 3 as const,
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            cards: Array.from({ length: 6 }, () => ({
+              title: 'Card Title',
+              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+              icon: 'sites' as const,
+              href: '#',
+            })),
+          }
+        })(),
+        (() => {
+          const section = blank('customerStory')
+          /* The picture closes the row here: the panel above it ends on a photograph of its own. */
+          return { ...section, mediaSide: 'right' as const }
+        })(),
+        blank('highlightText'),
+        blank('faq'),
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            title: 'Additional Resources',
+            cards: [
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
+            ],
+          }
+        })(),
+        blank('quickLinks'),
+      ],
+    }),
+  },
+  {
+    id: 'solution',
+    label: 'Solution detail',
+    hint: 'The proof first, then what is in it, then the block that explains it.',
+    create: () => ({
+      /*
+       * `Detail Pages` -> `Solution` (node `24631:68574`).
+       *
+       * It opens on a customer story rather than on features, which is the difference between this and
+       * the product page: someone reading a solution page is still deciding whether this is their
+       * problem, and the fastest answer is somebody else who had it.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Hero Title' },
+        description: { text: LOREM },
+        buttons: [
+          { label: 'Book a Demo', href: '#' },
+          { label: 'Contact Sales', href: '#', variant: 'outline' },
+        ],
+        media: { src: heroMedia, alt: 'Replace with this solution’s own shot', ratio: '3:2' },
+      },
+      sections: [
+        blank('customerStory'),
+        /* Three icon cards, not clickable — `Card Grid- Non Clickable` in the file. */
+        (() => {
+          const section = blank('cardGrid')
+          return {
+            ...section,
+            title: 'Card Title',
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            columns: 3 as const,
+            cards: Array.from({ length: 3 }, () => ({
+              title: 'Card Title',
+              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+              icon: 'sites' as const,
+            })),
+          }
+        })(),
+        blank('contentBlock'),
+        (() => {
+          const section = blank('customerStories')
+          return { ...section, title: 'More Customer Stories' }
+        })(),
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            title: 'Additional Resources',
+            description:
+              'Whether you drive campaigns, build infrastructure, or grow partnerships — Liferay empowers your success.',
+            action: { label: 'Button', href: '#' },
+            cards: [
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
+            ],
+          }
+        })(),
+      ],
+    }),
+  },
+  {
+    id: 'contact',
+    label: 'Contact sales',
+    hint: 'A form hero over the numbers, the logos, and the questions people ask before writing in.',
+    create: () => ({
+      /*
+       * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants of this page; they
+       * differ in what sits under the form, not in the shape above it, so this is the common spine.
+       *
+       * **The proof is stacked directly under the hero, and that is the page.** A contact page has one
+       * job and everything below the fold is there to make the form worth filling in: the figures, then
+       * the logos, then what the platform does, then the questions that stop someone writing in. There
+       * is nothing to read *after* the form, so the page ends at the FAQ rather than handing on.
+       */
+      hero: {
+        background: 'corner',
+        title: { text: 'Talk to sales' },
+        description: { text: LOREM },
+        form: { placeholder: 'Work email', submit: 'Contact sales' },
+        media: { src: heroMedia, alt: 'Replace with a shot of the team or the product', ratio: '4:3' },
+      },
+      sections: [
+        blank('statsBar'),
+        blank('logoMarquee'),
+        blank('tabbedContent'),
+        blank('faq'),
+      ],
+    }),
+  },
+  {
+    id: 'catalog',
+    label: 'Customer story catalog',
+    hint: 'A short hero, the stories worth leading with, then the whole grid of them.',
+    create: () => ({
+      /*
+       * `Customer Story Catalog` -> `Customer Stories` (node `24581:69991`).
+       *
+       * A catalog hero is **short** — 433 in the file against the 624 every detail page uses — because
+       * the page's content is the list, and a hero that fills the screen puts the first row of it below
+       * the fold. So: no media, no buttons, one line of description.
+       *
+       * The file's grid carries pagination, which this does not have yet: `resourceGrid` renders every
+       * card it is given. That is the one thing on this page the schema cannot express — noted in
+       * README.md rather than faked with a row of dead controls.
+       */
+      hero: {
+        background: 'none',
+        title: { text: 'Customer Stories' },
+        description: { text: 'How teams like yours build with Liferay.' },
+      },
+      sections: [blank('customerStories'), blank('resourceGrid'), blank('mediaBand')],
     }),
   },
 ]

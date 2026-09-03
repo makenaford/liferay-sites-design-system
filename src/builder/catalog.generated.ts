@@ -108,6 +108,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "surface", kind: "enum", options: ["glass", "static", "highlighted", "none"], default: "glass", doc: "Which of the four kinds of card this is. See `CardSurface` — the choice carries the meaning, and for `static` and `highlighted` it also settles `interactive`." },
       { name: "tone", kind: "enum", options: ["blue", "purple"], default: "blue", doc: "The gradient on a `highlighted` card. Ignored by the other three." },
       { name: "align", kind: "enum", options: ["vertical", "horizontal"], default: "vertical", doc: "Figma `card-main` `Align`." },
+      { name: "imageSide", kind: "enum", options: ["leading", "trailing"], default: "trailing", doc: "Which side a horizontal card's image sits on." },
       { name: "radius", kind: "enum", options: ["card", "pill"], default: "card", doc: "The corner." },
       { name: "padding", kind: "enum", options: ["all", "content", "full", "none"], default: "all", doc: "Where the 20px goes." },
       { name: "image", kind: "slot", doc: "`Show Image` — the `card-image` slot. Pass an `Image`, an `img`, a logo panel, anything. Present is shown and absent is hidden, which is what Figma's `Show Image` boolean does." },
