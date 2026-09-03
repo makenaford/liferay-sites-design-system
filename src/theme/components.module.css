@@ -648,6 +648,15 @@
  * radius rather than 8 — a bigger card gets a bigger corner, which is the file's own call and not a scale
  * step. Its columns share the width evenly and the image is the second one.
  */
+/*
+ * `imageSide="leading"` — the picture opens the row instead of closing it, which is the `Customer Story`
+ * cell. `row-reverse` rather than an `order` on the image, so the *whole* row reverses and the body's
+ * own margins follow it; ordering one child leaves the gap on the wrong side.
+ */
+.cardRoot[data-align='horizontal'][data-image-side='leading'] {
+  flex-direction: row-reverse;
+}
+
 .cardRoot[data-align='horizontal'] {
   flex-direction: row;
   align-items: center;

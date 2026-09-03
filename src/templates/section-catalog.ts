@@ -1,3 +1,5 @@
+import contentMedia from '../../assets/home/teams-media.png'
+import storyMedia from '../../assets/home/customers/sky.jpg'
 import platformDiagram from '../../assets/home/platform-diagram.png'
 import type { SectionSpec } from './page-schema'
 
@@ -166,6 +168,37 @@ export const SECTION_TYPES: SectionType[] = [
       type: 'logoMarquee',
       label: 'Customers',
       logos: ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX'],
+    }),
+  },
+  {
+    type: 'customerStory',
+    label: 'Customer story',
+    hint: 'One story as a wide card: the logo, the figures and a link.',
+    blank: () => ({
+      type: 'customerStory',
+      title: 'Customer Story Title',
+      description: LOREM,
+      media: { src: storyMedia, alt: 'Replace with this customer’s own image' },
+      stats: Array.from({ length: 3 }, () => ({ value: '845', label: 'Months to launch' })),
+      action: { label: 'CTA Link', href: '#' },
+    }),
+  },
+  {
+    type: 'contentBlock',
+    label: 'Content block',
+    hint: 'A label, a heading, key points and a link beside a photograph — 50/50.',
+    blank: () => ({
+      type: 'contentBlock',
+      label: 'Label',
+      title: 'Content Block Title',
+      description: LOREM,
+      points: Array.from({ length: 3 }, () => ({
+        title: 'Key Point Main List',
+        description: 'Short description here',
+      })),
+      action: { label: 'Read More', href: '#' },
+      media: { src: contentMedia, alt: 'Replace with this block’s own photograph' },
+      mediaSide: 'right',
     }),
   },
   {

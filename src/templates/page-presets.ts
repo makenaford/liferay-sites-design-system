@@ -1,5 +1,8 @@
 import heroMedia from '../../assets/home/hero-media.png'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
+import resourceA from '../../assets/home/trending/ai-transformation.jpg'
+import resourceB from '../../assets/home/trending/digital-strategy.jpg'
+import resourceC from '../../assets/home/trending/web-portals.jpg'
 import type { PageSpec, SectionSpec } from './page-schema'
 import { sectionTypeFor } from './section-catalog'
 
@@ -144,35 +147,86 @@ export const PAGE_PRESETS: PagePreset[] = [
   {
     id: 'product',
     label: 'Product detail',
-    hint: 'What the product does, then the proof, then the questions, then the ways out.',
+    hint: 'What it does, who it worked for, the questions, and the ways out.',
     create: () => ({
       /*
-       * `Solutions Library- 2026` -> `Detail Pages` -> `Product Info` (node `24631:68532`), read section
-       * by section off the file's own stack.
+       * `Detail Pages` -> `Product Info` (node `24631:68532`), section by section as the file draws it.
        *
-       * The run is an argument in order: what it does (`tabbedContent`), what it comes with
-       * (`cardGrid`), who else uses it (`mediaBand`), the one paragraph worth reading
-       * (`highlightText`), the questions that stop a sale (`faq`), what to read next (`resourceGrid`),
-       * and where to go (`quickLinks`). The last two are what make it a *detail* page rather than a
-       * landing one: it ends by handing the reader on rather than asking for an address.
+       * The first pass at this preset was assembled from section *heights* without looking at the page,
+       * and three of the eight were wrong: the tabbed panel is a key-point list rather than an
+       * accordion, the grid is six icon cards rather than four image ones, and the band after it is a
+       * customer story — a photograph, a paragraph, three figures and a link — where a `mediaBand` had
+       * been guessed. A height identifies a cell; only the drawing says what is in it.
        */
       hero: {
         background: 'corner',
-        title: { text: 'Product Title' },
+        title: { text: 'Hero Title' },
         description: { text: LOREM },
         buttons: [
           { label: 'Book a Demo', href: '#' },
           { label: 'Contact Sales', href: '#', variant: 'outline' },
         ],
-        media: { src: heroMedia, alt: 'Replace with this product’s own shot', ratio: '4:3' },
+        media: { src: heroMedia, alt: 'Replace with this product’s own shot', ratio: '3:2' },
       },
       sections: [
-        blank('tabbedContent'),
-        blank('cardGrid'),
-        blank('mediaBand'),
+        /* The pill bar over a panel of key points — five audiences, one claim each. */
+        (() => {
+          const section = blank('tabbedContent')
+          return {
+            ...section,
+            tabs: [
+              'Customer Portals',
+              'Supplier Portals',
+              'Financial Services',
+              'Digital Commerce',
+              'Intranets',
+            ].map((label) => ({
+              label,
+              value: label.toLowerCase().replace(/\s+/g, '-'),
+              content: {
+                label: 'Label',
+                title: 'Card Title',
+                description: LOREM,
+                points: Array.from({ length: 3 }, () => ({
+                  title: 'Key Point Main List',
+                  description: 'Short description here',
+                })),
+                media: { src: industryHeroMedia, alt: 'Replace with this tab’s own photograph' },
+              },
+            })),
+          }
+        })(),
+        /* `Feature Highlights (Clickable)` — six icon cards, two rows of three. */
+        (() => {
+          const section = blank('cardGrid')
+          return {
+            ...section,
+            title: 'Feature Highlights (Clickable)',
+            columns: 3 as const,
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            cards: Array.from({ length: 6 }, () => ({
+              title: 'Card Title',
+              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+              icon: 'sites' as const,
+              href: '#',
+            })),
+          }
+        })(),
+        blank('customerStory'),
         blank('highlightText'),
         blank('faq'),
-        blank('resourceGrid'),
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            title: 'Additional Resources',
+            cards: [
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
+            ],
+          }
+        })(),
         blank('quickLinks'),
       ],
     }),
@@ -180,32 +234,62 @@ export const PAGE_PRESETS: PagePreset[] = [
   {
     id: 'solution',
     label: 'Solution detail',
-    hint: 'A shorter detail page: the claim, what it includes, the proof, and what to read next.',
+    hint: 'The proof first, then what is in it, then the block that explains it.',
     create: () => ({
       /*
-       * `Detail Pages` -> `Solution` (node `24631:68574`). The same family as the product page and
-       * deliberately shorter: five sections against seven, with no FAQ and no quick links.
+       * `Detail Pages` -> `Solution` (node `24631:68574`).
        *
-       * A solution page is read *before* a product page, by someone still working out whether this is
-       * their problem — so it makes the claim, shows what is in it, and hands over. The questions
-       * someone asks once they have decided belong on the page they land on next.
+       * It opens on a customer story rather than on features, which is the difference between this and
+       * the product page: someone reading a solution page is still deciding whether this is their
+       * problem, and the fastest answer is somebody else who had it.
        */
       hero: {
         background: 'corner',
-        title: { text: 'Solution Title' },
+        title: { text: 'Hero Title' },
         description: { text: LOREM },
         buttons: [
           { label: 'Book a Demo', href: '#' },
-          { label: 'Read the guide', href: '#', variant: 'outline' },
+          { label: 'Contact Sales', href: '#', variant: 'outline' },
         ],
-        media: { src: heroMedia, alt: 'Replace with this solution’s own shot', ratio: '4:3' },
+        media: { src: heroMedia, alt: 'Replace with this solution’s own shot', ratio: '3:2' },
       },
       sections: [
-        blank('mediaBand'),
-        blank('cardGrid'),
-        blank('mediaBand'),
-        blank('resourceGrid'),
-        blank('customerStories'),
+        blank('customerStory'),
+        /* Three icon cards, not clickable — `Card Grid- Non Clickable` in the file. */
+        (() => {
+          const section = blank('cardGrid')
+          return {
+            ...section,
+            title: 'Card Title',
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            columns: 3 as const,
+            cards: Array.from({ length: 3 }, () => ({
+              title: 'Card Title',
+              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+              icon: 'sites' as const,
+            })),
+          }
+        })(),
+        blank('contentBlock'),
+        (() => {
+          const section = blank('customerStories')
+          return { ...section, title: 'More Customer Stories' }
+        })(),
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            title: 'Additional Resources',
+            description:
+              'Whether you drive campaigns, build infrastructure, or grow partnerships — Liferay empowers your success.',
+            action: { label: 'Button', href: '#' },
+            cards: [
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
+            ],
+          }
+        })(),
       ],
     }),
   },

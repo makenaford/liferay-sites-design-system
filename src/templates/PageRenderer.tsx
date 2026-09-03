@@ -12,6 +12,7 @@ import { Hero, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
+import { List } from '../components/List'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
 import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
@@ -135,10 +136,17 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
-function renderStat(stat: StatSpec, align?: 'center') {
+/**
+ * `index` is the key, not the label.
+ *
+ * A stat row can legitimately repeat one — the customer-story cell draws `845 / Months to launch` three
+ * times over — and keying by the label made React drop two of the three. Position is what actually
+ * identifies a figure in a row that never reorders.
+ */
+function renderStat(stat: StatSpec, align?: 'center', index = 0) {
   return (
     <Stat
-      key={stat.label}
+      key={index}
       align={align}
       value={
         <>
@@ -477,7 +485,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
         />
       }
     >
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing={24}>
+      <SimpleGrid cols={{ base: 1, sm: 2, md: spec.columns ?? 4 }} spacing={24}>
         {cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
           <GridCard key={`${card.title}-${i}`} card={card} />
@@ -490,7 +498,21 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
 /** `Type=Resources` — three columns at the drawn 24px gap, icon- or tag-led cards. */
 function ResourceGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'resourceGrid' }> }) {
   return (
-    <Section title={<SectionTitle title={spec.title} description={spec.description} />}>
+    <Section
+      title={
+        <SectionTitle
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+          actions={
+            spec.action ? (
+              <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+                {spec.action.label}
+              </Button>
+            ) : undefined
+          }
+        />
+      }
+    >
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
         {spec.cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
@@ -619,8 +641,25 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         * 40 on one of them and 24 on the other; porting to data is what caught it.
         */}
       <Stack gap={24} align="center" w="100%">
-        <Tabs variant="pills" w={{ base: '100%', md: 776 }} value={tab} onChange={(v) => setTab(v ?? '')}>
-          <Tabs.List grow>
+        {/*
+          * The bar's width is drawn, not measured — and it has to be, twice over.
+          *
+          * A pill bar is its own `inline-size` container, so `fit-content` collapses it to nothing in a
+          * flex column: measured, it rendered as a 10px sliver. And `grow` shares whatever width it has
+          * equally between the tabs, so a fixed 776 — the file's number for the Home page's *three*
+          * tabs — cuts `Digital Commerce` off mid-word when a detail page puts five in it.
+          *
+          * So the width steps with the count: the file's 776 up to three, and 1080 beyond, which is
+          * five labels at the same padding and still inside the 1280 column.
+          */}
+        <Tabs
+          variant="pills"
+          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
+          maw="100%"
+          value={tab}
+          onChange={(v) => setTab(v ?? '')}
+        >
+          <Tabs.List grow={spec.tabs.length <= 3}>
             {spec.tabs.map((t) => (
               <Tabs.Tab key={t.value} value={t.value} leftSection={t.icon ? ICONS[t.icon] : undefined}>
                 {t.label}
@@ -635,7 +674,15 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             /* A stat row under the media makes the column taller than 3:2, so the box takes its height. */
             mediaRatio={panel.stats?.length ? 'auto' : '3:2'}
             order={3}
-            eyebrow={panel.eyebrow ? GLASS[panel.eyebrow](40) : undefined}
+            eyebrow={
+              panel.label ? (
+                <Label variant="gradient" size="sm">
+                  {panel.label}
+                </Label>
+              ) : panel.eyebrow ? (
+                GLASS[panel.eyebrow](40)
+              ) : undefined
+            }
             title={panel.title}
             description={panel.description}
             actions={
@@ -655,12 +702,13 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                 <div className={panel.stats?.length ? classes.mediaStats : undefined}>
                   <Image src={panel.media.src} alt={panel.media.alt} ratio="3:2" radius="md" />
                   {panel.stats?.length ? (
-                    <StatBar align="center">{panel.stats.map((st) => renderStat(st, 'center'))}</StatBar>
+                    <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
                   ) : null}
                 </div>
               ) : undefined
             }
           >
+            {panel.points?.length ? <KeyPoints points={panel.points} /> : null}
             {panel.items?.length ? (
               /*
                * The panel opens itself, row by row. A tabbed section is the page showing what it can do
@@ -739,7 +787,7 @@ function FullCardSection({ spec }: { spec: Extract<SectionSpec, { type: 'fullCar
           ) : undefined
         }
         secondary={
-          spec.card.stats?.length ? <StatBar>{spec.card.stats.map((st) => renderStat(st))}</StatBar> : undefined
+          spec.card.stats?.length ? <StatBar>{spec.card.stats.map((st, i) => renderStat(st, undefined, i))}</StatBar> : undefined
         }
         image={
           spec.card.media ? (
@@ -836,6 +884,109 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
  * opening itself is how it does the showing; someone reading an FAQ came for one answer, and moving it
  * out from under them after five seconds is the opposite of helping.
  */
+/**
+ * `Key Point Main List` — the checked list the detail pages put under a panel's paragraph.
+ *
+ * `List` with `marker="check"` is Figma's own `Type=Icon` cell, so the tick is the design's rather than
+ * a character typed into the copy. Each point is a bold claim with an optional line under it, which is
+ * how the file draws them: the claim is the thing being skimmed, the line is for whoever stopped.
+ */
+function KeyPoints({ points }: { points: { title: string; description?: string }[] }) {
+  return (
+    <List marker="check" spacing={16}>
+      {points.map((point, i) => (
+        /* Position, not the text: the file draws three points that all read `Key Point Main List`. */
+        // eslint-disable-next-line react/no-array-index-key
+        <List.Item key={i}>
+          <Text fw={600}>{point.title}</Text>
+          {point.description ? (
+            <Text c="var(--sds-surfaces-text-secondary)">{point.description}</Text>
+          ) : null}
+        </List.Item>
+      ))}
+    </List>
+  )
+}
+
+/**
+ * `Type=Content Left Image` / `Content- Right Image` — the detail pages' workhorse.
+ *
+ * A label, a heading, a paragraph, the key points and a link on one side; a photograph on the other. It
+ * is `ContentMedia`, which is the same component the tabbed section puts inside its panels — the
+ * difference is that this one is the section rather than the thing a tab swaps.
+ */
+/**
+ * `Type=Customer Story` — one story as a wide card, the logo leading.
+ *
+ * The figures sit above the link rather than below it, which is the order the file draws and the order
+ * that reads: the numbers are the claim and the link is what to do about it.
+ */
+function CustomerStorySection({ spec }: { spec: Extract<SectionSpec, { type: 'customerStory' }> }) {
+  return (
+    <Section>
+      <Card
+        align="horizontal"
+        imageSide="leading"
+        /* Its link does the work — see the nested-interactive note in Card's docs. */
+        interactive={false}
+        titleSize="full"
+        title={spec.title}
+        description={spec.description}
+        main={
+          spec.stats?.length ? <StatBar>{spec.stats.map((st, i) => renderStat(st, undefined, i))}</StatBar> : undefined
+        }
+        secondary={
+          spec.action ? (
+            <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
+              {spec.action.label}
+            </Link>
+          ) : undefined
+        }
+        image={
+          spec.media ? (
+            <Image src={spec.media.src} alt={spec.media.alt} ratio="3:2" radius="md" />
+          ) : undefined
+        }
+      />
+    </Section>
+  )
+}
+
+function ContentBlockSection({ spec }: { spec: Extract<SectionSpec, { type: 'contentBlock' }> }) {
+  return (
+    <Section>
+      <ContentMedia
+        mediaSide={spec.mediaSide ?? 'right'}
+        mediaRatio="3:2"
+        order={2}
+        eyebrow={
+          spec.label ? (
+            <Label variant="gradient" size="sm">
+              {spec.label}
+            </Label>
+          ) : undefined
+        }
+        title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+        description={spec.description}
+        actions={
+          spec.action ? (
+            <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
+              {spec.action.label}
+            </Link>
+          ) : undefined
+        }
+        media={
+          spec.media ? (
+            <Image src={spec.media.src} alt={spec.media.alt} ratio="3:2" radius="md" />
+          ) : undefined
+        }
+      >
+        {spec.points?.length ? <KeyPoints points={spec.points} /> : null}
+      </ContentMedia>
+    </Section>
+  )
+}
+
 function FaqSection({ spec }: { spec: Extract<SectionSpec, { type: 'faq' }> }) {
   return (
     <Section
@@ -932,7 +1083,7 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
 function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBar' }> }) {
   return (
     <Section spacing="tight">
-      <StatBar align="center">{spec.stats.map((st) => renderStat(st, 'center'))}</StatBar>
+      <StatBar align="center">{spec.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
     </Section>
   )
 }
@@ -1014,6 +1165,10 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CapabilityMapSection key={index} spec={spec} />
     case 'integrations':
       return <IntegrationsSection key={index} spec={spec} />
+    case 'customerStory':
+      return <CustomerStorySection key={index} spec={spec} />
+    case 'contentBlock':
+      return <ContentBlockSection key={index} spec={spec} />
     case 'faq':
       return <FaqSection key={index} spec={spec} />
     case 'quickLinks':
