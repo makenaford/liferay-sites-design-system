@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useReducedMotion } from '@mantine/hooks'
 import { Box, Group, Stack, Text } from '@mantine/core'
 import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
@@ -133,6 +134,119 @@ export const unitAccent = (u: string) => (
     {u}
   </Text>
 )
+
+/** The star, from the `IconStarFilled` set, so the rating and the icon are the same shape. */
+const STAR_PATH =
+  'M10.92 2.37a1.25 1.25 0 0 1 2.16 0l2.795 4.8 5.428 1.175a1.25 1.25 0 0 1 .667 2.054l-3.7 4.142.56 5.525a1.25 1.25 0 0 1-1.748 1.27L12 19.096l-5.082 2.24a1.25 1.25 0 0 1-1.747-1.27l.559-5.525-3.7-4.142a1.25 1.25 0 0 1 .667-2.054L8.125 7.17z'
+
+export interface StarRatingProps {
+  /** The rating, 0..`max`. Fractional: `4.6` fills four stars and three fifths of the next. */
+  value: number
+  /** @default 5 */
+  max?: number
+  /** Star size in px. @default 16 */
+  size?: number
+  /** The accessible sentence. Without it the rating is decorative and the figure beside it carries it. */
+  label?: string
+}
+
+/**
+ * StarRating — the Gartner rating, filled with the brand gradient and filling on arrival.
+ *
+ * One `<svg>` rather than a row of icon components, for three reasons that all come back to the same
+ * thing: a gradient across *the row* cannot be done a star at a time. The stars share one
+ * `linearGradient` spanning the whole width, so the sweep runs across all five instead of restarting in
+ * each; the fill is clipped by one rect, so `4.6` is four stars and three fifths of the next rather than
+ * five whole ones and a rounding error; and animating that rect's width is what makes it fill.
+ *
+ * Two layers of the same five stars: the track underneath at the secondary text colour, the gradient
+ * over it clipped to the rating. No masking of icon components, no `background-clip` on an SVG — both
+ * are ways of getting a gradient onto a shape that stop working the moment the shape has to be
+ * partially filled.
+ *
+ * The fill runs once, on entering the viewport, and `prefers-reduced-motion` gets it filled already —
+ * the rating is the content; the filling is the decoration.
+ */
+export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps) {
+  const reducedMotion = useReducedMotion()
+  const ref = useRef<SVGSVGElement>(null)
+  const [filled, setFilled] = useState(false)
+
+  const clamped = Math.max(0, Math.min(max, value))
+  const width = size * max
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setFilled(true)
+      return undefined
+    }
+    const node = ref.current
+    if (!node) return undefined
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        setFilled(true)
+      },
+      { threshold: 0.5 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [reducedMotion])
+
+  const stars = Array.from({ length: max }, (_, i) => (
+    <path key={i} d={STAR_PATH} transform={`translate(${i * 24} 0)`} />
+  ))
+
+  return (
+    <svg
+      ref={ref}
+      width={width}
+      height={size}
+      viewBox={`0 0 ${max * 24} 24`}
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+      focusable="false"
+      style={{ display: 'block', flex: 'none' }}
+    >
+      <defs>
+        <linearGradient id="sds-star-fill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="var(--sds-brand-primary-lighten-3)" />
+          <stop offset="100%" stopColor="var(--sds-accent-product-accent)" />
+        </linearGradient>
+        <clipPath id="sds-star-clip">
+          {/*
+           * The width is the whole animation. A `transition` on an SVG geometry attribute is not
+           * reliable across engines, so it is set as a style property, which is.
+           */}
+          <rect
+            x="0"
+            y="0"
+            height="24"
+            width={max * 24}
+            style={{
+              transform: `scaleX(${filled ? clamped / max : 0})`,
+              transformOrigin: 'left',
+              transition: reducedMotion
+                ? undefined
+                : 'transform var(--sds-motion-slow, 420ms) var(--sds-motion-ease-out, ease-out)',
+            }}
+          />
+        </clipPath>
+      </defs>
+
+      {/* The track: every star, dim, so an unfilled one is still a star rather than a gap. */}
+      <g fill="var(--sds-surfaces-text-secondary)" opacity={0.35}>
+        {stars}
+      </g>
+
+      <g fill="url(#sds-star-fill)" clipPath="url(#sds-star-clip)">
+        {stars}
+      </g>
+    </svg>
+  )
+}
 
 export function Quotee({ name, title }: { name: string; title: string }) {
   return (

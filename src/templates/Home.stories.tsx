@@ -23,7 +23,7 @@ import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
 import { CrossfadeMedia } from './PageRenderer'
-import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
+import { Quotee, SiteFooter, SiteHeader, StarRating, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import {
@@ -44,7 +44,6 @@ import {
   IconMonitor,
   IconPresentation1,
   IconShoppingCart1,
-  IconStarFilled,
   IconUser1,
 } from '../icons'
 
@@ -613,20 +612,11 @@ function HomePage() {
               <Text fz={28} fw={700} lh={1}>
                 4.6
               </Text>
-              <Group gap={0} aria-hidden>
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <IconStarFilled
-                    key={i}
-                    width={16}
-                    height={16}
-                    color={
-                      i < 4
-                        ? 'var(--sds-surfaces-text-primary)'
-                        : 'var(--sds-surfaces-text-secondary)'
-                    }
-                  />
-                ))}
-              </Group>
+              {/*
+               * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths, and
+               * the figure beside it already says so.
+               */}
+              <StarRating value={4.6} />
             </Group>
             <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
               Source: Gartner Peer Insights&trade;

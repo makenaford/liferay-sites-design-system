@@ -59,13 +59,12 @@ import {
   IconGlassSupplierPortals,
   IconSearch,
   IconShoppingCart1,
-  IconStarFilled,
   IconUser1,
 } from '../icons'
 import { PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
-import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit } from './shared'
+import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit, StarRating } from './shared'
 import classes from '../theme/components.module.css'
 import { isVideo } from './page-schema'
 import type {
@@ -442,20 +441,11 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
             <Text fz={28} fw={700} lh={1}>
               {proof.rating.score}
             </Text>
-            <Group gap={0} aria-hidden>
-              {Array.from({ length: proof.rating.outOf }, (_, i) => (
-                <IconStarFilled
-                  key={i}
-                  width={16}
-                  height={16}
-                  color={
-                    i < Math.round(Number(proof.rating?.score ?? 0))
-                      ? 'var(--sds-surfaces-text-primary)'
-                      : 'var(--sds-surfaces-text-secondary)'
-                  }
-                />
-              ))}
-            </Group>
+            {/*
+             * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
+             * stars — a better rating than the number beside it claimed.
+             */}
+            <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} />
           </Group>
           <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
             {proof.rating.source}
