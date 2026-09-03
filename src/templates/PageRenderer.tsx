@@ -229,10 +229,16 @@ function HeroMedia({ media }: { media: ImageRef }) {
 export function PanelMedia({ media }: { media: ImageRef }) {
   const reducedMotion = useReducedMotion()
   const [failed, setFailed] = useState(false)
-  const ratio = media.ratio ?? '3:2'
 
   if (!isVideo(media.src) || failed) {
-    return <Image src={failed && media.poster ? media.poster : media.src} alt={media.alt} ratio={ratio} radius="md" />
+    return (
+      <Image
+        src={failed && media.poster ? media.poster : media.src}
+        alt={media.alt}
+        ratio={media.ratio ?? '3:2'}
+        radius="md"
+      />
+    )
   }
 
   return (
@@ -251,8 +257,28 @@ export function PanelMedia({ media }: { media: ImageRef }) {
       style={{
         display: 'block',
         width: '100%',
-        aspectRatio: ratio === '3:2' ? '3 / 2' : undefined,
-        objectFit: 'cover',
+        /*
+         * The clip keeps its own shape unless a caller insists otherwise.
+         *
+         * It was forced into 3:2 with `object-fit: cover`, which crops: these clips are 1200x866, so a
+         * 3:2 box cut a slice off the top and bottom of every one of them. A still can be cropped to a
+         * ratio because a still is a photograph; footage is a composition someone framed, and cutting
+         * it is the one thing not to do to it.
+         */
+        aspectRatio: media.ratio && media.ratio !== 'auto' ? undefined : 'auto',
+        height: 'auto',
+        /*
+         * The black ground blended away, the same way the hero does it for the bubble webms.
+         *
+         * These clips are a photograph inset in pure black padding. With the panel gone there is
+         * nothing to hide that against, and the page is `#070b13` rather than `#000`, so the clip sat
+         * on it as a slightly darker rectangle with a visible edge. `screen` composites pure black to
+         * exactly the backdrop, so the padding disappears into the page whatever the page is.
+         *
+         * It lifts the photograph's own blacks by the page colour — under 8% on the brightest channel
+         * here — which is the price, and it is the same price the hero already pays.
+         */
+        mixBlendMode: 'screen',
         borderRadius: 'var(--mantine-radius-md)',
       }}
     />
@@ -769,7 +795,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                    * remounts the element and the new clip starts from its own first frame rather than
                    * inheriting the last one's playback position.
                    */}
-                  <PanelMedia key={media.src} media={{ ...media, ratio: media.ratio ?? '3:2' }} />
+                  <PanelMedia key={media.src} media={media} />
                   {panel.stats?.length ? (
                     <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
                   ) : null}

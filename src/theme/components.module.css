@@ -8694,26 +8694,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * 16 inside a 16 radius, with the image at 8: an inner corner should be tighter than the outer one it
  * sits inside, or the two curves fight where they are closest.
  */
+/*
+ * The picture and its figures, as one column.
+ *
+ * It used to be a *panel* — a grey glass surface with a hairline, 16px of padding, and the media inset
+ * inside it at a smaller radius. That was a container around a container: the media is a rounded box
+ * already, so the panel drew a second border a few pixels outside the first, and where the media is
+ * footage on a black ground the panel's grey read as a mount around a picture that did not need one.
+ *
+ * What is left is the relationship the panel was there to express — these figures belong to this
+ * picture — carried by a gap instead of a border.
+ */
 .mediaStats {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 16px;
-  background-color: var(--sds-surfaces-card-bg-grey);
-  /* The same hairline every glass surface in this library carries, at the tile's half strength. */
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-map-tile-line-from) 1%,
-    var(--sds-map-tile-line-to) 92%
-  );
-  background-origin: border-box;
-  border: 1px solid transparent;
-}
-
-.mediaStats > :where(div, figure, img):first-child {
-  border-radius: 8px;
-  overflow: hidden;
+  gap: 24px;
 }
 
 /* ============================================================================ MeshBackdrop

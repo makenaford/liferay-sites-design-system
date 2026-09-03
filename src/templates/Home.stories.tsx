@@ -826,13 +826,11 @@ function HomePage() {
                 <PanelMedia
                   key={teamMedia?.src ?? 'still'}
                   media={
-                    teamMedia
-                      ? { ...teamMedia, ratio: '3:2' }
-                      : {
-                          src: teamsMedia,
-                          alt: 'Two colleagues building an AI agent in Liferay',
-                          ratio: '3:2',
-                        }
+                    teamMedia ?? {
+                      src: teamsMedia,
+                      alt: 'Two colleagues building an AI agent in Liferay',
+                      ratio: '3:2',
+                    }
                   }
                 />
                 <StatBar align="center">
