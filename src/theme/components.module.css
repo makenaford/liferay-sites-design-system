@@ -3060,14 +3060,19 @@
   }
 }
 
-/* The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule. */
+/*
+ * The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule.
+ *
+ * `Gradient Card/03` into `Gradient Card/blue`, both real tokens now — the first was standing in as
+ * `Surfaces/Card BG/Grey` while the group was missing from the Figma export.
+ */
 .megaFeatured {
   width: clamp(260px, 24vw, 320px);
   border-inline-start: 1px solid var(--sds-neutral-03);
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 64px) clamp(20px, 3vw, 40px);
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 50%, transparent) 64%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 50%, transparent) 64%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 28%, transparent) 100%
   );
 }
@@ -3706,17 +3711,17 @@
  *
  *   linear-gradient(178deg, Components/Gradient Card/03 63.85%, Components/Gradient Card/blue 84.95%)
  *
- * `Gradient Card/03` is **not exported** — the token pipeline brings across only the blue and purple
- * stops, on the grounds that the other three are all `Surfaces/Card BG/Grey`. So that is what stands in
- * here, at the file's own 15%, which is also what the desktop rail already does. The two differ by
- * #0F131B against Figma's #0A0E17, which at 15% alpha is not a difference anyone can see — but it is a
- * stand-in, and it is written down as one.
+ * `Gradient Card/03` is a real token now — `tokens/figma/color.gradient-card.*.tokens.json`, read out of
+ * the Plugin API because the UI export omits the group. It used to stand in as `Surfaces/Card BG/Grey`,
+ * with a note that the two differed by #0F131B against Figma's #0A0E17. The export says #0F131B, so
+ * either the file moved or the note was wrong; either way the stand-in is gone and this is the value
+ * the file holds.
  */
 .headerDrawerPanel .megaFeatured,
 .headerDrawerPanel .megaCta {
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 15%, transparent) 63.85%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 15%, transparent) 63.85%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 15%, transparent) 84.95%
   );
 }
