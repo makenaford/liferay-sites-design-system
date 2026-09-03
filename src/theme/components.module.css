@@ -2434,6 +2434,12 @@
  */
 
 .headerShell {
+  /*
+   * Positioned even when `static`, so the shell's z-index applies and the panel below can hang off it.
+   * A static header still overlays the page *while a menu is open* — it just does not overlay it at
+   * rest, which is the whole difference between the two positions.
+   */
+  position: relative;
   z-index: 200;
   width: 100%;
   /*
@@ -2694,8 +2700,20 @@
  * bottom corners rounded and no top edge of its own — the band's hairline is the panel's top.
  */
 
+/*
+ * The panel hangs off the bottom of the band rather than sitting under it in the flow.
+ *
+ * `static` used to mean the open panel was a block in the document, so opening a menu pushed the whole
+ * page down by the panel's height and closing it pulled the page back up — the page jumped under the
+ * reader on every click. It is a disclosure over the page in both positions now; `position` only says
+ * whether the *bar* is in the flow.
+ *
+ * Zero-height while closed — every panel inside carries `hidden` — so it catches no clicks at rest.
+ */
 .headerMegaWrap {
-  position: relative;
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline: 0;
   z-index: 1;
   padding-inline: clamp(12px, 3vw, 32px);
 }

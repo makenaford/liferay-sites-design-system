@@ -81,7 +81,12 @@ export interface HeaderProps extends BoxProps, ElementProps<'header'> {
   defaultOpen?: string | null
   /** Notified whenever a menu opens or closes, with the open item's `value` or `null`. */
   onOpenChange?: (value: string | null) => void
-  /** `fixed` overlays the page, which is what the glass blur is for. `static` sits in the flow. */
+  /**
+   * `fixed` overlays the page, which is what the glass blur is for. `static` sits in the flow.
+   *
+   * It positions the **bar**. An open mega menu hangs over the page either way — a disclosure that
+   * reflowed the document would move the page under the reader every time a section opened.
+   */
   position?: 'fixed' | 'static'
   /**
    * Condense on scroll: at the top of the page the band is transparent and part of the hero, and once
