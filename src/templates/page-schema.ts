@@ -228,7 +228,14 @@ export interface PanelSpec {
   description: string
   action?: LinkRef
   /** An accordion under the description. */
-  items?: { question: string; answer: string; link?: LinkRef }[]
+  /**
+   * The accordion rows.
+   *
+   * `media` on a row **replaces the panel's** while that row is open, which is how the Home page's
+   * teams panel shows a different clip per claim. Rows without one fall back to `PanelSpec.media`, so
+   * a panel can give footage to some rows and not others without going half-empty.
+   */
+  items?: { question: string; answer: string; link?: LinkRef; media?: ImageRef }[]
   /**
    * A checked list under the description — Figma's `Key Point Main List`, which is what the product and
    * solution pages put in a panel where the Home page puts an accordion.

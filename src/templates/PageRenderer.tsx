@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
@@ -214,6 +214,118 @@ function HeroMedia({ media }: { media: ImageRef }) {
       aria-hidden
       tabIndex={-1}
     />
+  )
+}
+
+/**
+ * A still or a clip, in a box of the given ratio.
+ *
+ * `HeroMedia` is not reusable here and it was a mistake to try: its `<video>` carries no sizing at all,
+ * because inside the hero `.heroVideo` gives it one. Dropped into a content column it renders at its
+ * natural 1200x866 and takes the page's width with it. This gives the element the same `aspect-ratio`,
+ * radius and `object-fit` that `Image` gives a still, so a row that swaps a photo for a clip does not
+ * also change the shape of the column.
+ */
+export function PanelMedia({ media }: { media: ImageRef }) {
+  const reducedMotion = useReducedMotion()
+  const [failed, setFailed] = useState(false)
+
+  if (!isVideo(media.src) || failed) {
+    /*
+     * `fill`, because the box around this already has a ratio — see `.mediaFade`. Asking the image for
+     * one too would give the box two opinions about its height, and the one that won would depend on
+     * which media the open row happened to carry.
+     */
+    return <Image src={failed && media.poster ? media.poster : media.src} alt={media.alt} fill fit="contain" radius="md" />
+  }
+
+  return (
+    <video
+      src={media.src}
+      poster={media.poster}
+      /* Held on its first frame rather than dropped: the footage is the content of the row. */
+      autoPlay={!reducedMotion}
+      muted
+      /*
+       * Once, on entering the row — not on a loop.
+       *
+       * A clip that restarts every few seconds competes with the row that is open: the reader's eye is
+       * pulled back to the picture each time it begins again, and these are 6 to 17 seconds long, so a
+       * loop is a fresh interruption before most people have finished the paragraph. It plays through
+       * and holds its last frame, and it plays again when the row is opened again — the crossfade mounts
+       * a fresh element each time, so entering a row it has seen before starts it from the beginning.
+       */
+      playsInline
+      preload="auto"
+      onError={() => setFailed(true)}
+      aria-label={media.alt}
+      tabIndex={-1}
+      style={{
+        display: 'block',
+        /* Size and fit come from `.mediaFade`, which gives every layer the same box. */
+        /*
+         * The `screen` that blends the black ground away is on the *layer* in `CrossfadeMedia`, not
+         * here. It was here, and it stopped working the moment the crossfade arrived: the fade is a CSS
+         * animation, an animation creates a stacking context, and `animation-fill-mode: both` keeps
+         * that context for good — so the video was blending against its own transparent wrapper rather
+         * than against the page, and pure black over transparent is pure black.
+         */
+        borderRadius: 'var(--mantine-radius-md)',
+      }}
+    />
+  )
+}
+
+/**
+ * `PanelMedia`, with the swap between two of them faded rather than cut.
+ *
+ * Keeping the outgoing layer mounted is the whole trick, and it is why this is a component rather than
+ * a class on the element: a fade needs both pictures on screen at once, and React has thrown the old
+ * one away by the time any CSS could run.
+ *
+ * **There is no blending here any more, and that is the point.** The clips arrived as a photograph
+ * inset in black padding, and three commits went into hiding that padding with `mix-blend-mode:
+ * screen` — which kept breaking, because a blend composites against the nearest stacking context and
+ * every ancestor is free to become one. It broke on the fade's own animation, then again on
+ * `stickyMedia`.
+ *
+ * The padding is cropped out of the files instead. Nothing left to hide, so nothing to blend, so
+ * nothing an ancestor can break — and the clips are no longer lightened by the page colour while the
+ * still beside them is not, which is the second thing the blend was quietly costing.
+ */
+export function CrossfadeMedia({ media }: { media: ImageRef }) {
+  const [layers, setLayers] = useState<{ id: number; media: ImageRef }[]>([{ id: 0, media }])
+  const nextId = useRef(0)
+
+  useEffect(() => {
+    setLayers((prev) => {
+      const current = prev[prev.length - 1]
+      if (current.media.src === media.src) return prev
+      nextId.current += 1
+      /* At most two: the one going out and the one coming in. A third would fade over an unfinished fade. */
+      return [current, { id: nextId.current, media }]
+    })
+  }, [media])
+
+  const incoming = layers[layers.length - 1]
+  const outgoing = layers.length > 1 ? layers[0] : undefined
+
+  return (
+    <div className={classes.mediaFade}>
+      {outgoing ? (
+        <div className={classes.mediaFadeOut} aria-hidden>
+          <PanelMedia media={outgoing.media} />
+        </div>
+      ) : undefined}
+      <div
+        key={incoming.id}
+        className={classes.mediaFadeIn}
+        /* The fade is over, so the layer underneath has nothing left to show. */
+        onAnimationEnd={() => setLayers((prev) => prev.slice(-1))}
+      >
+        <PanelMedia media={incoming.media} />
+      </div>
+    </div>
   )
 }
 
@@ -625,6 +737,22 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
   const [tab, setTab] = useState(spec.tabs[0]?.value ?? '')
   const panel: PanelSpec | undefined = spec.tabs.find((t) => t.value === tab)?.content
 
+  /*
+   * Which accordion row is open, so the media can follow it.
+   *
+   * The accordion is left to own its own value rather than being driven from here: owning `value` is
+   * what turns its autoplay off, and the panel opening itself row by row is the whole behaviour of this
+   * section. So it reports through `onChange` — including its automatic advances — and this is a mirror
+   * of its state rather than the source of it.
+   *
+   * Keyed by row, and reset when the tab changes: the panels have different rows, and a stale question
+   * from the last tab matches nothing and would leave the media on the fallback.
+   */
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const firstRow = panel?.items?.[0]?.question ?? null
+  const activeRow = panel?.items?.find((item) => item.question === openRow) ?? panel?.items?.[0]
+  const media = activeRow?.media ?? panel?.media
+
   return (
     <Section
       title={
@@ -657,7 +785,11 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
           w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
           maw="100%"
           value={tab}
-          onChange={(v) => setTab(v ?? '')}
+          onChange={(v) => {
+            setTab(v ?? '')
+            /* A new panel has different rows; keeping the old one would match nothing. */
+            setOpenRow(null)
+          }}
         >
           <Tabs.List grow={spec.tabs.length <= 3}>
             {spec.tabs.map((t) => (
@@ -671,6 +803,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         {panel ? (
           <ContentMedia
             mediaSide={spec.mediaSide ?? 'right'}
+            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
+            stickyMedia
             /* A stat row under the media makes the column taller than 3:2, so the box takes its height. */
             mediaRatio={panel.stats?.length ? 'auto' : '3:2'}
             order={3}
@@ -693,14 +827,21 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
               ) : undefined
             }
             media={
-              panel.media ? (
+              media ? (
                 /*
                  * One object, not two stacked. The container and the gap are what make the stat row
                  * read as belonging to the picture rather than sitting under it — see `.mediaStats`.
                  * Without stats there is nothing to contain, so the frame does not appear.
                  */
                 <div className={panel.stats?.length ? classes.mediaStats : undefined}>
-                  <Image src={panel.media.src} alt={panel.media.alt} ratio="3:2" radius="md" />
+                  {/*
+                   * `HeroMedia` rather than `Image`, because a row's media can be a clip: it plays the
+                   * video, falls back to the poster or the still when the file is missing, and holds the
+                   * first frame under `prefers-reduced-motion`. Keyed by `src`, so switching rows
+                   * remounts the element and the new clip starts from its own first frame rather than
+                   * inheriting the last one's playback position.
+                   */}
+                  <CrossfadeMedia media={media} />
                   {panel.stats?.length ? (
                     <StatBar align="center">{panel.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
                   ) : null}
@@ -715,7 +856,13 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                * rather than answering a question the reader arrived with — the FAQ block is the other
                * one, and it deliberately does not do this: someone reading an FAQ came for one answer.
                */
-              <Accordion size="lg" order={4} autoplay defaultValue={panel.items[0].question}>
+              <Accordion
+                size="lg"
+                order={4}
+                autoplay
+                defaultValue={firstRow ?? undefined}
+                onChange={(value) => setOpenRow(value)}
+              >
                 {panel.items.map((item) => (
                   <Accordion.Item key={item.question} value={item.question}>
                     <Accordion.Control>{item.question}</Accordion.Control>

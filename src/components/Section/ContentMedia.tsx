@@ -21,6 +21,18 @@ export interface ContentMediaProps extends BoxProps, Omit<ElementProps<'div'>, '
    * @default '3:2'
    */
   mediaRatio?: ContentMediaRatio
+  /**
+   * The media holds the top of the row while the text column scrolls past it.
+   *
+   * Worth it where the two columns are very different heights — a panel whose accordion opens and
+   * closes grows by a paragraph at a time, and the picture otherwise drifts out of view halfway through
+   * reading about it. Off by default: on two columns of similar height it is motion with nothing to
+   * gain, and the row stops centring them.
+   *
+   * Ignored below the stacking breakpoint, where the figure sits above the text and has nothing to
+   * stick beside.
+   */
+  stickyMedia?: boolean
   /** Above the heading — a `Label`, an eyebrow. */
   eyebrow?: ReactNode
   title?: ReactNode
@@ -65,6 +77,7 @@ export const ContentMedia = forwardRef<HTMLDivElement, ContentMediaProps>(functi
     media,
     mediaSide = 'left',
     mediaRatio = '3:2',
+    stickyMedia,
     eyebrow,
     title,
     description,
@@ -83,6 +96,7 @@ export const ContentMedia = forwardRef<HTMLDivElement, ContentMediaProps>(functi
       ref={ref}
       className={[classes.contentMediaRoot, className].filter(Boolean).join(' ')}
       data-media-side={mediaSide}
+      data-sticky={stickyMedia || undefined}
       {...props}
     >
       {media ? (

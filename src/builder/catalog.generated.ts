@@ -160,6 +160,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "media", kind: "slot", doc: "The image, video, or anything else that belongs in the media column." },
       { name: "mediaSide", kind: "enum", options: ["left", "right"], default: "left" },
       { name: "mediaRatio", kind: "enum", options: ["3:2", "16:9", "auto"], default: "3:2", doc: "The media box's ratio, from `card-image`'s own axis. `auto` takes the ratio off and lets the column be as tall as what is in it — which is what the Home page's `Different Teams. One Platform.` needs, because its right column is an image *and* a row of stats under it, and a fixed 3:2 box clips the second half." },
+      { name: "stickyMedia", kind: "boolean", doc: "The media holds the top of the row while the text column scrolls past it." },
       { name: "eyebrow", kind: "slot", doc: "Above the heading — a `Label`, an eyebrow." },
       { name: "title", kind: "slot" },
       { name: "description", kind: "slot" },

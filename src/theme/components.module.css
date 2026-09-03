@@ -6309,7 +6309,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   object-fit: cover;
 }
 
-.contentMediaFigure[data-ratio='auto'] > :where(img, picture, video, svg, div, span) {
+/*
+ * A lone media element, told to fill the column.
+ *
+ * `:not(.mediaStats)` because that one is not a media element — it is a *layout*, a picture with a stat
+ * row under it, and it needs to stay the flex column it declares itself to be. Matching it here set
+ * `display: block` at a specificity its own rule could not beat, so its `gap` computed to 24px and did
+ * nothing: the stat row sat flush against the bottom of the picture with no space at all.
+ */
+.contentMediaFigure[data-ratio='auto'] > :where(img, picture, video, svg, div, span):not(.mediaStats) {
   display: block;
   width: 100%;
 }
@@ -6317,6 +6325,29 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /* `Type=Content- Right Image` — the same DOM, reordered, so the markup keeps the media first. */
 .contentMediaRoot[data-media-side='right'] > .contentMediaFigure {
   order: 1;
+}
+
+/*
+ * `sticky` — the media holds the top of the row while the text column scrolls past it.
+ *
+ * Opt-in rather than the default, because it only earns its place where the two columns are very
+ * different heights: a panel whose accordion opens and closes grows by a paragraph at a time, and
+ * without this the picture drifts up out of view halfway through reading about it.
+ *
+ * `align-items: flex-start` is not decoration here — it is the precondition. The row centres its
+ * columns by default, which stretches nothing but does place the figure at a fixed offset inside a box
+ * as tall as the row; `sticky` on an element with no room to move does nothing at all.
+ *
+ * The offset clears the fixed header. 64px is the band at rest — it tightens to 56 on scroll, and the
+ * larger of the two is the one to clear — plus 24 so the picture is not welded to the underside of it.
+ */
+.contentMediaRoot[data-sticky] {
+  align-items: flex-start;
+}
+
+.contentMediaRoot[data-sticky] > .contentMediaFigure {
+  position: sticky;
+  inset-block-start: calc(64px + 24px);
 }
 
 .contentMediaText {
@@ -6363,6 +6394,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * and collapsing both the same way throws it away.
  */
 @container sds-section (max-width: 900px) {
+  /*
+   * Stacked, so there is nothing to stick beside: the figure is above the text rather than next to it,
+   * and a sticky figure would pin itself over the paragraph it belongs to.
+   */
+  .contentMediaRoot[data-sticky] > .contentMediaFigure {
+    position: static;
+  }
+
   .contentMediaRoot {
     flex-direction: column;
     align-items: stretch;
@@ -8694,26 +8733,104 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * 16 inside a 16 radius, with the image at 8: an inner corner should be tighter than the outer one it
  * sits inside, or the two curves fight where they are closest.
  */
+/*
+ * The picture and its figures, as one column.
+ *
+ * It used to be a *panel* — a grey glass surface with a hairline, 16px of padding, and the media inset
+ * inside it at a smaller radius. That was a container around a container: the media is a rounded box
+ * already, so the panel drew a second border a few pixels outside the first, and where the media is
+ * footage on a black ground the panel's grey read as a mount around a picture that did not need one.
+ *
+ * What is left is the relationship the panel was there to express — these figures belong to this
+ * picture — carried by a gap instead of a border.
+ */
 .mediaStats {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 16px;
-  background-color: var(--sds-surfaces-card-bg-grey);
-  /* The same hairline every glass surface in this library carries, at the tile's half strength. */
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-map-tile-line-from) 1%,
-    var(--sds-map-tile-line-to) 92%
-  );
-  background-origin: border-box;
-  border: 1px solid transparent;
+  gap: 24px;
 }
 
-.mediaStats > :where(div, figure, img):first-child {
-  border-radius: 8px;
-  overflow: hidden;
+/* ============================================================================ media crossfade
+ *
+ * Swapping the panel's media used to be a cut: the element was keyed by `src`, so React threw the old
+ * one away and mounted the new one in the same frame. On a row that opens itself on a timer that is a
+ * flicker every few seconds, which draws the eye to the swap rather than to the picture.
+ *
+ * Two layers instead. The outgoing one is taken out of the flow and left where it was; the incoming one
+ * sits in the flow — so the box keeps its height — and fades up over it. The outgoing layer is dropped
+ * when the fade ends, which is why nothing here needs a timer.
+ */
+/*
+ * The crossfade box, and the backdrop the clips' `screen` blends against.
+ *
+ * The background is for transparency, not for blending. The B2B still is an RGBA export with rounded
+ * corners, so without something behind it the page shows through at the corners of a box that is
+ * otherwise opaque — which is fine here and would not be over a card. `isolation` keeps the layers'
+ * compositing to this box rather than letting it reach whatever is behind the section.
+ *
+ * There used to be a `mix-blend-mode: screen` on each layer, hiding the black padding the clips shipped
+ * with, and it broke twice — a blend composites against the nearest stacking context, and both the fade
+ * animation and `stickyMedia` created one. The padding is cropped out of the files now, so there is
+ * nothing to hide and nothing left to break.
+ */
+.mediaFade {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  border-radius: var(--mantine-radius-md);
+  /*
+   * One box, whatever is in it.
+   *
+   * The clips are 1200x866 and the stills are 3:2, so letting each keep its own height made the column
+   * jump every time a row changed — and the stat row under it moved with it. The box is fixed and the
+   * media fits *inside* it, so a row swap changes the picture and nothing else.
+   *
+   * 3:2 because that is the stills' own shape, so they fill it exactly; the clips are slightly wider
+   * than tall by comparison and sit centred with a little room either side. That room is page-coloured
+   * and the clips' own black edges blend into it, so there is nothing to see.
+   */
+  aspect-ratio: 3 / 2;
+}
+
+/*
+ * Both layers fill the box. Neither is in the flow — the box has its own height from the ratio above,
+ * so it does not need a layer to give it one.
+ */
+.mediaFadeOut,
+.mediaFadeIn {
+  position: absolute;
+  inset: 0;
+}
+
+.mediaFadeIn {
+  animation: sds-media-fade var(--sds-motion-slow, 400ms) var(--sds-motion-ease-out, ease-out) both;
+}
+
+/* Contained, never cropped: the whole frame is the composition, and the spare room is invisible. */
+.mediaFade :where(video, img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes sds-media-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Asked for less motion, and the new picture is simply there.
+ *
+ * The swap still happens — it is the content of the row, not decoration — it just stops being animated.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .mediaFadeIn {
+    animation: none;
+  }
 }
 
 /* ============================================================================ MeshBackdrop

@@ -22,6 +22,7 @@ import { PRODUCT_CLUSTERS, PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
+import { CrossfadeMedia } from './PageRenderer'
 import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
@@ -56,6 +57,21 @@ import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
 import teamsMedia from '../../assets/home/teams-media.png'
+/*
+ * The teams panel's footage.
+ *
+ * Placed by the names the export carried — `t1c1`…`t1c4` and `t2c2`, meaning tab 1 cards 1 to 4 and
+ * tab 2 card 2 — rather than by reading the product names against the copy. Guessing from the product
+ * names put all five on Marketers, which is wrong twice over: `cms` belongs to IT/Developers, and
+ * Marketers' fifth row has no clip at all and keeps the still.
+ */
+import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
+import cmpClip from '../../assets/home/teams/cmp.mp4'
+import personalizationClip from '../../assets/home/teams/personalization.mp4'
+import cmsClip from '../../assets/home/teams/cms.mp4'
+import sitesClip from '../../assets/home/teams/sites.mp4'
+/* A still rather than footage — the B2B row is the one card that was exported as a picture. */
+import b2bStill from '../../assets/home/teams/b2b-commerce.png'
 import trendingAi from '../../assets/home/trending/ai-transformation.jpg'
 import trendingB2b from '../../assets/home/trending/b2b-ecommerce.jpg'
 import trendingKms from '../../assets/home/trending/knowledge-management.jpg'
@@ -224,7 +240,14 @@ const STORIES = [
 /** `Different Teams. One Platform.` — the accordion behind each pill. */
 const TEAMS: Record<
   string,
-  { icon: ReactNode; label: string; title: string; description: string; items: { q: string; a: string; link?: string }[] }
+  {
+    icon: ReactNode
+    label: string
+    title: string
+    description: string
+    /* `media` on a row replaces the panel's while that row is open; rows without one fall back to it. */
+    items: { q: string; a: string; link?: string; media?: { src: string; alt: string } }[]
+  }
 > = {
   marketers: {
     icon: <IconUser1 />,
@@ -236,26 +259,31 @@ const TEAMS: Record<
         q: 'Create smarter content. Convert more visitors.',
         a: 'Use AI to create and manage content faster, while agents auto-tag assets, translate pages, and segment visitors in real time – so every piece of content lands with the right audience automatically.',
         link: 'Explore AI Hub',
+        media: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
       },
       {
         q: 'Launch campaigns without waiting on IT',
         a: 'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: 'Explore the page builder',
+        media: { src: sitesClip, alt: 'A page being built and published from shared components' },
       },
       {
         q: 'Reach every visitor with the right message',
         a: 'Segment on behaviour, account and locale, then personalise any fragment on the page against those segments.',
         link: 'Explore personalization',
+        media: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
       },
       {
         q: 'Keep content and assets consistent across every channel',
         a: 'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: 'Explore the DAM',
+        media: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         q: 'Turn your site into a B2B revenue engine',
         a: 'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: 'Explore commerce',
+        media: { src: b2bStill, alt: 'A B2B order moving through a two-step approval workflow' },
       },
     ],
   },
@@ -275,6 +303,7 @@ const TEAMS: Record<
         q: 'Run it where your policy says you can',
         a: 'The same distribution as SaaS, PaaS or self-hosted, with one upgrade path between them.',
         link: 'Compare deployment options',
+        media: { src: cmsClip, alt: 'The same platform running on SaaS, PaaS and self-hosted' },
       },
       {
         q: 'One identity, one audit surface',
@@ -466,8 +495,18 @@ function HomePage() {
   const [teamTab, setTeamTab] = useState('marketers')
   const [capability, setCapability] = useState('enterprise-websites')
   const [industry, setIndustry] = useState(INDUSTRIES[0])
+  const [openRow, setOpenRow] = useState<string | null>(null)
 
   const team = TEAMS[teamTab]
+  /*
+   * Which accordion row is open, so the media can follow it.
+   *
+   * The accordion keeps ownership of its own value — taking it over is what turns its autoplay off, and
+   * the panel opening itself row by row is the behaviour of this section — so it reports through
+   * `onChange`, including its automatic advances, and this is a mirror rather than the source.
+   */
+  const teamRow = TEAMS[teamTab].items.find((item) => item.q === openRow) ?? TEAMS[teamTab].items[0]
+  const teamMedia = teamRow.media
   const panel = CAPABILITIES.find((c) => c.value === capability) ?? CAPABILITIES[3]
 
   return (
@@ -755,7 +794,11 @@ function HomePage() {
             variant="pills"
             w={{ base: '100%', md: 776 }}
             value={teamTab}
-            onChange={(v) => setTeamTab(v ?? 'marketers')}
+            onChange={(v) => {
+                  setTeamTab(v ?? 'marketers')
+                  /* A new panel has different rows; the old one would match nothing. */
+                  setOpenRow(null)
+                }}
           >
             <Tabs.List grow>
               {Object.entries(TEAMS).map(([value, t]) => (
@@ -770,17 +813,27 @@ function HomePage() {
             mediaSide="right"
             /* Image plus a stat row: taller than 3:2, so the box takes its height from them. */
             mediaRatio="auto"
+            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
+            stickyMedia
             order={3}
             title={team.title}
             description={team.description}
             media={
               /* The picture and its figures as one panel — see `.mediaStats`. */
               <div className={classes.mediaStats}>
-                <Image
-                  src={teamsMedia}
-                  alt="Two colleagues building an AI agent in Liferay"
-                  ratio="3:2"
-                  radius="md"
+                {/*
+                 * `CrossfadeMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
+                 * the poster fallback for a missing file, and the held first frame under
+                 * `prefers-reduced-motion`, and fades between rows rather than cutting.
+                 */}
+                <CrossfadeMedia
+                  media={
+                    teamMedia ?? {
+                      src: teamsMedia,
+                      alt: 'Two colleagues building an AI agent in Liferay',
+                      ratio: '3:2',
+                    }
+                  }
                 />
                 <StatBar align="center">
                   <Stat value="56" label="Websites launched" align="center" />
@@ -791,7 +844,13 @@ function HomePage() {
             }
           >
             {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
-            <Accordion size="lg" order={4} autoplay defaultValue={team.items[0].q}>
+            <Accordion
+              size="lg"
+              order={4}
+              autoplay
+              defaultValue={team.items[0].q}
+              onChange={(value) => setOpenRow(value)}
+            >
               {team.items.map((item) => (
                 <Accordion.Item key={item.q} value={item.q}>
                   <Accordion.Control>{item.q}</Accordion.Control>

@@ -41,6 +41,20 @@ import trendingPortals from '../../assets/home/trending/web-portals.jpg'
  *   8px out, which is why `resourceGrid` exists separately from `cardGrid`.
  */
 
+/*
+ * The teams panel's footage.
+ *
+ * Placed by the names the export carried — `t1c1`…`t1c4` and `t2c2`, meaning tab 1 cards 1 to 4 and
+ * tab 2 card 2 — rather than by reading the product names against the copy.
+ */
+import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
+import cmpClip from '../../assets/home/teams/cmp.mp4'
+import personalizationClip from '../../assets/home/teams/personalization.mp4'
+import cmsClip from '../../assets/home/teams/cms.mp4'
+import sitesClip from '../../assets/home/teams/sites.mp4'
+/* A still rather than footage — the B2B row is the one card that was exported as a picture. */
+import b2bStill from '../../assets/home/teams/b2b-commerce.png'
+
 const TEAM_PANELS = {
   marketers: {
     title: 'Launch faster. Convert more.',
@@ -51,30 +65,35 @@ const TEAM_PANELS = {
         answer:
           'Use AI to create and manage content faster, while agents auto-tag assets, translate pages, and segment visitors in real time – so every piece of content lands with the right audience automatically.',
         link: { label: 'Explore AI Hub', href: '#' },
+        media: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
       },
       {
         question: 'Launch campaigns without waiting on IT',
         answer:
           'Build and publish pages from the same components engineering ships, so a landing page stops being a release.',
         link: { label: 'Explore the page builder', href: '#' },
+        media: { src: sitesClip, alt: 'A page being built and published from shared components' },
       },
       {
         question: 'Reach every visitor with the right message',
         answer:
           'Segment on behaviour, account and locale, then personalise any fragment on the page against those segments.',
         link: { label: 'Explore personalization', href: '#' },
+        media: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
       },
       {
         question: 'Keep content and assets consistent across every channel',
         answer:
           'One content tree and one asset library feed the website, the portal, commerce and every headless surface.',
         link: { label: 'Explore the DAM', href: '#' },
+        media: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
       },
       {
         question: 'Turn your site into a B2B revenue engine',
         answer:
           'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: { label: 'Explore commerce', href: '#' },
+        media: { src: b2bStill, alt: 'A B2B order moving through a two-step approval workflow' },
       },
     ],
     media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
@@ -98,6 +117,7 @@ const TEAM_PANELS = {
         question: 'Run it where your policy says you can',
         answer: 'The same distribution as SaaS, PaaS or self-hosted, with one upgrade path between them.',
         link: { label: 'Compare deployment options', href: '#' },
+        media: { src: cmsClip, alt: 'The same platform running on SaaS, PaaS and self-hosted' },
       },
       {
         question: 'One identity, one audit surface',
