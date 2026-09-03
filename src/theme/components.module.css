@@ -3624,16 +3624,33 @@
  * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
  * anything inside it scrolls away, and the file keeps this button on screen at every level.
  */
+/*
+ * The foot of the drawer.
+ *
+ * Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves, which is what the
+ * file draws. Two *columns* rather than a column per child, so a third item wraps to a second row
+ * instead of shrinking all three — three equal columns on a phone leaves about 100px a button, which is
+ * not enough for `Create an account`.
+ */
 .headerDrawerFooter {
   flex: none;
   display: grid;
-  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   padding: 20px 24px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+/*
+ * An odd one out takes the whole row rather than half of it and a gap.
+ *
+ * With the two the file draws this never matches. With three — two account buttons and the call to
+ * action — it puts the call to action across the foot, which is where the primary action wants to be
+ * anyway.
+ */
+.headerDrawerFooter > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .headerDrawerFooter > * {
