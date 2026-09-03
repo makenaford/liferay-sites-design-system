@@ -911,6 +911,14 @@ function HomePage() {
       >
         <Card
           align="horizontal"
+          /*
+           * Its links do the work — the same call `PageRenderer` already makes for this section.
+           *
+           * A `glass` card is a target by default, which is right where the whole surface goes one
+           * place. This one carries two links and a stat row, so a card-wide target would be a control
+           * wrapped around two other controls with no single destination of its own to offer.
+           */
+          interactive={false}
           titleSize="full"
           hero={<IconGlassFinancialServices width={48} height={48} />}
           title={industry}
