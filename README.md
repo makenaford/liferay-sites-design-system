@@ -2593,9 +2593,22 @@ numbers read as a coloured cloud sitting on the content rather than as light beh
 The product screenshots and the platform diagram are the design's own assets and are committed under
 `assets/home/`, exported at the drawn size or 2×. **Customer and vendor logos are not** — Airbus, Sky,
 Broadcom, Unilever, Stadt Wien, Carrefour and Petrobras are other companies' trademarks rather than
-design-system assets, so the marquee and the carousel tiles use stand-ins at the drawn size, and the
-integration row runs eight invented vendors. The Gartner "Leader / Summer 2026" shield is omitted for the
-same reason; the rating, the stars and the attribution line are real.
+design-system assets, so the marquee and the carousel tiles use stand-ins at the drawn size. The Gartner
+"Leader / Summer 2026" shield is omitted for the same reason; the rating, the stars and the attribution
+line are real.
+
+**The integration row is the exception, and it changed.** It ran eight invented vendors — geometry in
+`currentColor`, no real trademark anywhere near the repository — and now carries twelve real marks in
+`assets/integrations/`: Microsoft Office, Google Cloud, Azure, Amazon S3, HubSpot, Stripe, PayPal,
+DocuSign, Elastic, Google Drive, FedEx and UPS. They were supplied for this section deliberately.
+Naming a vendor you integrate with is ordinary nominative use, which is not the same question as
+redistributing a mark from a public repository — and it is that second question this section has always
+been about. **If it needs undoing**, delete `assets/integrations/`, restore the invented set in
+`src/templates/vendor-logos.tsx` from git history, and the row renders again through `VendorTile`.
+
+`assets/integrations/google-cloud.svg` is 199KB against 1–7KB for every other one, because it is a PNG
+embedded in an SVG wrapper rather than a drawing. It is 78% of that folder on its own and it will not
+stay sharp on a high-density screen. A real vector would fix both.
 
 **`Trending Now`'s six thumbnails are committed, and they are the exception worth flagging.** They come
 straight out of the `card-image` fills in node `7655:15414` — centre-cropped to the card's 3:2, saved at

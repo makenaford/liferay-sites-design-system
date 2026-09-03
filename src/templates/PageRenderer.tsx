@@ -1123,7 +1123,28 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
       <Marquee label="Integrations" gap={16} logoWidth={64} size="lg" speed={38} fade fadeWidth={120}>
         {spec.logos.map((name, i) => {
           const logo = VENDOR_LOGOS.find((v) => v.name === name)
-          return (
+          /*
+           * The logo *is* the tile.
+           *
+           * Each file is a 200x200 artboard with its own rounded rect in it, so wrapping one in `Card`'s
+           * glass tile gives a tile inside a tile and shrinks the mark to something nobody can read. A
+           * name with no file still gets the glass tile, because an initial on bare page is not a tile
+           * at all.
+           */
+          return logo ? (
+            <img
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${name}-${i}`}
+              src={logo.src}
+              alt={name}
+              width={64}
+              height={64}
+              /* Decorative-ish but named: the row is a claim about which products these are. */
+              loading="lazy"
+              draggable={false}
+              style={{ display: 'block', borderRadius: 12 }}
+            />
+          ) : (
             <Card
               // eslint-disable-next-line react/no-array-index-key
               key={`${name}-${i}`}
@@ -1133,14 +1154,7 @@ function IntegrationsSection({ spec }: { spec: Extract<SectionSpec, { type: 'int
               h={64}
             >
               <Group justify="center" align="center" h="100%">
-                {logo ? (
-                  <svg viewBox="0 0 24 24" width={28} height={28} role="img" aria-label={name}>
-                    {logo.mark}
-                  </svg>
-                ) : (
-                  /* A name the invented set does not cover — the initial tile still stands in for it. */
-                  <VendorTile name={name} />
-                )}
+                <VendorTile name={name} />
               </Group>
             </Card>
           )

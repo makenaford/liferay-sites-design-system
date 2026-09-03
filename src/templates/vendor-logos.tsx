@@ -1,114 +1,59 @@
-import type { ReactNode } from 'react'
+import amazonS3 from '../../assets/integrations/amazon-s3.svg'
+import azure from '../../assets/integrations/azure.svg'
+import docusign from '../../assets/integrations/docusign.svg'
+import elastic from '../../assets/integrations/elastic.svg'
+import fedex from '../../assets/integrations/fedex.svg'
+import googleCloud from '../../assets/integrations/google-cloud.svg'
+import googleDrive from '../../assets/integrations/google-drive.svg'
+import hubspot from '../../assets/integrations/hubspot.svg'
+import microsoftOffice from '../../assets/integrations/microsoft-office.svg'
+import paypal from '../../assets/integrations/paypal.svg'
+import stripe from '../../assets/integrations/stripe.svg'
+import ups from '../../assets/integrations/ups.svg'
 
 /**
- * The integration logos, and why they are invented.
+ * The integration logos.
  *
- * The page draws a row of vendor marks — the platforms a customer already runs. Those are other
- * companies' trademarks, so this library does not ship them, for the same reason the marquee's customer
- * logos are stand-ins: a design system that commits someone else's mark is distributing it. See
- * README.md, *What is committed, and what is not*.
+ * **These are real vendor marks, and that is a change.** This file used to hold eight invented
+ * companies — geometry in `currentColor`, no real trademark anywhere near the repository — for the
+ * reason README.md gives under *What is committed, and what is not*: a design system that commits
+ * someone else's mark is distributing it, and this is a public repository.
  *
- * These eight are made up. The names are not products, the marks are geometry, and each is drawn in
- * `currentColor` so `Marquee`'s `monochrome` treatment inks them like any real logo would be. Swapping
- * one for a real vendor is replacing a `mark` and a `name`, which is the point of the shape.
+ * They were supplied for this section deliberately, so the stand-ins are gone. It is the same call the
+ * `Trending Now` thumbnails represent, and it is undone the same way: delete `assets/integrations/`,
+ * put the invented set back from git history, and the section renders again with `VendorTile`
+ * standing in. Naming a vendor you integrate with is ordinary nominative use; that is not a claim
+ * about redistribution, which is the question this file's history is really about.
  *
- * A mark is a 24-unit square. It is drawn at the tile's icon size and never carries meaning of its own —
- * the name beside it is the label, and the lockup as a whole is given an accessible name by the tile.
+ * **Each logo is its own tile.** They arrive as 200×200 artboards with a rounded rect already in them —
+ * white for most, the brand's own colour for Stripe — so they are drawn at the tile size rather than as
+ * a mark inside one of `Card`'s glass tiles. Putting these inside a glass card gives a tile in a tile,
+ * and the mark ends up small enough to be unreadable.
+ *
+ * That is also why there is no `monochrome` treatment here. The customer marquee inks its logos to one
+ * colour, which is what a logo *wall* wants; an integration row is claiming these are the real products
+ * a customer already runs, and a one-colour Stripe is not the thing being claimed.
  */
 export interface VendorLogo {
+  /** The vendor's name. It is the image's accessible name, so it should read as the product does. */
   name: string
-  mark: ReactNode
+  /** The logo file, resolved to a URL by the bundler. */
+  src: string
 }
 
-const stroke = {
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.8,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-} as const
-
 export const VENDOR_LOGOS: VendorLogo[] = [
-  {
-    name: 'Northwind',
-    mark: (
-      <>
-        <circle cx="12" cy="12" r="9" {...stroke} />
-        <path d="M8 16l3-7 5-1-3 7z" {...stroke} />
-      </>
-    ),
-  },
-  {
-    name: 'Cadence',
-    mark: (
-      <>
-        <path d="M5 15V9M9.7 18V6M14.3 16v-8M19 13v-2" {...stroke} />
-      </>
-    ),
-  },
-  {
-    name: 'Parcelly',
-    mark: (
-      <>
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" {...stroke} />
-        <path d="M4 7.5l8 4.5 8-4.5M12 12v9" {...stroke} />
-      </>
-    ),
-  },
-  {
-    name: 'Lumengrid',
-    mark: (
-      <>
-        <circle cx="6" cy="6" r="1.6" fill="currentColor" />
-        <circle cx="12" cy="6" r="1.6" {...stroke} />
-        <circle cx="18" cy="6" r="1.6" {...stroke} />
-        <circle cx="6" cy="12" r="1.6" {...stroke} />
-        <circle cx="12" cy="12" r="1.6" fill="currentColor" />
-        <circle cx="18" cy="12" r="1.6" {...stroke} />
-        <circle cx="6" cy="18" r="1.6" {...stroke} />
-        <circle cx="12" cy="18" r="1.6" {...stroke} />
-        <circle cx="18" cy="18" r="1.6" fill="currentColor" />
-      </>
-    ),
-  },
-  {
-    name: 'Orbita',
-    mark: (
-      <>
-        <ellipse cx="12" cy="12" rx="9" ry="4.5" transform="rotate(-28 12 12)" {...stroke} />
-        <circle cx="12" cy="12" r="3" fill="currentColor" />
-      </>
-    ),
-  },
-  {
-    name: 'Kestrel',
-    mark: (
-      <>
-        <path d="M4 17l8-11 8 11" {...stroke} />
-        <path d="M8.5 17L12 12l3.5 5" {...stroke} />
-      </>
-    ),
-  },
-  {
-    name: 'Mosaicly',
-    mark: (
-      <>
-        <rect x="4" y="4" width="7" height="7" rx="1.6" {...stroke} />
-        <rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor" stroke="none" />
-        <rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor" stroke="none" />
-        <rect x="13" y="13" width="7" height="7" rx="1.6" {...stroke} />
-      </>
-    ),
-  },
-  {
-    name: 'Halcyon',
-    mark: (
-      <>
-        <path d="M3 14c2.5-4 4.5-4 7 0s4.5 4 7 0" {...stroke} />
-        <path d="M3 9c2.5-4 4.5-4 7 0s4.5 4 7 0" {...stroke} opacity={0.5} />
-      </>
-    ),
-  },
+  { name: 'Microsoft Office', src: microsoftOffice },
+  { name: 'Google Cloud', src: googleCloud },
+  { name: 'Azure', src: azure },
+  { name: 'Amazon S3', src: amazonS3 },
+  { name: 'HubSpot', src: hubspot },
+  { name: 'Stripe', src: stripe },
+  { name: 'PayPal', src: paypal },
+  { name: 'DocuSign', src: docusign },
+  { name: 'Elastic', src: elastic },
+  { name: 'Google Drive', src: googleDrive },
+  { name: 'FedEx', src: fedex },
+  { name: 'UPS', src: ups },
 ]
 
 /** The names alone, for the schema's `integrations` section, which carries logos as strings. */
