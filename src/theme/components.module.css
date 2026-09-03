@@ -6309,7 +6309,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   object-fit: cover;
 }
 
-.contentMediaFigure[data-ratio='auto'] > :where(img, picture, video, svg, div, span) {
+/*
+ * A lone media element, told to fill the column.
+ *
+ * `:not(.mediaStats)` because that one is not a media element — it is a *layout*, a picture with a stat
+ * row under it, and it needs to stay the flex column it declares itself to be. Matching it here set
+ * `display: block` at a specificity its own rule could not beat, so its `gap` computed to 24px and did
+ * nothing: the stat row sat flush against the bottom of the picture with no space at all.
+ */
+.contentMediaFigure[data-ratio='auto'] > :where(img, picture, video, svg, div, span):not(.mediaStats) {
   display: block;
   width: 100%;
 }
