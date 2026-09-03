@@ -104,10 +104,12 @@ export { Link, type LinkProps, type LinkSize, type LinkVariant } from './compone
 export {
   Stat,
   StatBar,
+  CountUp,
   type StatProps,
   type StatBarProps,
   type StatSize,
   type StatAlign,
+  type CountUpProps,
 } from './components/Stat'
 export { Tabs, type TabsProps } from './components/Tabs'
 
