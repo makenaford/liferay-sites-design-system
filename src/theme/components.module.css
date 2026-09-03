@@ -4853,10 +4853,17 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   );
 }
 
-/* Size=Default. */
+/*
+ * Size=Default.
+ *
+ * `--sds-acc-pad` is 20 where the file draws 12, and the chevron 24 where it draws 32. Both are
+ * deliberate departures: a real row of questions is long enough that 12 runs them together, and the
+ * 32px box was set by a full `arrow_down` glyph rather than by the chevron actually drawn in it. The
+ * row is 64 tall now instead of 56, and the height still comes from the icon plus the padding.
+ */
 .accRoot[data-size='lg'] {
-  --sds-acc-pad: 12px;
-  --sds-acc-chevron: 32px;
+  --sds-acc-pad: 20px;
+  --sds-acc-chevron: 24px;
   --sds-acc-fz: 21px;
   --sds-acc-lh: 26px;
   --sds-acc-panel-pad: 16px;
@@ -4969,7 +4976,43 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   gap: 16px;
   background-color: transparent;
   border-radius: 0;
-  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+  transition:
+    background-color var(--sds-motion-fast) var(--sds-motion-ease),
+    opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * A closed row is quieter than the open one.
+ *
+ * On the header rather than the item, so it is the label, the chevron and that row's own rule that
+ * recede together — an item-wide opacity would take the panel with it, and the panel of a closed row is
+ * already gone.
+ *
+ * Both `.accItemTitle` and `.accControl`, because Mantine wraps the control in a heading when the item
+ * has a title and does not when it has none, so the header is one element or the other. Every rule
+ * around the divider above already covers the pair for the same reason; targeting only the control
+ * looked right and silently did nothing here, where the heading is present.
+ *
+ * 70% and not less: these are the other questions, and someone scanning for the one they came with has
+ * to be able to read them. Transitioned, so the panel opening itself on a timer reads as attention
+ * moving rather than as rows blinking.
+ */
+.accRoot[data-size] .accItem:not([data-active]) > .accItemTitle,
+.accRoot[data-size] .accItem:not([data-active]) > .accControl {
+  opacity: 0.7;
+}
+
+.accRoot[data-size] .accItemTitle,
+.accRoot[data-size] .accControl {
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* Hovering a closed row brings it back: it is about to be the one being read. */
+@media (hover: hover) {
+  .accRoot[data-size] .accItem:not([data-active]) > .accItemTitle:hover,
+  .accRoot[data-size] .accItem:not([data-active]) > .accControl:hover {
+    opacity: 1;
+  }
 }
 
 .accRoot[data-size] .accLabel {
