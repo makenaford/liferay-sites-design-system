@@ -2828,9 +2828,21 @@
 
 /* ------------------------------------------------------------------------- panel contents */
 
+/*
+ * The panel's body: the prompt, the columns, and the featured rail beside them.
+ *
+ * A grid rather than a wrapping flex row. As a flex row the prompt had to be `flex: 0 0 100%` to land
+ * *over* the columns rather than beside them — which also pushed the rail onto the second line, so
+ * Featured started a heading's height below the top of the panel with a band of gradient above it. The
+ * rail spans both rows here, so it starts where the prompt does and the columns still sit under it.
+ *
+ * One column here; the second track is added at the desktop breakpoint, where a rail sits beside the
+ * columns rather than under them. A panel without a prompt leaves the `heading` row empty, at zero
+ * height.
+ */
 .megaBody {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   flex: 1;
   min-width: 0;
 }
@@ -2838,11 +2850,10 @@
 /*
  * The prompt over a panel's columns — "What are you looking to achieve?".
  *
- * `flex: 0 0 100%` because `.megaBody` is a wrapping flex row: at any narrower basis it lands beside
- * the columns instead of over them. Its bottom padding is nothing, since `.megaColumns` brings its own.
+ * It occupies the grid's `heading` row, above the columns and beside the rail. Its bottom padding is
+ * nothing, since `.megaColumns` brings its own.
  */
 .megaHeading {
-  flex: 0 0 100%;
   margin: 0;
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) 0 clamp(20px, 4vw, 48px);
   color: var(--sds-surfaces-text-secondary);
@@ -2860,8 +2871,7 @@
 .megaColumns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  flex: 1;
-  min-width: 280px;
+  min-width: 0;
   align-items: start;
   gap: clamp(20px, 2.5vw, 32px);
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 40px) clamp(40px, 6vw, 64px) clamp(20px, 4vw, 48px);
@@ -3053,7 +3063,6 @@
 /* The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule. */
 .megaFeatured {
   width: clamp(260px, 24vw, 320px);
-  flex-shrink: 0;
   border-inline-start: 1px solid var(--sds-neutral-03);
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 64px) clamp(20px, 3vw, 40px);
   background-image: linear-gradient(
@@ -3785,25 +3794,8 @@
   display: inline-flex;
 }
 
-.headerDrawerPanel .megaBody {
-  flex-direction: column;
-  /*
-   * `nowrap`, or the panel spills sideways.
-   *
-   * `.megaBody` wraps by default, and a *column* flex container with a definite height — which this is,
-   * being an absolutely positioned scroll panel — wraps into extra **columns**. So the Solutions menu
-   * filled column one with its tiles and pushed everything else off the right edge.
-   */
-  flex-wrap: nowrap;
-}
-
-/*
- * `flex: 0 0 100%` is a *row* basis. The drawer's `.megaBody` is a column, where it reads as full
- * height instead and the prompt swallowed the panel, so here the prompt is just a line of text.
- */
+/* 8, like every other heading-to-items gap in the drawer. */
 .headerDrawerPanel .megaHeading {
-  flex: 0 0 auto;
-  /* 8, like every other heading-to-items gap in the drawer. */
   padding: 0 0 8px;
 }
 
@@ -3849,6 +3841,35 @@
    * The count comes from `MegaMenu.Columns`, which can count its children where CSS cannot. The file
    * draws these panels four across; a menu that wants fewer says so by having fewer columns.
    */
+  /*
+   * The rail beside the columns, spanning the prompt's row as well as theirs — so Featured starts level
+   * with "What are you looking to achieve?" instead of a heading's height below it. Below this width
+   * the panel is a drawer sheet and the three parts stack in source order.
+   */
+  .megaBody:has(> .megaFeatured) {
+    grid-template-columns: minmax(280px, 1fr) auto;
+    grid-template-areas:
+      'heading featured'
+      'columns featured';
+  }
+
+  /*
+   * Named placement lives here with the areas that define it. In the base grid there are no such
+   * lines, so naming an area there put each part in an implicit column of its own instead of stacking
+   * them.
+   */
+  .megaBody:has(> .megaFeatured) > .megaHeading {
+    grid-area: heading;
+  }
+
+  .megaBody:has(> .megaFeatured) > .megaColumns {
+    grid-area: columns;
+  }
+
+  .megaBody:has(> .megaFeatured) > .megaFeatured {
+    grid-area: featured;
+  }
+
   .megaColumns[data-count='2'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
