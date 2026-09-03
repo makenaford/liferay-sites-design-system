@@ -8755,19 +8755,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /*
  * The crossfade box, and the backdrop the clips' `screen` blends against.
  *
- * `mix-blend-mode` blends with whatever has been painted inside the nearest stacking context, so a
- * blend that relies on reaching the page is at the mercy of every ancestor. It broke twice: once when
- * the fade animation created a context, and again when `stickyMedia` made the figure `position:
- * sticky`. Both times the clips went back to screening against transparency, which leaves pure black
- * pure black.
+ * The background is for transparency, not for blending. The B2B still is an RGBA export with rounded
+ * corners, so without something behind it the page shows through at the corners of a box that is
+ * otherwise opaque — which is fine here and would not be over a card. `isolation` keeps the layers'
+ * compositing to this box rather than letting it reach whatever is behind the section.
  *
- * So the backdrop is here and it is explicit. `isolation: isolate` makes this box the stacking context
- * the layers blend into, and the background gives them the page's own colour to blend into — the same
- * result the page was providing, now guaranteed by this element instead of by luck. Nothing an ancestor
- * does can break it again.
- *
- * The one thing to know: this assumes the media sits on the page ground. On a card or a coloured band
- * the box would paint a page-coloured rectangle, and this background is what to change.
+ * There used to be a `mix-blend-mode: screen` on each layer, hiding the black padding the clips shipped
+ * with, and it broke twice — a blend composites against the nearest stacking context, and both the fade
+ * animation and `stickyMedia` created one. The padding is cropped out of the files now, so there is
+ * nothing to hide and nothing left to break.
  */
 .mediaFade {
   position: relative;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
@@ -262,11 +262,7 @@ export function PanelMedia({ media }: { media: ImageRef }) {
       tabIndex={-1}
       style={{
         display: 'block',
-        /*
-         * Size and fit come from `.mediaFade`, which gives every layer the same box and contains the
-         * media inside it rather than cropping to fill it. A still can be cropped to a ratio because a
-         * still is a photograph; footage is a composition someone framed.
-         */
+        /* Size and fit come from `.mediaFade`, which gives every layer the same box. */
         /*
          * The `screen` that blends the black ground away is on the *layer* in `CrossfadeMedia`, not
          * here. It was here, and it stopped working the moment the crossfade arrived: the fade is a CSS
@@ -287,20 +283,16 @@ export function PanelMedia({ media }: { media: ImageRef }) {
  * a class on the element: a fade needs both pictures on screen at once, and React has thrown the old
  * one away by the time any CSS could run.
  *
- * **The `screen` that blends a clip's black ground away is on the layer, and the thing it blends into
- * is `.mediaFade` itself.** That pairing is deliberate and was arrived at the hard way: a blend
- * composites against the nearest stacking context, so relying on it to reach the page put it at the
- * mercy of every ancestor. It broke when the fade animation created a context, and again when
- * `stickyMedia` made the figure `position: sticky`. `.mediaFade` now isolates and paints the page
- * colour itself, so the backdrop is guaranteed rather than inherited.
+ * **There is no blending here any more, and that is the point.** The clips arrived as a photograph
+ * inset in black padding, and three commits went into hiding that padding with `mix-blend-mode:
+ * screen` — which kept breaking, because a blend composites against the nearest stacking context and
+ * every ancestor is free to become one. It broke on the fade's own animation, then again on
+ * `stickyMedia`.
  *
- * Per layer rather than once on the box, because it is a property of *that clip*: rows without footage
- * fall back to an ordinary photograph with no black in it, and screening that washes it out. So a video
- * layer screens and a still layer does not, even mid-fade between the two.
+ * The padding is cropped out of the files instead. Nothing left to hide, so nothing to blend, so
+ * nothing an ancestor can break — and the clips are no longer lightened by the page colour while the
+ * still beside them is not, which is the second thing the blend was quietly costing.
  */
-const blendFor = (media: ImageRef): CSSProperties | undefined =>
-  isVideo(media.src) ? { mixBlendMode: 'screen' } : undefined
-
 export function CrossfadeMedia({ media }: { media: ImageRef }) {
   const [layers, setLayers] = useState<{ id: number; media: ImageRef }[]>([{ id: 0, media }])
   const nextId = useRef(0)
@@ -321,14 +313,13 @@ export function CrossfadeMedia({ media }: { media: ImageRef }) {
   return (
     <div className={classes.mediaFade}>
       {outgoing ? (
-        <div className={classes.mediaFadeOut} style={blendFor(outgoing.media)} aria-hidden>
+        <div className={classes.mediaFadeOut} aria-hidden>
           <PanelMedia media={outgoing.media} />
         </div>
       ) : undefined}
       <div
         key={incoming.id}
         className={classes.mediaFadeIn}
-        style={blendFor(incoming.media)}
         /* The fade is over, so the layer underneath has nothing left to show. */
         onAnimationEnd={() => setLayers((prev) => prev.slice(-1))}
       >
