@@ -231,14 +231,12 @@ export function PanelMedia({ media }: { media: ImageRef }) {
   const [failed, setFailed] = useState(false)
 
   if (!isVideo(media.src) || failed) {
-    return (
-      <Image
-        src={failed && media.poster ? media.poster : media.src}
-        alt={media.alt}
-        ratio={media.ratio ?? '3:2'}
-        radius="md"
-      />
-    )
+    /*
+     * `fill`, because the box around this already has a ratio — see `.mediaFade`. Asking the image for
+     * one too would give the box two opinions about its height, and the one that won would depend on
+     * which media the open row happened to carry.
+     */
+    return <Image src={failed && media.poster ? media.poster : media.src} alt={media.alt} fill fit="contain" radius="md" />
   }
 
   return (
@@ -264,17 +262,11 @@ export function PanelMedia({ media }: { media: ImageRef }) {
       tabIndex={-1}
       style={{
         display: 'block',
-        width: '100%',
         /*
-         * The clip keeps its own shape unless a caller insists otherwise.
-         *
-         * It was forced into 3:2 with `object-fit: cover`, which crops: these clips are 1200x866, so a
-         * 3:2 box cut a slice off the top and bottom of every one of them. A still can be cropped to a
-         * ratio because a still is a photograph; footage is a composition someone framed, and cutting
-         * it is the one thing not to do to it.
+         * Size and fit come from `.mediaFade`, which gives every layer the same box and contains the
+         * media inside it rather than cropping to fill it. A still can be cropped to a ratio because a
+         * still is a photograph; footage is a composition someone framed.
          */
-        aspectRatio: media.ratio && media.ratio !== 'auto' ? undefined : 'auto',
-        height: 'auto',
         /*
          * The `screen` that blends the black ground away is on the *layer* in `CrossfadeMedia`, not
          * here. It was here, and it stopped working the moment the crossfade arrived: the fade is a CSS

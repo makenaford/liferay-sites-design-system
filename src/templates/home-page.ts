@@ -52,6 +52,8 @@ import cmpClip from '../../assets/home/teams/cmp.mp4'
 import personalizationClip from '../../assets/home/teams/personalization.mp4'
 import cmsClip from '../../assets/home/teams/cms.mp4'
 import sitesClip from '../../assets/home/teams/sites.mp4'
+/* A still rather than footage — the B2B row is the one card that was exported as a picture. */
+import b2bStill from '../../assets/home/teams/b2b-commerce.png'
 
 const TEAM_PANELS = {
   marketers: {
@@ -91,6 +93,7 @@ const TEAM_PANELS = {
         answer:
           'Catalogues, negotiated pricing and self-serve reordering sit on the same content the marketing site uses.',
         link: { label: 'Explore commerce', href: '#' },
+        media: { src: b2bStill, alt: 'A B2B order moving through a two-step approval workflow' },
       },
     ],
     media: { src: teamsMedia, alt: 'Two colleagues building an AI agent in Liferay' },
