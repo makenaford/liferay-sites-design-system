@@ -4443,15 +4443,18 @@
  * and it never stretches past the width it is given.
  */
 /*
- * The banner's top padding is the file's 40 — plus the bar's own height when a fixed header is over it.
+ * Under a fixed header the banner clears the bar and no more: 64px, the bar's own height.
  *
  * `:has()` rather than a prop: the hero cannot be told what is above it without every page having to
  * pass that down, and the one thing that reliably knows is the document. A fixed header reserves no
- * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it,
- * and 64 + 40 is exactly where `Hero` sits under `LRDC Primary Nav` in the file.
+ * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it.
+ *
+ * It was 64 + 40, the bar plus the file's own gap between the nav and the banner, which came to 104 and
+ * left the solution finder floating well down the hero. The 40 is the gap under a nav that occupies its
+ * own band; a fixed bar the artwork already runs behind does not want it twice.
  */
 body:has(.headerShell[data-position='fixed']) .heroBanner {
-  padding-block-start: calc(40px + 64px);
+  padding-block-start: 64px;
 }
 
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {

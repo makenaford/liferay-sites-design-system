@@ -533,7 +533,11 @@ function HomePage() {
             maw={1000}
           >
             <Group gap={16} px={16} py={8} align="center">
-              <Text fz="lg" fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
+              {/*
+               * 18px, a literal: the typography scale has no 18px step — `Paragraph/Large` is 21 and
+               * the one below it is 16 — which is the same gap the Accordion's condensed label records.
+               */}
+              <Text fz={18} fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
                 Explore customized solutions
               </Text>
               <Select
