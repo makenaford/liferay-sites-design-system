@@ -9133,42 +9133,23 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  *
  * The catalog's filter bar — `All Stories` (node `24581:69993`).
  *
- * A pill per filter, keeping its own label and gaining a count when it holds a selection, over a row of
- * removable chips. The pill is `Tabs`' resting pill by another name — same radius, same hairline — but
- * it is not a tab: a tab picks one of a set and this holds many, so it borrows the shape rather than
- * the component.
+ * The control itself is a `Combobox` wearing the theme's own `field*` classes, so it is a `Select` in
+ * every respect the eye can check — height, hairline, focus ring, dropdown. Only the two things a
+ * select cannot do are here: the count badge, and a width that hugs the label instead of filling its
+ * column.
  */
-.filterPill {
+.filterInput {
+  /* Composes the real input, so a change to fields reaches this without being copied. */
+  composes: fieldInput;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: 999px;
-  border: 1px solid var(--sds-neutral-03);
-  background-color: transparent;
-  color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
+  width: auto;
   font-weight: 600;
-  line-height: 1.25;
-  cursor: pointer;
-  transition:
-    border-color var(--sds-motion-fast) var(--sds-motion-ease),
-    background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-@media (hover: hover) {
-  .filterPill:hover {
-    border-color: var(--sds-neutral-04);
-  }
-}
-
-.filterPill:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: 2px;
-}
-
-/* A filter holding a selection keeps its brand edge whether or not its list is open. */
-.filterPill[data-active] {
+/* A filter holding a selection keeps a brand edge whether or not its list is open. */
+.filterInput[data-active] {
   border-color: var(--sds-brand-primary-lighten-3);
 }
 
@@ -9185,18 +9166,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   color: var(--sds-action-neutral-inverted);
   font-size: 14px;
   font-weight: 600;
-}
-
-.filterPillCaret {
-  display: inline-flex;
-  font-size: 16px;
-  color: var(--sds-surfaces-text-secondary);
-}
-
-.filterDropdown {
-  min-width: 240px;
-  max-height: 320px;
-  overflow-y: auto;
+  line-height: 1;
 }
 
 /*

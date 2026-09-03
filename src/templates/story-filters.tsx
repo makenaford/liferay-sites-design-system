@@ -1,5 +1,15 @@
 import { useMemo } from 'react'
-import { Box, Checkbox, Group, Menu, Stack, Text, UnstyledButton } from '@mantine/core'
+import {
+  Box,
+  Checkbox,
+  Combobox,
+  Group,
+  InputBase,
+  Stack,
+  Text,
+  UnstyledButton,
+  useCombobox,
+} from '@mantine/core'
 import { Chip } from '../components/Chip'
 import { IconClose, IconDown } from '../icons'
 import classes from '../theme/components.module.css'
@@ -34,67 +44,107 @@ export function matchesSelection(
 }
 
 /**
- * One filter — a pill that opens a list of checkboxes.
+ * One filter — a select-shaped control that opens a checkable list.
  *
- * A `Popover` of checkboxes rather than a `Select multiple`: the file draws a pill that keeps its label
- * and gains a count, where a multi-select input shows the chosen values inside itself and grows as they
- * are added. The chosen values are shown as chips under the row instead, so the row's height never
- * depends on what is selected.
+ * `Combobox` + `InputBase component="button"`, wearing the same `field*` classes the theme puts on
+ * `Select`. That is the point: this *is* a select as far as the eye is concerned — same height, same
+ * hairline, same focus ring, same dropdown — so it sits in a row with the hero's solution finder
+ * without either looking like the odd one out. Hand-rolling the pill got the shape right and the
+ * dropdown wrong, and left a second set of styles to keep in step with the real inputs.
+ *
+ * **It keeps its label and shows a count, rather than showing the values inside.** A `MultiSelect`
+ * would put the chosen values in the control and grow it as they are added; the file draws a control
+ * of fixed width with the values below it as chips, so `Combobox` is the primitive and the display is
+ * this component's own.
+ *
+ * `radius="xl"` because the file draws these as pills — the same radius the solution finder's selects
+ * take, which is the other place this shape appears.
  */
 function FilterPill({
   filter,
   chosen,
-  onChange,
+  onToggle,
 }: {
   filter: StoryFilter
   chosen: string[]
-  onChange: (values: string[]) => void
+  /** One value at a time — the bar owns the set, so this never builds a new array from a stale one. */
+  onToggle: (value: string) => void
 }) {
-  /*
-   * `Menu`, not `Popover`.
-   *
-   * `Popover.Target` clones its child and re-spreads its own props over the child's, which drops an
-   * `onClick` the child brought with it — the pill rendered, `aria-expanded` stayed `false`, and
-   * nothing opened. `Menu` owns the open state and wires the target itself, which is what this needs:
-   * the pill is a disclosure, and the only thing it has to do is disclose.
-   *
-   * `closeOnItemClick={false}` because this is a multiselect. A menu that closes on the first pick
-   * makes choosing two values two round trips through the same control.
-   */
+  const combobox = useCombobox({ onDropdownClose: () => combobox.resetSelectedOption() })
+
   return (
-    <Menu position="bottom-start" withinPortal shadow="md" closeOnItemClick={false}>
-      <Menu.Target>
-        <UnstyledButton
-          className={classes.filterPill}
+    <Combobox
+      store={combobox}
+      withinPortal
+      position="bottom-start"
+      onOptionSubmit={onToggle}
+      classNames={{
+        dropdown: classes.fieldDropdown,
+        options: classes.fieldOptions,
+        option: classes.fieldOption,
+      }}
+    >
+      <Combobox.Target>
+        <InputBase
+          component="button"
+          type="button"
+          pointer
+          radius="xl"
+          w="auto"
+          /*
+           * `md` explicitly. The theme sets it as a default on `Select` and `TextInput`, but `InputBase`
+           * is not extended, so it falls back to `sm` and this control comes out 36px beside a 47px
+           * field — close enough to look like a mistake rather than a choice.
+           */
+          size="md"
+          classNames={{
+            root: classes.fieldRoot,
+            wrapper: classes.fieldWrapper,
+            input: classes.filterInput,
+            section: classes.fieldSection,
+          }}
+          rightSection={<IconDown />}
+          /* The caret is part of the control, not a second target inside it. */
+          rightSectionPointerEvents="none"
           data-active={chosen.length ? true : undefined}
-          aria-haspopup="true"
+          aria-label={
+            chosen.length ? `${filter.label}, ${chosen.length} selected` : filter.label
+          }
+          onClick={() => combobox.toggleDropdown()}
         >
           {filter.label}
           {chosen.length ? (
-            <span className={classes.filterPillCount} aria-label={`${chosen.length} selected`}>
+            <span className={classes.filterPillCount} aria-hidden>
               {chosen.length}
             </span>
           ) : null}
-          <span className={classes.filterPillCaret} aria-hidden>
-            <IconDown />
-          </span>
-        </UnstyledButton>
-      </Menu.Target>
+        </InputBase>
+      </Combobox.Target>
 
-      <Menu.Dropdown className={classes.filterDropdown}>
-        {/*
-         * A group rather than loose checkboxes: it gives the set one accessible name, so the list is
-         * announced as "Solutions, group" instead of five unrelated boxes.
-         */}
-        <Checkbox.Group value={chosen} onChange={onChange} label={filter.label}>
-          <Stack gap={8} mt={8}>
-            {filter.options.map((option) => (
-              <Checkbox key={option} value={option} label={option} />
-            ))}
-          </Stack>
-        </Checkbox.Group>
-      </Menu.Dropdown>
-    </Menu>
+      <Combobox.Dropdown>
+        <Combobox.Options>
+          {filter.options.map((option) => (
+            <Combobox.Option value={option} key={option} active={chosen.includes(option)}>
+              <Group gap={10} wrap="nowrap">
+                {/*
+                 * The box is decoration. `Combobox.Option` already carries `aria-selected`, so a real
+                 * checkbox here would be a second control announcing the same state and taking its own
+                 * turn in the tab order.
+                 */}
+                <Checkbox
+                  checked={chosen.includes(option)}
+                  readOnly
+                  tabIndex={-1}
+                  aria-hidden
+                  size="xs"
+                />
+                <span>{option}</span>
+              </Group>
+            </Combobox.Option>
+          ))}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
   )
 }
 
@@ -111,7 +161,15 @@ export function StoryFilterBar({
 }: {
   filters: StoryFilter[]
   selection: StorySelection
-  onSelectionChange: (selection: StorySelection) => void
+  /**
+   * Takes an updater, not a value.
+   *
+   * Every control here derives the next selection from the current one, and React batches updates
+   * within a tick — so two changes in the same batch both read the selection as it was before either of
+   * them, and the second silently overwrites the first. Caught it doing exactly that: two options
+   * picked in one tick left only the second selected. An updater reads the state React is holding.
+   */
+  onSelectionChange: (update: (previous: StorySelection) => StorySelection) => void
 }) {
   const chips = useMemo(
     () =>
@@ -122,10 +180,10 @@ export function StoryFilterBar({
   )
 
   const remove = (label: string, value: string) =>
-    onSelectionChange({
-      ...selection,
-      [label]: (selection[label] ?? []).filter((v) => v !== value),
-    })
+    onSelectionChange((previous) => ({
+      ...previous,
+      [label]: (previous[label] ?? []).filter((v) => v !== value),
+    }))
 
   return (
     <Stack gap={12} w="100%">
@@ -135,7 +193,17 @@ export function StoryFilterBar({
             key={filter.label}
             filter={filter}
             chosen={selection[filter.label] ?? []}
-            onChange={(values) => onSelectionChange({ ...selection, [filter.label]: values })}
+            onToggle={(value) =>
+              onSelectionChange((previous) => {
+                const held = previous[filter.label] ?? []
+                return {
+                  ...previous,
+                  [filter.label]: held.includes(value)
+                    ? held.filter((v) => v !== value)
+                    : [...held, value],
+                }
+              })
+            }
           />
         ))}
 
@@ -149,7 +217,10 @@ export function StoryFilterBar({
            * deliberately non-polymorphic — see its own docs — and this clears state rather than going
            * anywhere, so a `<button>` is what it should have been either way.
            */
-          <UnstyledButton className={classes.filterClear} onClick={() => onSelectionChange({})}>
+          <UnstyledButton
+            className={classes.filterClear}
+            onClick={() => onSelectionChange(() => ({}))}
+          >
             <IconClose aria-hidden />
             Clear Filters
           </UnstyledButton>
