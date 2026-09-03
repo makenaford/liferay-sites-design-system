@@ -999,31 +999,80 @@
 }
 
 /*
- * `Style=Gradient Blue` / `Gradient Purple` — four stops, three of which are all `Surfaces/Card BG/Grey`
- * (`Components/Gradient Card/01`-`03` alias it), so the colour only arrives in the last stop. Figma's
- * transform is a shallow diagonal, reproduced at the same angle.
+ * `Style=Gradient Blue` / `Gradient Purple` — a **mesh**, not a ramp.
+ *
+ * Figma draws four stops on a shallow diagonal, three of them `Surfaces/Card BG/Grey` and the fourth a
+ * saturated `#0117ae` or `#7414ff`, and transcribing that literally gave a card with a bright corner: on
+ * a page of dark glass cards it read as a different material rather than as the same one lit. The
+ * section it is used in is a paragraph somebody should read, and the copy sat on the brightest part of
+ * it.
+ *
+ * So the same two colours, arranged as light instead of as fill: the card keeps the grey every other
+ * card has, and three soft blooms sit over it — one from the leading corner, one from the trailing top,
+ * and a wider, fainter one rising from the bottom edge where they meet. None of them reaches full
+ * strength and none of them has an edge, so what changes across the card is the *tint*, not the colour.
+ *
+ * `color-mix` rather than pre-mixed tokens, because the mix has to be against transparency rather than
+ * against the card — a token would have to guess the surface underneath it, and this surface is also
+ * translucent.
+ *
+ * The blur and the hairline stay: it is still glass, and the point of the mesh is that it is glass with
+ * more colour in it than the cards around it, not a different kind of object.
  */
 .cardRoot[data-align][data-surface='highlighted'] {
+  background-color: var(--sds-surfaces-card-bg-grey);
   backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  border: 1px solid var(--sds-card-static-line);
 }
 
+/*
+ * **The corners carry the colour and the middle stays dark**, which is the difference between a mesh and
+ * a wash. The first cut of this spread the blue across the whole leading half; it looked like a tint,
+ * and the paragraph — the thing the section exists for — sat on the brightest part of it. Weighted into
+ * the corners, the card is unmistakably blue and violet at a glance and nearly the page's own ground
+ * where the words are.
+ *
+ * Blue leads from the leading corner and violet answers from the trailing one; the third bloom is the
+ * violet again, low and to the trailing edge, which is what keeps the bottom from going flat.
+ */
 .cardRoot[data-align][data-surface='highlighted'][data-tone='blue'] {
-  background-image: linear-gradient(
-    134deg,
-    var(--sds-surfaces-card-bg-grey) 0%,
-    var(--sds-surfaces-card-bg-grey) 46%,
-    var(--sds-gradient-card-blue) 88%
-  );
+  background-image:
+    radial-gradient(
+      70% 130% at 0% 0%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 34%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 120% at 100% 0%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 30%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      80% 90% at 88% 110%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 18%, transparent) 0%,
+      transparent 74%
+    );
 }
 
+/* The same mesh with the two leads swapped, which is the whole of the tone difference. */
 .cardRoot[data-align][data-surface='highlighted'][data-tone='purple'] {
-  background-image: linear-gradient(
-    134deg,
-    var(--sds-surfaces-card-bg-grey) 0%,
-    var(--sds-surfaces-card-bg-grey) 46%,
-    var(--sds-gradient-card-purple) 61%
-  );
+  background-image:
+    radial-gradient(
+      70% 130% at 0% 0%,
+      color-mix(in srgb, var(--sds-accent-product-accent) 34%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 120% at 100% 0%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 30%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      80% 90% at 88% 110%,
+      color-mix(in srgb, var(--sds-brand-primary-primary) 18%, transparent) 0%,
+      transparent 74%
+    );
 }
 
 /* `Style=none` — the box and its content with nothing drawn. The Resource card. */
