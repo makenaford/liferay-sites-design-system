@@ -810,6 +810,8 @@ function HomePage() {
             mediaSide="right"
             /* Image plus a stat row: taller than 3:2, so the box takes its height from them. */
             mediaRatio="auto"
+            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
+            stickyMedia
             order={3}
             title={team.title}
             description={team.description}

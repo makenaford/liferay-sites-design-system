@@ -6319,6 +6319,29 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   order: 1;
 }
 
+/*
+ * `sticky` — the media holds the top of the row while the text column scrolls past it.
+ *
+ * Opt-in rather than the default, because it only earns its place where the two columns are very
+ * different heights: a panel whose accordion opens and closes grows by a paragraph at a time, and
+ * without this the picture drifts up out of view halfway through reading about it.
+ *
+ * `align-items: flex-start` is not decoration here — it is the precondition. The row centres its
+ * columns by default, which stretches nothing but does place the figure at a fixed offset inside a box
+ * as tall as the row; `sticky` on an element with no room to move does nothing at all.
+ *
+ * The offset clears the fixed header. 64px is the band at rest — it tightens to 56 on scroll, and the
+ * larger of the two is the one to clear — plus 24 so the picture is not welded to the underside of it.
+ */
+.contentMediaRoot[data-sticky] {
+  align-items: flex-start;
+}
+
+.contentMediaRoot[data-sticky] > .contentMediaFigure {
+  position: sticky;
+  inset-block-start: calc(64px + 24px);
+}
+
 .contentMediaText {
   display: flex;
   flex-direction: column;
@@ -6363,6 +6386,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * and collapsing both the same way throws it away.
  */
 @container sds-section (max-width: 900px) {
+  /*
+   * Stacked, so there is nothing to stick beside: the figure is above the text rather than next to it,
+   * and a sticky figure would pin itself over the paragraph it belongs to.
+   */
+  .contentMediaRoot[data-sticky] > .contentMediaFigure {
+    position: static;
+  }
+
   .contentMediaRoot {
     flex-direction: column;
     align-items: stretch;
@@ -8721,8 +8752,28 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * sits in the flow — so the box keeps its height — and fades up over it. The outgoing layer is dropped
  * when the fade ends, which is why nothing here needs a timer.
  */
+/*
+ * The crossfade box, and the backdrop the clips' `screen` blends against.
+ *
+ * `mix-blend-mode` blends with whatever has been painted inside the nearest stacking context, so a
+ * blend that relies on reaching the page is at the mercy of every ancestor. It broke twice: once when
+ * the fade animation created a context, and again when `stickyMedia` made the figure `position:
+ * sticky`. Both times the clips went back to screening against transparency, which leaves pure black
+ * pure black.
+ *
+ * So the backdrop is here and it is explicit. `isolation: isolate` makes this box the stacking context
+ * the layers blend into, and the background gives them the page's own colour to blend into — the same
+ * result the page was providing, now guaranteed by this element instead of by luck. Nothing an ancestor
+ * does can break it again.
+ *
+ * The one thing to know: this assumes the media sits on the page ground. On a card or a coloured band
+ * the box would paint a page-coloured rectangle, and this background is what to change.
+ */
 .mediaFade {
   position: relative;
+  isolation: isolate;
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  border-radius: var(--mantine-radius-md);
 }
 
 .mediaFadeOut {

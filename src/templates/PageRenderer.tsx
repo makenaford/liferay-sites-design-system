@@ -295,15 +295,16 @@ export function PanelMedia({ media }: { media: ImageRef }) {
  * a class on the element: a fade needs both pictures on screen at once, and React has thrown the old
  * one away by the time any CSS could run.
  *
- * **The `screen` that blends a clip's black ground away lives on the layer, per layer.** It has to: the
- * fade is a CSS animation, an animation creates a stacking context, and `animation-fill-mode: both`
- * keeps that context after the fade ends — so a blend on the video inside blends against its own
- * transparent wrapper instead of the page, and pure black over transparent is pure black. The layer is
- * the element that owns the stacking context, so it is the element that has to do the blending.
+ * **The `screen` that blends a clip's black ground away is on the layer, and the thing it blends into
+ * is `.mediaFade` itself.** That pairing is deliberate and was arrived at the hard way: a blend
+ * composites against the nearest stacking context, so relying on it to reach the page put it at the
+ * mercy of every ancestor. It broke when the fade animation created a context, and again when
+ * `stickyMedia` made the figure `position: sticky`. `.mediaFade` now isolates and paints the page
+ * colour itself, so the backdrop is guaranteed rather than inherited.
  *
- * Per layer rather than once on the outer box, because it is a property of *that clip*: rows without
- * footage fall back to an ordinary photograph with no black in it, and screening that washes it out. So
- * a video layer screens and a still layer does not, even mid-fade between the two.
+ * Per layer rather than once on the box, because it is a property of *that clip*: rows without footage
+ * fall back to an ordinary photograph with no black in it, and screening that washes it out. So a video
+ * layer screens and a still layer does not, even mid-fade between the two.
  */
 const blendFor = (media: ImageRef): CSSProperties | undefined =>
   isVideo(media.src) ? { mixBlendMode: 'screen' } : undefined
@@ -819,6 +820,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         {panel ? (
           <ContentMedia
             mediaSide={spec.mediaSide ?? 'right'}
+            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
+            stickyMedia
             /* A stat row under the media makes the column taller than 3:2, so the box takes its height. */
             mediaRatio={panel.stats?.length ? 'auto' : '3:2'}
             order={3}
