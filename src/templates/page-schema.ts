@@ -317,6 +317,13 @@ export type SectionSpec =
       media?: ImageRef
       stats?: StatSpec[]
       action?: LinkRef
+      /**
+       * Which side the logo sits on. The file draws it leading; `Product Info` reads better with the
+       * picture closing the row, because the section above it ends on a photograph of its own.
+       *
+       * @default 'left'
+       */
+      mediaSide?: 'left' | 'right'
     }
   /**
    * Figma `Type=Content Left Image` / `Type=Content- Right Image` (nodes `24263:27790`, `24263:33597`).

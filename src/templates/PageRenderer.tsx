@@ -916,38 +916,43 @@ function KeyPoints({ points }: { points: { title: string; description?: string }
  * difference is that this one is the section rather than the thing a tab swaps.
  */
 /**
- * `Type=Customer Story` — one story as a wide card, the logo leading.
+ * `Type=Customer Story` — one story across the section, not a card.
  *
- * The figures sit above the link rather than below it, which is the order the file draws and the order
- * that reads: the numbers are the claim and the link is what to do about it.
+ * **No card frame.** It was a `Card align="horizontal"` and that was wrong twice over: the file draws
+ * the logo and the words directly on the page, and a card around them says "this is one item in a set"
+ * when it is the only thing in the section. `ContentMedia` is the same two columns without the border,
+ * and it is what the neighbouring `Content Left Image` cell already uses — which is the tell that these
+ * two cells are the same construction with different contents.
+ *
+ * The figures go in the body and the link in the actions, so the order is title, paragraph, figures,
+ * link: the numbers are the claim and the link is what to do about it.
  */
 function CustomerStorySection({ spec }: { spec: Extract<SectionSpec, { type: 'customerStory' }> }) {
   return (
     <Section>
-      <Card
-        align="horizontal"
-        imageSide="leading"
-        /* Its link does the work — see the nested-interactive note in Card's docs. */
-        interactive={false}
-        titleSize="full"
+      <ContentMedia
+        mediaSide={spec.mediaSide ?? 'left'}
+        mediaRatio="3:2"
+        order={2}
         title={spec.title}
         description={spec.description}
-        main={
-          spec.stats?.length ? <StatBar>{spec.stats.map((st, i) => renderStat(st, undefined, i))}</StatBar> : undefined
-        }
-        secondary={
+        actions={
           spec.action ? (
             <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
               {spec.action.label}
             </Link>
           ) : undefined
         }
-        image={
+        media={
           spec.media ? (
             <Image src={spec.media.src} alt={spec.media.alt} ratio="3:2" radius="md" />
           ) : undefined
         }
-      />
+      >
+        {spec.stats?.length ? (
+          <StatBar>{spec.stats.map((st, i) => renderStat(st, undefined, i))}</StatBar>
+        ) : null}
+      </ContentMedia>
     </Section>
   )
 }

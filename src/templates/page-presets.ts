@@ -212,7 +212,11 @@ export const PAGE_PRESETS: PagePreset[] = [
             })),
           }
         })(),
-        blank('customerStory'),
+        (() => {
+          const section = blank('customerStory')
+          /* The picture closes the row here: the panel above it ends on a photograph of its own. */
+          return { ...section, mediaSide: 'right' as const }
+        })(),
         blank('highlightText'),
         blank('faq'),
         (() => {
