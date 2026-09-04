@@ -1262,16 +1262,17 @@ export const BubbleBackground: Story = {
   /*
    * Tuned for the hero rather than left on the component's defaults.
    *
-   * The bubbles are sized off the canvas's *shorter* side, so a value that fills the component's own
-   * 900x420 story frame leaves two small islands adrift in a 1496x774 hero — hence a much larger
-   * `bubbleScale`, and a `bubbleSpread` wide enough to put one behind the copy and one behind the media
-   * rather than both in the middle. They still meet, which is what keeps the hero one field of colour
-   * rather than two ornaments.
+   * `bubbleScale` is a fraction of the width, so it barely has to move between the component's own frame
+   * and this one — what changes is `bubbleY`, pulled higher so the bubbles' lower edges sweep across at
+   * about two thirds down, leaving the copy on colour and the foot of the hero on bare page. The spread
+   * puts one behind the copy and one behind the media; they still meet, which is what keeps this one
+   * field of colour rather than two ornaments.
    */
   args: {
     ...BUBBLE_DEFAULTS,
-    bubbleScale: 0.62,
+    bubbleScale: 0.34,
     bubbleSpread: 0.56,
+    bubbleY: 0.1,
     bubbleMorph: 0.22,
     bubbleWander: 0.04,
     edgeSoftness: 0.07,
@@ -1282,17 +1283,23 @@ export const BubbleBackground: Story = {
      */
     color: '#0a0a1e',
     hotColor: '#7c4dff',
-    colorLight: '#f3f1fb',
-    hotColorLight: '#8b5cf6',
+    colorLight: '#f7f6fd',
+    /*
+     * Much paler than the dark canvas's lit colour, and not by taste. The two schemes put *opposite*
+     * text on this: light copy on the dark canvas gains contrast as the mesh deepens, dark copy on the
+     * light one loses it. A violet that reads as depth behind white text is a wash behind black text.
+     */
+    hotColorLight: '#c4b5fd',
     richness: 0.85,
     spectralDrift: 18,
     saturation: 1.12,
     glow: 0.7,
     glowOpacity: 0.8,
     glowColor: '#c9a6ff',
-    glowColorLight: '#7c3aed',
-    glowWidth: 0.2,
-    glowOffset: 0.08,
+    glowColorLight: '#a78bfa',
+    glowWidth: 0.14,
+    glowOffset: 0.06,
+    glowArc: 0.4,
   },
   argTypes: BUBBLE_ARG_TYPES,
   render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,

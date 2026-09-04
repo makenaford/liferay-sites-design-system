@@ -4,7 +4,16 @@ import type { CSSProperties } from 'react'
 export interface BubbleProps {
   /** How fast the bubbles wander, morph and pulse. @default 0.4 */
   speed?: number
-  /** Size of the bubbles, as a fraction of the shorter side. @default 0.46 */
+  /**
+   * Size of the bubbles, as a fraction of the **width**.
+   *
+   * Width rather than the shorter side, because these are backgrounds for wide things: sized off the
+   * height, the same value gives two islands adrift in a hero and two shapes bursting out of a square,
+   * and every caller has to re-find it per aspect ratio. Off the width, a value keeps its meaning as the
+   * frame changes shape, and the height only decides how much of the bubble you see.
+   *
+   * @default 0.3
+   */
   bubbleScale?: number
   /**
    * The distance between the two centres, as a fraction of the width.
@@ -24,6 +33,16 @@ export interface BubbleProps {
    * @default 0.2
    */
   bubbleMorph?: number
+  /**
+   * Where the bubbles' centres sit vertically, 0 being the top edge and 1 the bottom.
+   *
+   * Well above centre by default, which is the point: the bubbles are bigger than the frame is tall, so
+   * their tops run off it and what is left on screen is their **lower halves** — an edge sweeping across
+   * the frame with colour above it, rather than two shapes sitting in the middle of it.
+   *
+   * @default 0.18
+   */
+  bubbleY?: number
   /** How much the bubbles swell and shrink as they go. @default 0.12 */
   bubblePulse?: number
   /** How far they drift from where they sit. @default 0.05 */
@@ -138,6 +157,17 @@ export interface BubbleProps {
    */
   glowOffset?: number
   /**
+   * How much of each outline is lit, from the bottom up.
+   *
+   * 1 rings the whole edge evenly. Below it the light is held back from the top and gathers along the
+   * **lower** edge, which is where it belongs when the bubbles are hanging off the top of the frame:
+   * light pools where a shape's underside catches it, and a ring lit all the way round reads as a
+   * drawn outline instead.
+   *
+   * @default 0.45
+   */
+  glowArc?: number
+  /**
    * How the rim is composited over the mesh.
    *
    * `screen` and `lighten` add light without flattening what is under them, which is usually what a glow
@@ -171,8 +201,9 @@ export interface BubbleProps {
 
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
   speed: 0.4,
-  bubbleScale: 0.42,
+  bubbleScale: 0.3,
   bubbleSpread: 0.5,
+  bubbleY: 0.18,
   bubbleMorph: 0.2,
   bubblePulse: 0.12,
   bubbleWander: 0.05,
@@ -195,6 +226,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   glowWidth: 0.16,
   glowDistortion: 1.6,
   glowOffset: 0.06,
+  glowArc: 0.45,
   glowBlend: 'screen',
   grain: 0.035,
   cursorInteraction: true,
@@ -218,7 +250,8 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
 const BUBBLES = [
   {
     side: -1,
-    y: 0.47,
+    /** Offset from `bubbleY`, as a fraction of the height, so the two do not hang at the same level. */
+    y: -0.04,
     r: 1,
     rate: 0.23,
     phase: 0,
@@ -229,7 +262,7 @@ const BUBBLES = [
   },
   {
     side: 1,
-    y: 0.55,
+    y: 0.05,
     r: 0.82,
     rate: 0.19,
     phase: 2.1,
@@ -516,7 +549,7 @@ export function Bubble(props: BubbleProps) {
       const placed = BUBBLES.map((b) => {
         const wander = time * b.rate + b.phase
         let cx = (0.5 + b.side * p.bubbleSpread * 0.5) * W + Math.cos(wander) * p.bubbleWander * W
-        let cy = b.y * H + Math.sin(wander * 1.3) * p.bubbleWander * H
+        let cy = (p.bubbleY + b.y) * H + Math.sin(wander * 1.3) * p.bubbleWander * H
         if (p.cursorInteraction && state.pointer.active) {
           const dx = state.pointer.x * W - cx
           const dy = state.pointer.y * H - cy
@@ -526,7 +559,8 @@ export function Bubble(props: BubbleProps) {
           cy += dy * pull
         }
         const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        return { b, cx, cy, radius: Math.max(1, S * p.bubbleScale * b.r * pulse) }
+        /* Off the width — see `bubbleScale`. The height decides how much of the bubble is on screen. */
+        return { b, cx, cy, radius: Math.max(1, W * p.bubbleScale * b.r * pulse) }
       })
 
       /** One bubble's outline, optionally scaled and given an extra harmonic (used by the rim). */
@@ -546,7 +580,14 @@ export function Bubble(props: BubbleProps) {
             m += p.bubbleMorph * w.a * Math.sin(w.k * theta + time * w.s + b.phase)
           }
           if (extra !== 0) {
-            m += extra * Math.sin(theta * 1.5 - time * 0.5 + b.phase)
+            /*
+             * Scaled well down before it reaches the radius. `extra` arrives as `glowDistortion - 1`,
+             * which is a ratio, and adding a ratio straight to a multiplier around 1 is not a wander but
+             * a catapult: at 1.6 it swung the rim by 60% of the radius, burying it inside the bubble on
+             * one side and throwing it past the edge — where the plate trims it — on the other. That is
+             * a rim that appears on one bubble and not the other.
+             */
+            m += extra * 0.15 * Math.sin(theta * 1.5 - time * 0.5 + b.phase)
           }
           const r = radius * scale * m
           pts.push([cx + Math.cos(theta) * r + offX, cy + Math.sin(theta) * r + offY])
@@ -647,6 +688,27 @@ export function Bubble(props: BubbleProps) {
           gg.stroke()
         }
         gg.filter = 'none'
+
+        /*
+         * Then the top of it is taken away, so the light gathers along the bubbles' **lower** edges.
+         *
+         * Masked after the fact rather than stroked segment by segment with its own alpha: the stroke is
+         * far wider than the gap between sample points, so per-segment alphas overlap heavily and
+         * accumulate into bands. One gradient over the finished ring has nothing to accumulate. It spans
+         * the bubbles' own vertical extent rather than the canvas, so it stays put as they wander.
+         */
+        if (p.glowArc < 1) {
+          const top = Math.min(...placed.map((q) => q.cy - q.radius)) + gPad
+          const bottom = Math.max(...placed.map((q) => q.cy + q.radius)) + gPad
+          const mask = gg.createLinearGradient(0, top, 0, bottom)
+          mask.addColorStop(0, 'rgba(255,255,255,0)')
+          mask.addColorStop(Math.max(0.01, 1 - Math.max(0, p.glowArc)), 'rgba(255,255,255,0)')
+          mask.addColorStop(1, 'rgba(255,255,255,1)')
+          gg.globalCompositeOperation = 'destination-in'
+          gg.fillStyle = mask
+          gg.fillRect(0, 0, GW, GH)
+          gg.globalCompositeOperation = 'source-over'
+        }
 
         ctx.globalCompositeOperation = p.glowBlend
         ctx.globalAlpha = Math.min(1, p.glowOpacity)

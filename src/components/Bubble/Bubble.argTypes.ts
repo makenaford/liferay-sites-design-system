@@ -15,8 +15,15 @@ export const BUBBLE_ARG_TYPES = {
   paused: { control: 'boolean', table: { category: 'Animation' } },
 
   bubbleScale: {
-    control: { type: 'range', min: 0.1, max: 1, step: 0.01 },
+    control: { type: 'range', min: 0.05, max: 0.8, step: 0.01 },
     table: { category: 'Bubbles' },
+    description: 'Radius as a fraction of the **width**, so it keeps its meaning as the frame changes shape.',
+  },
+  bubbleY: {
+    control: { type: 'range', min: -0.3, max: 1, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description:
+      'Where the centres sit vertically. Well above centre by default, so what shows is the bubbles’ lower halves.',
   },
   bubbleSpread: {
     control: { type: 'range', min: 0, max: 0.8, step: 0.01 },
@@ -136,6 +143,12 @@ export const BUBBLE_ARG_TYPES = {
     table: { category: 'Glow' },
     description:
       'Moves the rim inside (positive) or outside (negative) the edge, as a fraction of the radius. Outside, the plate trims it.',
+  },
+  glowArc: {
+    control: { type: 'range', min: 0.05, max: 1, step: 0.05 },
+    table: { category: 'Glow' },
+    description:
+      'How much of the outline is lit, from the bottom up. 1 rings the whole edge; below it the light gathers along the lower edge.',
   },
   glowBlend: {
     control: 'select',
