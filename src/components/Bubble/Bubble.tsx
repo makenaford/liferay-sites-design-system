@@ -39,21 +39,13 @@ export interface BubbleProps {
    */
   bubbleMorph?: number
   /**
-   * How tall the bubbles are, as a multiple of their width. 1 is a circle.
-   *
-   * Below 1 flattens them, so their lower edge sweeps across without the shape reaching so far down;
-   * above 1 stretches them into columns. The axis to reach for when the edge is in the right place
-   * horizontally but the wrong place vertically.
-   *
-   * Read with `bubbleY`: together they decide where the visible edge falls, which is the thing worth
-   * placing against the content in front of it.
-   *
-   * @default 1
-   */
-  bubbleHeight?: number
-  /**
    * How far the two are staggered vertically, as a fraction of the height — one rides higher, the other
    * lower, either side of `bubbleY`.
+   *
+   * This is the only vertical relationship between the pair. The bubbles stay circles: there is
+   * deliberately no separate control for how tall they are, because on shapes hanging off the top of the
+   * frame, stretching one vertically and moving it down look the same from the front — the only thing on
+   * screen is the lower edge, and both push it down. Two controls for one visible effect is one too many.
    *
    * 0 hangs them level, which is the one setting that reads as a single wide shape rather than two
    * bubbles: an edge that is the same height all the way across has nothing in it to say there are two.
@@ -282,7 +274,6 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   bubbleScale: 0.59,
   bubbleSpread: 1.05,
   bubbleBalance: -0.1,
-  bubbleHeight: 1,
   bubbleX: 0.5,
   bubbleY: 0.18,
   bubbleStagger: 0.09,
@@ -688,7 +679,7 @@ export function Bubble(props: BubbleProps) {
          * changing it resizes the two against each other without resizing the pair.
          */
         const radius = Math.max(1, basis * p.bubbleScale * (1 + b.side * p.bubbleBalance) * pulse)
-        return { b, cx, cy, radius, radiusY: radius * p.bubbleHeight }
+        return { b, cx, cy, radius }
       })
 
       /** One bubble's outline, optionally scaled and given an extra harmonic (used by the rim). */
@@ -699,7 +690,7 @@ export function Bubble(props: BubbleProps) {
         offX: number,
         offY: number,
       ): [number, number][] => {
-        const { b, cx, cy, radius, radiusY } = placed[i]
+        const { b, cx, cy, radius } = placed[i]
         const pts: [number, number][] = []
         for (let s = 0; s < STEPS; s++) {
           const theta = (s / STEPS) * Math.PI * 2
@@ -720,7 +711,7 @@ export function Bubble(props: BubbleProps) {
           /* The morph is a multiplier on both axes, so flattening the bubble flattens its wobble too. */
           pts.push([
             cx + Math.cos(theta) * radius * scale * m + offX,
-            cy + Math.sin(theta) * radiusY * scale * m + offY,
+            cy + Math.sin(theta) * radius * scale * m + offY,
           ])
         }
         return pts
@@ -762,7 +753,7 @@ export function Bubble(props: BubbleProps) {
          */
         const travel = blob.orbit * p.meshMotion
         const anchorX = home.cx + (blob.x + Math.cos(orbit) * travel) * home.radius
-        const anchorY = home.cy + (blob.y + Math.sin(orbit) * travel) * home.radiusY
+        const anchorY = home.cy + (blob.y + Math.sin(orbit) * travel) * home.radius
         const looseX = (0.5 + blob.x * 0.5) * W
         const looseY = (0.5 + blob.y * 0.5) * H
         const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W
@@ -868,8 +859,8 @@ export function Bubble(props: BubbleProps) {
          * the bubbles' own vertical extent rather than the canvas, so it stays put as they wander.
          */
         if (p.glowArc < 1) {
-          const top = Math.min(...placed.map((q) => q.cy - q.radiusY)) + gPad
-          const bottom = Math.max(...placed.map((q) => q.cy + q.radiusY)) + gPad
+          const top = Math.min(...placed.map((q) => q.cy - q.radius)) + gPad
+          const bottom = Math.max(...placed.map((q) => q.cy + q.radius)) + gPad
           const mask = gg.createLinearGradient(0, top, 0, bottom)
           mask.addColorStop(0, 'rgba(255,255,255,0)')
           mask.addColorStop(Math.max(0.01, 1 - Math.max(0, p.glowArc)), 'rgba(255,255,255,0)')

@@ -51,9 +51,9 @@ const meta = {
           '**Mesh**, **Glow**, **Cursor**, plus Animation and Performance — rather than alphabetically.',
           '',
           '- **Bubbles** is shape and placement. `bubbleMorph` decides whether they read as bubbles or as',
-          '  two discs. `bubbleX`/`bubbleY` put the pair in the frame and `bubbleHeight` sets how far down',
-          '  it reaches — between them they place the **visible edge**, which is all you see of the bubbles',
-          '  and the thing that has to sit right against the content in front of it. `bubbleScale` and',
+          '  two discs. `bubbleX`/`bubbleY` put the pair in the frame — `bubbleY` in particular places the',
+          '  **visible edge**, which is all you see of the bubbles and the thing that has to sit right',
+          '  against the content in front of it. `bubbleScale` and',
           '  `bubbleSpread` are read together, and the interesting range is where the two just touch; both',
           '  are fractions of the height, so they hold as the window widens. `bubbleStagger` and',
           '  `bubbleBalance` are what stop the two reading as one shape drawn twice — one hangs higher,',
@@ -121,25 +121,28 @@ export const SoftEdge: Story = {
 }
 
 /**
- * Placing the bubbles, which is four props read together — and the thing being placed is not really the
- * bubble, it is **the edge you can see**, since the rest of it is off the top of the frame.
+ * Placing the bubbles — and the thing being placed is not really the bubble, it is **the edge you can
+ * see**, since the rest of it is off the top of the frame.
  *
- * - `bubbleY` moves the centres up and down. Low values hang them off the top, which is the default.
- * - `bubbleHeight` decides how far down they reach without changing how wide they are — the axis that
- *   would otherwise be locked, since size comes from the width.
- * - `bubbleScale` and `bubbleSpread` set how much of the frame they cover, read together.
+ * - `bubbleY` moves the pair up and down, and is what decides how far down that edge falls. Low values
+ *   hang them off the top, which is the default.
+ * - `bubbleX` moves the pair across, `bubbleScale` and `bubbleSpread` set how much of the frame they
+ *   cover, read together.
  *
- * Below: flattened and high, the default, and tall and low.
+ * The bubbles stay circles — there is no separate control for how tall they are, because on a shape
+ * hanging off the top of the frame, stretching it downward and moving it down are the same picture.
+ *
+ * Below: high and tight, the default, and low and wide.
  */
 export const Placement: Story = {
   render: (args) => (
     <Box>
       {[
-        { bubbleHeight: 0.55, bubbleY: 0.1 },
-        { bubbleHeight: 1, bubbleY: 0.18 },
-        { bubbleHeight: 1.4, bubbleY: 0.3 },
+        { bubbleY: 0.02, bubbleScale: 0.5, bubbleSpread: 0.85 },
+        { bubbleY: 0.18, bubbleScale: 0.59, bubbleSpread: 1.05 },
+        { bubbleY: 0.34, bubbleScale: 0.72, bubbleSpread: 1.35 },
       ].map((placement) => (
-        <Frame key={placement.bubbleHeight} height={220}>
+        <Frame key={placement.bubbleY} height={220}>
           <Bubble {...args} {...placement} />
         </Frame>
       ))}

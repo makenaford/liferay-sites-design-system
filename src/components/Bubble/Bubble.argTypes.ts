@@ -20,12 +20,6 @@ export const BUBBLE_ARG_TYPES = {
     description:
       'Radius as a fraction of the **height**, so the bubbles are the same size however wide the frame gets.',
   },
-  bubbleHeight: {
-    control: { type: 'range', min: 0.2, max: 2, step: 0.05 },
-    table: { category: 'Bubbles' },
-    description:
-      'How tall they are as a multiple of their width. 1 is a circle; below it flattens them so the edge sweeps without reaching so far down.',
-  },
   bubbleY: {
     control: { type: 'range', min: -0.3, max: 1, step: 0.01 },
     table: { category: 'Bubbles' },
