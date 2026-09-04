@@ -57,6 +57,16 @@ export const BUBBLE_ARG_TYPES = {
     table: { category: 'Mesh' },
     description: 'Hue spread across the blobs — what makes one colour read as several.',
   },
+  spectralDrift: {
+    control: { type: 'range', min: 0, max: 120, step: 2 },
+    table: { category: 'Mesh' },
+    description: 'How fast the spectrum sweeps *through* the field, in hue-degrees per second.',
+  },
+  meshFollow: {
+    control: { type: 'range', min: 0, max: 1, step: 0.05 },
+    table: { category: 'Mesh' },
+    description: 'How strongly the colour masses are carried by the wave under them.',
+  },
   saturation: {
     control: { type: 'range', min: 0, max: 1.5, step: 0.05 },
     table: { category: 'Mesh' },
@@ -72,6 +82,32 @@ export const BUBBLE_ARG_TYPES = {
   },
   grain: { control: { type: 'range', min: 0, max: 0.3, step: 0.005 }, table: { category: 'Mesh' } },
   opacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, table: { category: 'Mesh' } },
+
+  glow: {
+    control: { type: 'range', min: 0, max: 1, step: 0.05 },
+    table: { category: 'Glow' },
+    description: 'Brightness of the band. 0 turns the layer off and skips its pass.',
+  },
+  glowOpacity: {
+    control: { type: 'range', min: 0, max: 1, step: 0.05 },
+    table: { category: 'Glow' },
+  },
+  glowColor: { control: 'color', table: { category: 'Glow' } },
+  glowWidth: {
+    control: { type: 'range', min: 0.02, max: 0.8, step: 0.01 },
+    table: { category: 'Glow' },
+  },
+  glowDistortion: {
+    control: { type: 'range', min: 1, max: 5, step: 0.1 },
+    table: { category: 'Glow' },
+    description: "How much looser the glow's curve is than the wave's. 1 tracks it exactly.",
+  },
+  glowBlend: {
+    control: 'select',
+    options: ['screen', 'lighten', 'overlay', 'soft-light', 'color-dodge', 'source-over'],
+    table: { category: 'Glow' },
+    description: 'How the glow is composited over the mesh.',
+  },
 
   cursorInteraction: { control: 'boolean', table: { category: 'Cursor' } },
   cursorLift: {

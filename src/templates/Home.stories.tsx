@@ -1275,10 +1275,20 @@ export const BubbleBackground: Story = {
     swellFrequency: 0.7,
     edgeSoftness: 0.05,
     color: '#160a3a',
-    hotColor: '#6d3bf5',
-    richness: 1.05,
-    saturation: 1.1,
+    hotColor: '#5b30c4',
+    /*
+     * Both well under the component's own defaults, and for the same reason: this is behind a headline.
+     * The full spectral spread and a hot glow band are the right look for the component's own frame,
+     * where nothing has to be read on top of it — here they climb straight over the text.
+     */
+    richness: 0.5,
+    spectralDrift: 12,
+    saturation: 1,
     meshFade: 0.22,
+    glow: 0.3,
+    glowOpacity: 0.45,
+    glowColor: '#8f6bff',
+    glowWidth: 0.16,
   },
   argTypes: BUBBLE_ARG_TYPES,
   render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,

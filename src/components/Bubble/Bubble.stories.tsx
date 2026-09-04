@@ -26,15 +26,19 @@ const meta = {
     docs: {
       description: {
         component: [
-          'A drifting colour mesh with a wave cut across it — two passes on one canvas, and the second is',
+          'A drifting colour mesh with a wave cut across it — three passes on one canvas, and the last is',
           'the whole trick:',
           '',
           '1. **The mesh** — overlapping soft colour masses on a deep ground, hues drifted either side of',
-          '   `hotColor` by `richness`, each on its own slow orbit. This is the part with the colour in it.',
-          '2. **The wave** — a flat plate of `surfaceColor`, *the page\'s own background*, filling everything',
+          '   `hotColor` by `richness` and swept through the field by `spectralDrift`. Each mass is carried',
+          '   by the wave beneath it (`meshFollow`), so the colour moves *with* the curve.',
+          '2. **The glow** — a blurred band along the wave\'s own curve with its amplitudes multiplied by',
+          '   `glowDistortion`: same swell, looser form. It is composited with `glowBlend` so it sits in the',
+          '   mesh rather than on it, and the wave cuts it off, so what shows hugs the crest\'s upper side.',
+          '3. **The wave** — a flat plate of `surfaceColor`, *the page\'s own background*, filling everything',
           '   below the curve.',
           '',
-          'So the wave is not lit and nothing is blended. The component is opaque everywhere and still reads',
+          'So the wave is not lit and nothing is blended with the page. The component is opaque everywhere and still reads',
           'as though the mesh were fading into the page, because below the curve it paints exactly what the',
           'page would have painted.',
           '',
@@ -43,15 +47,21 @@ const meta = {
           'its own — but sitting the component on a card means passing that card\'s colour.',
           '',
           '**Working the Controls panel below:** it opens grouped by what each prop draws — **Mesh**,',
-          '**Wave**, **Cursor**, plus Animation and Performance — rather than alphabetically.',
+          '**Glow**, **Wave**, **Cursor**, plus Animation and Performance — rather than alphabetically.',
           '',
           '- **Mesh** carries the look. `hotColor` sets the colour, and `richness` is what turns that one',
           '  colour into several by spreading the blobs\' hues either side of it — reach for `richness`',
-          '  before reaching for a different `hotColor`. `meshScale` sizes the masses.',
+          '  before reaching for a different `hotColor`. `spectralDrift` then sweeps that spread through',
+          '  the field, and `meshFollow` ties the whole field to the wave. `meshScale` sizes the masses.',
+          '- **Glow** is the band along the crest. `glow` is its brightness and `glowOpacity` the layer\'s,',
+          '  which are worth having apart: the first changes how hot the band is, the second how much of',
+          '  it survives the blend. `glowBlend` decides how it meets the mesh — `screen`/`lighten` add',
+          '  light, `overlay`/`soft-light` keep more of the mesh\'s own hue.',
           '- **Wave** is shape only: `waterline` places the curve, `swell`/`swellFrequency` bend it,',
-          '  `edgeSoftness` decides whether it is a crisp cut or a soft dissolve.',
-          '- **Cursor** does two jobs from one pointer — `cursorLift` raises the wave under it while',
-          '  `meshDrift` pulls the mesh the other way, so the two layers separate as you move.',
+          '  `edgeSoftness` decides whether it is a crisp cut or a soft dissolve. The glow follows',
+          '  whatever this group is set to, so the two never drift apart.',
+          '- **Cursor** does three jobs from one pointer — `cursorLift` raises the wave under it, the glow',
+          '  rises with it, and `meshDrift` pulls the mesh the other way.',
           '- Leave **Performance** alone unless the canvas is visibly stuttering.',
         ].join('\n'),
       },
@@ -116,6 +126,58 @@ export const Sunset: Story = {
     <Frame>
       <Bubble {...args} />
     </Frame>
+  ),
+}
+
+/**
+ * The glow layer on its own terms: off, default, and pushed. It is the band of light along the wave, and
+ * because its curve is the wave's amplified rather than a shape of its own, it stays with the wave
+ * whatever the **Wave** group is set to.
+ */
+export const Glow: Story = {
+  render: (args) => (
+    <Box>
+      {[0, 0.55, 1].map((glow) => (
+        <Frame key={glow} height={200}>
+          <Bubble {...args} glow={glow} />
+        </Frame>
+      ))}
+    </Box>
+  ),
+}
+
+/**
+ * `glowBlend`, which is how the band meets the mesh rather than how bright it is: `screen` and `lighten`
+ * add light and keep the mesh readable underneath, `overlay` and `soft-light` bend toward the mesh's own
+ * hue, and `source-over` paints it flat on top — the one that looks pasted on, and the reason the others
+ * are the defaults.
+ */
+export const GlowBlends: Story = {
+  render: (args) => (
+    <Box>
+      {(['screen', 'overlay', 'soft-light', 'source-over'] as const).map((glowBlend) => (
+        <Frame key={glowBlend} height={200}>
+          <Bubble {...args} glowBlend={glowBlend} glow={0.8} />
+        </Frame>
+      ))}
+    </Box>
+  ),
+}
+
+/**
+ * `meshFollow` at both ends — whether the colour is carried by the wave or drifting past it. At 0 the two
+ * halves animate on unrelated clocks and read as two things sharing a canvas; at 1 the field rises and
+ * falls with the curve under it.
+ */
+export const MeshFollow: Story = {
+  render: (args) => (
+    <Box>
+      {[0, 1].map((meshFollow) => (
+        <Frame key={meshFollow} height={220}>
+          <Bubble {...args} meshFollow={meshFollow} />
+        </Frame>
+      ))}
+    </Box>
   ),
 }
 
