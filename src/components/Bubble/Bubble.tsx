@@ -5,86 +5,50 @@ export interface BubbleProps {
   /** How fast the bubbles wander, morph and pulse. @default 0.4 */
   speed?: number
   /**
-   * Size of the bubbles, as a fraction of the **height**.
-   *
-   * Height, so the bubbles are the same size on a laptop and an ultrawide and the visible edge lands in
-   * the same place on both. Measured against the width they would grow with the window, and the edge —
-   * the thing that has to sit right against the copy in front of it — would move every time it changed.
-   * Widening the frame adds room beside them instead, which `bubbleSpread` is there to use.
+   * Size of the bubbles, as a fraction of the **height** — so they hold their size as the window widens,
+   * and the visible edge stays where it was put. Widening adds room beside them instead.
    *
    * @default 0.65
    */
   bubbleScale?: number
   /**
-   * The distance between the two centres, as a fraction of the **height**.
-   *
-   * Height, like `bubbleScale`, so the gap between them holds as the window widens instead of opening up
-   * — measured across the width, the pair drifts apart on a wide screen and the two shapes stop being
-   * one form. Widening the frame now leaves more page either side of the pair rather than pulling it
-   * open.
-   *
-   * Read against `bubbleScale`: close together they merge into one form, far apart they read as two
-   * bubbles that happen to share a frame. The interesting range is where they just touch.
+   * Distance between the two centres, a fraction of the height for the same reason as `bubbleScale`.
+   * Read against it: the interesting range is where the two just touch.
    *
    * @default 1.05
    */
   bubbleSpread?: number
-  /**
-   * How far each outline departs from a circle — the "changing form" part.
-   *
-   * Each bubble carries two harmonics turning at their own rates, so the outline is never the same shape
-   * twice and never a shape you can name. 0 gives two plain circles.
-   *
-   * @default 0.2
-   */
+  /** How far each outline departs from a circle. 0 gives two plain circles. @default 0.2 */
   bubbleMorph?: number
   /**
-   * How far the two are staggered vertically, as a fraction of the height — one rides higher, the other
-   * lower, either side of `bubbleY`.
+   * How far the two are staggered vertically — one rides higher, the other lower, either side of
+   * `bubbleY`. Negative swaps them.
    *
-   * This is the only vertical relationship between the pair. The bubbles stay circles: there is
-   * deliberately no separate control for how tall they are, because on shapes hanging off the top of the
-   * frame, stretching one vertically and moving it down look the same from the front — the only thing on
-   * screen is the lower edge, and both push it down. Two controls for one visible effect is one too many.
-   *
-   * **0 levels the visible edges, not the centres.** The two are different once `bubbleBalance` is in
-   * play — a bigger bubble centred at the same height reaches further down — and since the bubbles hang
-   * off the top of the frame, the edge is the only part anyone sees. So the size difference is taken back
-   * out of the placement, which puts the balanced setting in the middle of the range where it can be
-   * found, with either direction lifting one bubble over the other.
-   *
-   * That balanced setting is worth passing through rather than stopping at: an edge the same height all
-   * the way across has nothing in it to say there are two bubbles, and the pair reads as one wide shape.
+   * **0 levels the visible edges, not the centres**: `bubbleBalance` makes one bubble bigger, and a
+   * bigger bubble centred at the same height reaches further down. Since the bubbles hang off the top of
+   * the frame the edge is all anyone sees, so the size difference is taken back out of the placement.
    *
    * @default 0.09
    */
   bubbleStagger?: number
   /**
-   * How much bigger one bubble is than the other, as a seesaw around `bubbleScale`: one grows by this
-   * fraction as the other shrinks by it, so the pair's average size does not move.
-   *
-   * 0 makes them identical — worth avoiding for the same reason as a stagger of 0, since two circles of
-   * exactly one size read as a repeated shape rather than a pair. Negative makes the left one the larger.
+   * How much bigger one bubble is than the other, as a seesaw around `bubbleScale` — which is therefore
+   * the pair's *average* size, not either one's. 0 makes them identical, and a pair of identical circles
+   * reads as a repeat rather than a pair.
    *
    * @default -0.1
    */
   bubbleBalance?: number
   /**
-   * Where the pair sits horizontally, 0 being the left edge and 1 the right. The two bubbles are placed
-   * either side of this, `bubbleSpread` apart.
-   *
-   * A fraction of the frame, like `bubbleY` — placement is the one thing that should follow the frame's
-   * own proportions, while the sizes and the gap between the pair stay fixed against the height.
+   * Where the pair sits horizontally, 0 the left edge and 1 the right, with the two either side of it.
+   * Placement follows the frame; the sizes and the gap between them do not.
    *
    * @default 0.5
    */
   bubbleX?: number
   /**
-   * Where the bubbles' centres sit vertically, 0 being the top edge and 1 the bottom.
-   *
-   * Well above centre by default, which is the point: the bubbles are bigger than the frame is tall, so
-   * their tops run off it and what is left on screen is their **lower halves** — an edge sweeping across
-   * the frame with colour above it, rather than two shapes sitting in the middle of it.
+   * Where the centres sit vertically. Well above centre by default: the bubbles are taller than the frame,
+   * so what shows is their **lower halves** — an edge sweeping across with colour above it.
    *
    * @default 0.18
    */
@@ -96,45 +60,36 @@ export interface BubbleProps {
   /** Softness of the bubbles' edge, as a fraction of the height. 0 is a crisp cut. @default 0.03 */
   edgeSoftness?: number
   /**
-   * The colour everything outside the bubbles is painted in — **the page's own background**.
+   * The colour everything outside the bubbles is painted in — **the page's own background**, and the one
+   * value that has to be right: the bubbles are not shapes drawn over the mesh, they are the only places
+   * the plate covering it is missing. Wrong here and it is a coloured rectangle with two holes.
    *
-   * This is what makes the component read as transparent without being transparent: the bubbles are not
-   * shapes drawn *over* the mesh, they are the only places the plate covering it is missing. Accepts
-   * `var(--token)` and resolves it against the canvas, which is what lets one value follow the scheme.
+   * Takes `var(--token)`, resolved against the canvas, which is how one value follows the colour scheme.
    *
    * @default 'var(--sds-surfaces-page-bg-base-default)'
    */
   surfaceColor?: string
   /**
-   * The mesh's ground — the colour its masses sit on, used when `surfaceColor` resolves to a **dark**
-   * surface. Worth keeping close to the surface itself, so the bubbles' interiors fall away into the
-   * page where the colour thins out rather than ending on a disc.
+   * The mesh's ground on a **dark** surface. Worth keeping close to `surfaceColor`, so the bubbles fall
+   * away into the page where the colour thins rather than ending on a disc.
    *
    * @default '#0b0a1c'
    */
   color?: string
-  /** The mesh's lit colour on a dark surface. Masses are hues drifted off this one. @default '#6d3bf5' */
+  /** The mesh's lit colour on a dark surface. @default '#6d3bf5' */
   hotColor?: string
   /**
-   * The mesh's **second** lit colour on a dark surface — the other pole the masses are shared between.
-   *
-   * `richness` spreads hues either side of a colour, which varies a field without ever leaving it; this
-   * gives the mesh a second colour to actually be. Each mass sits somewhere between the two by a fixed
-   * amount, so both bubbles carry some of each rather than one going blue and the other violet.
-   *
-   * Hues interpolate the short way round the wheel, so a pair that straddles red does not travel through
-   * green to meet.
+   * The mesh's **second** lit colour, each mass sitting somewhere between this and `hotColor`. Distinct
+   * from `richness`, which spreads hues either side of wherever a mass already is: two poles let the mesh
+   * be two colours, `richness` varies within one. Hues interpolate the short way round the wheel.
    *
    * @default '#2563eb'
    */
   accentColor?: string
   /**
-   * The ground on a **light** surface.
-   *
-   * One palette cannot serve both: a violet mesh that reads as depth on near-black reads as a stain on
-   * white, and the text over it flips from light to dark at the same moment. Which pair is used is
-   * decided by the luminance of the resolved `surfaceColor`, so it follows the colour scheme by the same
-   * route the bubbles do — no separate flag to keep in sync.
+   * The ground on a **light** surface. One palette cannot serve both — a violet that reads as depth on
+   * near-black is a stain on white, and the text over it flips at the same moment. The pair is chosen
+   * from the resolved `surfaceColor`'s luminance, so there is no separate flag to keep in sync.
    *
    * @default '#f2f0fb'
    */
@@ -143,27 +98,19 @@ export interface BubbleProps {
   hotColorLight?: string
   /** The mesh's second lit colour on a light surface. @default '#93c5fd' */
   accentColorLight?: string
-  /** How far the masses' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
+  /** How far the masses' hues drift either side of their colour — the mesh's spread. @default 1 */
   richness?: number
   /**
-   * How far the spectrum sweeps either side of the palette over time, in hue degrees.
-   *
-   * It **oscillates** rather than advances: the hue leaves the palette by up to this much and comes back.
-   * An unbounded rotation would eventually put every hue on screen, which is how a violet mesh ends up
-   * showing greens and golds — the palette stops meaning anything.
-   *
-   * Together with `richness`, the furthest any mass strays from `hotColor` is `richness * 70 + this`.
+   * How far the spectrum sweeps either side of the palette, in hue degrees. It **oscillates** rather than
+   * advances — an unbounded rotation puts every hue on screen sooner or later, which is how a violet mesh
+   * comes to show greens and golds. The furthest a mass strays is `richness * 70 + this`.
    *
    * @default 18
    */
   spectralDrift?: number
   /**
-   * How strongly the mesh is carried by the bubbles, 0..1.
-   *
-   * The masses are positioned against the bubbles' own centres and radii, so when a bubble wanders, swells
-   * or morphs, the colour inside it goes with it. At 0 they sit still in the canvas and the bubbles slide
-   * over them like windows onto a fixed painting — which is a different, flatter effect, and occasionally
-   * the one you want.
+   * How strongly the mesh is carried by the bubbles. At 1 each mass is nailed to its bubble and travels
+   * with it; at 0 they sit still and the bubbles slide over them like windows onto a fixed painting.
    *
    * @default 0.85
    */
@@ -173,21 +120,15 @@ export interface BubbleProps {
   /** Size of the mesh's colour masses, relative to the bubble holding them. @default 1 */
   meshScale?: number
   /**
-   * How far the colour masses travel inside their bubble.
-   *
-   * Distinct from `speed`, which sets how fast everything moves — this sets how *far* the colours go, so
-   * the mesh can churn without the bubbles wandering faster. At 0 the masses hold station and the mesh
-   * only changes because the bubble under it does; high, the colours circulate visibly within it.
+   * How far the colour masses travel inside their bubble — distinct from `speed`, which is how fast
+   * everything moves. One is distance, the other rate.
    *
    * @default 1
    */
   meshMotion?: number
   /**
-   * Brightness of the rim light around each bubble.
-   *
-   * Drawn between the mesh and the plate, so the plate trims whatever falls outside the outline and what
-   * survives is a rim on the inside of the edge — light caught in the bubble's own skin. 0 turns the
-   * layer off and skips its offscreen pass.
+   * Brightness of the rim light. Drawn between the mesh and the plate, so the plate trims what falls
+   * outside the outline and what survives is light caught inside the bubble's own skin. 0 skips the pass.
    *
    * @default 0.8
    */
@@ -200,78 +141,45 @@ export interface BubbleProps {
   glowColorLight?: string
   /** Thickness of the rim, as a fraction of the height. @default 0.16 */
   glowWidth?: number
-  /**
-   * How much the rim's own outline wanders off the bubble's, 1 tracking it exactly.
-   *
-   * Above 1 the rim carries an extra, slower harmonic of its own, so the light gathers on one part of the
-   * edge and thins on another instead of ringing the whole outline evenly.
-   *
-   * @default 1.6
-   */
+  /** How far the rim's outline wanders off the bubble's, 1 tracking it exactly. @default 1.6 */
   glowDistortion?: number
   /**
-   * Moves the rim inside (positive) or outside (negative) the bubble's edge, as a fraction of its radius.
-   *
-   * This one is *radial* — it pulls the rim in on every side at once. With `glowArc` holding the light to
-   * the lower edge, the only part that shows is the bottom of that ring, so raising it reads as lifting
-   * the light up off the edge. `glowOffsetX` is the sideways counterpart.
-   *
-   * Outside the edge it is trimmed by the plate, so pushing it out fades the rim rather than moving it;
-   * pulling it in floats a ring of light within the bubble.
+   * Moves the rim inward from **every** side (positive) or outward, as a fraction of the radius. With
+   * `glowArc` holding the light low, only the bottom of that ring shows, so raising it reads as lifting
+   * the light off the edge. `glowOffsetX` is the sideways counterpart.
    *
    * @default 0.06
    */
   glowOffset?: number
   /**
-   * Which side of each bubble the light gathers on — left at negative, right at positive, as a fraction
-   * of the radius.
+   * Which side the light gathers on — left at negative, right at positive, as a fraction of each bubble's
+   * own radius.
    *
-   * Where `glowOffset` draws the light in from every side evenly, this moves it *across*, so it pools on
-   * one side and thins on the other — the difference between a shape lit from directly below and one lit
-   * from below and to one side.
-   *
-   * The value names the side the light ends up on, which is the opposite of the way the ring underneath
-   * it moves: sliding that ring right pushes its right side out past the edge, where the plate trims it,
-   * and leaves the left side deep enough inside to show.
-   *
-   * Each bubble shifts by a fraction of *its own* radius, so the pair stays consistent when
-   * `bubbleBalance` has made them different sizes.
+   * The value names the side the light ends up on, which is the **opposite** of the way the ring moves:
+   * sliding it right pushes its right side past the edge where the plate trims it, leaving the left side
+   * deep enough inside to show.
    *
    * @default 0
    */
   glowOffsetX?: number
   /**
-   * How much of each outline is lit, from the bottom up.
-   *
-   * 1 rings the whole edge evenly. Below it the light is held back from the top and gathers along the
-   * **lower** edge, which is where it belongs when the bubbles are hanging off the top of the frame:
-   * light pools where a shape's underside catches it, and a ring lit all the way round reads as a
-   * drawn outline instead.
+   * How much of each outline is lit, from the bottom up. 1 rings the whole edge; below it the light
+   * gathers along the **lower** edge, where a shape hanging off the top of the frame catches it.
    *
    * @default 0.45
    */
   glowArc?: number
   /**
-   * How the rim is composited over the mesh.
-   *
-   * `screen` and `lighten` add light without flattening what is under them, which is usually what a glow
-   * over a colour field wants; `overlay` and `soft-light` keep more of the mesh's own hue; `source-over`
-   * paints it flat.
+   * How the rim is composited over the mesh. `screen`/`lighten` add light without flattening what is
+   * under them; `overlay`/`soft-light` keep more of the mesh's own hue; `source-over` paints it flat.
    *
    * @default 'screen'
    */
   glowBlend?: 'screen' | 'lighten' | 'overlay' | 'soft-light' | 'color-dodge' | 'source-over'
   /**
-   * A glowing border traced along the bubbles' outline. **Off at 0**, which is the default.
-   *
-   * Unlike the rim, this is drawn *after* the plate rather than before it, so it is not trimmed to the
-   * inside of the edge — it straddles the outline and glows outward onto the page. The rim is light
-   * caught inside the bubble; this is the bubble's edge itself being lit, and they are worth having
-   * separately because a shape can want either, both, or neither.
-   *
-   * It follows the same outer form the rim does: where the two bubbles overlap, the part of each
-   * outline running inside the other is not drawn, so the border traces the merged silhouette rather
-   * than crossing it.
+   * A glowing border along the outline, **off at 0**. Drawn *after* the plate where the rim is drawn
+   * before, so it is not trimmed to the inside of the edge — it straddles the outline and glows onto the
+   * page. The rim is light caught inside the bubble; this is the edge itself being lit.
    *
    * @default 0
    */
@@ -279,11 +187,8 @@ export interface BubbleProps {
   /** Thickness of the border, as a fraction of the height. @default 0.004 */
   borderWidth?: number
   /**
-   * How far the border is blurred, as a fraction of the height.
-   *
-   * 0 is a drawn line — the one setting that reads as an outline rather than a glow. Above it the edge
-   * softens into light, and past about the border's own width it stops looking like a border at all and
-   * becomes a halo around the shape.
+   * How far the border is blurred, as a fraction of the height. 0 is a drawn line; past about its own
+   * width it stops reading as an edge and becomes a halo.
    *
    * @default 0.012
    */
@@ -370,18 +275,12 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
 }
 
 /**
- * The two bubbles.
+ * The two bubbles — fixed rather than random, so a designer tuning against a screenshot gets the same two
+ * next time. `wobble` is the pair of harmonics that morph the outline (`k` lobes, `a` strength, `s` rate
+ * and direction), differing between the entries so the two never fall into the same shape at once.
  *
- * A fixed pair rather than anything random or configurable in number: two is the shape of the thing, and
- * a designer tuning against a screenshot needs the same two to be there next time. `wobble` is the pair
- * of harmonics that morph the outline — `k` how many lobes, `a` how strongly, `s` how fast and which way
- * they turn — and the two entries differ so the bubbles never fall into the same shape at the same time.
- *
- * What is *not* here is how high each one hangs or how big it is relative to the other. Those were fixed
- * numbers in this table and are now `bubbleStagger` and `bubbleBalance`, because they are the difference
- * between the pair reading as two bubbles and as one shape drawn twice — which is a decision worth
- * making per use, not one to bake in here. `side` is all that remains of the distinction: which of the
- * two each one is.
+ * How high each hangs and how big it is relative to the other are deliberately *not* here — they are
+ * `bubbleStagger` and `bubbleBalance`, being the difference between a pair and one shape drawn twice.
  */
 const BUBBLES = [
   {
@@ -564,15 +463,12 @@ function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
  *    the rim it is not trimmed to the inside of the edge: it straddles the outline and glows onto the
  *    page.
  *
- * So nothing is lit and nothing is blended with the page. The component is opaque everywhere and still
- * reads as two bubbles floating on the page, because everywhere that is not a bubble it is painting
- * exactly what the page would have painted. That is worth stating plainly: **`surfaceColor` has to match
- * the surface the component is sitting on**, or the bubbles become a coloured rectangle with two holes
- * in it. It defaults to the page-background token and resolves `var()` against the canvas, so it follows
- * the colour scheme on its own; pass a concrete colour when the component sits on something else.
+ * So nothing is blended with the page. The component is opaque everywhere and still reads as two bubbles
+ * floating on it, because everywhere that is not a bubble it paints exactly what the page would have —
+ * which is why `surfaceColor` has to match the surface it sits on.
  *
- * The pointer draws the bubbles toward it (`cursorLift`, `cursorReach`) and pulls the mesh within them
- * the other way (`meshDrift`), so the colour lags behind the shape as it moves.
+ * The pointer draws the bubbles toward it (`cursorLift`) and pulls the mesh within them the other way
+ * (`meshDrift`), so the colour lags behind the shape.
  *
  * Fills its parent, so give the parent an explicit height (or `position: absolute; inset: 0` inside a
  * positioned container).
@@ -631,13 +527,11 @@ export function Bubble(props: BubbleProps) {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const plateLayer = document.createElement('canvas')
     /*
-     * Both edge passes — the rim and the border — share these two, because they run one after the other
-     * and each is composited and finished with before the next begins. They were four canvases, which at
-     * canvas size is tens of megabytes of offscreen buffer for two passes that are never live at once.
+     * Shared by both edge passes, which run one after the other and are each composited before the next
+     * begins — four canvases at this size is tens of megabytes for passes never live at once.
      *
-     * Two rather than one because the per-bubble erase has to happen somewhere its neighbour's finished
-     * stroke is not, or it takes that stroke with it: `scratch` builds one bubble's edge, `edge`
-     * accumulates them.
+     * Two rather than one because the per-bubble erase has to happen where its neighbour's finished
+     * stroke is not, or it takes that stroke with it.
      */
     const edgeLayer = document.createElement('canvas')
     const edgeScratch = document.createElement('canvas')
@@ -685,18 +579,10 @@ export function Bubble(props: BubbleProps) {
         return
       }
       /*
-       * Every size in the component is a fraction of the **height**, and nothing is a fraction of the
-       * width.
-       *
-       * The width is the dimension that moves — a hero is the same height on a laptop and an ultrawide,
-       * and a very different width — so anything measured against it changes size as the window changes,
-       * and the visible edge lands somewhere new each time. Measured against the height, the bubbles keep
-       * their size and that edge keeps its place, and the extra width shows up as what it is: more room
-       * either side. `bubbleSpread` is the one thing still measured across the width, because spreading
-       * the pair over the frame is exactly its job.
-       *
-       * `Math.min(W, H)` was the same thing on a wide frame and quietly different on a narrow one, where
-       * it would shrink the bubbles, the rim and the plate's edge together as the window narrowed.
+       * Every size here is a fraction of the **height**. The width is the dimension that moves, so
+       * anything measured against it changes size with the window and the visible edge lands somewhere
+       * new each time; against the height it keeps its place and the extra width becomes room either
+       * side. Only `bubbleX` follows the width, because placing the pair across the frame is its job.
        */
       const basis = H
 
@@ -735,15 +621,10 @@ export function Bubble(props: BubbleProps) {
         const radius = Math.max(1, mean * (1 + b.side * p.bubbleBalance))
 
         /*
-         * The size difference is then taken back out of the vertical placement, so that a stagger of 0
-         * puts the two **visible edges** level rather than the two centres.
-         *
-         * They are not the same thing here, and only one of them can be seen: the bubbles hang off the
-         * top of the frame, so the lower edge is the whole picture, and a bigger bubble with its centre
-         * at the same height reaches further down. Levelling centres left the edges 50px apart at the
-         * default balance — which makes 0 on this control look wrong and sends you hunting up the slider
-         * for the point where it looks level. Now that point is 0, and either direction lifts one bubble
-         * over the other.
+         * The size difference is taken back out of the placement, so a stagger of 0 levels the two
+         * **visible edges** rather than the two centres. Only one of them can be seen — the bubbles hang
+         * off the top, so the lower edge is the whole picture, and a bigger bubble centred at the same
+         * height reaches further down. Levelling centres puts the balanced-looking setting off-centre.
          */
         const evenEdges = mean * b.side * p.bubbleBalance
 
@@ -1013,17 +894,12 @@ export function Bubble(props: BubbleProps) {
       pg.fillRect(0, 0, PW, PH)
 
       /*
-       * The holes are *erased*, not excluded by a fill rule.
+       * The holes are *erased*, not excluded by a fill rule. One path holding the rectangle and both
+       * outlines is the obvious way to write this and it is wrong: `evenodd` counts crossings, so where
+       * the bubbles overlap the parity flips back to filled and the plate returns as a wedge bitten out
+       * of where they meet (`nonzero` fails the same way). Erasing has no parity to get wrong.
        *
-       * One path holding the rectangle and both outlines is the obvious way to write this and it is
-       * wrong: `evenodd` counts crossings, so where the two bubbles overlap the parity flips back to
-       * filled and the plate returns as a wedge through the middle of them — two bubbles with a bite
-       * taken out of where they meet. `nonzero` has the same problem from the other side. Erasing with
-       * `destination-out` has no parity to get wrong: overlapping shapes simply erase the same pixels
-       * twice.
-       *
-       * It also has to happen on its own layer. Erasing on the main canvas would take the mesh with it
-       * and leave a hole through to whatever is behind the canvas, rather than a hole through the plate.
+       * On its own layer, too: erasing on the main canvas takes the mesh with it.
        */
       pg.globalCompositeOperation = 'destination-out'
       if (blur > 0) pg.filter = `blur(${blur}px)`
