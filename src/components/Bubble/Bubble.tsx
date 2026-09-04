@@ -463,13 +463,7 @@ export function Bubble(props: BubbleProps) {
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const plateLayer = document.createElement('canvas')
-    /*
-     * Shared by both edge passes, which run one after the other and are each composited before the next
-     * begins — four canvases at this size is tens of megabytes for passes never live at once.
-     *
-     * Two rather than one because the per-bubble erase has to happen where its neighbour's finished
-     * stroke is not, or it takes that stroke with it.
-     */
+    /* Shared by the rim and border passes, which never run at once. */
     const edgeLayer = document.createElement('canvas')
     const edgeScratch = document.createElement('canvas')
 
@@ -482,7 +476,6 @@ export function Bubble(props: BubbleProps) {
     let last = performance.now()
     let t = 0
 
-    /** Angles sampled around each outline. Enough that the beziers have nothing left to smooth. */
     const STEPS = 72
 
     const draw = (now: number) => {
@@ -515,12 +508,7 @@ export function Bubble(props: BubbleProps) {
         raf = requestAnimationFrame(draw)
         return
       }
-      /*
-       * Every size here is a fraction of the **height**. The width is the dimension that moves, so
-       * anything measured against it changes size with the window and the visible edge lands somewhere
-       * new each time; against the height it keeps its place and the extra width becomes room either
-       * side. Only `bubbleX` follows the width, because placing the pair across the frame is its job.
-       */
+      /* Every size is a fraction of the height, so it holds as the window widens. Only `bubbleX` uses W. */
       const basis = H
 
       if (p.surfaceColor !== surfaceSource || now - surfaceCheckedAt > 500) {
@@ -536,33 +524,14 @@ export function Bubble(props: BubbleProps) {
       state.lean.x += (targetX - state.lean.x) * ease
       state.lean.y += (targetY - state.lean.y) * ease
 
-      /*
-       * Where each bubble is and how big it is *this frame*, worked out once and then used by all three
-       * passes. The mesh's masses and the rim are both positioned against these, which is what keeps the
-       * colour and the light inside the shape while it moves rather than merely near it.
-       */
+      /* Each bubble's centre and radius this frame; the mesh and the rim are both placed against these. */
       const placed = BUBBLES.map((b) => {
         const wander = time * b.rate + b.phase
-        /*
-         * Placement follows the frame (`bubbleX`, `bubbleY`); everything else is measured against the
-         * height, so the gap between the pair and the distance each one drifts stay put as the window
-         * widens. Only where the pair sits moves with the frame.
-         */
         const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        /*
-         * Off the height, so widening the frame adds room beside the bubbles rather than inflating them.
-         * `bubbleBalance` is a seesaw around `bubbleScale`: one side gains what the other gives up, so
-         * changing it resizes the two against each other without resizing the pair.
-         */
         const mean = basis * p.bubbleScale * pulse
         const radius = Math.max(1, mean * (1 + b.side * p.bubbleBalance))
 
-        /*
-         * The size difference is taken back out of the placement, so a stagger of 0 levels the two
-         * **visible edges** rather than the two centres. Only one of them can be seen — the bubbles hang
-         * off the top, so the lower edge is the whole picture, and a bigger bubble centred at the same
-         * height reaches further down. Levelling centres puts the balanced-looking setting off-centre.
-         */
+        /* Cancels the size difference, so a stagger of 0 levels the visible edges rather than the centres. */
         const evenEdges = mean * b.side * p.bubbleBalance
 
         let cx = p.bubbleX * W + b.side * p.bubbleSpread * 0.5 * basis
@@ -597,16 +566,10 @@ export function Bubble(props: BubbleProps) {
             m += p.bubbleMorph * w.a * Math.sin(w.k * theta + time * w.s + b.phase)
           }
           if (extra !== 0) {
-            /*
-             * Scaled well down before it reaches the radius. `extra` arrives as `glowDistortion - 1`,
-             * which is a ratio, and adding a ratio straight to a multiplier around 1 is not a wander but
-             * a catapult: at 1.6 it swung the rim by 60% of the radius, burying it inside the bubble on
-             * one side and throwing it past the edge — where the plate trims it — on the other. That is
-             * a rim that appears on one bubble and not the other.
-             */
+            /* 0.15 because `extra` is a ratio: added raw to a multiplier around 1 it swings the rim by
+             * most of the radius, past the edge on one side and deep inside on the other. */
             m += extra * 0.15 * Math.sin(theta * 1.5 - time * 0.5 + b.phase)
           }
-          /* The morph is a multiplier on both axes, so flattening the bubble flattens its wobble too. */
           pts.push([
             cx + Math.cos(theta) * radius * scale * m + offX,
             cy + Math.sin(theta) * radius * scale * m + offY,
@@ -637,18 +600,10 @@ export function Bubble(props: BubbleProps) {
       ctx.fillStyle = hsl(ch, cs * sat, cl)
       ctx.fillRect(0, 0, W, H)
 
-      /*
-       * `source-over` rather than `lighter`: the masses have to *blend* into one another, and additive
-       * light does not blend, it accumulates — overlapping blobs of it climb to white in the middle of
-       * the field, which is the opposite of a mesh.
-       */
+      /* `source-over`, not `lighter`: additive light accumulates to white where the masses overlap. */
       for (const blob of MESH_BLOBS) {
         const home = placed[blob.bubble]
         const orbit = blob.phase + time * blob.rate
-        /*
-         * Placed in the bubble's coordinates, then eased back toward the canvas's by `meshFollow`. At 1
-         * the mass is nailed to the bubble; at 0 it sits still and the bubble slides over it.
-         */
         const travel = blob.orbit * p.meshMotion
         const anchorX = home.cx + (blob.x + Math.cos(orbit) * travel) * home.radius
         const anchorY = home.cy + (blob.y + Math.sin(orbit) * travel) * home.radius
@@ -657,11 +612,10 @@ export function Bubble(props: BubbleProps) {
         const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W
         const cy = looseY + (anchorY - looseY) * p.meshFollow + state.lean.y * p.meshDrift * H
         const radius = Math.max(1, home.radius * blob.r * p.meshScale)
-        /* Somewhere between the two lit colours, by a fixed amount, so both bubbles carry some of each. */
         const baseHue = lerpHue(hh, ah, blob.tint)
         const baseSat = lerp(hs, as, blob.tint)
         const baseLight = lerp(hl, al, blob.tint) * blob.light
-        /* Oscillating around the palette rather than advancing through it — see `spectralDrift`. */
+        /* Oscillates around the palette; advancing would rotate every hue onto the screen. */
         const sweep = Math.sin(time * 0.35 + blob.phase * 0.5) * p.spectralDrift
         const hue = baseHue + blob.hue * p.richness * 70 + sweep
         const tone = Math.min(1, baseSat * sat)
@@ -670,13 +624,7 @@ export function Bubble(props: BubbleProps) {
         gradient.addColorStop(0.55, hsl(hue, tone, baseLight * 0.75, 0.28))
         gradient.addColorStop(1, hsl(hue, tone, baseLight * 0.5, 0))
         ctx.fillStyle = gradient
-        /*
-         * Only the mass's own square, not the whole canvas.
-         *
-         * The gradient's last stop is at zero alpha on `radius`, so every pixel outside that circle was
-         * being composited to no effect — five times a frame, at canvas size. Clamped to the canvas so
-         * a mass hanging off an edge still fills what is on screen and nothing more.
-         */
+        /* Its own square, not the canvas: the gradient is already at zero alpha by `radius`. */
         const x0 = Math.max(0, Math.floor(cx - radius))
         const y0 = Math.max(0, Math.floor(cy - radius))
         const x1 = Math.min(W, Math.ceil(cx + radius))
@@ -684,14 +632,14 @@ export function Bubble(props: BubbleProps) {
         if (x1 > x0 && y1 > y0) ctx.fillRect(x0, y0, x1 - x0, y1 - y0)
       }
 
-      /* ------------------------------------------------------- the two edge passes, and their layers */
+      /* ---------------------------------------------------- shared by the rim and border passes */
 
       const rimOn = p.glow > 0 && p.glowOpacity > 0
       const borderOn = p.borderOpacity > 0 && p.borderWidth > 0
       const glowBlur = Math.max(1, basis * p.glowWidth * 0.45)
       const bWidth = Math.max(0.5, basis * p.borderWidth)
       const bBlur = p.borderBlur > 0 ? Math.max(0.5, basis * p.borderBlur) : 0
-      /* One padding for both, so the shared layers are sized once rather than resized between passes. */
+      /* One padding for both, so the layers are sized once rather than resized between passes. */
       const ePad = Math.ceil(Math.max(rimOn ? glowBlur * 2.5 : 0, borderOn ? bWidth + bBlur * 3 : 0))
       const EW = W + ePad * 2
       const EH = H + ePad * 2
@@ -703,11 +651,8 @@ export function Bubble(props: BubbleProps) {
       }
 
       /**
-       * Strokes every bubble's outline onto `acc`, one at a time with its neighbours erased from it.
-       *
-       * That erase is the outer-form rule, and it is why this is shared rather than written twice: the
-       * arcs where two bubbles overlap are interior to the shape the viewer sees, and an interior edge is
-       * not an edge. Getting it wrong once was enough — both passes now get it right or neither does.
+       * Strokes every outline onto `acc`, one bubble at a time with its neighbours erased from it —
+       * without that erase, the arcs where two bubbles overlap draw a seam through the merged shape.
        */
       const strokeOuterForm = (
         acc: CanvasRenderingContext2D,
@@ -732,7 +677,6 @@ export function Bubble(props: BubbleProps) {
           traceClosed(scratch, outline(i, o.scale, o.extra, ePad + (o.shiftX?.(i) ?? 0), ePad))
           scratch.stroke()
 
-          /* The erase carries the same blur, so neighbouring edges meet in a soft join rather than a cut. */
           scratch.globalCompositeOperation = 'destination-out'
           for (let j = 0; j < placed.length; j++) {
             if (j === i) continue
@@ -753,7 +697,7 @@ export function Bubble(props: BubbleProps) {
         gg.clearRect(0, 0, EW, EH)
         const rg = edgeScratch.getContext('2d')!
 
-        /* Banded across the frame by the same spectrum the mesh runs, so the rim belongs to the field. */
+        /* Banded by the same spectrum the mesh runs. */
         const [gh, gs, gl] = hexToHsl(rimColor)
         const band = rg.createLinearGradient(0, 0, EW, 0)
         const stops = 6
@@ -769,23 +713,15 @@ export function Bubble(props: BubbleProps) {
           stroke: band,
           scale: 1 - p.glowOffset,
           extra: p.glowDistortion - 1,
-          /*
-           * Negated, because the ring and the light move opposite ways. Sliding the ring right pushes its
-           * right side out past the bubble's edge, where the plate trims it, and leaves its left side deep
-           * inside — so the light that survives gathers on the *left*. The prop names the side the light
-           * ends up on, which is the only side anyone can see. A fraction of *this* bubble's radius, so an
-           * uneven pair shifts by the same proportion.
-           */
+          /* Negated: the ring and the light move opposite ways, and the prop names the side the light
+           * lands on. See `glowOffsetX`. */
           shiftX: (i) => -p.glowOffsetX * placed[i].radius,
         })
 
         /*
-         * Then the top of it is taken away, so the light gathers along the bubbles' **lower** edges.
-         *
-         * Masked after the fact rather than stroked segment by segment with its own alpha: the stroke is
-         * far wider than the gap between sample points, so per-segment alphas overlap heavily and
-         * accumulate into bands. One gradient over the finished ring has nothing to accumulate. It spans
-         * the bubbles' own vertical extent rather than the canvas, so it stays put as they wander.
+         * Takes the top off the ring so the light gathers on the lower edges. Masked afterwards rather
+         * than stroked per-segment: the stroke is far wider than the gap between sample points, so
+         * per-segment alphas would overlap and band.
          */
         if (p.glowArc < 1) {
           const top = Math.min(...placed.map((q) => q.cy - q.radius)) + ePad
@@ -811,10 +747,8 @@ export function Bubble(props: BubbleProps) {
 
       const blur = p.edgeSoftness > 0 ? Math.max(0.5, basis * p.edgeSoftness * 0.5) : 0
       /*
-       * A blurred shape drawn to the canvas's own edge fades there, because the blur has nothing beyond
-       * the boundary to average with — it reads as a vignette down every side. So a soft-edged plate is
-       * drawn on a layer bigger than the canvas, its outer rectangle carried past the edges, and only the
-       * middle of it copied back.
+       * On an oversized layer, cropped back: a blurred shape drawn to the canvas edge has nothing beyond
+       * the boundary to average with and fades there, which reads as a vignette down every side.
        */
       const pad = Math.ceil(blur * 3)
       const PW = W + pad * 2
@@ -831,12 +765,9 @@ export function Bubble(props: BubbleProps) {
       pg.fillRect(0, 0, PW, PH)
 
       /*
-       * The holes are *erased*, not excluded by a fill rule. One path holding the rectangle and both
-       * outlines is the obvious way to write this and it is wrong: `evenodd` counts crossings, so where
-       * the bubbles overlap the parity flips back to filled and the plate returns as a wedge bitten out
-       * of where they meet (`nonzero` fails the same way). Erasing has no parity to get wrong.
-       *
-       * On its own layer, too: erasing on the main canvas takes the mesh with it.
+       * Erased, not excluded by a fill rule: `evenodd` counts crossings, so where the bubbles overlap the
+       * parity flips back to filled and the plate returns as a wedge bitten out of where they meet
+       * (`nonzero` fails the same way). On its own layer, or the erase takes the mesh with it.
        */
       pg.globalCompositeOperation = 'destination-out'
       if (blur > 0) pg.filter = `blur(${blur}px)`
@@ -852,12 +783,7 @@ export function Bubble(props: BubbleProps) {
 
       /* ---------------------------------------------------------------- 4. the border */
 
-      /*
-       * After the plate, which is what separates it from the rim: the rim is drawn before and so gets
-       * trimmed to the inside of the edge, while this straddles the outline and glows out onto the page.
-       * Same outer-form treatment though — each bubble's border has its neighbours erased from it, or the
-       * line runs through the middle of the merged shape.
-       */
+      /* After the plate, so it straddles the outline where the rim is trimmed to the inside of it. */
       if (borderOn) {
         const bg = edgeLayer.getContext('2d')!
         bg.clearRect(0, 0, EW, EH)
