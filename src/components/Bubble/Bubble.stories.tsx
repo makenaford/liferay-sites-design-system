@@ -2,7 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Box } from '@mantine/core'
 import { Bubble, BUBBLE_DEFAULTS } from './Bubble'
 import { BUBBLE_ARG_TYPES } from './Bubble.argTypes'
-import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_LAYER2_DEFAULTS, splitBubbleLayerArgs } from './Bubble.layer2'
+import {
+  BUBBLE_LAYER2_ARG_TYPES,
+  BUBBLE_LAYER2_DEFAULTS,
+  BUBBLE_MESH,
+  splitBubbleLayerArgs,
+} from './Bubble.layer2'
 import type { BubbleLayer2Args } from './Bubble.layer2'
 import type { BubbleProps } from './Bubble'
 
@@ -174,6 +179,36 @@ export const ReactbitsDefault: Story = {
  */
 export const TwoLayers = {
   args: { ...BUBBLE_LAYER2_DEFAULTS },
+  argTypes: BUBBLE_LAYER2_ARG_TYPES,
+  render: (args: BubbleProps & BubbleLayer2Args) => {
+    const { bottomLayerProps, topLayerProps, layer2BlendMode } = splitBubbleLayerArgs(args)
+    return (
+      <Frame height={480}>
+        <Box pos="absolute" inset={0}>
+          <Bubble {...bottomLayerProps} />
+        </Box>
+        <Box pos="absolute" inset={0} style={{ mixBlendMode: layer2BlendMode }}>
+          <Bubble {...topLayerProps} />
+        </Box>
+      </Frame>
+    )
+  },
+}
+
+/**
+ * The same two layers tuned as a **colour mesh** rather than two readable waves — broad overlapping
+ * bands of violet, blue and magenta with no drawn crest, which is what a page wants behind a headline.
+ * This is what `Home`'s `BubbleBackground` story uses.
+ *
+ * No new mechanism: it is `BUBBLE_MESH`, a prop bundle, and every value in it is on the Controls panel.
+ * `glow` near zero is what does most of the work — see the preset's own notes in `Bubble.layer2.ts` for
+ * which prop is buying what.
+ *
+ * Both backgrounds are `transparent`, so the frame behind it shows through wherever the mesh thins out
+ * instead of the component painting its own dark rectangle.
+ */
+export const ColorMesh = {
+  args: { ...BUBBLE_MESH },
   argTypes: BUBBLE_LAYER2_ARG_TYPES,
   render: (args: BubbleProps & BubbleLayer2Args) => {
     const { bottomLayerProps, topLayerProps, layer2BlendMode } = splitBubbleLayerArgs(args)

@@ -29,6 +29,63 @@ export const BUBBLE_LAYER2_DEFAULTS: BubbleLayer2Args = {
   layer2SwellFrequency: 1.3,
 }
 
+/**
+ * A **colour-mesh** pairing rather than two readable waves: broad, overlapping bands of violet, blue and
+ * magenta that bleed into each other, with no drawn crest.
+ *
+ * Same component, same two-layer composition — only the props differ, and each one is doing a specific
+ * job in getting there:
+ *
+ * - **`glow: 0.1`** is the important one. The crest stroke is what makes the default read as *a wave*
+ *   with a lit edge; a mesh has no line in it anywhere. Taking it almost to zero leaves the colour mass
+ *   without the contour that was announcing it.
+ * - **`halo: 1.6` / `haloWidth: 0.55`** put the light back as a wide, blurred band instead — that band,
+ *   not the crest, is the mesh's shape.
+ * - **`edgeSoftness: 0.32`** turns the fill's boundary into a ~100px gradient, so the colour arrives
+ *   rather than starting.
+ * - **`richness: 1.15`** is what makes it multi-colour at all: it drifts the hue *along* the band, which
+ *   is how one `hotColor` becomes blue → violet → magenta across the width.
+ * - **`swellFrequency: 0.7`** with **`ripple: 0`** gives one slow sweep across the frame instead of a
+ *   repeating wave train, and **`speed: 0.35`** keeps it drifting rather than travelling.
+ * - **Both backgrounds `transparent`**, so what is *not* mesh is the page rather than a dark slab of the
+ *   component's own — see `Bubble`'s `backgroundColor` note.
+ */
+export const BUBBLE_MESH: BubbleProps & BubbleLayer2Args = {
+  speed: 0.35,
+  swell: 0.16,
+  swellFrequency: 0.7,
+  ripple: 0,
+  rippleFrequency: 1.4,
+  waterline: -0.35,
+  glow: 0.1,
+  glowWidth: 0.02,
+  halo: 0.6,
+  haloWidth: 0.5,
+  depth: 1.5,
+  edgeSoftness: 0.24,
+  color: '#120631',
+  hotColor: '#4c1d95',
+  backgroundColor: 'transparent',
+  richness: 1.1,
+  saturation: 1.08,
+  grain: 0.035,
+  cursorInteraction: true,
+  cursorLift: 0.06,
+  cursorReach: 0.35,
+  adaptiveQuality: true,
+  targetFps: 60,
+  opacity: 1,
+  paused: false,
+
+  layer2BlendMode: 'lighten',
+  layer2Color: '#06122e',
+  layer2HotColor: '#1e3a8a',
+  layer2BackgroundColor: 'transparent',
+  layer2Waterline: -0.08,
+  layer2Swell: 0.1,
+  layer2SwellFrequency: 1.1,
+}
+
 export const BUBBLE_LAYER2_ARG_TYPES = {
   layer2BlendMode: {
     control: 'select',

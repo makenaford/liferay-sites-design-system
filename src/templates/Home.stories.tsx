@@ -4,10 +4,10 @@ import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
-import { Bubble, BUBBLE_DEFAULTS } from '../components/Bubble'
+import { Bubble } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
 import { BUBBLE_ARG_TYPES } from '../components/Bubble/Bubble.argTypes'
-import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_LAYER2_DEFAULTS, splitBubbleLayerArgs } from '../components/Bubble/Bubble.layer2'
+import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_MESH, splitBubbleLayerArgs } from '../components/Bubble/Bubble.layer2'
 import type { BubbleLayer2Args } from '../components/Bubble/Bubble.layer2'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
@@ -510,7 +510,7 @@ const HERO_BUBBLE_HEIGHT = 640
  */
 function HomePage({
   heroBackground = 'video',
-  bubbleProps = { ...BUBBLE_DEFAULTS, ...BUBBLE_LAYER2_DEFAULTS },
+  bubbleProps = BUBBLE_MESH,
 }: {
   heroBackground?: 'video' | 'bubble'
   bubbleProps?: BubbleProps & BubbleLayer2Args
@@ -1258,9 +1258,24 @@ export const Narrow: Story = {
  * The bottom layer's props are wired to the Controls panel exactly like `Bubble`'s own stories (Animation,
  * Wave shape, Glow, Body, Color, Cursor interaction, Performance); the top layer gets the smaller
  * **Layers** group — see that component's docs page for how to work through them.
+ *
+ * It starts from `BUBBLE_MESH` rather than the component's defaults: a hero background wants a field of
+ * colour, not a drawn wave with a lit crest running through the headline. Both layers' backgrounds are
+ * `transparent` there, so everything the mesh does not paint is the page itself — which is what lets the
+ * bottom of it fall away into the page instead of ending on an edge.
+ *
+ * `frame: { padding: 0 }` because this one is judged on whether it reaches the viewport's edges.
+ *
+ * **Dark canvas only, so far.** `BUBBLE_MESH` is a dark palette, and on the light canvas the hero's own
+ * text is dark too and lands on it unreadable. That is the same constraint the shipped hero has — it
+ * carries `bubble_center.webm` *and* `bubble_center_light.webm` because one artwork painted plainly does
+ * not survive being put on the other's page — and the fix here is the same shape: a second, light mesh
+ * palette chosen by the computed colour scheme. Not written yet; it is a palette decision, not a
+ * mechanism one.
  */
 export const BubbleBackground: Story = {
-  args: { ...BUBBLE_DEFAULTS, ...BUBBLE_LAYER2_DEFAULTS },
+  parameters: { frame: { fullBleed: true, padding: 0 } },
+  args: { ...BUBBLE_MESH },
   argTypes: { ...BUBBLE_ARG_TYPES, ...BUBBLE_LAYER2_ARG_TYPES },
   render: (args) => (
     <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps & BubbleLayer2Args} />
