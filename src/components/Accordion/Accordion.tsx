@@ -59,6 +59,18 @@ export interface AccordionProps<Multiple extends boolean = false>
    * @default false
    */
   autoplay?: boolean | number
+
+  /**
+   * One row is the subject and the rest are the choices around it.
+   *
+   * More air between rows, a chevron sized to the chevron actually drawn in it rather than to Figma's
+   * full `arrow_down` box, and closed rows held back to 70% so the open one carries the section.
+   *
+   * For a panel that opens itself and shows what the platform does. **Not for an FAQ**, which is the
+   * other thing this component is: there the rows are peers, all of them are being scanned for the one
+   * the reader arrived with, and every part of this treatment works against that.
+   */
+  spotlight?: boolean
 }
 
 /** The demo's 5.5s: long enough to read three lines, short enough that a reader waits rather than leaves. */
@@ -168,6 +180,7 @@ function AccordionBase<Multiple extends boolean = false>({
   chevron = <IconDown />,
   mod,
   autoplay,
+  spotlight,
   ref,
   ...props
 }: AccordionProps<Multiple>) {
@@ -236,7 +249,7 @@ function AccordionBase<Multiple extends boolean = false>({
        * root and the stylesheet reads it from there. Passing it through would land a stray `size`
        * attribute on the root div.
        */
-      mod={[{ size, autoplay: auto.running || undefined }, mod]}
+      mod={[{ size, autoplay: auto.running || undefined, spotlight: spotlight || undefined }, mod]}
       {...props}
       {...controlled}
     />

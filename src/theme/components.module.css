@@ -4972,6 +4972,57 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
+/* ------------------------------------------------------------------- spotlight
+ *
+ * `spotlight` — one row is the subject and the rest are the choices around it.
+ *
+ * For a panel that opens itself and shows what the platform does, which is a different job from the
+ * FAQ's list of things a reader arrived with a question about. There the rows are peers and all of them
+ * are being scanned; here one of them is what the section is currently saying.
+ *
+ * So: more air between rows, a chevron sized to the glyph actually drawn in it rather than to Figma's
+ * full `arrow_down` box, and closed rows held back. Opt-in, because on a list of peers every one of
+ * those is wrong.
+ */
+.accRoot[data-spotlight][data-size='lg'] {
+  --sds-acc-pad: 20px;
+  --sds-acc-chevron: 24px;
+}
+
+/*
+ * A closed row is quieter than the open one.
+ *
+ * On the header rather than the item, so it is the label, the chevron and that row's own rule that
+ * recede together — an item-wide opacity would take the panel with it, and the panel of a closed row is
+ * already gone.
+ *
+ * Both `.accItemTitle` and `.accControl`, because Mantine wraps the control in a heading when the item
+ * has a title and does not when it has none, so the header is one element or the other. Every rule
+ * around the divider above already covers the pair for the same reason; targeting only the control
+ * looked right and silently did nothing here, where the heading is present.
+ *
+ * 70% and not less: these are still the other things on offer, and someone scanning them has to be able
+ * to read them. Transitioned, so the panel opening itself on a timer reads as attention moving rather
+ * than as rows blinking.
+ */
+.accRoot[data-spotlight] .accItem:not([data-active]) > .accItemTitle,
+.accRoot[data-spotlight] .accItem:not([data-active]) > .accControl {
+  opacity: 0.7;
+}
+
+.accRoot[data-spotlight] .accItemTitle,
+.accRoot[data-spotlight] .accControl {
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/* Hovering a closed row brings it back: it is about to be the one being read. */
+@media (hover: hover) {
+  .accRoot[data-spotlight] .accItem:not([data-active]) > .accItemTitle:hover,
+  .accRoot[data-spotlight] .accItem:not([data-active]) > .accControl:hover {
+    opacity: 1;
+  }
+}
+
 .accRoot[data-size] .accLabel {
   padding-block: 0;
   font-size: var(--sds-acc-fz);
