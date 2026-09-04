@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { Box } from '@mantine/core'
 import { Bubble, BUBBLE_DEFAULTS } from './Bubble'
 import type { BubbleProps } from './Bubble'
+import { BUBBLE_ARG_TYPES } from './Bubble.argTypes'
 
 /** Fills a fixed-height, positioned box — the same wrapper the prototype and its README ask for. */
 function Frame({ height = 420, children }: { height?: number; children: React.ReactNode }) {
@@ -47,89 +48,7 @@ const meta = {
     },
   },
   args: { ...BUBBLE_DEFAULTS },
-  argTypes: {
-    speed: {
-      control: { type: 'range', min: 0.1, max: 3, step: 0.05 },
-      table: { category: 'Animation' },
-    },
-    paused: { control: 'boolean', table: { category: 'Animation' } },
-
-    swell: {
-      control: { type: 'range', min: 0, max: 0.3, step: 0.005 },
-      table: { category: 'Wave shape' },
-    },
-    swellFrequency: {
-      control: { type: 'range', min: 0.5, max: 8, step: 0.1 },
-      table: { category: 'Wave shape' },
-    },
-    ripple: {
-      control: { type: 'range', min: 0, max: 0.2, step: 0.005 },
-      table: { category: 'Wave shape' },
-    },
-    rippleFrequency: {
-      control: { type: 'range', min: 0.5, max: 12, step: 0.1 },
-      table: { category: 'Wave shape' },
-    },
-    waterline: {
-      control: { type: 'range', min: -1, max: 1, step: 0.02 },
-      table: { category: 'Wave shape' },
-    },
-
-    glow: { control: { type: 'range', min: 0, max: 2, step: 0.05 }, table: { category: 'Glow' } },
-    glowWidth: {
-      control: { type: 'range', min: 0, max: 0.2, step: 0.005 },
-      table: { category: 'Glow' },
-    },
-    halo: { control: { type: 'range', min: 0, max: 2, step: 0.05 }, table: { category: 'Glow' } },
-    haloWidth: {
-      control: { type: 'range', min: 0, max: 0.6, step: 0.01 },
-      table: { category: 'Glow' },
-    },
-
-    depth: { control: { type: 'range', min: 0.05, max: 1.5, step: 0.05 }, table: { category: 'Body' } },
-    edgeSoftness: {
-      control: { type: 'range', min: 0, max: 0.5, step: 0.01 },
-      table: { category: 'Body' },
-    },
-
-    color: { control: 'color', table: { category: 'Color' }, description: 'Deep colour under the wave.' },
-    hotColor: {
-      control: 'color',
-      table: { category: 'Color' },
-      description: 'Colour of the crest and glow.',
-    },
-    backgroundColor: {
-      control: 'color',
-      table: { category: 'Color' },
-      description: 'Canvas background colour.',
-    },
-    richness: { control: { type: 'range', min: 0, max: 1.5, step: 0.05 }, table: { category: 'Color' } },
-    saturation: {
-      control: { type: 'range', min: 0, max: 1.5, step: 0.05 },
-      table: { category: 'Color' },
-    },
-    grain: { control: { type: 'range', min: 0, max: 0.3, step: 0.01 }, table: { category: 'Color' } },
-    opacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, table: { category: 'Color' } },
-
-    cursorInteraction: { control: 'boolean', table: { category: 'Cursor interaction' } },
-    cursorLift: {
-      control: { type: 'range', min: 0, max: 0.4, step: 0.01 },
-      table: { category: 'Cursor interaction' },
-    },
-    cursorReach: {
-      control: { type: 'range', min: 0.02, max: 0.6, step: 0.01 },
-      table: { category: 'Cursor interaction' },
-    },
-
-    adaptiveQuality: { control: 'boolean', table: { category: 'Performance' } },
-    targetFps: {
-      control: { type: 'range', min: 15, max: 60, step: 1 },
-      table: { category: 'Performance' },
-    },
-
-    className: { control: false },
-    style: { control: false },
-  },
+  argTypes: BUBBLE_ARG_TYPES,
 } satisfies Meta<typeof Bubble>
 
 export default meta

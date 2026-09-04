@@ -4,7 +4,9 @@ import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
-import { Bubble } from '../components/Bubble'
+import { Bubble, BUBBLE_DEFAULTS } from '../components/Bubble'
+import type { BubbleProps } from '../components/Bubble'
+import { BUBBLE_ARG_TYPES } from '../components/Bubble/Bubble.argTypes'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -496,8 +498,14 @@ const RESEARCH = [
  * prototype. It does not touch `Hero.tsx`: `background="none"` skips Hero's own gradient/video layer,
  * and `Bubble` is layered behind it in a plain positioned wrapper, the same way two `Bubble` instances
  * are stacked in its own stories.
+ *
+ * `bubbleProps` passes straight through to that `<Bubble>` — the `BubbleBackground` story wires it to
+ * the same grouped Controls as `Bubble`'s own stories, via `BUBBLE_ARG_TYPES`.
  */
-function HomePage({ heroBackground = 'video' }: { heroBackground?: 'video' | 'bubble' } = {}) {
+function HomePage({
+  heroBackground = 'video',
+  bubbleProps,
+}: { heroBackground?: 'video' | 'bubble'; bubbleProps?: BubbleProps } = {}) {
   const reducedMotion = useReducedMotion()
   const bubbleBackground = heroBackground === 'bubble'
   const heroBackgroundProps = bubbleBackground
@@ -529,7 +537,7 @@ function HomePage({ heroBackground = 'video' }: { heroBackground?: 'video' | 'bu
       <Box pos="relative">
         {bubbleBackground ? (
           <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
-            <Bubble />
+            <Bubble {...bubbleProps} />
           </Box>
         ) : null}
         <Hero
@@ -1223,7 +1231,13 @@ export const Narrow: Story = {
  * the `Bubble` canvas component, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go.
  * Nothing in `Hero.tsx` changes: `Bubble` is layered behind a `background="none"` Hero in a plain
  * positioned wrapper here in the story.
+ *
+ * Every `Bubble` prop is wired to the Controls panel below, grouped the same way as `Bubble`'s own
+ * stories (Animation, Wave shape, Glow, Body, Color, Cursor interaction, Performance) — see that
+ * component's docs page for how to work through them.
  */
 export const BubbleBackground: Story = {
-  render: () => <HomePage heroBackground="bubble" />,
+  args: { ...BUBBLE_DEFAULTS },
+  argTypes: BUBBLE_ARG_TYPES,
+  render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
 }
