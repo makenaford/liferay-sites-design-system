@@ -279,6 +279,17 @@ export function Bubble(props: BubbleProps) {
       }
       const S = Math.min(W, H)
 
+      /*
+       * `fillRect` with an opaque `backgroundColor` overwrites every pixel and would look the same
+       * without this — but a *transparent* `backgroundColor` (two `Bubble` layers stacked with a CSS
+       * blend mode, see the docs above) makes that fill a no-op: `source-over` with zero alpha composites
+       * to nothing, so the previous frame's pixels would stay right where they were. The halo and glow
+       * passes below use additive `lighter` blending, so without a real clear here they never reset —
+       * they just keep stacking on the frame before, saturating to solid white within about a second and
+       * staying there. `clearRect` is what actually resets the canvas to transparent, regardless of what
+       * `fillRect` is about to paint over it.
+       */
+      ctx.clearRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'source-over'
       ctx.globalAlpha = 1
       ctx.filter = 'none'
