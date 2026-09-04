@@ -497,6 +497,8 @@ export function Bubble(props: BubbleProps) {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const plateLayer = document.createElement('canvas')
     const glowLayer = document.createElement('canvas')
+    /** One bubble's rim at a time, so erasing its neighbour cannot touch the neighbour's own rim. */
+    const rimLayer = document.createElement('canvas')
 
     let surfaceSource = ''
     let surfaceValue = '#000000'
@@ -684,10 +686,15 @@ export function Bubble(props: BubbleProps) {
         }
         const gg = glowLayer.getContext('2d')!
         gg.clearRect(0, 0, GW, GH)
+        if (rimLayer.width !== GW || rimLayer.height !== GH) {
+          rimLayer.width = GW
+          rimLayer.height = GH
+        }
+        const rg = rimLayer.getContext('2d')!
 
         /* Banded across the frame by the same spectrum the mesh runs, so the rim belongs to the field. */
         const [gh, gs, gl] = hexToHsl(rimColor)
-        const band = gg.createLinearGradient(0, 0, GW, 0)
+        const band = rg.createLinearGradient(0, 0, GW, 0)
         const stops = 6
         for (let i = 0; i <= stops; i++) {
           const f = i / stops
@@ -695,17 +702,43 @@ export function Bubble(props: BubbleProps) {
           band.addColorStop(f, hsl(hue, Math.min(1, gs * sat), gl, Math.min(1, p.glow)))
         }
 
-        gg.filter = `blur(${glowBlur}px)`
-        gg.strokeStyle = band
-        gg.lineWidth = Math.max(1, S * p.glowWidth)
-        gg.lineJoin = 'round'
+        /*
+         * One bubble at a time, and each one's rim has the *other* bubble's interior taken out of it.
+         *
+         * Stroking both outlines onto one layer lights every edge each bubble has, including the arcs
+         * that run inside its neighbour — so where the two overlap the light draws a seam straight
+         * through the middle of the merged shape. But the plate opens the **union** of the two, so those
+         * arcs are interior to the shape the viewer sees, and an interior edge is not an edge at all.
+         * Erasing the neighbour leaves only the parts of each outline that are genuinely on the outside.
+         *
+         * It needs a layer per bubble because the erase is indiscriminate: done on the shared layer it
+         * would also take out the neighbour's own rim, which sits just inside the neighbour. The erase
+         * carries the same blur as the stroke, so the two rims meet in a soft join rather than a cut.
+         */
+        rg.lineJoin = 'round'
+        rg.lineWidth = Math.max(1, S * p.glowWidth)
+        rg.strokeStyle = band
 
         for (let i = 0; i < placed.length; i++) {
-          gg.beginPath()
-          traceClosed(gg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad, gPad))
-          gg.stroke()
+          rg.globalCompositeOperation = 'source-over'
+          rg.clearRect(0, 0, GW, GH)
+          rg.filter = `blur(${glowBlur}px)`
+          rg.beginPath()
+          traceClosed(rg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad, gPad))
+          rg.stroke()
+
+          rg.globalCompositeOperation = 'destination-out'
+          for (let j = 0; j < placed.length; j++) {
+            if (j === i) continue
+            rg.beginPath()
+            traceClosed(rg, outline(j, 1, 0, gPad, gPad))
+            rg.fill()
+          }
+          rg.filter = 'none'
+          rg.globalCompositeOperation = 'source-over'
+
+          gg.drawImage(rimLayer, 0, 0)
         }
-        gg.filter = 'none'
 
         /*
          * Then the top of it is taken away, so the light gathers along the bubbles' **lower** edges.
