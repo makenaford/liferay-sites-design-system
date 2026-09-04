@@ -336,6 +336,15 @@ export const CATALOG: ComponentSpec[] = [
     unsupported: ["onPlayingChange"],
   },
   {
+    name: "MultiSelect",
+    doc: "MultiSelect — the Figma `Input` set's `Type=Dropdown` box (node `16166:23969`) holding more than one value, with the menu from the `Dropdown` set (`16884:46299`).",
+    props: [
+      { name: "info", kind: "slot", doc: "Figma's `Info Button`: an explanation beside the label, in a tooltip." },
+      { name: "floating", kind: "boolean", doc: "Figma's `Condensed` axis, as `TextInput` and `Select` take it: the label starts inside the box and floats above it once the field has focus or a selection." },
+      { name: "rounded", kind: "boolean", doc: "`Border Radius/round` corners instead of the set's `Border Radius/medium` — the field as a pill." },
+    ],
+  },
+  {
     name: "Section",
     doc: "Section — the shell every block in Figma's `Section` set (node `17892:146518`) is built on.",
     props: [
@@ -366,6 +375,7 @@ export const CATALOG: ComponentSpec[] = [
     props: [
       { name: "info", kind: "slot", doc: "Figma's `Info Button`: an explanation beside the label, in a tooltip." },
       { name: "floating", kind: "boolean", doc: "Figma's `Condensed` axis — the notched label chip sitting on the field's border rather than above it." },
+      { name: "rounded", kind: "boolean", doc: "`Border Radius/round` corners instead of the set's `Border Radius/medium` — the field as a pill." },
     ],
   },
   {

@@ -5,6 +5,7 @@ import {
   Chip as MantineChipComponent,
   List,
   Button,
+  MultiSelect,
   Select,
   Tabs,
   Textarea,
@@ -371,6 +372,44 @@ export const componentTheme: MantineThemeComponents = {
       empty: classes.fieldEmpty,
     },
     defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
+    vars: inputVars,
+  }),
+
+  /**
+   * The multi-value dropdown. Not a cell in the `Input` set — see `MultiSelect.tsx` — so it borrows the
+   * set's field classes wholesale and adds three of its own: the pill, the row the pills sit in, and the
+   * search input tucked in beside them.
+   */
+  MultiSelect: MultiSelect.extend({
+    classNames: {
+      root: classes.fieldRoot,
+      wrapper: classes.fieldWrapper,
+      input: classes.fieldInput,
+      inputField: classes.fieldInputField,
+      pill: classes.fieldPill,
+      pillsList: classes.fieldPillsList,
+      section: classes.fieldSection,
+      label: classes.fieldLabel,
+      required: classes.fieldRequired,
+      description: classes.fieldDescription,
+      error: classes.fieldError,
+      dropdown: classes.fieldDropdown,
+      option: classes.fieldOption,
+      options: classes.fieldOptions,
+      group: classes.fieldGroup,
+      groupLabel: classes.fieldGroupLabel,
+      empty: classes.fieldEmpty,
+    },
+    defaultProps: {
+      size: 'md',
+      inputWrapperOrder: INPUT_ORDER,
+      /*
+       * Chosen values stay in the list, checked, rather than disappearing from it: with them hidden the
+       * menu reflows under the pointer on every pick, and unchecking is only possible on the pill.
+       */
+      hidePickedOptions: false,
+      nothingFoundMessage: 'Nothing found',
+    },
     vars: inputVars,
   }),
 

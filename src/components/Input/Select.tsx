@@ -2,6 +2,7 @@ import { forwardRef, type ReactNode } from 'react'
 import { Select as MantineSelect } from '@mantine/core'
 import type { SelectProps as MantineSelectProps } from '@mantine/core'
 import { InfoTooltip } from './InfoTooltip'
+import { radius } from '../../theme/tokens.generated'
 
 export interface SelectProps extends MantineSelectProps {
   /** Figma's `Info Button`: an explanation beside the label, in a tooltip. */
@@ -13,6 +14,15 @@ export interface SelectProps extends MantineSelectProps {
    * from the file would have floating labels on its text fields and stacked labels on its selects.
    */
   floating?: boolean
+  /**
+   * `Border Radius/round` corners instead of the set's `Border Radius/medium` — the field as a pill.
+   *
+   * A boolean rather than `radius="round"` for the same reason `Button` makes `rounded` a variant: the
+   * two shapes are the two the library draws, and a call site that can name any radius will eventually
+   * name one the system does not have. An explicit `radius` prop still wins, for the rare field that
+   * needs to match something else on the page.
+   */
+  rounded?: boolean
 }
 
 /**
@@ -41,7 +51,7 @@ export interface SelectProps extends MantineSelectProps {
  * keyboard behaviour is the component.
  */
 export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
-  { info, floating, label, ...props },
+  { info, floating, rounded, label, ...props },
   ref,
 ) {
   return (
@@ -49,6 +59,13 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(function Select(
       ref={ref}
       /* On the root, not the input: extra props on an input component land on the `<input>` itself. */
       attributes={{ root: floating ? { 'data-floating': 'true' } : {} }}
+      /*
+       * The radius goes through Mantine's own prop rather than a data attribute: the theme's `inputVars`
+       * drops its default `--input-radius` as soon as `radius` is given, so this is the one path that
+       * does not fight the set's 8px default. `props.radius` is spread after this, so a call site that
+       * states one still wins.
+       */
+      radius={rounded ? radius.round : undefined}
       /*
        * A floating label keys off `:placeholder-shown`, so the field needs a placeholder that is not
        * visible — the label is already in the box, and the stylesheet hides this until focus.

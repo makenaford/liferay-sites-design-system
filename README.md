@@ -1342,15 +1342,37 @@ That order is the point. The gradient is built from `Brand/Primary/Primary` and 
 — the colours the animation is made of — so it needs no network, survives a blocked or slow file, and is
 what shows when the video is not playing. The webm then blends over it.
 
-**The ground comes off with a blend, not with a fade.** `screen` on the dark canvas and `multiply` on
-the light one, on the bubble *layer* rather than on the video: `.heroBubble` is `z-index: -1`, which
+**The ground comes off with a blend on the dark canvas, and with alpha on the light one.** `screen` on
+the dark export's black ground, on the bubble *layer* rather than on the video: `.heroBubble` is
+`z-index: -1`, which
 makes it a stacking context, so a blend on the video inside it composites against that empty layer and
 does nothing at all. On the layer the backdrop is the hero's own `background-color` — a negative
 z-index child paints after its parent's background and before its content — which is the surface the
 ground has to disappear into. `.hero` is `isolation: isolate`, so the blend stops there.
 
-Both grounds are **pure**: sampled at any corner, the dark export is exactly `#000` and the light one
-exactly `#fff`, which is what `screen` and `multiply` remove completely.
+The dark export's ground is **pure**: sampled at any corner it is exactly `#000`, which is what `screen`
+removes completely.
+
+The light pair no longer needs a blend at all — it carries a real **alpha channel**, so there is no
+ground to remove and the layer is composited normally. That is a change from the white-ground exports
+this section used to describe, and it was forced: the current files (`Bubble_Center_LM_1521x738.webm`,
+`Bubble_Corner_LM_674x674.webm`) came drawn on a **black** ground, which `multiply` would have painted
+across the whole layer. Rather than ask for a re-export, the black matte was unpremultiplied into alpha
+at encode time — `max(r, g, b)` as the alpha, then `unpremultiply`, which is the exact inverse of
+compositing over black and so keeps the colour of every soft edge instead of fringing it dark:
+
+```bash
+ffmpeg -i Bubble_Center_LM_1521x738.webm \
+  -vf "format=gbrap,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='max(r(X,Y),max(g(X,Y),b(X,Y)))',unpremultiply=inplace=1,scale=1200:-2,format=yuva420p" \
+  -c:v libvpx-vp9 -pix_fmt yuva420p -crf 39 -b:v 0 -row-mt 1 -cpu-used 2 -an \
+  assets/bubbles/bubble_center_light.webm
+```
+
+The centre file is scaled to 1200 wide and the corner one left at 674, both at the highest CRF that
+clears the 4MB per-file gate in `scripts/check-asset-size.mjs` — 39 and 33, for 3.69MB and 3.73MB. An
+alpha plane is not free, which is why these are near the cap and the dark pair is not.
+
+A light export on a white ground would work as well, and would want `mix-blend-mode: multiply` back.
 
 This is the second time the blends have been here. They were taken out once, on the reasoning that
 `screen` over a rectangle of near-black leaves a rectangle no gradient-shaped mask can answer — and
@@ -1366,8 +1388,9 @@ the next section on the light canvas — and the fade starts at the foot and is 
 artwork's own bottom edge. Its stops are that arithmetic and nothing else: the hero's height as a
 fraction of the video box, then the artwork's bottom as another.
 
-Each file still carries its own ground, so neither can go on the other's page — the blend that drops
-black is not the one that drops white. Hence two props rather than one.
+Neither file can go on the other's page: the dark one is a bright drawing on black that only reads once
+`screen` has dropped that ground, and the light one is saturated artwork whose alpha assumes it is being
+laid on a pale surface. Hence two props rather than one.
 
 **The video is not bundled.** The four files live in `assets/bubbles/` — 0.7MB to 2.0MB — and a
 component library has no business putting that inside anyone's JavaScript, so `video` takes a URL. The
@@ -1383,8 +1406,8 @@ stories import them through the bundler; an app can equally serve them from a pu
 ### Each canvas has its own export
 
 Figma names the dark one `Dark Bubble Animation`, and that is what it is: a bright sphere on near-black.
-`videoLight` is its inverse, a coloured sphere on white. The hero picks by the computed colour scheme and
-remounts on a flip — a `src` swap alone leaves the old frames on screen. Pass only `video` and the light
+`videoLight` is the `Bubble_*_LM` pair — the same artwork family, saturated, carrying its own alpha. The
+hero picks by the computed colour scheme and remounts on a flip — a `src` swap alone leaves the old frames on screen. Pass only `video` and the light
 canvas falls back to the gradient.
 
 | `background` | dark | light |
@@ -1394,15 +1417,40 @@ canvas falls back to the gradient.
 
 ### Sized to the artwork, not to the frame
 
-All four files are 1200x866, and in none of them does the artwork fill that. The frames are what the
-export cut, and the cuts are what used to show:
+No file has its artwork filling its frame. The frames are what the export cut, and the cuts are what
+used to show — so the CSS measures the artwork and lets the frame fall where it must.
 
-| | artwork inside the 1200x866 frame | the cut |
-| --- | --- | --- |
-| centre | full width, **y 142 to 680** | hard at the top, a fade at the bottom |
-| corner | **1035x630** at the top left | hard at the right and the bottom |
+The two canvases are not even the same frame any more, so each has its own geometry, selected by
+`data-canvas` on the hero. The light numbers were measured off the files' own alpha over 40 frames of
+each loop (`bbox` on the alpha plane, so they are the artwork's bounds and not the frame's):
 
-So the CSS measures the artwork and lets the frame fall where it must.
+| | frame | artwork inside it | the cut |
+| --- | --- | --- | --- |
+| centre, dark | 1200x866 | full width, **y 142 to 680** | hard at the top, a fade at the bottom |
+| corner, dark | 1200x866 | **1035x630** at the top left | hard at the right and the bottom |
+| centre, light | 1200x582 | full width, **y 0 to 551** | flush top and sides, 30 rows of ground at the foot |
+| corner, light | 674x674 | **x 16 to 673, y 0 to 511** | hard at the right; flush at the top |
+
+Which is why the light centre file needs no lift at all (`top: 0`, `height: 105.4%` — the artwork is
+already flush to the frame's top) where the dark one needs `top: -26.35%`, and why the light corner file
+sits at `right: -3%` rather than `-15.2%`: its right cut *is* the frame's right edge, so there is no
+ground to pull past the hero, only the 3% overshoot that keeps the cut off the edge.
+
+**The reference for a light number is the dark file on the page, not the number in Figma.** Two of these
+got that wrong first time round and moved the bubble when the colour scheme flipped:
+
+- The corner was sized to `Corner Bubble`'s drawn 1105 of 1440, i.e. 76.7%, which is what the dark
+  rule's arithmetic *targets* — but the dark file does not deliver it. Its artwork is inset 197px inside
+  its own frame and lands at **61.9%** of the hero, so the light file at 76.7% was 15 points wider and
+  10 points further down. Matching the measured 61.9% (`width: 63.4%`) brings the two within half a
+  point on every edge, vertically included, the frame being square.
+- The centre fade was placed in *frame* terms rather than hero terms. The dark rule starts dissolving at
+  62% of a box running -26.3% to 134.4%, which is 73.3% of the hero; an 86% start on a box running 0 to
+  105.4% was 90.6% of it, so the light bubble held full strength for another sixth of the hero. It is
+  `69.5%` now, which is that same 73.3%.
+
+Both were measured in the browser rather than derived: the artwork's rendered bounds as a percentage of
+the hero, read off each canvas and compared.
 
 **`full`** is pinned by the artwork's top, not the frame's. 142 of the 866 rows are empty ground above
 the drawing, so pinning the frame to `top: 0` started the bubble a sixth of the way down the hero — the
@@ -1620,7 +1668,7 @@ is a decision rather than a detail, so it is not guessed at here.
 leaving only the wordmark — see the `On surfaces` story, which shows it rather than hiding it. A logo that
 has to sit on the brand colour needs a single-colour version, and the supplied artwork does not include one.
 
-## Fields — TextInput, Textarea, Select, LanguagePicker
+## Fields — TextInput, Textarea, Select, MultiSelect, LanguagePicker
 
 From the Figma `Input` set (node `16166:23969`), laid out in the `input` section `24397:77217`, with the
 menu from `Dropdown` (`16884:46299`), the compact slot from `Country Selector` (`17205:21114`) and the
@@ -1679,6 +1727,51 @@ It needs no extra wiring because the mechanism is `:placeholder-shown`, which a 
 moment an option is picked — so it also drops back on its own when a `clearable` select is cleared, and it
 floats while someone types in a `searchable` one.
 
+**`MultiSelect` cannot use that mechanism.** Its box is a `<div>` holding pills, and its own input stays
+empty whatever is chosen — and `:placeholder-shown` never matches a non-input at all, so
+`:not(:placeholder-shown)` was *true* for every empty multi-select and the label started out floated. The
+filled state is the presence of a pill instead (`:has(.fieldPill)`), and the text field's half of the
+selector is now qualified to `:where(input, textarea)`.
+
+### A field on the bubble needs its own ground
+
+Every other field in the library sits on the page's own surface, so its resting fill can be nothing at
+all and the 1px ring is enough to say where it is. A field on a hero's bubble cannot: what is behind it
+is a 20-second animation, so a translucent field has **no fixed contrast ratio** — the reading against
+its type changes frame by frame and no number can be guaranteed.
+
+The dark canvas answers that with glass: `#000` at 20% and a blur behind it, which recovers contrast
+because the type there is white.
+
+The light canvas cannot use the same trick, and for a while it did. Its type is `Neutral/10` — near
+black — so a 20% black scrim moves the field's ground *towards* its text and takes contrast away, and
+the Home hero's banner selects had no fill at all, near-black type straight onto the artwork. Both are
+**white at 50%** now, with the blur kept: at 50% the artwork still comes through, and defocusing it is
+what stops a hard colour edge running under a line of type.
+
+Measured against real decoded frames of the light loop — the artwork's own alpha, the mask, the page
+under it, then the fill — taking the worst sample over six frames and the whole field:
+
+| fill | value | placeholder (mixed) | placeholder (plain tertiary) |
+| --- | --- | --- | --- |
+| `rgba(0,0,0,.2)`, or nothing | unguaranteeable | unguaranteeable | unguaranteeable |
+| **white 50%** | **18.1:1** | **4.8:1** | 4.0:1 ✗ |
+| white 65% | 18.6:1 | 4.9:1 | 4.1:1 ✗ |
+| white opaque | 19.7:1 | 5.2:1 | 4.4:1 ✗ |
+
+50% is a design call rather than the safest number, and it holds — but only because the placeholder is
+mixed. On plain `Tertiary` no fill opacity in that table clears 4.5:1, opaque included.
+
+**The placeholder needed its own fix.** `Surfaces/Text/Tertiary` is #6f798e, which is 4.37:1 on white —
+just under AA, and 4.02:1 behind a 50% fill on this artwork. Everywhere else that is a placeholder beside a visible label, and the label names the
+field; the hero's email field has only an `aria-label`, so its placeholder *is* the field's name on
+screen. It is mixed 80/20 towards `Secondary` there, which measures 5.19:1 and still sits visibly
+lighter than a typed value. Swapping to `Secondary` outright (10.8:1) reads as a value already entered.
+
+That token is the real problem, though: tertiary is ~4.3:1 on the page background too, so **every
+placeholder in the library is a shade too light for AA**. Darkening the token is a design-file change —
+see the placeholder note above, which already flags it as a deliberate deviation.
+
 ### The info tooltip
 
 Figma's `Info Button` is a `Status/Info` pill beside the label. Here it is a tooltip **trigger**: a real
@@ -1716,6 +1809,33 @@ The `Dropdown` set has five cells. Three are covered, because they are the three
 `Drilldown` and `Slot` are deliberately out of scope: nested menus and arbitrary content are not select
 behaviours and need `Menu` or a `Popover` underneath. Approximating them with a `Select` would give the
 wrong keyboard model, which is the part of a combobox that matters.
+
+### The multi-select is not drawn
+
+`Solutions Library- 2026` has no multi-value dropdown cell. `MultiSelect` is composed from parts that
+*are* drawn — the `Input` box, the `Dropdown` menu, and the `Chip`-scale pill — rather than invented,
+and it exists because the alternative in a real form is a column of checkboxes that stops being
+readable somewhere around six options. It has no Code Connect mapping for the same reason: there is no
+Figma node to map it to. Draw one and the mapping follows.
+
+Two decisions worth keeping:
+
+- **The box grows with its pills rather than scrolling them.** Figma's 48px becomes a floor and the
+  12px of vertical padding becomes 8, so one row of 30px pills still comes to exactly 48. A chosen
+  value the user can no longer see is a value they will choose twice.
+- **The pill is the menu's checked row, shrunk** — the same `Action/Primary/bg-cta` fill and
+  `Action/Link/Default` text as `Selected` in the dropdown, so the value in the field and the option in
+  the list are visibly the same thing. Once there is a pill the placeholder is dropped: it can only
+  repeat what the pills already show, and Mantine's 100px reservation for the search input was what
+  pushed that input onto a second row in a narrow field.
+
+### `rounded` — the pill-shaped field
+
+`Select` and `MultiSelect` take `rounded`, which swaps the set's `Border Radius/medium` corner for
+`Border Radius/round`. A boolean rather than `radius="round"`, for the reason `Button` makes `Rounded` a
+Style rather than a radius: the two shapes are the two the library draws, and a call site free to name
+any radius will eventually name one the system does not have. An explicit `radius` prop still wins,
+which is what the theme's `inputVars` is careful to allow.
 
 ### The language picker has no flags
 
@@ -3528,6 +3648,41 @@ The implementation uses `Status/Info/Darken 2`, which stays dark in both: 13:1 o
 Same shape of problem as `Action/Neutral/Inverted`, from the opposite direction: a surface that does not
 change between modes, paired with text that does.
 
+### Body copy on the light hero fails behind the bubble — open
+
+The light `Bubble_*_LM` artwork is saturated enough that near-black copy over its right-hand mass does
+not clear AA. Measured against decoded frames of the loop — the artwork's own alpha, the mask, the page
+under it — worst sample over six frames, `Templates/Home` at a 1200px viewport:
+
+| | worst | needs | |
+| --- | --- | --- | --- |
+| description | **2.09:1** | 4.5 | ✗ |
+| description bold run | **2.73:1** | 3.0 | ✗ |
+| h1 | 3.32:1 | 3.0 | passes, thinly |
+| email placeholder | 4.79:1 | 4.5 | passes |
+| select value | 18.73:1 | 4.5 | passes |
+| banner label | 13.42:1 | 4.5 | passes |
+| `Request a Demo` | 6.21:1 | 4.5 | passes |
+| rating | 9.22:1 | 3.0 | passes |
+
+It is a **width** problem, not a colour one. Body copy is safe out to 62% of the hero's width and falls
+off a cliff after it — 4.50:1 at 62%, 3.29:1 at 66%, 1.85:1 at 73% — and the description's first line
+currently runs to 74%.
+
+A left-hand scrim does not answer it: the copy extends past any reasonable fade, and even a 100%-white
+scrim dissolving between 45% and 80% of the hero leaves the description at 3.29:1. Three things do, all
+priced against the same measurement:
+
+| | description | h1 | cost |
+| --- | --- | --- | --- |
+| copy column capped at 62% of the hero | 4.5:1+ | 6.6:1 | the heading rewraps, the description gains a line |
+| bubble layer at 55% strength on light | 4.54:1 | 6.58:1 | visibly softer than the export, close to the old pale one |
+| 45% white veil over the bubble on light | 4.61:1 | 6.68:1 | same softening, but keeps the artwork's colour relationships |
+
+Left as it is deliberately, for the design file to answer: the artwork's strength is the thing in
+question, and capping the copy column or veiling the bubble are both decisions about how the hero looks
+rather than defects in it. The fields on the hero are fixed independently — see the Hero section.
+
 ### The hero's alignment axis is misspelled
 
 The `Hero` set's axis is `Alignnemt`, not `Alignment`. Harmless until someone writes a script against the
@@ -3538,8 +3693,11 @@ rather than in every consumer.
 
 Was: the two bubble files were dark-canvas assets gated to dark mode, so a light hero showed the gradient
 alone. There is a light export of each now — `bubble_center_light.webm` and `bubble_corner_light.webm` —
-taken by `Hero`'s `videoLight` and composited with `multiply`, as the dark one is with `screen`. See
-the Hero section.
+taken by `Hero`'s `videoLight`. Those two files are currently the `Bubble_*_LM` exports, which arrived on
+a **black** ground rather than the white one `multiply` needs, so they are encoded with a real alpha
+channel instead and composited with no blend at all. They are also a different frame from the dark pair,
+so the hero's geometry is now selected per canvas. See the Hero section for the encode command and the
+measurements.
 
 ### Smaller things
 

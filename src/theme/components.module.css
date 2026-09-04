@@ -2151,8 +2151,18 @@
  * cannot reach backwards from the input to the label.
  */
 .fieldRoot[data-floating]:focus-within .fieldLabel,
-.fieldRoot[data-floating]:has(.fieldInput:not(:placeholder-shown)) .fieldLabel,
-.fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel {
+/*
+ * `:where(input, textarea)` because `MultiSelect`'s box is a `<div>` carrying the same class, and
+ * `:placeholder-shown` never matches a div — so `:not(:placeholder-shown)` was true for every empty
+ * multi-select and its label started out floated.
+ */
+.fieldRoot[data-floating]:has(.fieldInput:where(input, textarea):not(:placeholder-shown)) .fieldLabel,
+.fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel,
+/*
+ * `MultiSelect`: its own input stays empty whatever is chosen — the values are pills beside it — so
+ * `:placeholder-shown` never flips and the presence of a pill is what "filled" means here.
+ */
+.fieldRoot[data-floating]:has(.fieldPill) .fieldLabel {
   /* Clear of the box: 12px of box padding plus the 22px reserved above it. */
   transform: translateY(-32px);
   font-size: 14px;
@@ -2174,6 +2184,14 @@
 }
 
 .fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInput::placeholder {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.fieldRoot[data-floating] .fieldInputField::placeholder {
+  color: transparent;
+}
+
+.fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInputField::placeholder {
   color: var(--sds-surfaces-text-tertiary);
 }
 
@@ -2314,6 +2332,100 @@
   padding: 8px 12px;
   font-size: 14px;
   color: var(--sds-surfaces-text-tertiary);
+}
+
+/* ------------------------------------------------------------------ the multi-value field
+ *
+ * `MultiSelect`. No cell in the `Input` set draws one, so it is the drawn field box holding the pills
+ * the `Dropdown` set's checked rows already imply. Three classes of its own — the box's multiline
+ * behaviour, the pill, and the search input beside the pills — over the same wrapper, ring and label
+ * every other field uses.
+ */
+
+/*
+ * The box **grows** rather than scrolling its pills: a chosen value the user can no longer see is a
+ * value they will choose twice. Figma's 48px becomes a floor, and the 12px of vertical padding becomes
+ * 8 so a single 30px pill row still comes to exactly 48.
+ */
+.fieldWrapper[data-multiline] .fieldInput {
+  height: auto;
+  min-height: var(--input-height);
+  padding-block: 8px;
+}
+
+/* Figma's 8px step between chips, and the same step between two wrapped rows of them. */
+.fieldWrapper .fieldPillsList {
+  gap: 8px;
+}
+
+/*
+ * The pill is the `Dropdown` set's checked row, shrunk: same `Action/Primary/bg-cta` fill and
+ * `Action/Link/Default` text, so the value in the field and the checked option in the menu are visibly
+ * the same thing. Its 14px SemiBold is the `Paragraph/X-Small/Semi Bold` text style `Chip` uses.
+ */
+.fieldPillsList .fieldPill {
+  height: 30px;
+  padding-inline-start: 8px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--sds-action-primary-bg-cta);
+  color: var(--sds-action-link-default-link);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* No cross to clear, so the pill closes up on its end edge too. */
+.fieldPillsList .fieldPill:not([data-with-remove]) {
+  padding-inline-end: 8px;
+}
+
+/*
+ * The remove cross rides on the pill's own colour rather than Mantine's grey. `:global`, because
+ * `MultiSelect`'s Styles API stops at the pill root — the cross inside it is only reachable by
+ * Mantine's static class, and claiming `Pill` in the theme would restyle every pill in the library.
+ */
+.fieldPillsList .fieldPill :global(.mantine-Pill-remove) {
+  color: inherit;
+  opacity: 0.7;
+}
+
+@media (hover: hover) {
+  .fieldPillsList .fieldPill :global(.mantine-Pill-remove):hover {
+    opacity: 1;
+    background-color: transparent;
+  }
+}
+
+/*
+ * The search input shares its line with the pills, so it cannot carry the field's own 48px height — it
+ * takes one line of the field's type and stretches to fill whatever the pills leave.
+ */
+.fieldWrapper .fieldInputField {
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--sds-neutral-10);
+}
+
+.fieldWrapper .fieldInputField::placeholder {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/*
+ * Once there is a pill the placeholder has said its piece — it can only repeat what the pills already
+ * show — and it is what pushed the search input onto a second row: Mantine reserves 100px for the
+ * field, which in a 300px-wide box two pills have already spent. So with a value present the
+ * placeholder goes and the field keeps just enough width to click into and type in.
+ */
+.fieldPillsList:has(.fieldPill) .fieldInputField {
+  min-width: 40px;
+}
+
+.fieldPillsList:has(.fieldPill) .fieldInputField::placeholder {
+  color: transparent;
 }
 
 /* ------------------------------------------------------------------- the country selector
@@ -4064,10 +4176,19 @@
   mix-blend-mode: screen;
 }
 
+/*
+ * The light files carry **alpha**, so there is nothing to blend away.
+ *
+ * They used to be white-ground exports and this rule was `multiply`, the mirror of the dark canvas's
+ * `screen`. The current pair (`Bubble_*_LM`) arrived drawn on a *black* ground instead, which multiply
+ * would have painted across the whole layer, so the matte was unpremultiplied into a real alpha channel
+ * at encode time — see README.md. With alpha there is no ground left to remove, and a blend would only
+ * tint the artwork with the page it is sitting on.
+ */
 :where([data-mantine-color-scheme='light'])
   .hero[data-video]:not([data-bubble-css])
   .heroBubble {
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
 .heroBubble {
@@ -4218,10 +4339,12 @@
  *   right  = -(1 - 1035/1200) * 88.9% - 3%  the ground right of the cut, plus a 3% overshoot so the
  *                                            cut itself lands past the hero's edge rather than on it
  *
- * The vertical fade then ends at the bottom cut — 630/866 on the dark file, 623/866 on the
- * light one, so it takes the earlier of the two, 71.9% down the frame, so the one
+ * The vertical fade then ends at the bottom cut — 630 of 866, i.e. 71.9% down the frame — so the one
  * cut still on screen arrives at zero alpha instead of a line. Below that there is nothing left to see,
  * which is also why the hero no longer carries a bubble hanging a whole frame past its foot.
+ *
+ * These are the **dark** file's measurements. The light export is a different frame and takes its own
+ * numbers, further down.
  */
 .hero[data-background='corner'] .heroVideo {
   left: auto;
@@ -4237,6 +4360,72 @@
    */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
+}
+
+/* ---------------------------------------------------------- the light canvas is a different frame
+ *
+ * Every number above measures the *dark* exports: 1200x866, artwork inset into y 142-680 (centre) and
+ * into the top-left 1035x630 (corner). The light pair is a different export altogether — 1200x582 and
+ * 674x674, with the artwork sitting somewhere else inside each — so it gets its own geometry rather
+ * than a compromise that lands neither. `data-canvas` is what the hero sets when it is showing
+ * `videoLight`.
+ *
+ * Measured off the files' own alpha, over 40 frames of each loop (`bbox` on the alpha plane, so these
+ * are the artwork's bounds and not the frame's).
+ */
+
+/*
+ * Centre, 1200x582: the artwork is flush to the top and to both sides and ends at y 551, so all that
+ * is surplus is 30 rows of empty ground at the foot.
+ *
+ *   height = 100% / (552/582) = 105.4%   the frame that puts a hero's worth of artwork on screen
+ *   top    = 0                           there is no ground above the artwork to lift off
+ */
+.hero[data-canvas='light'][data-background='full'] .heroVideo {
+  top: 0;
+  height: 105.4%;
+  /*
+   * The fade is placed to match the dark file's, in *hero* terms rather than frame terms.
+   *
+   * Both centre files put their artwork over the same box — 0 to 100% of the hero here, 0 to 102% there
+   * — so the drawings are the same size on the page. What was making the light one look like it sat
+   * lower was this fade: the dark rule starts dissolving at 62% of a box that runs from -26.3% to
+   * 134.4%, which is **73.3% of the hero**, and an 86% start here was 90.6% of it. The light bubble
+   * held full strength for another sixth of the hero, and a scheme flip read as the bubble moving.
+   *
+   *   start = 73.3% / 105.4% = 69.5%   the dark file's fade start, in this box's coordinates
+   *   end   = 94.8%                    the artwork's own bottom cut, which the fade has to beat: its
+   *                                    lower edge is a cut in the corners, where the magenta runs to
+   *                                    the last row
+   */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 69.5%, transparent 94.8%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 69.5%, transparent 94.8%);
+}
+
+/*
+ * Corner, 674x674: the artwork is flush to the top and to the **right** (the sphere's right side is cut
+ * by the export), with 16 columns of ground on the left and nothing below y 511.
+ *
+ *   width  = 61.9% / (658/674) = 63.4%   the frame that puts as much artwork on screen as the dark
+ *                                        file does — see below
+ *   right  = -3%                         no ground right of the cut, so only the overshoot that puts
+ *                                        the cut itself past the hero's edge rather than on it
+ *
+ * **The width matches the dark file, not the Figma number.** Sizing this to `Corner Bubble`'s drawn
+ * 1105 of 1440 (76.7%) is what the dark rule's arithmetic targets, but the dark *file* does not deliver
+ * it: its artwork is inset 197px inside its own frame and lands at **61.9%** of the hero. Asking the
+ * light file for the nominal 76.7% therefore drew it 15 points wider and 10 points further down than
+ * the dark one, and flipping the colour scheme moved the bubble. The reference is the file that is
+ * already on the page, so this matches the measured 61.9% — after which the two agree within a point
+ * horizontally, and vertically too, since the frame is square and the height follows the width.
+ */
+.hero[data-canvas='light'][data-background='corner'] .heroVideo {
+  right: -3%;
+  width: 63.4%;
+  aspect-ratio: 1;
+  /* The artwork is cut at 512/674 = 76% of this box, so the fade is at nothing by 74%. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 74%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 74%);
 }
 
 /* ---------------------------------------------------------------------- the bubble, drawn
@@ -4619,6 +4808,61 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/*
+ * On the light canvas the fill is **opaque white**, and every field on the bubble gets one.
+ *
+ * The rule above is a dark-canvas rule wearing no label. There the type is white and darkening what is
+ * behind it recovers contrast; here the type is `Neutral/10` — near-black — so a 20% black scrim moves
+ * the field's ground *towards* its text and takes contrast away. The banner's selects were worse still:
+ * no fill at all, near-black type straight onto the artwork.
+ *
+ * The deeper problem is that a translucent field has no fixed contrast ratio. What is behind it is a
+ * 20-second animation, so the reading against the type changes frame by frame and there is no number
+ * anyone can guarantee — which is why this is opaque rather than a heavier scrim. `Neutral/00`, pure
+ * white, gives the value 19.7:1 and holds it in every frame.
+ *
+ * Opaque also means the blur has nothing left to do, so it comes off: a `backdrop-filter` behind an
+ * opaque fill is a compositing layer per field for an effect nobody can see.
+ *
+ * **White at 50%, not opaque** — a design call, and it keeps the field cut out of the glass rather than
+ * laid on it as a white card. The blur stays for that reason: at 50% the artwork still comes through,
+ * and defocusing it is what stops a hard colour edge running underneath a line of type. `saturate`
+ * alongside it for the same reason `Card`'s glass carries it — blurring alone drains the violet to grey.
+ *
+ * The trade is real and worth stating: an opaque fill has one contrast ratio, and a translucent one has
+ * a different ratio in every frame of a 20-second loop. Measured worst case over the loop is in
+ * README.md.
+ */
+:where([data-mantine-color-scheme='light']) .hero[data-video] .fieldWrapper {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/*
+ * And the placeholder has to clear 4.5:1 on that white, which `Surfaces/Text/Tertiary` does not.
+ *
+ * Measured: #6f798e on #ffffff is **4.37:1**, just under. Everywhere else in the library that is a
+ * placeholder beside a visible label, and the label is what names the field. The hero's email field has
+ * no visible label — only an `aria-label` — so its placeholder *is* the field's name on screen, and a
+ * name has to be readable.
+ *
+ * Mixed 80/20 towards `Secondary` rather than swapped for it: `Secondary` is #363e4c at 10.8:1, which
+ * reads as a value already typed rather than as a prompt. The mix lands at **5.19:1** and still sits
+ * visibly lighter than the value's `Neutral/10`.
+ *
+ * The token itself is the real fix — tertiary is ~4.3:1 on the page background too, so every
+ * placeholder in the library is a shade too light. That is a design-file change, noted in README.md,
+ * not something to do behind one rule.
+ */
+:where([data-mantine-color-scheme='light']) .hero[data-video] .fieldInput::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--sds-surfaces-text-tertiary) 80%,
+    var(--sds-surfaces-text-secondary)
+  );
 }
 
 /* ---- the entrance -----------------------------------------------------------------------------

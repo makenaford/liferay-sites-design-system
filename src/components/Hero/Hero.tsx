@@ -496,6 +496,13 @@ export function Hero({
       data-background={background === 'none' ? undefined : background}
       /* Tells the stylesheet to drop the gradient: the artwork is standing in its place. */
       data-video={showBubble || undefined}
+      /*
+       * Which export is on screen, because the two are not the same frame: the dark pair is 1200x866
+       * with the artwork inset inside it, the light pair 1200x582 and 674x674 with the artwork sitting
+       * elsewhere again. The geometry that puts a file's *artwork* where the design wants it is
+       * measured per file, so the stylesheet has to know which one it is looking at.
+       */
+      data-canvas={showBubble && !dark && !drawn ? 'light' : undefined}
       data-bubble-css={drawn || undefined}
       data-align={align === 'center' ? 'center' : undefined}
       data-entrance={entrance || undefined}
