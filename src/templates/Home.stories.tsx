@@ -492,9 +492,6 @@ const RESEARCH = [
 
 /* ------------------------------------------------------------------ the page */
 
-/** The `Bubble` background's fixed height in the `heroBackground="bubble"` hero. See `HomePage` below. */
-const HERO_BUBBLE_HEIGHT = 640
-
 /**
  * `heroBackground="bubble"` swaps the hero's production video (`bubble_center.webm`) for the `Bubble`
  * canvas component — an exploration of it as a candidate background, alongside Hero's own `drawn` SVG
@@ -543,14 +540,15 @@ function HomePage({
       <Box pos="relative" style={{ overflow: 'hidden' }}>
         {bubbleBackground ? (
           /*
-           * Full width, fixed height — not `inset={0}`, which would stretch the canvas to match the
-           * hero's own height, and the hero's height moves with its content (the banner, form copy
-           * wrapping, mobile stacking). A fixed height keeps the wave's proportions — and its motion —
-           * the same regardless. Anchored to the bottom, so it stays put under the hero's text instead
-           * of sliding as the content above it grows or shrinks; the wrapper's `overflow: hidden` clips
-           * it to the hero's own box if the hero ever renders shorter than `HERO_BUBBLE_HEIGHT`.
+           * The whole hero, which is the same ground `bubble_center.webm` covers — this is standing in
+           * for that file, so anything less leaves a band of bare page above it where the video would
+           * have reached. A fixed height was tried first and is what put that band there.
+           *
+           * The cost is that the wave's placement is now relative to a box whose height moves with the
+           * hero's content, so `waterline` is set against the hero as it actually renders rather than
+           * against a number chosen here.
            */
-          <Box pos="absolute" left={0} right={0} bottom={0} h={HERO_BUBBLE_HEIGHT} style={{ zIndex: 0 }}>
+          <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
             <Bubble {...bubbleProps} />
           </Box>
         ) : null}

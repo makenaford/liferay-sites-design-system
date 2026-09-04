@@ -55,13 +55,16 @@ export interface BubbleProps {
   /** How far the blobs' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
   richness?: number
   /**
-   * How fast the spectrum sweeps *through* the mesh, in hue-degrees per second of travel.
+   * How far the spectrum sweeps either side of the palette over time, in hue degrees.
    *
-   * `richness` decides how much colour is in the field; this decides whether that colour sits still or
-   * moves through it. Small values read as light shifting over a surface, large ones as a rainbow band
-   * running across it.
+   * `richness` decides how much colour is in the field at any instant; this decides whether that colour
+   * sits still or moves through it. It **oscillates** rather than advances: the hue leaves the palette by
+   * up to this much and comes back. An unbounded rotation would eventually put every hue on screen,
+   * which is how a violet mesh ends up showing greens and golds — the palette stops meaning anything.
    *
-   * @default 26
+   * Together with `richness`, the furthest any blob strays from `hotColor` is `richness * 70 + this`.
+   *
+   * @default 18
    */
   spectralDrift?: number
   /**
@@ -112,6 +115,18 @@ export interface BubbleProps {
   /** How much more distorted the glow's curve is than the wave's. 1 tracks it exactly. @default 2.2 */
   glowDistortion?: number
   /**
+   * Moves the glow band up or down relative to the wave, as a fraction of the canvas height.
+   *
+   * Positive lifts it clear of the crest, negative sinks it into the wave — where the wave, drawn after
+   * it, covers more of it and only a rim survives. 0 leaves the band sitting on the cut.
+   *
+   * The band's own width is what it is; this is for placing it against content, which is the thing the
+   * component cannot know about.
+   *
+   * @default 0
+   */
+  glowOffset?: number
+  /**
    * How the glow is composited over the mesh.
    *
    * `screen` and `lighten` add light without flattening what is under them, which is usually what a glow
@@ -157,7 +172,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   colorLight: '#f2f0fb',
   hotColorLight: '#8b5cf6',
   richness: 1,
-  spectralDrift: 26,
+  spectralDrift: 18,
   meshFollow: 0.55,
   saturation: 1.05,
   meshScale: 1,
@@ -168,6 +183,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   glowColorLight: '#7c3aed',
   glowWidth: 0.3,
   glowDistortion: 2.2,
+  glowOffset: 0,
   glowBlend: 'screen',
   grain: 0.035,
   cursorInteraction: true,
@@ -515,7 +531,14 @@ export function Bubble(props: BubbleProps) {
         const cy = (blob.y + Math.sin(orbit) * blob.orbit + state.lean.y * p.meshDrift + carried) * H
         const radius = Math.max(1, S * blob.r * p.meshScale)
         /* Plus a slow sweep through the spectrum, so the colour moves through the field as well as with it. */
-        const hue = hh + blob.hue * p.richness * 140 + time * p.spectralDrift
+        /*
+         * The sweep oscillates around the palette rather than advancing through it. `time` grows without
+         * bound, so adding it to a hue rotates the whole wheel onto the screen sooner or later — which is
+         * how a violet mesh comes to show greens and golds and the palette stops meaning anything. Each
+         * blob gets its own phase, so the field still moves rather than pulsing as one.
+         */
+        const sweep = Math.sin(time * 0.35 + blob.phase * 0.5) * p.spectralDrift
+        const hue = hh + blob.hue * p.richness * 70 + sweep
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
         gradient.addColorStop(0, hsl(hue, Math.min(1, hs * sat), hl * blob.light, 0.62))
         gradient.addColorStop(0.55, hsl(hue, Math.min(1, hs * sat), hl * blob.light * 0.75, 0.28))
@@ -569,7 +592,7 @@ export function Bubble(props: BubbleProps) {
         const stops = 6
         for (let i = 0; i <= stops; i++) {
           const f = i / stops
-          const hue = gh + (f - 0.5) * 2 * p.richness * 140 + time * p.spectralDrift
+          const hue = gh + (f - 0.5) * 2 * p.richness * 70 + Math.sin(time * 0.35) * p.spectralDrift
           band.addColorStop(f, hsl(hue, Math.min(1, gs * sat), gl, Math.min(1, p.glow)))
         }
 
@@ -604,6 +627,7 @@ export function Bubble(props: BubbleProps) {
             + waveY(u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency)
             - halfBand * 0.35
             - Math.abs(wobble)
+            - p.glowOffset
           if (p.cursorInteraction && state.pointer.active) {
             const du = u - state.pointer.x
             const reach = Math.max(0.02, p.cursorReach)

@@ -72,9 +72,10 @@ export const BUBBLE_ARG_TYPES = {
     description: 'Hue spread across the blobs — what makes one colour read as several.',
   },
   spectralDrift: {
-    control: { type: 'range', min: 0, max: 120, step: 2 },
+    control: { type: 'range', min: 0, max: 90, step: 2 },
     table: { category: 'Mesh' },
-    description: 'How fast the spectrum sweeps *through* the field, in hue-degrees per second.',
+    description:
+      'How far the hue sweeps either side of the palette, in degrees. It oscillates and returns — it does not rotate away.',
   },
   meshFollow: {
     control: { type: 'range', min: 0, max: 1, step: 0.05 },
@@ -124,6 +125,11 @@ export const BUBBLE_ARG_TYPES = {
     control: { type: 'range', min: 1, max: 5, step: 0.1 },
     table: { category: 'Glow' },
     description: "How much looser the glow's curve is than the wave's. 1 tracks it exactly.",
+  },
+  glowOffset: {
+    control: { type: 'range', min: -0.3, max: 0.3, step: 0.005 },
+    table: { category: 'Glow' },
+    description: 'Moves the band up (positive) or down into the wave (negative), as a height fraction.',
   },
   glowBlend: {
     control: 'select',
