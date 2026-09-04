@@ -4,11 +4,9 @@ import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
-import { Bubble } from '../components/Bubble'
+import { Bubble, BUBBLE_DEFAULTS } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
 import { BUBBLE_ARG_TYPES } from '../components/Bubble/Bubble.argTypes'
-import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_MESH, splitBubbleLayerArgs } from '../components/Bubble/Bubble.layer2'
-import type { BubbleLayer2Args } from '../components/Bubble/Bubble.layer2'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -501,23 +499,21 @@ const HERO_BUBBLE_HEIGHT = 640
  * `heroBackground="bubble"` swaps the hero's production video (`bubble_center.webm`) for the `Bubble`
  * canvas component — an exploration of it as a candidate background, alongside Hero's own `drawn` SVG
  * prototype. It does not touch `Hero.tsx`: `background="none"` skips Hero's own gradient/video layer,
- * and `Bubble` is layered behind it in a plain positioned wrapper, the same way two `Bubble` instances
- * are stacked in its own stories.
+ * and `Bubble` is layered behind it in a plain positioned wrapper.
  *
- * `bubbleProps` passes straight through to two stacked `<Bubble>` layers — the same `TwoLayers`
- * composition `Bubble`'s own stories use — and the `BubbleBackground` story wires it to the same
- * grouped Controls, via `BUBBLE_ARG_TYPES` and `BUBBLE_LAYER2_ARG_TYPES`.
+ * The hero is given a transparent background so the mesh shows, and `Bubble` is handed the page's own
+ * background token as `surfaceColor` — which is what lets its wave paint the page's colour and read as
+ * though the mesh simply stops, without the component being transparent or blending with anything.
  */
 function HomePage({
   heroBackground = 'video',
-  bubbleProps = BUBBLE_MESH,
+  bubbleProps,
 }: {
   heroBackground?: 'video' | 'bubble'
-  bubbleProps?: BubbleProps & BubbleLayer2Args
+  bubbleProps?: BubbleProps
 } = {}) {
   const reducedMotion = useReducedMotion()
   const bubbleBackground = heroBackground === 'bubble'
-  const bubbleLayers = splitBubbleLayerArgs(bubbleProps)
   const heroBackgroundProps = bubbleBackground
     ? { background: 'none' as const, style: { backgroundColor: 'transparent' } }
     : { background: 'full' as const, video: bubbleFull, videoLight: bubbleFullLight }
@@ -555,12 +551,7 @@ function HomePage({
            * it to the hero's own box if the hero ever renders shorter than `HERO_BUBBLE_HEIGHT`.
            */
           <Box pos="absolute" left={0} right={0} bottom={0} h={HERO_BUBBLE_HEIGHT} style={{ zIndex: 0 }}>
-            <Box pos="absolute" inset={0}>
-              <Bubble {...bubbleLayers.bottomLayerProps} />
-            </Box>
-            <Box pos="absolute" inset={0} style={{ mixBlendMode: bubbleLayers.layer2BlendMode }}>
-              <Bubble {...bubbleLayers.topLayerProps} />
-            </Box>
+            <Bubble {...bubbleProps} />
           </Box>
         ) : null}
         <Hero
@@ -1251,33 +1242,44 @@ export const Narrow: Story = {
 
 /**
  * Exploration only — not what ships. The hero's production video (`bubble_center.webm`) is swapped for
- * two stacked `Bubble` layers — the same `TwoLayers` composition `Bubble`'s own stories use — sitting
- * where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in `Hero.tsx` changes: the
- * layers sit behind a `background="none"` Hero in a plain positioned wrapper here in the story.
+ * `Bubble`, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in
+ * `Hero.tsx` changes: it sits behind a `background="none"` Hero in a plain positioned wrapper here.
  *
- * The bottom layer's props are wired to the Controls panel exactly like `Bubble`'s own stories (Animation,
- * Wave shape, Glow, Body, Color, Cursor interaction, Performance); the top layer gets the smaller
- * **Layers** group — see that component's docs page for how to work through them.
+ * One canvas, and no blending with the page at all. The mesh is opaque, and the wave below it is painted
+ * in `surfaceColor` — the page-background token — so the mesh appears to stop where the wave begins
+ * while the component stays opaque throughout. Because that token resolves against the canvas, the wave
+ * follows the colour scheme without the story having to know which one is on.
  *
- * It starts from `BUBBLE_MESH` rather than the component's defaults: a hero background wants a field of
- * colour, not a drawn wave with a lit crest running through the headline. Both layers' backgrounds are
- * `transparent` there, so everything the mesh does not paint is the page itself — which is what lets the
- * bottom of it fall away into the page instead of ending on an edge.
+ * Every prop is on the Controls panel, grouped as **Mesh** / **Wave** / **Cursor** — see the component's
+ * own docs page for which prop is worth reaching for first.
  *
  * `frame: { padding: 0 }` because this one is judged on whether it reaches the viewport's edges.
  *
- * **Dark canvas only, so far.** `BUBBLE_MESH` is a dark palette, and on the light canvas the hero's own
- * text is dark too and lands on it unreadable. That is the same constraint the shipped hero has — it
- * carries `bubble_center.webm` *and* `bubble_center_light.webm` because one artwork painted plainly does
- * not survive being put on the other's page — and the fix here is the same shape: a second, light mesh
- * palette chosen by the computed colour scheme. Not written yet; it is a palette decision, not a
- * mechanism one.
+ * **The mesh palette is still a dark one.** The wave now follows the colour scheme on its own, but
+ * `color` and `hotColor` do not — on the light canvas the mesh stays dark and the hero's dark text lands
+ * on it. Picking the light pair is a palette decision rather than a mechanism one, so it is left open.
  */
 export const BubbleBackground: Story = {
   parameters: { frame: { fullBleed: true, padding: 0 } },
-  args: { ...BUBBLE_MESH },
-  argTypes: { ...BUBBLE_ARG_TYPES, ...BUBBLE_LAYER2_ARG_TYPES },
-  render: (args) => (
-    <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps & BubbleLayer2Args} />
-  ),
+  /*
+   * Tuned for the hero rather than left on the component's defaults, and `meshScale` is why: the blobs
+   * are sized off the canvas's *shorter* side, so the same value that fills the component's own 900x420
+   * story frame leaves small islands of colour adrift in a 1764x640 hero. The rest follows from that —
+   * a wider mesh needs a lower waterline to have room, and a brighter one to carry across the width.
+   */
+  args: {
+    ...BUBBLE_DEFAULTS,
+    meshScale: 1.7,
+    waterline: -0.42,
+    swell: 0.11,
+    swellFrequency: 0.7,
+    edgeSoftness: 0.05,
+    color: '#160a3a',
+    hotColor: '#6d3bf5',
+    richness: 1.05,
+    saturation: 1.1,
+    meshFade: 0.22,
+  },
+  argTypes: BUBBLE_ARG_TYPES,
+  render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
 }

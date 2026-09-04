@@ -2,92 +2,106 @@ import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 
 export interface BubbleProps {
-  /** Travel speed of the wave. @default 1 */
+  /** Travel speed of the wave, and how fast the mesh drifts. @default 0.4 */
   speed?: number
-  /** Height of the primary swell (fraction of canvas height). @default 0.09 */
+  /** Height of the primary swell (fraction of canvas height). @default 0.14 */
   swell?: number
-  /** Frequency of the primary swell across the width. @default 1 */
+  /** Frequency of the primary swell across the width. @default 0.8 */
   swellFrequency?: number
-  /** Height of the secondary ripple (fraction of canvas height). @default 0.02 */
+  /** Height of the secondary ripple (fraction of canvas height). @default 0.03 */
   ripple?: number
-  /** Frequency of the secondary ripple across the width. @default 1 */
+  /** Frequency of the secondary ripple across the width. @default 1.6 */
   rippleFrequency?: number
-  /** Vertical placement of the wave; 0 = centered, -1..1. @default -0.15 */
+  /** Vertical placement of the wave; 0 = centered, -1..1. @default -0.28 */
   waterline?: number
-  /** Brightness of the crest line. @default 1 */
-  glow?: number
-  /** Width of the crest line (fraction of the shorter canvas side). @default 0.045 */
-  glowWidth?: number
-  /** Brightness of the blurred halo around the crest. @default 1 */
-  halo?: number
-  /** Width of the halo (fraction of the shorter canvas side). @default 0.28 */
-  haloWidth?: number
-  /** How far the colour gradient reaches below the crest (0..1). @default 0.55 */
-  depth?: number
-  /** Softness of the fill's top edge, in canvas-height fraction. @default 0.06 */
+  /** Softness of the wave's edge, as a fraction of the shorter side. 0 is a crisp curve. @default 0.03 */
   edgeSoftness?: number
-  /** Deep colour under the wave. @default '#050110' */
+  /**
+   * The colour the wave is painted in — **the page's own background**.
+   *
+   * This is what makes the component read as transparent without being transparent: the wave is not a lit
+   * shape drawn *over* the mesh, it is a plate of the page colour that covers it, so the mesh survives
+   * only where the wave is not. Accepts `var(--token)` and resolves it against the canvas, which is what
+   * lets one value follow the colour scheme.
+   *
+   * @default 'var(--sds-surfaces-page-bg-base-default)'
+   */
+  surfaceColor?: string
+  /** The mesh's deep colour — the ground its blobs sit on. @default '#140833' */
   color?: string
-  /** Colour of the crest and glow. @default '#8b3bd6' */
+  /** The mesh's lit colour. Blobs are hues drifted off this one. @default '#5b30c4' */
   hotColor?: string
-  /** Canvas background colour. @default '#000003' */
-  backgroundColor?: string
-  /** Iridescence intensity — hue drift along the crest. @default 0.62 */
+  /** How far the blobs' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
   richness?: number
-  /** Vividness of the colour bands. @default 1.15 */
+  /** Vividness of the mesh. @default 1.05 */
   saturation?: number
-  /** Film grain strength. @default 0.04 */
+  /** Size of the mesh's colour masses. @default 1 */
+  meshScale?: number
+  /** How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1. @default 0.3 */
+  meshFade?: number
+  /** Film grain strength. @default 0.035 */
   grain?: number
-  /** Whether the pointer raises the crest near it. @default true */
+  /** Whether the pointer bends the wave and steers the mesh. @default true */
   cursorInteraction?: boolean
-  /** Height the pointer lifts the crest (fraction of canvas height). @default 0.1 */
+  /** Height the pointer lifts the wave (fraction of canvas height). @default 0.08 */
   cursorLift?: number
-  /** Width of the pointer's lift effect (fraction of canvas width). @default 0.22 */
+  /** Width of the pointer's lift (fraction of canvas width). @default 0.3 */
   cursorReach?: number
+  /** How far the pointer pulls the mesh's blobs — the mesh's parallax. @default 0.12 */
+  meshDrift?: number
   /** Scale internal render resolution down under frame-time pressure. @default true */
   adaptiveQuality?: boolean
   /** Frame-rate budget adaptive quality scales against. @default 60 */
   targetFps?: number
   /** Overall opacity of the canvas. @default 1 */
   opacity?: number
-  /** Freeze the animation on its current frame. @default false */
+  /** Freeze on the current frame. @default false */
   paused?: boolean
   className?: string
   style?: CSSProperties
 }
 
-/**
- * `Bubble`'s own defaults render the "Bubble Canvas" look: a deep black field with a low crest and a
- * blue → violet → magenta rim band. Every value here is a plain prop, so the component works with zero
- * configuration — `<Bubble />` — and every one of them is exposed as a Storybook control.
- */
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
-  speed: 1,
-  swell: 0.09,
-  swellFrequency: 1,
-  ripple: 0.02,
-  rippleFrequency: 1,
-  waterline: -0.15,
-  glow: 1,
-  glowWidth: 0.045,
-  halo: 1,
-  haloWidth: 0.28,
-  depth: 0.55,
-  edgeSoftness: 0.06,
-  color: '#050110',
-  hotColor: '#8b3bd6',
-  backgroundColor: '#000003',
-  richness: 0.62,
-  saturation: 1.15,
-  grain: 0.04,
+  speed: 0.4,
+  swell: 0.14,
+  swellFrequency: 0.8,
+  ripple: 0.03,
+  rippleFrequency: 1.6,
+  waterline: -0.28,
+  edgeSoftness: 0.03,
+  surfaceColor: 'var(--sds-surfaces-page-bg-base-default)',
+  color: '#140833',
+  hotColor: '#5b30c4',
+  richness: 1,
+  saturation: 1.05,
+  meshScale: 1,
+  meshFade: 0.3,
+  grain: 0.035,
   cursorInteraction: true,
-  cursorLift: 0.1,
-  cursorReach: 0.22,
+  cursorLift: 0.08,
+  cursorReach: 0.3,
+  meshDrift: 0.12,
   adaptiveQuality: true,
   targetFps: 60,
   opacity: 1,
   paused: false,
 }
+
+/**
+ * The mesh's colour masses, as fractions of the canvas.
+ *
+ * A fixed table rather than anything random: the mesh has to look the same on every render and every
+ * machine, and a designer tuning `hotColor` against a screenshot needs the blob under it to still be
+ * there next time. `hue` is the blob's offset either side of `hotColor`, in `richness` units; `rate` and
+ * `phase` put each one on its own slow orbit so the field never repeats visibly.
+ */
+const MESH_BLOBS = [
+  { x: 0.16, y: 0.3, r: 0.85, hue: -1, light: 0.95, rate: 0.21, phase: 0, orbit: 0.05 },
+  { x: 0.42, y: 0.52, r: 0.95, hue: -0.3, light: 1.05, rate: 0.17, phase: 1.9, orbit: 0.06 },
+  { x: 0.66, y: 0.28, r: 0.8, hue: 0.35, light: 1, rate: 0.23, phase: 3.4, orbit: 0.05 },
+  { x: 0.88, y: 0.56, r: 0.9, hue: 1, light: 1.1, rate: 0.15, phase: 5.1, orbit: 0.07 },
+  { x: 0.3, y: 0.74, r: 0.75, hue: 0.1, light: 0.85, rate: 0.19, phase: 2.6, orbit: 0.05 },
+]
 
 function hexToHsl(hex: string): [number, number, number] {
   const m = hex.replace('#', '')
@@ -122,7 +136,55 @@ function hexToHsl(hex: string): [number, number, number] {
 
 function hsl(h: number, s: number, l: number, a = 1): string {
   const hue = ((h % 360) + 360) % 360
-  return `hsla(${hue.toFixed(1)}, ${(s * 100).toFixed(1)}%, ${(l * 100).toFixed(1)}%, ${a})`
+  return `hsla(${hue.toFixed(1)}, ${Math.min(100, s * 100).toFixed(1)}%, ${Math.min(100, l * 100).toFixed(1)}%, ${a})`
+}
+
+/**
+ * A CSS colour as something `fillStyle` will take: `var(--token)` resolved against the element it is
+ * drawn in, so `surfaceColor` can name a token and follow the colour scheme.
+ */
+function resolveColor(el: Element, value: string): string {
+  const match = /^var\(\s*(--[^,)\s]+)\s*(?:,([\s\S]*))?\)$/.exec(value.trim())
+  if (!match) return value
+  const resolved = getComputedStyle(el).getPropertyValue(match[1]).trim()
+  if (resolved) return resolved
+  return match[2] ? resolveColor(el, match[2].trim()) : 'transparent'
+}
+
+/**
+ * A colour's channels, via the canvas's own parser.
+ *
+ * Needed because the mesh's fade has to end on `surfaceColor` at **zero alpha**, and a gradient run to
+ * the `transparent` keyword ends on transparent *black* — which greys the middle of the fade on any
+ * surface that is not black. Assigning to `fillStyle` and reading it back normalises whatever the token
+ * held (`#rgb`, `rgb()`, a named colour) into a form worth parsing, so the fade can hold the colour and
+ * move only the alpha.
+ */
+function toRgb(ctx: CanvasRenderingContext2D, color: string): [number, number, number] {
+  const previous = ctx.fillStyle
+  ctx.fillStyle = color
+  const normalised = ctx.fillStyle
+  ctx.fillStyle = previous
+  if (typeof normalised === 'string') {
+    if (normalised.startsWith('#')) {
+      const [h, s, l] = hexToHsl(normalised)
+      // back out of HSL rather than re-parsing: hexToHsl already did the work
+      const c = (1 - Math.abs(2 * l - 1)) * s
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
+      const m = l - c / 2
+      const [r1, g1, b1] =
+        h < 60 ? [c, x, 0]
+        : h < 120 ? [x, c, 0]
+        : h < 180 ? [0, c, x]
+        : h < 240 ? [0, x, c]
+        : h < 300 ? [x, 0, c]
+        : [c, 0, x]
+      return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)]
+    }
+    const nums = normalised.match(/[\d.]+/g)
+    if (nums && nums.length >= 3) return [Number(nums[0]), Number(nums[1]), Number(nums[2])]
+  }
+  return [0, 0, 0]
 }
 
 function makeNoiseTile(size: number): HTMLCanvasElement {
@@ -139,7 +201,7 @@ function makeNoiseTile(size: number): HTMLCanvasElement {
   return tile
 }
 
-/** Catmull-Rom -> cubic bezier so the crest reads as one smooth curve. */
+/** Catmull-Rom -> cubic bezier so the wave reads as one smooth curve. */
 function smoothTo(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
   const n = pts.length
   for (let i = 0; i < n - 1; i++) {
@@ -156,26 +218,33 @@ function smoothTo(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
 }
 
 /**
- * Bubble — a single luminous wave sweeping slowly across a canvas, ported from the
- * `glowing-wave-studio` prototype.
+ * Bubble — a drifting colour mesh with a wave cut across it.
  *
- * Self-contained: one `<canvas>`, driven by `requestAnimationFrame`, with every visual parameter as a
- * plain prop. It fills its parent, so give the parent an explicit height (or `position: absolute; inset:
- * 0` inside a positioned container) — the same way `Marquee` and other full-bleed decoration in this
- * library work.
+ * Two passes on one canvas, and the second is the whole trick:
+ *
+ * 1. **The mesh.** Overlapping soft colour masses on a deep ground, their hues drifted either side of
+ *    `hotColor` by `richness`, each on its own slow orbit. This is the part with the colour in it.
+ * 2. **The wave.** A flat plate of `surfaceColor` — *the page's own background* — filling everything
+ *    below the curve.
+ *
+ * So the wave is not lit and nothing is blended. The component is opaque everywhere, and still reads as
+ * though the mesh were fading into the page, because below the curve it is painting exactly what the
+ * page would have painted. That is worth stating plainly: **`surfaceColor` has to match the surface the
+ * component is sitting on**, or the illusion is just a coloured shape. It defaults to the page-background
+ * token and resolves `var()` against the canvas, so it follows the colour scheme on its own; pass a
+ * concrete colour when the component sits on something else, like a card.
+ *
+ * The pointer does both jobs at once — bends the curve near it (`cursorLift`, `cursorReach`) and pulls
+ * the mesh's masses (`meshDrift`), so the colour leans one way while the wave rises under the cursor.
+ *
+ * Fills its parent, so give the parent an explicit height (or `position: absolute; inset: 0` inside a
+ * positioned container).
  *
  * ```tsx
  * <div style={{ height: 480, position: 'relative' }}>
  *   <Bubble />
  * </div>
  * ```
- *
- * Two instances stacked with `position: absolute` and a `mix-blend-mode` (`screen`, `lighten`,
- * `difference`) on the second reproduce the prototype's two-wave overlap.
- *
- * `adaptiveQuality` scales the internal render resolution down when a frame is taking too long against
- * `targetFps`, so the animation degrades gracefully on slower devices instead of dropping frames outright.
- * `prefers-reduced-motion` freezes the wave on its current frame regardless of `paused`.
  */
 export function Bubble(props: BubbleProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -194,16 +263,14 @@ export function Bubble(props: BubbleProps) {
     const state = {
       qualityScale: dpr,
       frameTimeAvg: 1000 / 60,
-      cssW: 0,
-      cssH: 0,
+      /** Eased toward the pointer, so the mesh leans rather than snapping. */
+      lean: { x: 0, y: 0 },
       pointer: { x: 0.5, y: 0.5, active: false },
       pausedT: 0,
     }
 
     const resize = () => {
       const rect = parent.getBoundingClientRect()
-      state.cssW = rect.width
-      state.cssH = rect.height
       const w = Math.max(2, Math.round(rect.width * state.qualityScale))
       const h = Math.max(2, Math.round(rect.height * state.qualityScale))
       if (canvas.width !== w) canvas.width = w
@@ -226,8 +293,17 @@ export function Bubble(props: BubbleProps) {
     canvas.addEventListener('pointerleave', onLeave)
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const fillLayer = document.createElement('canvas')
-    const maskLayer = document.createElement('canvas')
+    const waveLayer = document.createElement('canvas')
+
+    /*
+     * `surfaceColor` is re-resolved on a slow cadence rather than every frame: it is a computed-style
+     * read, and its value only changes when the colour scheme flips — which this then picks up on its
+     * own, without needing to watch for it.
+     */
+    let surfaceSource = ''
+    let surfaceValue = '#000000'
+    let surfaceCheckedAt = -Infinity
+
     let raf = 0
     let dead = false
     let last = performance.now()
@@ -279,139 +355,129 @@ export function Bubble(props: BubbleProps) {
       }
       const S = Math.min(W, H)
 
-      /*
-       * `fillRect` with an opaque `backgroundColor` overwrites every pixel and would look the same
-       * without this — but a *transparent* `backgroundColor` (two `Bubble` layers stacked with a CSS
-       * blend mode, see the docs above) makes that fill a no-op: `source-over` with zero alpha composites
-       * to nothing, so the previous frame's pixels would stay right where they were. The halo and glow
-       * passes below use additive `lighter` blending, so without a real clear here they never reset —
-       * they just keep stacking on the frame before, saturating to solid white within about a second and
-       * staying there. `clearRect` is what actually resets the canvas to transparent, regardless of what
-       * `fillRect` is about to paint over it.
-       */
+      if (p.surfaceColor !== surfaceSource || now - surfaceCheckedAt > 500) {
+        surfaceSource = p.surfaceColor
+        surfaceCheckedAt = now
+        surfaceValue = resolveColor(canvas, p.surfaceColor)
+      }
+      const surface = surfaceValue
+
+      /* Eased toward the pointer, and back to centre when it leaves. */
+      const targetX = p.cursorInteraction && state.pointer.active ? state.pointer.x - 0.5 : 0
+      const targetY = p.cursorInteraction && state.pointer.active ? state.pointer.y - 0.5 : 0
+      const ease = Math.min(1, dt / 220)
+      state.lean.x += (targetX - state.lean.x) * ease
+      state.lean.y += (targetY - state.lean.y) * ease
+
       ctx.clearRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'source-over'
       ctx.globalAlpha = 1
       ctx.filter = 'none'
-      ctx.fillStyle = p.backgroundColor
+
+      /* ---------------------------------------------------------------- 1. the mesh */
+
+      const sat = Math.max(0, Math.min(1.5, p.saturation))
+      const [ch, cs, cl] = hexToHsl(p.color)
+      const [hh, hs, hl] = hexToHsl(p.hotColor)
+
+      ctx.fillStyle = hsl(ch, cs * sat, cl)
       ctx.fillRect(0, 0, W, H)
 
-      const level = Math.min(0.95, Math.max(0.05, 0.5 - p.waterline * 0.4))
+      /*
+       * `source-over` rather than `lighter`: the masses have to *blend* into one another, and additive
+       * light does not blend, it accumulates — five overlapping blobs of it climb to white in the middle
+       * of the field, which is the opposite of a mesh.
+       */
+      for (const blob of MESH_BLOBS) {
+        const orbit = blob.phase + time * blob.rate
+        const cx = (blob.x + Math.cos(orbit) * blob.orbit + state.lean.x * p.meshDrift) * W
+        const cy = (blob.y + Math.sin(orbit) * blob.orbit + state.lean.y * p.meshDrift) * H
+        const radius = Math.max(1, S * blob.r * p.meshScale)
+        const hue = hh + blob.hue * p.richness * 70
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
+        gradient.addColorStop(0, hsl(hue, Math.min(1, hs * sat), hl * blob.light, 0.62))
+        gradient.addColorStop(0.55, hsl(hue, Math.min(1, hs * sat), hl * blob.light * 0.75, 0.28))
+        gradient.addColorStop(1, hsl(hue, Math.min(1, hs * sat), hl * blob.light * 0.5, 0))
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, W, H)
+      }
 
+      /*
+       * The mesh dissolves into the surface at the top edge, so the component can end mid-page without
+       * ruling a line across it — the same job the wave does at the bottom, done with a gradient because
+       * there is no shape up there to cut.
+       */
+      if (p.meshFade > 0) {
+        const [sr, sg, sb] = toRgb(ctx, surface)
+        const fade = ctx.createLinearGradient(0, 0, 0, Math.max(1, H * p.meshFade))
+        fade.addColorStop(0, `rgba(${sr}, ${sg}, ${sb}, 1)`)
+        fade.addColorStop(1, `rgba(${sr}, ${sg}, ${sb}, 0)`)
+        ctx.fillStyle = fade
+        ctx.fillRect(0, 0, W, Math.ceil(H * p.meshFade))
+      }
+
+      /* ---------------------------------------------------------------- 2. the wave */
+
+      const level = Math.min(0.95, Math.max(0.05, 0.5 - p.waterline * 0.4))
+      const blur = p.edgeSoftness > 0 ? Math.max(0.5, S * p.edgeSoftness * 0.5) : 0
+      /*
+       * A blurred shape drawn to the canvas's own edge fades there, because the blur has nothing beyond
+       * the boundary to average with — it reads as a vignette down both sides. So a soft-edged wave is
+       * drawn on a layer that is bigger than the canvas, with the curve carried past both ends, and only
+       * the middle of it is copied back.
+       */
+      const pad = Math.ceil(blur * 3)
+      const target = blur > 0 ? waveLayer.getContext('2d')! : ctx
+      const LW = W + pad * 2
+      const LH = H + pad * 2
+
+      if (blur > 0) {
+        if (waveLayer.width !== LW || waveLayer.height !== LH) {
+          waveLayer.width = LW
+          waveLayer.height = LH
+        }
+        target.clearRect(0, 0, LW, LH)
+        target.filter = `blur(${blur}px)`
+      }
+
+      /* `u` runs past both ends by the padding, so the curve spans the whole layer. */
+      const overhang = pad / Math.max(1, W)
       const N = 96
       const pts: [number, number][] = []
       for (let i = 0; i <= N; i++) {
-        const u = i / N
+        const u = -overhang + (i / N) * (1 + overhang * 2)
         let y = level + waveY(u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency)
         if (p.cursorInteraction && state.pointer.active) {
           const du = u - state.pointer.x
           const reach = Math.max(0.02, p.cursorReach)
           y -= p.cursorLift * Math.exp(-(du * du) / (2 * reach * reach))
         }
-        pts.push([u * W, y * H])
+        pts.push([u * W + (blur > 0 ? pad : 0), y * H + (blur > 0 ? pad : 0)])
       }
 
-      const [hh, hs, hl] = hexToHsl(p.hotColor)
-      const [ch, cs, cl] = hexToHsl(p.color)
-      const sat = Math.max(0, Math.min(1.5, p.saturation))
+      target.fillStyle = surface
+      target.beginPath()
+      target.moveTo(pts[0][0], pts[0][1])
+      smoothTo(target, pts)
+      target.lineTo(pts[pts.length - 1][0], LH)
+      target.lineTo(pts[0][0], LH)
+      target.closePath()
+      target.fill()
 
-      const rim = ctx.createLinearGradient(0, 0, W, 0)
-      const stops = 6
-      for (let i = 0; i <= stops; i++) {
-        const f = i / stops
-        const hueShift = (f - 0.5) * 2 * p.richness * 70
-        rim.addColorStop(f, hsl(hh + hueShift, Math.min(1, hs * sat), hl))
+      if (blur > 0) {
+        target.filter = 'none'
+        ctx.drawImage(waveLayer, pad, pad, W, H, 0, 0, W, H)
       }
 
-      if (fillLayer.width !== W || fillLayer.height !== H) {
-        fillLayer.width = maskLayer.width = W
-        fillLayer.height = maskLayer.height = H
-      }
-      const fg = fillLayer.getContext('2d')!
-      const mg = maskLayer.getContext('2d')!
-      fg.clearRect(0, 0, W, H)
-      mg.clearRect(0, 0, W, H)
-
-      // deep fill + rim wash + depth fade, drawn unclipped onto an offscreen layer
-      fg.fillStyle = hsl(ch, cs * sat, cl)
-      fg.fillRect(0, 0, W, H)
-
-      fg.globalCompositeOperation = 'lighter'
-      fg.globalAlpha = 0.55
-      fg.fillStyle = rim
-      fg.fillRect(0, 0, W, H)
-      fg.globalAlpha = 1
-
-      fg.globalCompositeOperation = 'source-over'
-      const reach = Math.max(0.02, p.depth) * H
-      const fade = fg.createLinearGradient(0, level * H, 0, Math.max(0, level * H - reach))
-      const deep = hsl(ch, cs * sat, cl, 0)
-      const deepFull = hsl(ch, cs * sat, cl * 0.4, 0.95)
-      fade.addColorStop(0, deep)
-      fade.addColorStop(0.35, hsl(ch, cs * sat, cl * 0.6, 0.7))
-      fade.addColorStop(1, deepFull)
-      fg.fillStyle = fade
-      fg.fillRect(0, 0, W, H)
-
-      // mask: the area above the crest, blurred so edgeSoftness feathers the
-      // fill's top boundary instead of leaving a hard clipped edge
-      mg.filter = p.edgeSoftness > 0 ? `blur(${Math.max(0.5, S * p.edgeSoftness * 0.5)}px)` : 'none'
-      mg.fillStyle = '#fff'
-      mg.beginPath()
-      mg.moveTo(pts[0][0], pts[0][1])
-      smoothTo(mg, pts)
-      mg.lineTo(W, 0)
-      mg.lineTo(0, 0)
-      mg.closePath()
-      mg.fill()
-      mg.filter = 'none'
-
-      fg.globalCompositeOperation = 'destination-in'
-      fg.drawImage(maskLayer, 0, 0)
-      fg.globalCompositeOperation = 'source-over'
-
-      ctx.drawImage(fillLayer, 0, 0)
-
-      ctx.globalCompositeOperation = 'lighter'
-      ctx.lineJoin = 'round'
-      ctx.lineCap = 'round'
-      const haloLayers: [number, number, number][] = [
-        [p.haloWidth * 1.0, 0.5, p.halo * 0.6],
-        [p.haloWidth * 0.5, 0.2, p.halo],
-      ]
-      for (const [w, blur, a] of haloLayers) {
-        if (w <= 0 || a <= 0) continue
-        ctx.strokeStyle = rim
-        ctx.globalAlpha = Math.min(1, a)
-        ctx.lineWidth = Math.max(0.8, S * w)
-        ctx.filter = `blur(${Math.max(1, S * blur)}px)`
-        ctx.beginPath()
-        ctx.moveTo(pts[0][0], pts[0][1])
-        smoothTo(ctx, pts)
-        ctx.stroke()
-      }
-      ctx.filter = 'none'
-      ctx.globalAlpha = 1
-
-      ctx.strokeStyle = rim
-      ctx.globalAlpha = Math.min(1, p.glow)
-      ctx.lineWidth = Math.max(1, S * p.glowWidth * 0.3)
-      ctx.beginPath()
-      ctx.moveTo(pts[0][0], pts[0][1])
-      smoothTo(ctx, pts)
-      ctx.stroke()
-
-      ctx.globalCompositeOperation = 'source-over'
-      ctx.globalAlpha = 1
+      /* ---------------------------------------------------------------- grain */
 
       if (p.grain > 0) {
         ctx.globalCompositeOperation = 'overlay'
         ctx.globalAlpha = Math.min(1, p.grain)
-        const ox = Math.random() * noiseTile.width
-        const oy = Math.random() * noiseTile.height
         const pattern = ctx.createPattern(noiseTile, 'repeat')!
-        const m = new DOMMatrix().translate(ox, oy)
-        pattern.setTransform(m)
+        pattern.setTransform(
+          new DOMMatrix().translate(Math.random() * noiseTile.width, Math.random() * noiseTile.height),
+        )
         ctx.fillStyle = pattern
         ctx.fillRect(0, 0, W, H)
         ctx.globalCompositeOperation = 'source-over'
