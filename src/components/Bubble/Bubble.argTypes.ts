@@ -43,6 +43,18 @@ export const BUBBLE_ARG_TYPES = {
     table: { category: 'Bubbles' },
     description: 'Where the pair sits horizontally, 0 the left edge and 1 the right. The counterpart to `bubbleY`.',
   },
+  bubbleStagger: {
+    control: { type: 'range', min: -0.5, max: 0.5, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description:
+      'How far the two are staggered vertically — one rides higher, the other lower. 0 hangs them level, which reads as one wide shape.',
+  },
+  bubbleBalance: {
+    control: { type: 'range', min: -0.6, max: 0.6, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description:
+      'A seesaw around `bubbleScale`: one bubble grows as the other shrinks, so the pair’s average size holds. 0 makes them identical.',
+  },
   bubbleMorph: {
     control: { type: 'range', min: 0, max: 0.6, step: 0.01 },
     table: { category: 'Bubbles' },

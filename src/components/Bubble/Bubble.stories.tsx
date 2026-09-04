@@ -55,8 +55,10 @@ const meta = {
           '  it reaches — between them they place the **visible edge**, which is all you see of the bubbles',
           '  and the thing that has to sit right against the content in front of it. `bubbleScale` and',
           '  `bubbleSpread` are read together, and the interesting range is where the two just touch; both',
-          '  are fractions of the height, so they hold as the window widens. `edgeSoftness` decides crisp',
-          '  or dissolved.',
+          '  are fractions of the height, so they hold as the window widens. `bubbleStagger` and',
+          '  `bubbleBalance` are what stop the two reading as one shape drawn twice — one hangs higher,',
+          '  one is larger — and at 0 they are worth seeing, because that is the version that does not',
+          '  work. `edgeSoftness` decides crisp or dissolved.',
           '- **Mesh** carries the colour, and it has two poles: `hotColor` and `accentColor`, with each',
           '  mass sitting somewhere between them. Those are what make the mesh two colours; `richness` is',
           '  different, spreading hues either side of wherever a mass already sits — variation within a',
@@ -139,6 +141,30 @@ export const Placement: Story = {
       ].map((placement) => (
         <Frame key={placement.bubbleHeight} height={220}>
           <Bubble {...args} {...placement} />
+        </Frame>
+      ))}
+    </Box>
+  ),
+}
+
+/**
+ * What makes the two read as a **pair** rather than as one shape drawn twice — `bubbleStagger` hanging
+ * one higher than the other, and `bubbleBalance` making one larger as the other shrinks.
+ *
+ * The first row has both at 0, and it is the useful thing to look at: two identical circles at identical
+ * heights read as a repeat, and their shared edge is the same height all the way across, so nothing in
+ * it says there are two. The rows below put the difference back.
+ */
+export const Pair: Story = {
+  render: (args) => (
+    <Box>
+      {[
+        { bubbleStagger: 0, bubbleBalance: 0 },
+        { bubbleStagger: 0.09, bubbleBalance: -0.1 },
+        { bubbleStagger: 0.3, bubbleBalance: 0.35 },
+      ].map((pair) => (
+        <Frame key={pair.bubbleStagger} height={220}>
+          <Bubble {...args} {...pair} />
         </Frame>
       ))}
     </Box>

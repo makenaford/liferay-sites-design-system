@@ -52,6 +52,27 @@ export interface BubbleProps {
    */
   bubbleHeight?: number
   /**
+   * How far the two are staggered vertically, as a fraction of the height — one rides higher, the other
+   * lower, either side of `bubbleY`.
+   *
+   * 0 hangs them level, which is the one setting that reads as a single wide shape rather than two
+   * bubbles: an edge that is the same height all the way across has nothing in it to say there are two.
+   * Negative swaps which one is on top.
+   *
+   * @default 0.09
+   */
+  bubbleStagger?: number
+  /**
+   * How much bigger one bubble is than the other, as a seesaw around `bubbleScale`: one grows by this
+   * fraction as the other shrinks by it, so the pair's average size does not move.
+   *
+   * 0 makes them identical — worth avoiding for the same reason as a stagger of 0, since two circles of
+   * exactly one size read as a repeated shape rather than a pair. Negative makes the left one the larger.
+   *
+   * @default -0.1
+   */
+  bubbleBalance?: number
+  /**
    * Where the pair sits horizontally, 0 being the left edge and 1 the right. The two bubbles are placed
    * either side of this, `bubbleSpread` apart.
    *
@@ -254,11 +275,17 @@ export interface BubbleProps {
 
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
   speed: 0.4,
-  bubbleScale: 0.65,
+  /*
+   * The average of the two, not the size of either — `bubbleBalance` puts one above it and one below.
+   * It reads lower than the single size it replaced for that reason, and the pair renders the same.
+   */
+  bubbleScale: 0.59,
   bubbleSpread: 1.05,
+  bubbleBalance: -0.1,
   bubbleHeight: 1,
   bubbleX: 0.5,
   bubbleY: 0.18,
+  bubbleStagger: 0.09,
   bubbleMorph: 0.2,
   bubblePulse: 0.12,
   bubbleWander: 0.05,
@@ -304,13 +331,16 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
  * a designer tuning against a screenshot needs the same two to be there next time. `wobble` is the pair
  * of harmonics that morph the outline — `k` how many lobes, `a` how strongly, `s` how fast and which way
  * they turn — and the two entries differ so the bubbles never fall into the same shape at the same time.
+ *
+ * What is *not* here is how high each one hangs or how big it is relative to the other. Those were fixed
+ * numbers in this table and are now `bubbleStagger` and `bubbleBalance`, because they are the difference
+ * between the pair reading as two bubbles and as one shape drawn twice — which is a decision worth
+ * making per use, not one to bake in here. `side` is all that remains of the distinction: which of the
+ * two each one is.
  */
 const BUBBLES = [
   {
     side: -1,
-    /** Offset from `bubbleY`, as a fraction of the height, so the two do not hang at the same level. */
-    y: -0.04,
-    r: 1,
     rate: 0.23,
     phase: 0,
     wobble: [
@@ -320,8 +350,6 @@ const BUBBLES = [
   },
   {
     side: 1,
-    y: 0.05,
-    r: 0.82,
     rate: 0.19,
     phase: 2.1,
     wobble: [
@@ -643,7 +671,8 @@ export function Bubble(props: BubbleProps) {
          */
         let cx = p.bubbleX * W + b.side * p.bubbleSpread * 0.5 * basis
           + Math.cos(wander) * p.bubbleWander * basis
-        let cy = (p.bubbleY + b.y) * H + Math.sin(wander * 1.3) * p.bubbleWander * basis
+        let cy = (p.bubbleY + b.side * p.bubbleStagger * 0.5) * H
+          + Math.sin(wander * 1.3) * p.bubbleWander * basis
         if (p.cursorInteraction && state.pointer.active) {
           const dx = state.pointer.x * W - cx
           const dy = state.pointer.y * H - cy
@@ -653,8 +682,12 @@ export function Bubble(props: BubbleProps) {
           cy += dy * pull
         }
         const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        /* Off the height, so widening the frame adds room beside the bubbles rather than inflating them. */
-        const radius = Math.max(1, basis * p.bubbleScale * b.r * pulse)
+        /*
+         * Off the height, so widening the frame adds room beside the bubbles rather than inflating them.
+         * `bubbleBalance` is a seesaw around `bubbleScale`: one side gains what the other gives up, so
+         * changing it resizes the two against each other without resizing the pair.
+         */
+        const radius = Math.max(1, basis * p.bubbleScale * (1 + b.side * p.bubbleBalance) * pulse)
         return { b, cx, cy, radius, radiusY: radius * p.bubbleHeight }
       })
 
