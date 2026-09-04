@@ -55,10 +55,12 @@ const meta = {
           '  than the frame, so that edge is all you see, and it is what has to sit right against the',
           '  content in front of it. `bubbleScale` and `bubbleSpread` are read together, and the',
           '  interesting range is where the two just touch. `edgeSoftness` decides crisp or dissolved.',
-          '- **Mesh** carries the colour. `hotColor` sets it, and `richness` is what turns that one colour',
-          '  into several by spreading the masses\' hues either side of it — reach for `richness` before',
-          '  reaching for a different `hotColor`. `spectralDrift` sweeps that spread around the palette and',
-          '  comes back; `meshFollow` is what nails the colour to the bubbles rather than to the canvas.',
+          '- **Mesh** carries the colour, and it has two poles: `hotColor` and `accentColor`, with each',
+          '  mass sitting somewhere between them. Those are what make the mesh two colours; `richness` is',
+          '  different, spreading hues either side of wherever a mass already sits — variation within a',
+          '  colour rather than a second one. `spectralDrift` sweeps that spread around and back;',
+          '  `meshFollow` is what nails the colour to the bubbles rather than to the canvas. Each pole has',
+          '  its own value per scheme, under **Mesh (dark)** and **Mesh (light)**.',
           '- **Glow** is the rim inside each edge. `glow` is its brightness and `glowOpacity` the layer\'s,',
           '  which are worth having apart: the first changes how hot the rim is, the second how much of it',
           '  survives the blend. `glowOffset` floats it inward. `glowBlend` decides how it meets the mesh —',
@@ -155,9 +157,15 @@ export const Morph: Story = {
   ),
 }
 
-/** Teal → lime. Same two bubbles, different two colours. */
+/** Teal and lime as the two poles, on a near-black ground. */
 export const Aurora: Story = {
-  args: { color: '#04170f', hotColor: '#2bb98a', glowColor: '#8ff0c4', richness: 0.8 },
+  args: {
+    color: '#04170f',
+    hotColor: '#2bb98a',
+    accentColor: '#7fd93a',
+    glowColor: '#8ff0c4',
+    richness: 0.8,
+  },
   render: (args) => (
     <Frame>
       <Bubble {...args} />
@@ -165,11 +173,12 @@ export const Aurora: Story = {
   ),
 }
 
-/** Warm amber over a maroon ground. */
+/** Amber and rose over a maroon ground — a pair that straddles red, which the short-arc hue lerp handles. */
 export const Sunset: Story = {
   args: {
     color: '#220a10',
     hotColor: '#c2571f',
+    accentColor: '#d6317a',
     glowColor: '#ffb877',
     richness: 0.55,
     speed: 0.25,

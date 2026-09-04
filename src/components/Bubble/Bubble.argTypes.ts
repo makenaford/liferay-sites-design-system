@@ -70,7 +70,13 @@ export const BUBBLE_ARG_TYPES = {
   hotColor: {
     control: 'color',
     table: { category: 'Mesh (dark)' },
-    description: 'The lit colour the blobs drift either side of.',
+    description: 'The lit colour the masses drift either side of.',
+  },
+  accentColor: {
+    control: 'color',
+    table: { category: 'Mesh (dark)' },
+    description:
+      'The second lit colour. Each mass sits somewhere between this and `hotColor`, so the mesh is two colours rather than one plus spread.',
   },
   colorLight: {
     control: 'color',
@@ -81,6 +87,11 @@ export const BUBBLE_ARG_TYPES = {
     control: 'color',
     table: { category: 'Mesh (light)' },
     description: 'The lit colour on a light surface.',
+  },
+  accentColorLight: {
+    control: 'color',
+    table: { category: 'Mesh (light)' },
+    description: 'The second lit colour on a light surface.',
   },
   richness: {
     control: { type: 'range', min: 0, max: 1.5, step: 0.05 },

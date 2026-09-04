@@ -83,6 +83,19 @@ export interface BubbleProps {
   /** The mesh's lit colour on a dark surface. Masses are hues drifted off this one. @default '#6d3bf5' */
   hotColor?: string
   /**
+   * The mesh's **second** lit colour on a dark surface — the other pole the masses are shared between.
+   *
+   * `richness` spreads hues either side of a colour, which varies a field without ever leaving it; this
+   * gives the mesh a second colour to actually be. Each mass sits somewhere between the two by a fixed
+   * amount, so both bubbles carry some of each rather than one going blue and the other violet.
+   *
+   * Hues interpolate the short way round the wheel, so a pair that straddles red does not travel through
+   * green to meet.
+   *
+   * @default '#2563eb'
+   */
+  accentColor?: string
+  /**
    * The ground on a **light** surface.
    *
    * One palette cannot serve both: a violet mesh that reads as depth on near-black reads as a stain on
@@ -95,6 +108,8 @@ export interface BubbleProps {
   colorLight?: string
   /** The mesh's lit colour on a light surface. @default '#8b5cf6' */
   hotColorLight?: string
+  /** The mesh's second lit colour on a light surface. @default '#93c5fd' */
+  accentColorLight?: string
   /** How far the masses' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
   richness?: number
   /**
@@ -225,8 +240,10 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   surfaceColor: 'var(--sds-surfaces-page-bg-base-default)',
   color: '#0b0a1c',
   hotColor: '#6d3bf5',
+  accentColor: '#2563eb',
   colorLight: '#f2f0fb',
   hotColorLight: '#8b5cf6',
+  accentColorLight: '#93c5fd',
   richness: 1,
   spectralDrift: 18,
   meshFollow: 0.85,
@@ -294,12 +311,25 @@ const BUBBLES = [
  * units.
  */
 const MESH_BLOBS = [
-  { bubble: 0, x: -0.35, y: -0.3, r: 0.85, hue: -1, light: 0.95, rate: 0.21, phase: 0, orbit: 0.06 },
-  { bubble: 0, x: 0.3, y: 0.25, r: 0.95, hue: -0.25, light: 1.05, rate: 0.17, phase: 1.9, orbit: 0.07 },
-  { bubble: 0, x: 0.1, y: -0.45, r: 0.6, hue: 0.4, light: 0.9, rate: 0.26, phase: 4.2, orbit: 0.05 },
-  { bubble: 1, x: -0.25, y: 0.3, r: 0.8, hue: 0.35, light: 1, rate: 0.23, phase: 3.4, orbit: 0.06 },
-  { bubble: 1, x: 0.3, y: -0.2, r: 0.9, hue: 1, light: 1.1, rate: 0.15, phase: 5.1, orbit: 0.08 },
+  { bubble: 0, x: -0.35, y: -0.3, r: 0.85, hue: -1, tint: 0.85, light: 0.95, rate: 0.21, phase: 0, orbit: 0.06 },
+  { bubble: 0, x: 0.3, y: 0.25, r: 0.95, hue: -0.25, tint: 0.1, light: 1.05, rate: 0.17, phase: 1.9, orbit: 0.07 },
+  { bubble: 0, x: 0.1, y: -0.45, r: 0.6, hue: 0.4, tint: 0.5, light: 0.9, rate: 0.26, phase: 4.2, orbit: 0.05 },
+  { bubble: 1, x: -0.25, y: 0.3, r: 0.8, hue: 0.35, tint: 0.15, light: 1, rate: 0.23, phase: 3.4, orbit: 0.06 },
+  { bubble: 1, x: 0.3, y: -0.2, r: 0.9, hue: 1, tint: 0.9, light: 1.1, rate: 0.15, phase: 5.1, orbit: 0.08 },
 ]
+
+/**
+ * Hue interpolation the short way round the wheel.
+ *
+ * A straight lerp between two hues takes whichever route the numbers happen to describe, so a pair
+ * straddling red — 350 and 10 — travels 340 degrees through green to cover what is really a 20 degree
+ * gap, and the mesh sweeps the whole spectrum on its way between two neighbouring colours.
+ */
+function lerpHue(from: number, to: number, t: number): number {
+  return from + ((((to - from) % 360) + 540) % 360 - 180) * t
+}
+
+const lerp = (from: number, to: number, t: number) => from + (to - from) * t
 
 function hexToHsl(hex: string): [number, number, number] {
   const m = hex.replace('#', '')
@@ -422,9 +452,10 @@ function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
  *
  * Three passes on one canvas, and the last is the whole trick:
  *
- * 1. **The mesh.** Overlapping soft colour masses on a deep ground, hues drifted either side of
- *    `hotColor` by `richness` and swept around it by `spectralDrift`. Every mass belongs to a bubble and
- *    is placed in that bubble's own coordinates, so the colour wanders, swells and morphs with it.
+ * 1. **The mesh.** Overlapping soft colour masses on a deep ground, each sitting somewhere between
+ *    `hotColor` and `accentColor`, with hues drifted either side of that by `richness` and swept around
+ *    by `spectralDrift`. Every mass belongs to a bubble and is placed in that bubble's own coordinates,
+ *    so the colour wanders, swells and morphs with it.
  * 2. **The rim.** A blurred outline just inside each bubble's edge, composited with `glowBlend` so it
  *    sits in the mesh rather than on it.
  * 3. **The plate.** `surfaceColor` — *the page's own background* — filling everything **except** the two
@@ -627,10 +658,12 @@ export function Bubble(props: BubbleProps) {
       const surfaceIsLight = 0.2126 * surfR + 0.7152 * surfG + 0.0722 * surfB > 140
       const groundColor = surfaceIsLight ? p.colorLight : p.color
       const litColor = surfaceIsLight ? p.hotColorLight : p.hotColor
+      const secondColor = surfaceIsLight ? p.accentColorLight : p.accentColor
       const rimColor = surfaceIsLight ? p.glowColorLight : p.glowColor
 
       const [ch, cs, cl] = hexToHsl(groundColor)
       const [hh, hs, hl] = hexToHsl(litColor)
+      const [ah, as, al] = hexToHsl(secondColor)
 
       ctx.fillStyle = hsl(ch, cs * sat, cl)
       ctx.fillRect(0, 0, W, H)
@@ -654,13 +687,18 @@ export function Bubble(props: BubbleProps) {
         const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W
         const cy = looseY + (anchorY - looseY) * p.meshFollow + state.lean.y * p.meshDrift * H
         const radius = Math.max(1, home.radius * blob.r * p.meshScale)
+        /* Somewhere between the two lit colours, by a fixed amount, so both bubbles carry some of each. */
+        const baseHue = lerpHue(hh, ah, blob.tint)
+        const baseSat = lerp(hs, as, blob.tint)
+        const baseLight = lerp(hl, al, blob.tint) * blob.light
         /* Oscillating around the palette rather than advancing through it — see `spectralDrift`. */
         const sweep = Math.sin(time * 0.35 + blob.phase * 0.5) * p.spectralDrift
-        const hue = hh + blob.hue * p.richness * 70 + sweep
+        const hue = baseHue + blob.hue * p.richness * 70 + sweep
+        const tone = Math.min(1, baseSat * sat)
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
-        gradient.addColorStop(0, hsl(hue, Math.min(1, hs * sat), hl * blob.light, 0.62))
-        gradient.addColorStop(0.55, hsl(hue, Math.min(1, hs * sat), hl * blob.light * 0.75, 0.28))
-        gradient.addColorStop(1, hsl(hue, Math.min(1, hs * sat), hl * blob.light * 0.5, 0))
+        gradient.addColorStop(0, hsl(hue, tone, baseLight, 0.62))
+        gradient.addColorStop(0.55, hsl(hue, tone, baseLight * 0.75, 0.28))
+        gradient.addColorStop(1, hsl(hue, tone, baseLight * 0.5, 0))
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, W, H)
       }

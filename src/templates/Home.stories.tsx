@@ -1283,6 +1283,8 @@ export const BubbleBackground: Story = {
      */
     color: '#0a0a1e',
     hotColor: '#7c4dff',
+    /* The brand blue against the violet, which is the pair the hero's own gradient headline runs. */
+    accentColor: '#2f6bff',
     colorLight: '#f7f6fd',
     /*
      * Much paler than the dark canvas's lit colour, and not by taste. The two schemes put *opposite*
@@ -1290,6 +1292,7 @@ export const BubbleBackground: Story = {
      * light one loses it. A violet that reads as depth behind white text is a wash behind black text.
      */
     hotColorLight: '#c4b5fd',
+    accentColorLight: '#a9c9ff',
     richness: 0.85,
     spectralDrift: 18,
     saturation: 1.12,
