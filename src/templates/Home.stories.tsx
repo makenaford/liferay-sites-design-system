@@ -1274,21 +1274,30 @@ export const BubbleBackground: Story = {
     swell: 0.11,
     swellFrequency: 0.7,
     edgeSoftness: 0.05,
-    color: '#160a3a',
-    hotColor: '#5b30c4',
     /*
-     * Both well under the component's own defaults, and for the same reason: this is behind a headline.
-     * The full spectral spread and a hot glow band are the right look for the component's own frame,
-     * where nothing has to be read on top of it — here they climb straight over the text.
+     * The grounds sit almost on the page's own colour in both schemes, which is what lets `meshFade` stay
+     * off: the mesh has no edge to hide at the top because its ground already *is* the page. All the
+     * colour comes from the blobs.
      */
-    richness: 0.5,
-    spectralDrift: 12,
-    saturation: 1,
-    meshFade: 0.22,
-    glow: 0.3,
-    glowOpacity: 0.45,
-    glowColor: '#8f6bff',
-    glowWidth: 0.16,
+    color: '#0a0a1e',
+    hotColor: '#7c4dff',
+    colorLight: '#f3f1fb',
+    hotColorLight: '#8b5cf6',
+    richness: 0.85,
+    spectralDrift: 18,
+    saturation: 1.12,
+    meshFade: 0,
+    glow: 0.7,
+    glowOpacity: 0.8,
+    glowColor: '#c9a6ff',
+    glowColorLight: '#7c3aed',
+    glowWidth: 0.24,
+    /*
+     * Tighter than the component's own 2.2. The lift that keeps the band above the wave scales with the
+     * distortion, so a loose glow on a wave this wide rides a long way clear of it and stops reading as
+     * the wave's own light — which is the whole job it has here.
+     */
+    glowDistortion: 1.4,
   },
   argTypes: BUBBLE_ARG_TYPES,
   render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,

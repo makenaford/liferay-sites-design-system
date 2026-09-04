@@ -46,11 +46,25 @@ export const BUBBLE_ARG_TYPES = {
       'The colour the wave is painted in — **must match the page behind the component**, or it stops reading as transparency. Takes `var(--token)`.',
   },
 
-  color: { control: 'color', table: { category: 'Mesh' }, description: "The mesh's deep ground." },
+  color: {
+    control: 'color',
+    table: { category: 'Mesh (dark)' },
+    description: "The ground the blobs sit on. Keep it near `surfaceColor` or the mesh gains an edge.",
+  },
   hotColor: {
     control: 'color',
-    table: { category: 'Mesh' },
+    table: { category: 'Mesh (dark)' },
     description: 'The lit colour the blobs drift either side of.',
+  },
+  colorLight: {
+    control: 'color',
+    table: { category: 'Mesh (light)' },
+    description: 'The ground on a light surface. Which pair is used follows `surfaceColor`’s luminance.',
+  },
+  hotColorLight: {
+    control: 'color',
+    table: { category: 'Mesh (light)' },
+    description: 'The lit colour on a light surface.',
   },
   richness: {
     control: { type: 'range', min: 0, max: 1.5, step: 0.05 },
@@ -92,7 +106,16 @@ export const BUBBLE_ARG_TYPES = {
     control: { type: 'range', min: 0, max: 1, step: 0.05 },
     table: { category: 'Glow' },
   },
-  glowColor: { control: 'color', table: { category: 'Glow' } },
+  glowColor: {
+    control: 'color',
+    table: { category: 'Glow' },
+    description: 'On a dark surface.',
+  },
+  glowColorLight: {
+    control: 'color',
+    table: { category: 'Glow' },
+    description: 'On a light surface.',
+  },
   glowWidth: {
     control: { type: 'range', min: 0.02, max: 0.8, step: 0.01 },
     table: { category: 'Glow' },

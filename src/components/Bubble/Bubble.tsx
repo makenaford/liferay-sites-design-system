@@ -27,10 +27,31 @@ export interface BubbleProps {
    * @default 'var(--sds-surfaces-page-bg-base-default)'
    */
   surfaceColor?: string
-  /** The mesh's deep colour — the ground its blobs sit on. @default '#140833' */
+  /**
+   * The mesh's ground — the colour its blobs sit on, used when `surfaceColor` resolves to a **dark**
+   * surface.
+   *
+   * Worth keeping close to the surface itself. The blobs carry the colour; the ground's job is to be the
+   * thing they fade into, and a ground that differs from the page is a rectangle with an edge on it.
+   *
+   * @default '#0b0a1c'
+   */
   color?: string
-  /** The mesh's lit colour. Blobs are hues drifted off this one. @default '#5b30c4' */
+  /** The mesh's lit colour on a dark surface. Blobs are hues drifted off this one. @default '#6d3bf5' */
   hotColor?: string
+  /**
+   * The ground on a **light** surface.
+   *
+   * One palette cannot serve both: a violet mesh that reads as depth on near-black reads as a stain on
+   * white, and the text over it flips from light to dark at the same moment. Which pair is used is
+   * decided by the luminance of the resolved `surfaceColor`, so it follows the colour scheme by the same
+   * route the wave does — no separate flag to keep in sync.
+   *
+   * @default '#f2f0fb'
+   */
+  colorLight?: string
+  /** The mesh's lit colour on a light surface. @default '#8b5cf6' */
+  hotColorLight?: string
   /** How far the blobs' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
   richness?: number
   /**
@@ -57,7 +78,15 @@ export interface BubbleProps {
   saturation?: number
   /** Size of the mesh's colour masses. @default 1 */
   meshScale?: number
-  /** How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1. @default 0.3 */
+  /**
+   * How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1.
+   *
+   * **Off by default**, because keeping the mesh's ground close to the surface handles the same problem
+   * without laying a gradient across the top of the picture. Worth turning on only when the component
+   * ends part-way up a page *and* its ground has been pulled well away from the surface colour.
+   *
+   * @default 0
+   */
   meshFade?: number
   /**
    * Brightness of the glow band — the layer between the mesh and the wave.
@@ -74,8 +103,10 @@ export interface BubbleProps {
   glow?: number
   /** Overall opacity of the glow layer, applied as it is composited. @default 0.85 */
   glowOpacity?: number
-  /** The glow's colour. Its hues spread with `richness`, like the mesh's. @default '#b98cff' */
+  /** The glow's colour on a dark surface. Its hues spread with `richness`, like the mesh's. @default '#c4a2ff' */
   glowColor?: string
+  /** The glow's colour on a light surface. @default '#7c3aed' */
+  glowColorLight?: string
   /** Thickness of the glow band, as a fraction of the shorter side. @default 0.3 */
   glowWidth?: number
   /** How much more distorted the glow's curve is than the wave's. 1 tracks it exactly. @default 2.2 */
@@ -121,17 +152,20 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   waterline: -0.28,
   edgeSoftness: 0.03,
   surfaceColor: 'var(--sds-surfaces-page-bg-base-default)',
-  color: '#140833',
-  hotColor: '#5b30c4',
+  color: '#0b0a1c',
+  hotColor: '#6d3bf5',
+  colorLight: '#f2f0fb',
+  hotColorLight: '#8b5cf6',
   richness: 1,
   spectralDrift: 26,
   meshFollow: 0.55,
   saturation: 1.05,
   meshScale: 1,
-  meshFade: 0.3,
-  glow: 0.55,
-  glowOpacity: 0.85,
-  glowColor: '#b98cff',
+  meshFade: 0,
+  glow: 0.8,
+  glowOpacity: 0.9,
+  glowColor: '#c4a2ff',
+  glowColorLight: '#7c3aed',
   glowWidth: 0.3,
   glowDistortion: 2.2,
   glowBlend: 'screen',
@@ -442,8 +476,22 @@ export function Bubble(props: BubbleProps) {
       /* ---------------------------------------------------------------- 1. the mesh */
 
       const sat = Math.max(0, Math.min(1.5, p.saturation))
-      const [ch, cs, cl] = hexToHsl(p.color)
-      const [hh, hs, hl] = hexToHsl(p.hotColor)
+      /*
+       * Which palette, decided by the surface rather than by a flag.
+       *
+       * The component already has to resolve `surfaceColor` to paint the wave, and that value is the one
+       * thing that reliably says which way round the page is — so the light and dark palettes are chosen
+       * from its luminance. That keeps the mesh, the glow and the wave all following the colour scheme by
+       * the same route, with nothing to keep in sync.
+       */
+      const [surfR, surfG, surfB] = toRgb(ctx, surface)
+      const surfaceIsLight = 0.2126 * surfR + 0.7152 * surfG + 0.0722 * surfB > 140
+      const groundColor = surfaceIsLight ? p.colorLight : p.color
+      const litColor = surfaceIsLight ? p.hotColorLight : p.hotColor
+      const glowColor = surfaceIsLight ? p.glowColorLight : p.glowColor
+
+      const [ch, cs, cl] = hexToHsl(groundColor)
+      const [hh, hs, hl] = hexToHsl(litColor)
 
       ctx.fillStyle = hsl(ch, cs * sat, cl)
       ctx.fillRect(0, 0, W, H)
@@ -482,10 +530,9 @@ export function Bubble(props: BubbleProps) {
        * there is no shape up there to cut.
        */
       if (p.meshFade > 0) {
-        const [sr, sg, sb] = toRgb(ctx, surface)
         const fade = ctx.createLinearGradient(0, 0, 0, Math.max(1, H * p.meshFade))
-        fade.addColorStop(0, `rgba(${sr}, ${sg}, ${sb}, 1)`)
-        fade.addColorStop(1, `rgba(${sr}, ${sg}, ${sb}, 0)`)
+        fade.addColorStop(0, `rgba(${surfR}, ${surfG}, ${surfB}, 1)`)
+        fade.addColorStop(1, `rgba(${surfR}, ${surfG}, ${surfB}, 0)`)
         ctx.fillStyle = fade
         ctx.fillRect(0, 0, W, Math.ceil(H * p.meshFade))
       }
@@ -517,7 +564,7 @@ export function Bubble(props: BubbleProps) {
         gg.clearRect(0, 0, GW, GH)
 
         /* Banded along its length by the same spectrum the mesh runs, so the glow belongs to the field. */
-        const [gh, gs, gl] = hexToHsl(p.glowColor)
+        const [gh, gs, gl] = hexToHsl(glowColor)
         const band = gg.createLinearGradient(0, 0, GW, 0)
         const stops = 6
         for (let i = 0; i <= stops; i++) {
@@ -533,17 +580,30 @@ export function Bubble(props: BubbleProps) {
         gg.lineCap = 'round'
 
         const gOverhang = gPad / Math.max(1, W)
+        /*
+         * The band is anchored **on** the wave, not amplified around it.
+         *
+         * Amplifying the wave's own amplitudes swings the band's bright core a long way clear of the
+         * curve — measured 160px clear at the hero's size, with the 15px above the wave reading as dark
+         * ground. That is a second stripe floating over the picture, not the wave's own light.
+         *
+         * So the curve here *is* the wave's, nudged up by a fraction of the band's width, with a slower
+         * wobble laid on top for the looser form. The wobble is subtracted as an absolute value, so it
+         * can only ever lift the band clear of the wave and never sink it below. The wave is drawn after
+         * this and clips the lower half, which leaves the brightest part of the band sitting exactly on
+         * the cut — which is what an edge actually lit from below looks like.
+         */
+        const halfBand = (S * p.glowWidth * 0.5) / H
+        const wobbleAmp = (p.glowDistortion - 1) * (Math.abs(p.swell) + Math.abs(p.ripple))
         const glowPts: [number, number][] = []
         for (let i = 0; i <= N; i++) {
           const u = -gOverhang + (i / N) * (1 + gOverhang * 2)
-          let y = level + waveY(
-            u,
-            time,
-            p.swell * p.glowDistortion,
-            p.swellFrequency,
-            p.ripple * p.glowDistortion,
-            p.rippleFrequency,
-          )
+          const wobble = wobbleAmp * Math.sin(u * Math.PI * 2 * p.swellFrequency * 0.6 + time * 0.8)
+          let y =
+            level
+            + waveY(u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency)
+            - halfBand * 0.35
+            - Math.abs(wobble)
           if (p.cursorInteraction && state.pointer.active) {
             const du = u - state.pointer.x
             const reach = Math.max(0.02, p.cursorReach)
