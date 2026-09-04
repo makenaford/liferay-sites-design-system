@@ -183,15 +183,6 @@ export interface BubbleProps {
    */
   meshMotion?: number
   /**
-   * How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1.
-   *
-   * **Off by default.** The bubbles already end the mesh on every side; this exists only for a component
-   * whose ground has been pulled well away from the surface colour.
-   *
-   * @default 0
-   */
-  meshFade?: number
-  /**
    * Brightness of the rim light around each bubble.
    *
    * Drawn between the mesh and the plate, so the plate trims whatever falls outside the outline and what
@@ -352,7 +343,6 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   saturation: 1.05,
   meshScale: 1,
   meshMotion: 1,
-  meshFade: 0,
   glow: 0.8,
   glowOpacity: 0.9,
   glowColor: '#c4a2ff',
@@ -560,7 +550,7 @@ function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
 /**
  * Bubble — two morphing bubbles, filled with a drifting colour mesh.
  *
- * Three passes on one canvas, and the last is the whole trick:
+ * Four passes on one canvas, and the third is the whole trick:
  *
  * 1. **The mesh.** Overlapping soft colour masses on a deep ground, each sitting somewhere between
  *    `hotColor` and `accentColor`, with hues drifted either side of that by `richness` and swept around
@@ -569,7 +559,10 @@ function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
  * 2. **The rim.** A blurred outline just inside each bubble's edge, composited with `glowBlend` so it
  *    sits in the mesh rather than on it.
  * 3. **The plate.** `surfaceColor` — *the page's own background* — filling everything **except** the two
- *    bubbles, punched out with an even-odd fill.
+ *    bubbles, which are erased out of it.
+ * 4. **The border.** Optional and off by default. Drawn *after* the plate rather than before, so unlike
+ *    the rim it is not trimmed to the inside of the edge: it straddles the outline and glows onto the
+ *    page.
  *
  * So nothing is lit and nothing is blended with the page. The component is opaque everywhere and still
  * reads as two bubbles floating on the page, because everywhere that is not a bubble it is painting
@@ -855,14 +848,6 @@ export function Bubble(props: BubbleProps) {
         gradient.addColorStop(1, hsl(hue, tone, baseLight * 0.5, 0))
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, W, H)
-      }
-
-      if (p.meshFade > 0) {
-        const fade = ctx.createLinearGradient(0, 0, 0, Math.max(1, H * p.meshFade))
-        fade.addColorStop(0, `rgba(${surfR}, ${surfG}, ${surfB}, 1)`)
-        fade.addColorStop(1, `rgba(${surfR}, ${surfG}, ${surfB}, 0)`)
-        ctx.fillStyle = fade
-        ctx.fillRect(0, 0, W, Math.ceil(H * p.meshFade))
       }
 
       /* ---------------------------------------------------------------- 2. the rim */

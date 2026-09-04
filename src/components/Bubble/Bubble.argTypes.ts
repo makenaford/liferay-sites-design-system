@@ -3,8 +3,8 @@ import type { Bubble } from './Bubble'
 
 /**
  * The Controls-panel definition for every `BubbleProps` field, grouped by the two things the component
- * actually draws — the **Mesh** behind and the **Wave** in front — rather than one flat alphabetical
- * list. Shared with any other story that wants a fully controllable `<Bubble>`, e.g.
+ * actually draws — the **Bubbles**, the **Mesh** inside them, the **Glow** on their inner edge and
+ * the **Border** on their outline — rather than one flat alphabetical list. Shared with any other story that wants a fully controllable `<Bubble>`, e.g.
  * `Home.stories.tsx`'s `BubbleBackground`, so the grouping and ranges stay in one place.
  */
 export const BUBBLE_ARG_TYPES = {
@@ -137,11 +137,6 @@ export const BUBBLE_ARG_TYPES = {
     description:
       'How far the colours travel inside their bubble. `speed` sets how fast everything moves; this sets how far the mesh churns.',
   },
-  meshFade: {
-    control: { type: 'range', min: 0, max: 1, step: 0.02 },
-    table: { category: 'Mesh' },
-    description: 'How far the mesh dissolves into `surfaceColor` at the top edge.',
-  },
   grain: { control: { type: 'range', min: 0, max: 0.3, step: 0.005 }, table: { category: 'Mesh' } },
   opacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, table: { category: 'Mesh' } },
 
@@ -226,7 +221,7 @@ export const BUBBLE_ARG_TYPES = {
   cursorLift: {
     control: { type: 'range', min: 0, max: 0.4, step: 0.01 },
     table: { category: 'Cursor' },
-    description: 'How far the wave rises under the pointer.',
+    description: 'How far the bubbles are drawn toward the pointer.',
   },
   cursorReach: {
     control: { type: 'range', min: 0.02, max: 0.6, step: 0.01 },
@@ -235,7 +230,7 @@ export const BUBBLE_ARG_TYPES = {
   meshDrift: {
     control: { type: 'range', min: 0, max: 0.6, step: 0.01 },
     table: { category: 'Cursor' },
-    description: 'How far the pointer pulls the mesh — its parallax against the wave.',
+    description: 'How far the pointer pulls the mesh within the bubbles — its parallax against them.',
   },
 
   adaptiveQuality: { control: 'boolean', table: { category: 'Performance' } },

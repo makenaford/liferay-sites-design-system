@@ -26,8 +26,8 @@ const meta = {
     docs: {
       description: {
         component: [
-          'Two morphing bubbles filled with a drifting colour mesh — three passes on one canvas, and the',
-          'last is the whole trick:',
+          'Two morphing bubbles filled with a drifting colour mesh — four passes on one canvas, and the',
+          'third is the whole trick:',
           '',
           '1. **The mesh** — overlapping soft colour masses on a deep ground, hues drifted either side of',
           '   `hotColor` by `richness` and swept around it by `spectralDrift`. Every mass belongs to a',
@@ -38,6 +38,8 @@ const meta = {
           '   survives is light caught in the bubble\'s own skin.',
           '3. **The plate** — `surfaceColor`, *the page\'s own background*, filling everything **except**',
           '   the two bubbles.',
+          '4. **The border** — optional, off by default, and drawn *after* the plate, so unlike the rim it',
+          '   straddles the outline instead of being trimmed to the inside of it.',
           '',
           'So nothing is lit and nothing is blended with the page. The component is opaque everywhere and still reads',
           'as two bubbles floating on the page, because everywhere that is not a bubble it paints exactly',
