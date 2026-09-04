@@ -3060,14 +3060,19 @@
   }
 }
 
-/* The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule. */
+/*
+ * The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule.
+ *
+ * `Gradient Card/03` into `Gradient Card/blue`, both real tokens now — the first was standing in as
+ * `Surfaces/Card BG/Grey` while the group was missing from the Figma export.
+ */
 .megaFeatured {
   width: clamp(260px, 24vw, 320px);
   border-inline-start: 1px solid var(--sds-neutral-03);
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 64px) clamp(20px, 3vw, 40px);
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 50%, transparent) 64%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 50%, transparent) 64%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 28%, transparent) 100%
   );
 }
@@ -3624,16 +3629,33 @@
  * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
  * anything inside it scrolls away, and the file keeps this button on screen at every level.
  */
+/*
+ * The foot of the drawer.
+ *
+ * Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves, which is what the
+ * file draws. Two *columns* rather than a column per child, so a third item wraps to a second row
+ * instead of shrinking all three — three equal columns on a phone leaves about 100px a button, which is
+ * not enough for `Create an account`.
+ */
 .headerDrawerFooter {
   flex: none;
   display: grid;
-  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   padding: 20px 24px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+/*
+ * An odd one out takes the whole row rather than half of it and a gap.
+ *
+ * With the two the file draws this never matches. With three — two account buttons and the call to
+ * action — it puts the call to action across the foot, which is where the primary action wants to be
+ * anyway.
+ */
+.headerDrawerFooter > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .headerDrawerFooter > * {
@@ -3689,17 +3711,17 @@
  *
  *   linear-gradient(178deg, Components/Gradient Card/03 63.85%, Components/Gradient Card/blue 84.95%)
  *
- * `Gradient Card/03` is **not exported** — the token pipeline brings across only the blue and purple
- * stops, on the grounds that the other three are all `Surfaces/Card BG/Grey`. So that is what stands in
- * here, at the file's own 15%, which is also what the desktop rail already does. The two differ by
- * #0F131B against Figma's #0A0E17, which at 15% alpha is not a difference anyone can see — but it is a
- * stand-in, and it is written down as one.
+ * `Gradient Card/03` is a real token now — `tokens/figma/color.gradient-card.*.tokens.json`, read out of
+ * the Plugin API because the UI export omits the group. It used to stand in as `Surfaces/Card BG/Grey`,
+ * with a note that the two differed by #0F131B against Figma's #0A0E17. The export says #0F131B, so
+ * either the file moved or the note was wrong; either way the stand-in is gone and this is the value
+ * the file holds.
  */
 .headerDrawerPanel .megaFeatured,
 .headerDrawerPanel .megaCta {
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 15%, transparent) 63.85%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 15%, transparent) 63.85%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 15%, transparent) 84.95%
   );
 }
@@ -4426,15 +4448,18 @@
  * and it never stretches past the width it is given.
  */
 /*
- * The banner's top padding is the file's 40 — plus the bar's own height when a fixed header is over it.
+ * Under a fixed header the banner clears the bar and no more: 64px, the bar's own height.
  *
  * `:has()` rather than a prop: the hero cannot be told what is above it without every page having to
  * pass that down, and the one thing that reliably knows is the document. A fixed header reserves no
- * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it,
- * and 64 + 40 is exactly where `Hero` sits under `LRDC Primary Nav` in the file.
+ * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it.
+ *
+ * It was 64 + 40, the bar plus the file's own gap between the nav and the banner, which came to 104 and
+ * left the solution finder floating well down the hero. The 40 is the gap under a nav that occupies its
+ * own band; a fixed bar the artwork already runs behind does not want it twice.
  */
 body:has(.headerShell[data-position='fixed']) .heroBanner {
-  padding-block-start: calc(40px + 64px);
+  padding-block-start: 64px;
 }
 
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
@@ -9102,4 +9127,70 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .meshHost > *:not(.meshBackdrop) {
   position: relative;
   z-index: 1;
+}
+
+/* ============================================================================ story filters
+ *
+ * The catalog's filter bar — `All Stories` (node `24581:69993`).
+ *
+ * The control itself is a `Combobox` wearing the theme's own `field*` classes, so it is a `Select` in
+ * every respect the eye can check — height, hairline, focus ring, dropdown. Only the two things a
+ * select cannot do are here: the count badge, and a width that hugs the label instead of filling its
+ * column.
+ */
+.filterInput {
+  /* Composes the real input, so a change to fields reaches this without being copied. */
+  composes: fieldInput;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  font-weight: 600;
+}
+
+/* A filter holding a selection keeps a brand edge whether or not its list is open. */
+.filterInput[data-active] {
+  border-color: var(--sds-brand-primary-lighten-3);
+}
+
+/* The count. `Brand/Primary` filled, because it is the one thing in the row saying "this is on". */
+.filterPillCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--sds-brand-primary-primary);
+  color: var(--sds-action-neutral-inverted);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/*
+ * Clear Filters. A `<button>` wearing the link's colour — it clears state rather than going anywhere,
+ * so it is not a link however much it looks like one.
+ */
+.filterClear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sds-action-link-default-link);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .filterClear:hover {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+.filterClear:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

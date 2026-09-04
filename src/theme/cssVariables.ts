@@ -80,11 +80,23 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'glass-step-01': scheme === 'light' ? 'rgba(173, 201, 255, 0.1)' : 'rgba(255, 255, 255, 0.055)',
     'glass-step-02': 'rgba(140, 150, 169, 0.03)',
     /**
-     * `Components/Gradient Card/blue` / `purple` — the coloured stop of a gradient card. Its other
-     * three stops are all `Surfaces/Card BG/Grey`, which is exported, so only these two are here.
+     * `Components/Gradient Card/*` — the gradient card's five stops, exported rather than transcribed.
+     *
+     * These were two hand-written hexes with a note saying the group was not in the Figma export and
+     * that its other three stops were all `Surfaces/Card BG/Grey` anyway. The first half was true and is
+     * now fixed — `tokens/figma/color.gradient-card.*.tokens.json` carries the group, read out of the
+     * Plugin API the same way `Action/*` was. The second half was a guess, and `01`–`03` are now real
+     * tokens rather than a stand-in that happened to look right.
+     *
+     * The values the hand-written pair claimed were correct, which is worth recording: `blue` is
+     * `#adc9ff` light and `#0117ae` dark, `purple` is `#7414ff` in both. Nothing changes on screen —
+     * what changes is that a re-export now updates them instead of someone remembering to.
      */
-    'gradient-card-blue': scheme === 'light' ? color['brand-primary-lighten-4'] : '#0117ae',
-    'gradient-card-purple': scheme === 'light' ? color['accent-product-accent'] : '#7414ff',
+    'gradient-card-01': color['components-gradient-card-01'],
+    'gradient-card-02': color['components-gradient-card-02'],
+    'gradient-card-03': color['components-gradient-card-03'],
+    'gradient-card-blue': color['components-gradient-card-blue'],
+    'gradient-card-purple': color['components-gradient-card-purple'],
 
     /**
      * The four stops of `CapabilityMap`'s wash — the pulsing glow behind the hub, in `Brand/Primary` and

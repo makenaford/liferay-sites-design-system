@@ -114,6 +114,35 @@ export interface HeroSpec {
   /** The email capture: a field with a contained button. */
   form?: { placeholder: string; submit: string }
   /**
+   * The full form card — Figma's `Form` instance in the hero's right column, where `media` would go.
+   *
+   * Distinct from `form`, which is the *inline* email field a marketing hero puts under its copy. This
+   * is the whole card: a heading, rows of labelled fields, a consent box, the reCAPTCHA line and a
+   * submit. A page has one or the other; a hero with both would be asking twice.
+   *
+   * `rows` is an array of arrays because the file's layout is rows of one or two fields — first and
+   * last name together, the message on its own — and that is a property of the row rather than of any
+   * field in it. Saying it as nesting means a page cannot describe a row that does not exist.
+   */
+  formCard?: {
+    title: string
+    description?: string
+    rows: {
+      label: string
+      type?: 'text' | 'email' | 'tel' | 'select' | 'textarea'
+      required?: boolean
+      /** For `select`. */
+      options?: string[]
+    }[][]
+    /** The checkbox above the terms — the partner-sharing agreement the file draws. */
+    consent?: string
+    /** The reCAPTCHA and privacy line, above the button because it is agreed to *by* submitting. */
+    terms?: string
+    submit: string
+    /** The line under the button — the file's "already have a trial?" link. */
+    footnote?: string
+  }
+  /**
    * The button row — Figma's `Bottom` slot on the hero's content block. The Industry hero (node
    * `24223:209534`) draws two: `Book a Demo` solid and `Contact Sales` outline.
    *
@@ -290,6 +319,32 @@ export type SectionSpec =
       /** The button on the heading's trailing edge — `Additional Resources` draws one. */
       action?: LinkRef
       cards: CardSpec[]
+    }
+  /**
+   * `Customer Stories` -> `All Stories` (node `24581:69993`) — the whole catalog, filtered.
+   *
+   * `resourceGrid`'s neighbour and not the same type: that one renders every card it is given, and this
+   * one owns a filter bar, a result count and the subset those produce. Folding them together would put
+   * a filter bar on every grid in the library, which is the thing this schema exists to avoid.
+   *
+   * **The filters are faceted, and the schema says which way.** A card matches a filter when it carries
+   * *any* of that filter's selected values, and it is shown when it matches *every* filter that has a
+   * selection — OR within, AND across, which is what a reader means by picking Website and Customer
+   * Portal under Solutions and then narrowing by Industry. A filter with nothing selected narrows
+   * nothing.
+   */
+  | {
+      type: 'storyCatalog'
+      title: string
+      /** One multiselect each. The label is the pill's label *and* the key into a card's `facets`. */
+      filters: { label: string; options: string[] }[]
+      /**
+       * The cards, each carrying the values it holds per filter.
+       *
+       * Keyed by the filter's label rather than by an id: there is one name for a filter and this is it,
+       * so a card cannot reference a filter that does not exist without it being obvious in the data.
+       */
+      cards: (CardSpec & { facets?: Record<string, string[]> })[]
     }
   /**
    * Figma `Type=Carousel`. Always centre-titled and always bleeding off both edges, with arrows

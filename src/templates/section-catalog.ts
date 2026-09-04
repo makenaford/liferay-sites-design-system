@@ -57,6 +57,51 @@ export const SECTION_TYPES: SectionType[] = [
     }),
   },
   {
+    type: 'storyCatalog',
+    label: 'Story catalog',
+    hint: 'The whole list of stories, behind multiselect filters and a result count.',
+    blank: () => ({
+      type: 'storyCatalog',
+      title: 'All Stories',
+      filters: [
+        { label: 'Product module', options: ['DXP', 'Commerce', 'CMS', 'Search', 'AI Hub'] },
+        {
+          label: 'Industry',
+          options: ['Financial Services', 'Public Sector', 'Manufacturing', 'Healthcare'],
+        },
+        {
+          label: 'Solutions',
+          options: ['Website', 'Customer Portal', 'Partner Portal', 'Intranet', 'Supplier Portal'],
+        },
+      ],
+      /*
+       * Nine so the grid is three full rows, and every card carries facets so filtering actually
+       * narrows: a blank whose cards match everything would look like a filter bar that does nothing.
+       */
+      cards: [
+        ['DXP', 'Financial Services', 'Customer Portal'],
+        ['Commerce', 'Manufacturing', 'Website'],
+        ['CMS', 'Public Sector', 'Website'],
+        ['Search', 'Healthcare', 'Intranet'],
+        ['AI Hub', 'Financial Services', 'Partner Portal'],
+        ['DXP', 'Manufacturing', 'Supplier Portal'],
+        ['Commerce', 'Healthcare', 'Customer Portal'],
+        ['CMS', 'Public Sector', 'Intranet'],
+        ['Search', 'Financial Services', 'Website'],
+      ].map(([module, industry, solution], i) => ({
+        title: `Customer story ${i + 1}`,
+        description: LOREM,
+        icon: 'mail' as const,
+        href: '#',
+        facets: {
+          'Product module': [module],
+          Industry: [industry],
+          Solutions: [solution],
+        },
+      })),
+    }),
+  },
+  {
     type: 'customerStories',
     label: 'Customer stories',
     hint: 'A bleeding carousel of quotes, each with a figure.',

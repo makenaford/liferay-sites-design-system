@@ -124,11 +124,19 @@ export const SITE_DRAWER_CONTROLS = {
     ],
   },
   /*
-   * One item on a phone. The file's drawer footer is two buttons — Login and Contact Sales — and it
-   * hides the create-an-account link that used to sit in the body; the bar's own account menu still
-   * carries both above the breakpoint.
+   * Both account actions, on a phone as well as in the bar.
+   *
+   * The file's drawer footer is two buttons — Login and Contact Sales — and hides create-an-account. The
+   * note that used to sit here said the bar carried it above the breakpoint; it does not, the bar has
+   * only Log In, so signing up was not reachable anywhere. The footer wraps to a second row for the
+   * third item, so Contact Sales runs across the foot rather than the three of them sharing a row.
    */
-  login: { items: [{ label: 'Login', href: '#' }] },
+  login: {
+    items: [
+      { label: 'Login', href: '#' },
+      { label: 'Create an account', href: '#' },
+    ],
+  },
   /*
    * `md`, matching the log-in beside it at the foot of the drawer. One source for both places this is
    * drawn — the footer and the bar beside the burger — so a page cannot ship two different calls to
