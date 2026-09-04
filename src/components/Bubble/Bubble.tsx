@@ -4,54 +4,32 @@ import type { CSSProperties } from 'react'
 export interface BubbleProps {
   /** How fast the bubbles wander, morph and pulse. @default 0.4 */
   speed?: number
-  /**
-   * Size of the bubbles, as a fraction of the **height** — so they hold their size as the window widens,
-   * and the visible edge stays where it was put. Widening adds room beside them instead.
-   *
-   * @default 0.65
-   */
+  /** Size of the bubbles, as a fraction of the **height**, so it holds as the window widens. @default 0.65 */
   bubbleScale?: number
-  /**
-   * Distance between the two centres, a fraction of the height for the same reason as `bubbleScale`.
-   * Read against it: the interesting range is where the two just touch.
-   *
-   * @default 1.05
-   */
+  /** Distance between the two centres, also a fraction of the height. @default 1.05 */
   bubbleSpread?: number
   /** How far each outline departs from a circle. 0 gives two plain circles. @default 0.2 */
   bubbleMorph?: number
   /**
-   * How far the two are staggered vertically — one rides higher, the other lower, either side of
-   * `bubbleY`. Negative swaps them.
+   * How far the two are staggered vertically, either side of `bubbleY`.
    *
-   * **0 levels the visible edges, not the centres**: `bubbleBalance` makes one bubble bigger, and a
-   * bigger bubble centred at the same height reaches further down. Since the bubbles hang off the top of
-   * the frame the edge is all anyone sees, so the size difference is taken back out of the placement.
+   * **0 levels the visible edges, not the centres**: `bubbleBalance` makes one bubble bigger and a bigger
+   * bubble centred at the same height reaches further down, so the size difference is taken back out of
+   * the placement. The edge is all anyone sees of a shape hanging off the top of the frame.
    *
    * @default 0.09
    */
   bubbleStagger?: number
   /**
    * How much bigger one bubble is than the other, as a seesaw around `bubbleScale` — which is therefore
-   * the pair's *average* size, not either one's. 0 makes them identical, and a pair of identical circles
-   * reads as a repeat rather than a pair.
+   * the pair's *average* size, not either one's.
    *
    * @default -0.1
    */
   bubbleBalance?: number
-  /**
-   * Where the pair sits horizontally, 0 the left edge and 1 the right, with the two either side of it.
-   * Placement follows the frame; the sizes and the gap between them do not.
-   *
-   * @default 0.5
-   */
+  /** Where the pair sits horizontally, the two either side of it. @default 0.5 */
   bubbleX?: number
-  /**
-   * Where the centres sit vertically. Well above centre by default: the bubbles are taller than the frame,
-   * so what shows is their **lower halves** — an edge sweeping across with colour above it.
-   *
-   * @default 0.18
-   */
+  /** Where the centres sit — high, so what shows is the bubbles' **lower halves**. @default 0.18 */
   bubbleY?: number
   /** How much the bubbles swell and shrink as they go. @default 0.12 */
   bubblePulse?: number
@@ -62,19 +40,13 @@ export interface BubbleProps {
   /**
    * The colour everything outside the bubbles is painted in — **the page's own background**, and the one
    * value that has to be right: the bubbles are not shapes drawn over the mesh, they are the only places
-   * the plate covering it is missing. Wrong here and it is a coloured rectangle with two holes.
-   *
-   * Takes `var(--token)`, resolved against the canvas, which is how one value follows the colour scheme.
+   * the plate covering it is missing. Wrong here and it is a coloured rectangle with two holes. Takes
+   * `var(--token)`, resolved against the canvas, which is how one value follows the colour scheme.
    *
    * @default 'var(--sds-surfaces-page-bg-base-default)'
    */
   surfaceColor?: string
-  /**
-   * The mesh's ground on a **dark** surface. Worth keeping close to `surfaceColor`, so the bubbles fall
-   * away into the page where the colour thins rather than ending on a disc.
-   *
-   * @default '#0b0a1c'
-   */
+  /** The mesh's ground on a **dark** surface. Keep it near `surfaceColor`. @default '#0b0a1c' */
   color?: string
   /** The mesh's lit colour on a dark surface. @default '#6d3bf5' */
   hotColor?: string
@@ -87,9 +59,8 @@ export interface BubbleProps {
    */
   accentColor?: string
   /**
-   * The ground on a **light** surface. One palette cannot serve both — a violet that reads as depth on
-   * near-black is a stain on white, and the text over it flips at the same moment. The pair is chosen
-   * from the resolved `surfaceColor`'s luminance, so there is no separate flag to keep in sync.
+   * The ground on a **light** surface. One palette cannot serve both, and the pair is chosen from the
+   * resolved `surfaceColor`'s luminance, so there is no separate flag to keep in sync.
    *
    * @default '#f2f0fb'
    */
@@ -108,27 +79,17 @@ export interface BubbleProps {
    * @default 18
    */
   spectralDrift?: number
-  /**
-   * How strongly the mesh is carried by the bubbles. At 1 each mass is nailed to its bubble and travels
-   * with it; at 0 they sit still and the bubbles slide over them like windows onto a fixed painting.
-   *
-   * @default 0.85
-   */
+  /** How strongly the mesh is carried by its bubble: 1 nails it, 0 leaves it in the canvas. @default 0.85 */
   meshFollow?: number
   /** Vividness of the mesh. @default 1.05 */
   saturation?: number
   /** Size of the mesh's colour masses, relative to the bubble holding them. @default 1 */
   meshScale?: number
-  /**
-   * How far the colour masses travel inside their bubble — distinct from `speed`, which is how fast
-   * everything moves. One is distance, the other rate.
-   *
-   * @default 1
-   */
+  /** How far the masses travel inside their bubble, where `speed` is how fast. @default 1 */
   meshMotion?: number
   /**
    * Brightness of the rim light. Drawn between the mesh and the plate, so the plate trims what falls
-   * outside the outline and what survives is light caught inside the bubble's own skin. 0 skips the pass.
+   * outside the outline and what survives is light caught inside the bubble's skin. 0 skips the pass.
    *
    * @default 0.8
    */
@@ -143,55 +104,31 @@ export interface BubbleProps {
   glowWidth?: number
   /** How far the rim's outline wanders off the bubble's, 1 tracking it exactly. @default 1.6 */
   glowDistortion?: number
-  /**
-   * Moves the rim inward from **every** side (positive) or outward, as a fraction of the radius. With
-   * `glowArc` holding the light low, only the bottom of that ring shows, so raising it reads as lifting
-   * the light off the edge. `glowOffsetX` is the sideways counterpart.
-   *
-   * @default 0.06
-   */
+  /** Moves the rim inward from every side (positive) or outward, as a fraction of the radius. @default 0.06 */
   glowOffset?: number
   /**
-   * Which side the light gathers on — left at negative, right at positive, as a fraction of each bubble's
-   * own radius.
-   *
-   * The value names the side the light ends up on, which is the **opposite** of the way the ring moves:
-   * sliding it right pushes its right side past the edge where the plate trims it, leaving the left side
-   * deep enough inside to show.
+   * Which side the light gathers on, left at negative. The value names the side the light ends up on,
+   * which is the **opposite** of the way the ring moves: sliding it right pushes its right side past the
+   * edge where the plate trims it, leaving the left side deep enough inside to show.
    *
    * @default 0
    */
   glowOffsetX?: number
-  /**
-   * How much of each outline is lit, from the bottom up. 1 rings the whole edge; below it the light
-   * gathers along the **lower** edge, where a shape hanging off the top of the frame catches it.
-   *
-   * @default 0.45
-   */
+  /** How much of the outline is lit, from the bottom up. 1 rings the whole edge. @default 0.45 */
   glowArc?: number
-  /**
-   * How the rim is composited over the mesh. `screen`/`lighten` add light without flattening what is
-   * under them; `overlay`/`soft-light` keep more of the mesh's own hue; `source-over` paints it flat.
-   *
-   * @default 'screen'
-   */
+  /** How the rim is composited over the mesh. @default 'screen' */
   glowBlend?: 'screen' | 'lighten' | 'overlay' | 'soft-light' | 'color-dodge' | 'source-over'
   /**
    * A glowing border along the outline, **off at 0**. Drawn *after* the plate where the rim is drawn
-   * before, so it is not trimmed to the inside of the edge — it straddles the outline and glows onto the
-   * page. The rim is light caught inside the bubble; this is the edge itself being lit.
+   * before, so it straddles the outline and glows onto the page instead of being trimmed to the inside
+   * of it — the rim is light caught inside the bubble, this is the edge itself being lit.
    *
    * @default 0
    */
   borderOpacity?: number
   /** Thickness of the border, as a fraction of the height. @default 0.004 */
   borderWidth?: number
-  /**
-   * How far the border is blurred, as a fraction of the height. 0 is a drawn line; past about its own
-   * width it stops reading as an edge and becomes a halo.
-   *
-   * @default 0.012
-   */
+  /** Blur on the border. 0 is a drawn line; past its own width it becomes a halo. @default 0.012 */
   borderBlur?: number
   /** The border's colour on a dark surface. @default '#c9b0ff' */
   borderColor?: string
