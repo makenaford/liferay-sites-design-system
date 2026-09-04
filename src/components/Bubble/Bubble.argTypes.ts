@@ -14,36 +14,39 @@ export const BUBBLE_ARG_TYPES = {
   },
   paused: { control: 'boolean', table: { category: 'Animation' } },
 
-  swell: {
-    control: { type: 'range', min: 0, max: 0.3, step: 0.005 },
-    table: { category: 'Wave' },
+  bubbleScale: {
+    control: { type: 'range', min: 0.1, max: 1, step: 0.01 },
+    table: { category: 'Bubbles' },
   },
-  swellFrequency: {
-    control: { type: 'range', min: 0.2, max: 6, step: 0.1 },
-    table: { category: 'Wave' },
+  bubbleSpread: {
+    control: { type: 'range', min: 0, max: 0.8, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description: 'How far apart the two sit. At 0 they stack and read as one shape.',
   },
-  ripple: {
-    control: { type: 'range', min: 0, max: 0.2, step: 0.005 },
-    table: { category: 'Wave' },
+  bubbleMorph: {
+    control: { type: 'range', min: 0, max: 0.6, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description: 'How far each outline departs from a circle. 0 gives two plain circles.',
   },
-  rippleFrequency: {
-    control: { type: 'range', min: 0.2, max: 8, step: 0.1 },
-    table: { category: 'Wave' },
+  bubblePulse: {
+    control: { type: 'range', min: 0, max: 0.5, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description: 'How much they swell and shrink as they go.',
   },
-  waterline: {
-    control: { type: 'range', min: -1, max: 1, step: 0.02 },
-    table: { category: 'Wave' },
+  bubbleWander: {
+    control: { type: 'range', min: 0, max: 0.25, step: 0.005 },
+    table: { category: 'Bubbles' },
   },
   edgeSoftness: {
     control: { type: 'range', min: 0, max: 0.3, step: 0.005 },
-    table: { category: 'Wave' },
-    description: '0 is a crisp curve. Anything above it costs an extra offscreen pass.',
+    table: { category: 'Bubbles' },
+    description: '0 is a crisp edge. Anything above it costs an extra offscreen pass.',
   },
   surfaceColor: {
     control: 'text',
-    table: { category: 'Wave' },
+    table: { category: 'Bubbles' },
     description:
-      'The colour the wave is painted in — **must match the page behind the component**, or it stops reading as transparency. Takes `var(--token)`.',
+      'The colour everything outside the bubbles is painted in — **must match the page behind the component**, or it stops reading as transparency. Takes `var(--token)`.',
   },
 
   color: {
@@ -80,7 +83,8 @@ export const BUBBLE_ARG_TYPES = {
   meshFollow: {
     control: { type: 'range', min: 0, max: 1, step: 0.05 },
     table: { category: 'Mesh' },
-    description: 'How strongly the colour masses are carried by the wave under them.',
+    description:
+      'How strongly the colour masses are nailed to their bubble. At 0 they sit still and the bubbles slide over them.',
   },
   saturation: {
     control: { type: 'range', min: 0, max: 1.5, step: 0.05 },
@@ -122,14 +126,16 @@ export const BUBBLE_ARG_TYPES = {
     table: { category: 'Glow' },
   },
   glowDistortion: {
-    control: { type: 'range', min: 1, max: 5, step: 0.1 },
+    control: { type: 'range', min: 1, max: 3, step: 0.05 },
     table: { category: 'Glow' },
-    description: "How much looser the glow's curve is than the wave's. 1 tracks it exactly.",
+    description:
+      "How far the rim's outline wanders off the bubble's. 1 rings the edge evenly; above it the light gathers and thins.",
   },
   glowOffset: {
-    control: { type: 'range', min: -0.3, max: 0.3, step: 0.005 },
+    control: { type: 'range', min: -0.2, max: 0.4, step: 0.01 },
     table: { category: 'Glow' },
-    description: 'Moves the band up (positive) or down into the wave (negative), as a height fraction.',
+    description:
+      'Moves the rim inside (positive) or outside (negative) the edge, as a fraction of the radius. Outside, the plate trims it.',
   },
   glowBlend: {
     control: 'select',

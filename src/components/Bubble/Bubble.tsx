@@ -2,42 +2,53 @@ import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 
 export interface BubbleProps {
-  /** Travel speed of the wave, and how fast the mesh drifts. @default 0.4 */
+  /** How fast the bubbles wander, morph and pulse. @default 0.4 */
   speed?: number
-  /** Height of the primary swell (fraction of canvas height). @default 0.14 */
-  swell?: number
-  /** Frequency of the primary swell across the width. @default 0.8 */
-  swellFrequency?: number
-  /** Height of the secondary ripple (fraction of canvas height). @default 0.03 */
-  ripple?: number
-  /** Frequency of the secondary ripple across the width. @default 1.6 */
-  rippleFrequency?: number
-  /** Vertical placement of the wave; 0 = centered, -1..1. @default -0.28 */
-  waterline?: number
-  /** Softness of the wave's edge, as a fraction of the shorter side. 0 is a crisp curve. @default 0.03 */
+  /** Size of the bubbles, as a fraction of the shorter side. @default 0.46 */
+  bubbleScale?: number
+  /**
+   * The distance between the two centres, as a fraction of the width.
+   *
+   * Read against `bubbleScale`: close together they merge into one form, far apart they read as two
+   * bubbles that happen to share a frame. The interesting range is where they just touch.
+   *
+   * @default 0.5
+   */
+  bubbleSpread?: number
+  /**
+   * How far each outline departs from a circle — the "changing form" part.
+   *
+   * Each bubble carries two harmonics turning at their own rates, so the outline is never the same shape
+   * twice and never a shape you can name. 0 gives two plain circles.
+   *
+   * @default 0.2
+   */
+  bubbleMorph?: number
+  /** How much the bubbles swell and shrink as they go. @default 0.12 */
+  bubblePulse?: number
+  /** How far they drift from where they sit. @default 0.05 */
+  bubbleWander?: number
+  /** Softness of the bubbles' edge, as a fraction of the shorter side. 0 is a crisp cut. @default 0.03 */
   edgeSoftness?: number
   /**
-   * The colour the wave is painted in — **the page's own background**.
+   * The colour everything outside the bubbles is painted in — **the page's own background**.
    *
-   * This is what makes the component read as transparent without being transparent: the wave is not a lit
-   * shape drawn *over* the mesh, it is a plate of the page colour that covers it, so the mesh survives
-   * only where the wave is not. Accepts `var(--token)` and resolves it against the canvas, which is what
-   * lets one value follow the colour scheme.
+   * This is what makes the component read as transparent without being transparent: the bubbles are not
+   * shapes drawn *over* the mesh, they are the only places the plate covering it is missing. Accepts
+   * `var(--token)` and resolves it against the canvas, which is what lets one value follow the scheme.
    *
    * @default 'var(--sds-surfaces-page-bg-base-default)'
    */
   surfaceColor?: string
   /**
-   * The mesh's ground — the colour its blobs sit on, used when `surfaceColor` resolves to a **dark**
-   * surface.
-   *
-   * Worth keeping close to the surface itself. The blobs carry the colour; the ground's job is to be the
-   * thing they fade into, and a ground that differs from the page is a rectangle with an edge on it.
+   * The mesh's ground — the colour its masses sit on, used when `surfaceColor` resolves to a **dark**
+   * surface. Worth keeping close to the surface itself, so the bubbles' interiors fall away into the
+   * page where the colour thins out rather than ending on a disc.
    *
    * @default '#0b0a1c'
    */
   color?: string
-  /** The mesh's lit colour on a dark surface. Blobs are hues drifted off this one. @default '#6d3bf5' */
+  /** The mesh's lit colour on a dark surface. Masses are hues drifted off this one. @default '#6d3bf5' */
   hotColor?: string
   /**
    * The ground on a **light** surface.
@@ -45,89 +56,89 @@ export interface BubbleProps {
    * One palette cannot serve both: a violet mesh that reads as depth on near-black reads as a stain on
    * white, and the text over it flips from light to dark at the same moment. Which pair is used is
    * decided by the luminance of the resolved `surfaceColor`, so it follows the colour scheme by the same
-   * route the wave does — no separate flag to keep in sync.
+   * route the bubbles do — no separate flag to keep in sync.
    *
    * @default '#f2f0fb'
    */
   colorLight?: string
   /** The mesh's lit colour on a light surface. @default '#8b5cf6' */
   hotColorLight?: string
-  /** How far the blobs' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
+  /** How far the masses' hues drift either side of `hotColor` — the mesh's colour spread. @default 1 */
   richness?: number
   /**
    * How far the spectrum sweeps either side of the palette over time, in hue degrees.
    *
-   * `richness` decides how much colour is in the field at any instant; this decides whether that colour
-   * sits still or moves through it. It **oscillates** rather than advances: the hue leaves the palette by
-   * up to this much and comes back. An unbounded rotation would eventually put every hue on screen,
-   * which is how a violet mesh ends up showing greens and golds — the palette stops meaning anything.
+   * It **oscillates** rather than advances: the hue leaves the palette by up to this much and comes back.
+   * An unbounded rotation would eventually put every hue on screen, which is how a violet mesh ends up
+   * showing greens and golds — the palette stops meaning anything.
    *
-   * Together with `richness`, the furthest any blob strays from `hotColor` is `richness * 70 + this`.
+   * Together with `richness`, the furthest any mass strays from `hotColor` is `richness * 70 + this`.
    *
    * @default 18
    */
   spectralDrift?: number
   /**
-   * How strongly the mesh is carried by the wave, 0..1.
+   * How strongly the mesh is carried by the bubbles, 0..1.
    *
-   * Each colour mass is displaced by the wave's own height at that mass's position, so the field rises
-   * and falls with the curve beneath it instead of drifting on an unrelated clock. This is what stops
-   * the two halves looking like two animations that happen to share a canvas.
+   * The masses are positioned against the bubbles' own centres and radii, so when a bubble wanders, swells
+   * or morphs, the colour inside it goes with it. At 0 they sit still in the canvas and the bubbles slide
+   * over them like windows onto a fixed painting — which is a different, flatter effect, and occasionally
+   * the one you want.
    *
-   * @default 0.55
+   * @default 0.85
    */
   meshFollow?: number
   /** Vividness of the mesh. @default 1.05 */
   saturation?: number
-  /** Size of the mesh's colour masses. @default 1 */
+  /** Size of the mesh's colour masses, relative to the bubble holding them. @default 1 */
   meshScale?: number
   /**
    * How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1.
    *
-   * **Off by default**, because keeping the mesh's ground close to the surface handles the same problem
-   * without laying a gradient across the top of the picture. Worth turning on only when the component
-   * ends part-way up a page *and* its ground has been pulled well away from the surface colour.
+   * **Off by default.** The bubbles already end the mesh on every side; this exists only for a component
+   * whose ground has been pulled well away from the surface colour.
    *
    * @default 0
    */
   meshFade?: number
   /**
-   * Brightness of the glow band — the layer between the mesh and the wave.
+   * Brightness of the rim light around each bubble.
    *
-   * It follows the wave's own curve but with its amplitudes multiplied by `glowDistortion`, so it reads
-   * as light pooling along the same swell rather than as a second, unrelated shape: same rhythm, looser
-   * form. Everything of it that falls below the wave is covered by the wave, so what shows is the part
-   * hugging the crest's upper side.
+   * Drawn between the mesh and the plate, so the plate trims whatever falls outside the outline and what
+   * survives is a rim on the inside of the edge — light caught in the bubble's own skin. 0 turns the
+   * layer off and skips its offscreen pass.
    *
-   * 0 turns the layer off entirely, and skips its offscreen pass.
-   *
-   * @default 0.55
+   * @default 0.8
    */
   glow?: number
-  /** Overall opacity of the glow layer, applied as it is composited. @default 0.85 */
+  /** Overall opacity of the rim layer, applied as it is composited. @default 0.9 */
   glowOpacity?: number
-  /** The glow's colour on a dark surface. Its hues spread with `richness`, like the mesh's. @default '#c4a2ff' */
+  /** The rim's colour on a dark surface. Its hues spread with `richness`, like the mesh's. @default '#c4a2ff' */
   glowColor?: string
-  /** The glow's colour on a light surface. @default '#7c3aed' */
+  /** The rim's colour on a light surface. @default '#7c3aed' */
   glowColorLight?: string
-  /** Thickness of the glow band, as a fraction of the shorter side. @default 0.3 */
+  /** Thickness of the rim, as a fraction of the shorter side. @default 0.16 */
   glowWidth?: number
-  /** How much more distorted the glow's curve is than the wave's. 1 tracks it exactly. @default 2.2 */
+  /**
+   * How much the rim's own outline wanders off the bubble's, 1 tracking it exactly.
+   *
+   * Above 1 the rim carries an extra, slower harmonic of its own, so the light gathers on one part of the
+   * edge and thins on another instead of ringing the whole outline evenly.
+   *
+   * @default 1.6
+   */
   glowDistortion?: number
   /**
-   * Moves the glow band up or down relative to the wave, as a fraction of the canvas height.
+   * Moves the rim inside (positive) or outside (negative) the bubble's edge, as a fraction of its radius.
    *
-   * Positive lifts it clear of the crest, negative sinks it into the wave — where the wave, drawn after
-   * it, covers more of it and only a rim survives. 0 leaves the band sitting on the cut.
+   * Outside the edge it is trimmed by the plate, so pushing it out fades the rim rather than moving it;
+   * pulling it in floats a ring of light within the bubble.
    *
-   * The band's own width is what it is; this is for placing it against content, which is the thing the
-   * component cannot know about.
-   *
-   * @default 0
+   * @default 0.06
    */
   glowOffset?: number
   /**
-   * How the glow is composited over the mesh.
+   * How the rim is composited over the mesh.
    *
    * `screen` and `lighten` add light without flattening what is under them, which is usually what a glow
    * over a colour field wants; `overlay` and `soft-light` keep more of the mesh's own hue; `source-over`
@@ -138,13 +149,13 @@ export interface BubbleProps {
   glowBlend?: 'screen' | 'lighten' | 'overlay' | 'soft-light' | 'color-dodge' | 'source-over'
   /** Film grain strength. @default 0.035 */
   grain?: number
-  /** Whether the pointer bends the wave and steers the mesh. @default true */
+  /** Whether the pointer draws the bubbles toward it and steers the mesh. @default true */
   cursorInteraction?: boolean
-  /** Height the pointer lifts the wave (fraction of canvas height). @default 0.08 */
+  /** How far the bubbles are drawn toward the pointer, 0..1 of the distance. @default 0.16 */
   cursorLift?: number
-  /** Width of the pointer's lift (fraction of canvas width). @default 0.3 */
+  /** How close the pointer has to be to pull, as a fraction of the shorter side. @default 0.5 */
   cursorReach?: number
-  /** How far the pointer pulls the mesh's blobs — the mesh's parallax. @default 0.12 */
+  /** How far the pointer pulls the mesh within the bubbles — its parallax against them. @default 0.12 */
   meshDrift?: number
   /** Scale internal render resolution down under frame-time pressure. @default true */
   adaptiveQuality?: boolean
@@ -160,11 +171,11 @@ export interface BubbleProps {
 
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
   speed: 0.4,
-  swell: 0.14,
-  swellFrequency: 0.8,
-  ripple: 0.03,
-  rippleFrequency: 1.6,
-  waterline: -0.28,
+  bubbleScale: 0.42,
+  bubbleSpread: 0.5,
+  bubbleMorph: 0.2,
+  bubblePulse: 0.12,
+  bubbleWander: 0.05,
   edgeSoftness: 0.03,
   surfaceColor: 'var(--sds-surfaces-page-bg-base-default)',
   color: '#0b0a1c',
@@ -173,7 +184,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   hotColorLight: '#8b5cf6',
   richness: 1,
   spectralDrift: 18,
-  meshFollow: 0.55,
+  meshFollow: 0.85,
   saturation: 1.05,
   meshScale: 1,
   meshFade: 0,
@@ -181,14 +192,14 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   glowOpacity: 0.9,
   glowColor: '#c4a2ff',
   glowColorLight: '#7c3aed',
-  glowWidth: 0.3,
-  glowDistortion: 2.2,
-  glowOffset: 0,
+  glowWidth: 0.16,
+  glowDistortion: 1.6,
+  glowOffset: 0.06,
   glowBlend: 'screen',
   grain: 0.035,
   cursorInteraction: true,
-  cursorLift: 0.08,
-  cursorReach: 0.3,
+  cursorLift: 0.16,
+  cursorReach: 0.5,
   meshDrift: 0.12,
   adaptiveQuality: true,
   targetFps: 60,
@@ -197,19 +208,50 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
 }
 
 /**
- * The mesh's colour masses, as fractions of the canvas.
+ * The two bubbles.
  *
- * A fixed table rather than anything random: the mesh has to look the same on every render and every
- * machine, and a designer tuning `hotColor` against a screenshot needs the blob under it to still be
- * there next time. `hue` is the blob's offset either side of `hotColor`, in `richness` units; `rate` and
- * `phase` put each one on its own slow orbit so the field never repeats visibly.
+ * A fixed pair rather than anything random or configurable in number: two is the shape of the thing, and
+ * a designer tuning against a screenshot needs the same two to be there next time. `wobble` is the pair
+ * of harmonics that morph the outline — `k` how many lobes, `a` how strongly, `s` how fast and which way
+ * they turn — and the two entries differ so the bubbles never fall into the same shape at the same time.
+ */
+const BUBBLES = [
+  {
+    side: -1,
+    y: 0.47,
+    r: 1,
+    rate: 0.23,
+    phase: 0,
+    wobble: [
+      { k: 2, a: 1, s: 0.9 },
+      { k: 3, a: 0.55, s: -0.7 },
+    ],
+  },
+  {
+    side: 1,
+    y: 0.55,
+    r: 0.82,
+    rate: 0.19,
+    phase: 2.1,
+    wobble: [
+      { k: 3, a: 0.85, s: -0.8 },
+      { k: 2, a: 0.5, s: 0.62 },
+    ],
+  },
+]
+
+/**
+ * The mesh's colour masses, each one belonging to a bubble and placed in *its* coordinates — `x` and `y`
+ * are offsets from that bubble's centre in units of its radius, so a mass stays where it was put however
+ * the bubble wanders, swells or morphs. `hue` is its offset either side of `hotColor`, in `richness`
+ * units.
  */
 const MESH_BLOBS = [
-  { x: 0.16, y: 0.3, r: 0.85, hue: -1, light: 0.95, rate: 0.21, phase: 0, orbit: 0.05 },
-  { x: 0.42, y: 0.52, r: 0.95, hue: -0.3, light: 1.05, rate: 0.17, phase: 1.9, orbit: 0.06 },
-  { x: 0.66, y: 0.28, r: 0.8, hue: 0.35, light: 1, rate: 0.23, phase: 3.4, orbit: 0.05 },
-  { x: 0.88, y: 0.56, r: 0.9, hue: 1, light: 1.1, rate: 0.15, phase: 5.1, orbit: 0.07 },
-  { x: 0.3, y: 0.74, r: 0.75, hue: 0.1, light: 0.85, rate: 0.19, phase: 2.6, orbit: 0.05 },
+  { bubble: 0, x: -0.35, y: -0.3, r: 0.85, hue: -1, light: 0.95, rate: 0.21, phase: 0, orbit: 0.06 },
+  { bubble: 0, x: 0.3, y: 0.25, r: 0.95, hue: -0.25, light: 1.05, rate: 0.17, phase: 1.9, orbit: 0.07 },
+  { bubble: 0, x: 0.1, y: -0.45, r: 0.6, hue: 0.4, light: 0.9, rate: 0.26, phase: 4.2, orbit: 0.05 },
+  { bubble: 1, x: -0.25, y: 0.3, r: 0.8, hue: 0.35, light: 1, rate: 0.23, phase: 3.4, orbit: 0.06 },
+  { bubble: 1, x: 0.3, y: -0.2, r: 0.9, hue: 1, light: 1.1, rate: 0.15, phase: 5.1, orbit: 0.08 },
 ]
 
 function hexToHsl(hex: string): [number, number, number] {
@@ -266,8 +308,7 @@ function resolveColor(el: Element, value: string): string {
  * Needed because the mesh's fade has to end on `surfaceColor` at **zero alpha**, and a gradient run to
  * the `transparent` keyword ends on transparent *black* — which greys the middle of the fade on any
  * surface that is not black. Assigning to `fillStyle` and reading it back normalises whatever the token
- * held (`#rgb`, `rgb()`, a named colour) into a form worth parsing, so the fade can hold the colour and
- * move only the alpha.
+ * held into a form worth parsing, so the fade can hold the colour and move only the alpha.
  */
 function toRgb(ctx: CanvasRenderingContext2D, color: string): [number, number, number] {
   const previous = ctx.fillStyle
@@ -276,19 +317,13 @@ function toRgb(ctx: CanvasRenderingContext2D, color: string): [number, number, n
   ctx.fillStyle = previous
   if (typeof normalised === 'string') {
     if (normalised.startsWith('#')) {
-      const [h, s, l] = hexToHsl(normalised)
-      // back out of HSL rather than re-parsing: hexToHsl already did the work
-      const c = (1 - Math.abs(2 * l - 1)) * s
-      const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
-      const m = l - c / 2
-      const [r1, g1, b1] =
-        h < 60 ? [c, x, 0]
-        : h < 120 ? [x, c, 0]
-        : h < 180 ? [0, c, x]
-        : h < 240 ? [0, x, c]
-        : h < 300 ? [x, 0, c]
-        : [c, 0, x]
-      return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)]
+      const hex = normalised.slice(1)
+      const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex
+      return [
+        parseInt(full.slice(0, 2), 16),
+        parseInt(full.slice(2, 4), 16),
+        parseInt(full.slice(4, 6), 16),
+      ]
     }
     const nums = normalised.match(/[\d.]+/g)
     if (nums && nums.length >= 3) return [Number(nums[0]), Number(nums[1]), Number(nums[2])]
@@ -310,46 +345,53 @@ function makeNoiseTile(size: number): HTMLCanvasElement {
   return tile
 }
 
-/** Catmull-Rom -> cubic bezier so the wave reads as one smooth curve. */
-function smoothTo(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
+/**
+ * A closed Catmull-Rom loop as cubic beziers, so an outline sampled at a few dozen angles reads as one
+ * smooth shape rather than a polygon. Closed rather than open: the indices wrap, which is what keeps the
+ * seam at angle 0 from showing as a corner.
+ */
+function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
   const n = pts.length
-  for (let i = 0; i < n - 1; i++) {
-    const p0 = pts[i === 0 ? 0 : i - 1]
+  ctx.moveTo(pts[0][0], pts[0][1])
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n]
     const p1 = pts[i]
-    const p2 = pts[i + 1]
-    const p3 = pts[i + 2 < n ? i + 2 : n - 1]
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6
-    ctx.bezierCurveTo(c1x, c1y, c2x, c2y, p2[0], p2[1])
+    const p2 = pts[(i + 1) % n]
+    const p3 = pts[(i + 2) % n]
+    ctx.bezierCurveTo(
+      p1[0] + (p2[0] - p0[0]) / 6,
+      p1[1] + (p2[1] - p0[1]) / 6,
+      p2[0] - (p3[0] - p1[0]) / 6,
+      p2[1] - (p3[1] - p1[1]) / 6,
+      p2[0],
+      p2[1],
+    )
   }
+  ctx.closePath()
 }
 
 /**
- * Bubble — a drifting colour mesh with a wave cut across it.
+ * Bubble — two morphing bubbles, filled with a drifting colour mesh.
  *
  * Three passes on one canvas, and the last is the whole trick:
  *
- * 1. **The mesh.** Overlapping soft colour masses on a deep ground, their hues drifted either side of
- *    `hotColor` by `richness` and swept through the field by `spectralDrift`. This is the part with the
- *    colour in it. Each mass is displaced by the wave's own height beneath it (`meshFollow`), so the
- *    field is carried by the curve rather than drifting on a clock of its own.
- * 2. **The glow.** A blurred band along the wave's curve with its amplitudes multiplied by
- *    `glowDistortion` — same swell, looser form — composited with `glowBlend` so it sits in the mesh
- *    rather than on it. The next pass cuts it off, so what survives hugs the crest's upper side.
- * 3. **The wave.** A flat plate of `surfaceColor` — *the page's own background* — filling everything
- *    below the curve.
+ * 1. **The mesh.** Overlapping soft colour masses on a deep ground, hues drifted either side of
+ *    `hotColor` by `richness` and swept around it by `spectralDrift`. Every mass belongs to a bubble and
+ *    is placed in that bubble's own coordinates, so the colour wanders, swells and morphs with it.
+ * 2. **The rim.** A blurred outline just inside each bubble's edge, composited with `glowBlend` so it
+ *    sits in the mesh rather than on it.
+ * 3. **The plate.** `surfaceColor` — *the page's own background* — filling everything **except** the two
+ *    bubbles, punched out with an even-odd fill.
  *
- * So the wave is not lit and nothing is blended. The component is opaque everywhere, and still reads as
- * though the mesh were fading into the page, because below the curve it is painting exactly what the
- * page would have painted. That is worth stating plainly: **`surfaceColor` has to match the surface the
- * component is sitting on**, or the illusion is just a coloured shape. It defaults to the page-background
- * token and resolves `var()` against the canvas, so it follows the colour scheme on its own; pass a
- * concrete colour when the component sits on something else, like a card.
+ * So nothing is lit and nothing is blended with the page. The component is opaque everywhere and still
+ * reads as two bubbles floating on the page, because everywhere that is not a bubble it is painting
+ * exactly what the page would have painted. That is worth stating plainly: **`surfaceColor` has to match
+ * the surface the component is sitting on**, or the bubbles become a coloured rectangle with two holes
+ * in it. It defaults to the page-background token and resolves `var()` against the canvas, so it follows
+ * the colour scheme on its own; pass a concrete colour when the component sits on something else.
  *
- * The pointer does both jobs at once — bends the curve near it (`cursorLift`, `cursorReach`) and pulls
- * the mesh's masses (`meshDrift`), so the colour leans one way while the wave rises under the cursor.
+ * The pointer draws the bubbles toward it (`cursorLift`, `cursorReach`) and pulls the mesh within them
+ * the other way (`meshDrift`), so the colour lags behind the shape as it moves.
  *
  * Fills its parent, so give the parent an explicit height (or `position: absolute; inset: 0` inside a
  * positioned container).
@@ -377,7 +419,6 @@ export function Bubble(props: BubbleProps) {
     const state = {
       qualityScale: dpr,
       frameTimeAvg: 1000 / 60,
-      /** Eased toward the pointer, so the mesh leans rather than snapping. */
       lean: { x: 0, y: 0 },
       pointer: { x: 0.5, y: 0.5, active: false },
       pausedT: 0,
@@ -407,14 +448,9 @@ export function Bubble(props: BubbleProps) {
     canvas.addEventListener('pointerleave', onLeave)
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const waveLayer = document.createElement('canvas')
+    const plateLayer = document.createElement('canvas')
     const glowLayer = document.createElement('canvas')
 
-    /*
-     * `surfaceColor` is re-resolved on a slow cadence rather than every frame: it is a computed-style
-     * read, and its value only changes when the colour scheme flips — which this then picks up on its
-     * own, without needing to watch for it.
-     */
     let surfaceSource = ''
     let surfaceValue = '#000000'
     let surfaceCheckedAt = -Infinity
@@ -424,19 +460,8 @@ export function Bubble(props: BubbleProps) {
     let last = performance.now()
     let t = 0
 
-    const waveY = (
-      u: number,
-      time: number,
-      swell: number,
-      swellFreq: number,
-      ripple: number,
-      rippleFreq: number,
-    ) => {
-      const k = Math.PI * 2
-      const a = swell * Math.sin(u * k * swellFreq + time)
-      const b = ripple * Math.sin(u * k * rippleFreq - time * 1.4 + 1.4)
-      return a + b
-    }
+    /** Angles sampled around each outline. Enough that the beziers have nothing left to smooth. */
+    const STEPS = 72
 
     const draw = (now: number) => {
       if (dead) return
@@ -477,12 +502,57 @@ export function Bubble(props: BubbleProps) {
       }
       const surface = surfaceValue
 
-      /* Eased toward the pointer, and back to centre when it leaves. */
       const targetX = p.cursorInteraction && state.pointer.active ? state.pointer.x - 0.5 : 0
       const targetY = p.cursorInteraction && state.pointer.active ? state.pointer.y - 0.5 : 0
       const ease = Math.min(1, dt / 220)
       state.lean.x += (targetX - state.lean.x) * ease
       state.lean.y += (targetY - state.lean.y) * ease
+
+      /*
+       * Where each bubble is and how big it is *this frame*, worked out once and then used by all three
+       * passes. The mesh's masses and the rim are both positioned against these, which is what keeps the
+       * colour and the light inside the shape while it moves rather than merely near it.
+       */
+      const placed = BUBBLES.map((b) => {
+        const wander = time * b.rate + b.phase
+        let cx = (0.5 + b.side * p.bubbleSpread * 0.5) * W + Math.cos(wander) * p.bubbleWander * W
+        let cy = b.y * H + Math.sin(wander * 1.3) * p.bubbleWander * H
+        if (p.cursorInteraction && state.pointer.active) {
+          const dx = state.pointer.x * W - cx
+          const dy = state.pointer.y * H - cy
+          const reach = Math.max(0.02, p.cursorReach) * S
+          const pull = p.cursorLift * Math.exp(-((dx * dx + dy * dy) / (2 * reach * reach)))
+          cx += dx * pull
+          cy += dy * pull
+        }
+        const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
+        return { b, cx, cy, radius: Math.max(1, S * p.bubbleScale * b.r * pulse) }
+      })
+
+      /** One bubble's outline, optionally scaled and given an extra harmonic (used by the rim). */
+      const outline = (
+        i: number,
+        scale: number,
+        extra: number,
+        offX: number,
+        offY: number,
+      ): [number, number][] => {
+        const { b, cx, cy, radius } = placed[i]
+        const pts: [number, number][] = []
+        for (let s = 0; s < STEPS; s++) {
+          const theta = (s / STEPS) * Math.PI * 2
+          let m = 1
+          for (const w of b.wobble) {
+            m += p.bubbleMorph * w.a * Math.sin(w.k * theta + time * w.s + b.phase)
+          }
+          if (extra !== 0) {
+            m += extra * Math.sin(theta * 1.5 - time * 0.5 + b.phase)
+          }
+          const r = radius * scale * m
+          pts.push([cx + Math.cos(theta) * r + offX, cy + Math.sin(theta) * r + offY])
+        }
+        return pts
+      }
 
       ctx.clearRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'source-over'
@@ -492,19 +562,11 @@ export function Bubble(props: BubbleProps) {
       /* ---------------------------------------------------------------- 1. the mesh */
 
       const sat = Math.max(0, Math.min(1.5, p.saturation))
-      /*
-       * Which palette, decided by the surface rather than by a flag.
-       *
-       * The component already has to resolve `surfaceColor` to paint the wave, and that value is the one
-       * thing that reliably says which way round the page is — so the light and dark palettes are chosen
-       * from its luminance. That keeps the mesh, the glow and the wave all following the colour scheme by
-       * the same route, with nothing to keep in sync.
-       */
       const [surfR, surfG, surfB] = toRgb(ctx, surface)
       const surfaceIsLight = 0.2126 * surfR + 0.7152 * surfG + 0.0722 * surfB > 140
       const groundColor = surfaceIsLight ? p.colorLight : p.color
       const litColor = surfaceIsLight ? p.hotColorLight : p.hotColor
-      const glowColor = surfaceIsLight ? p.glowColorLight : p.glowColor
+      const rimColor = surfaceIsLight ? p.glowColorLight : p.glowColor
 
       const [ch, cs, cl] = hexToHsl(groundColor)
       const [hh, hs, hl] = hexToHsl(litColor)
@@ -514,29 +576,24 @@ export function Bubble(props: BubbleProps) {
 
       /*
        * `source-over` rather than `lighter`: the masses have to *blend* into one another, and additive
-       * light does not blend, it accumulates — five overlapping blobs of it climb to white in the middle
-       * of the field, which is the opposite of a mesh.
+       * light does not blend, it accumulates — overlapping blobs of it climb to white in the middle of
+       * the field, which is the opposite of a mesh.
        */
       for (const blob of MESH_BLOBS) {
+        const home = placed[blob.bubble]
         const orbit = blob.phase + time * blob.rate
-        const u = blob.x + Math.cos(orbit) * blob.orbit + state.lean.x * p.meshDrift
         /*
-         * The wave's own height under this mass, so the field is carried by the curve rather than
-         * drifting on a clock of its own — which is what makes the two halves read as one thing.
+         * Placed in the bubble's coordinates, then eased back toward the canvas's by `meshFollow`. At 1
+         * the mass is nailed to the bubble; at 0 it sits still and the bubble slides over it.
          */
-        const carried = p.meshFollow * waveY(
-          u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency,
-        )
-        const cx = u * W
-        const cy = (blob.y + Math.sin(orbit) * blob.orbit + state.lean.y * p.meshDrift + carried) * H
-        const radius = Math.max(1, S * blob.r * p.meshScale)
-        /* Plus a slow sweep through the spectrum, so the colour moves through the field as well as with it. */
-        /*
-         * The sweep oscillates around the palette rather than advancing through it. `time` grows without
-         * bound, so adding it to a hue rotates the whole wheel onto the screen sooner or later — which is
-         * how a violet mesh comes to show greens and golds and the palette stops meaning anything. Each
-         * blob gets its own phase, so the field still moves rather than pulsing as one.
-         */
+        const anchorX = home.cx + (blob.x + Math.cos(orbit) * blob.orbit) * home.radius
+        const anchorY = home.cy + (blob.y + Math.sin(orbit) * blob.orbit) * home.radius
+        const looseX = (0.5 + blob.x * 0.5) * W
+        const looseY = (0.5 + blob.y * 0.5) * H
+        const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W
+        const cy = looseY + (anchorY - looseY) * p.meshFollow + state.lean.y * p.meshDrift * H
+        const radius = Math.max(1, home.radius * blob.r * p.meshScale)
+        /* Oscillating around the palette rather than advancing through it — see `spectralDrift`. */
         const sweep = Math.sin(time * 0.35 + blob.phase * 0.5) * p.spectralDrift
         const hue = hh + blob.hue * p.richness * 70 + sweep
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
@@ -547,11 +604,6 @@ export function Bubble(props: BubbleProps) {
         ctx.fillRect(0, 0, W, H)
       }
 
-      /*
-       * The mesh dissolves into the surface at the top edge, so the component can end mid-page without
-       * ruling a line across it — the same job the wave does at the bottom, done with a gradient because
-       * there is no shape up there to cut.
-       */
       if (p.meshFade > 0) {
         const fade = ctx.createLinearGradient(0, 0, 0, Math.max(1, H * p.meshFade))
         fade.addColorStop(0, `rgba(${surfR}, ${surfG}, ${surfB}, 1)`)
@@ -560,20 +612,8 @@ export function Bubble(props: BubbleProps) {
         ctx.fillRect(0, 0, W, Math.ceil(H * p.meshFade))
       }
 
-      const level = Math.min(0.95, Math.max(0.05, 0.5 - p.waterline * 0.4))
-      const N = 96
+      /* ---------------------------------------------------------------- 2. the rim */
 
-      /* ---------------------------------------------------------------- 2. the glow */
-
-      /*
-       * Light pooling along the wave, drawn between the mesh and the wave so the wave cuts it off: what
-       * survives is the half hugging the crest's upper side, which is where a glow off a lit edge would
-       * actually be.
-       *
-       * Its curve is the wave's own with the amplitudes multiplied, not a curve of its own — same swell,
-       * same rhythm, looser form. The two stay related however the wave props are changed, which a second
-       * independent shape would not.
-       */
       if (p.glow > 0 && p.glowOpacity > 0) {
         const glowBlur = Math.max(1, S * p.glowWidth * 0.45)
         const gPad = Math.ceil(glowBlur * 2.5)
@@ -586,8 +626,8 @@ export function Bubble(props: BubbleProps) {
         const gg = glowLayer.getContext('2d')!
         gg.clearRect(0, 0, GW, GH)
 
-        /* Banded along its length by the same spectrum the mesh runs, so the glow belongs to the field. */
-        const [gh, gs, gl] = hexToHsl(glowColor)
+        /* Banded across the frame by the same spectrum the mesh runs, so the rim belongs to the field. */
+        const [gh, gs, gl] = hexToHsl(rimColor)
         const band = gg.createLinearGradient(0, 0, GW, 0)
         const stops = 6
         for (let i = 0; i <= stops; i++) {
@@ -600,45 +640,12 @@ export function Bubble(props: BubbleProps) {
         gg.strokeStyle = band
         gg.lineWidth = Math.max(1, S * p.glowWidth)
         gg.lineJoin = 'round'
-        gg.lineCap = 'round'
 
-        const gOverhang = gPad / Math.max(1, W)
-        /*
-         * The band is anchored **on** the wave, not amplified around it.
-         *
-         * Amplifying the wave's own amplitudes swings the band's bright core a long way clear of the
-         * curve — measured 160px clear at the hero's size, with the 15px above the wave reading as dark
-         * ground. That is a second stripe floating over the picture, not the wave's own light.
-         *
-         * So the curve here *is* the wave's, nudged up by a fraction of the band's width, with a slower
-         * wobble laid on top for the looser form. The wobble is subtracted as an absolute value, so it
-         * can only ever lift the band clear of the wave and never sink it below. The wave is drawn after
-         * this and clips the lower half, which leaves the brightest part of the band sitting exactly on
-         * the cut — which is what an edge actually lit from below looks like.
-         */
-        const halfBand = (S * p.glowWidth * 0.5) / H
-        const wobbleAmp = (p.glowDistortion - 1) * (Math.abs(p.swell) + Math.abs(p.ripple))
-        const glowPts: [number, number][] = []
-        for (let i = 0; i <= N; i++) {
-          const u = -gOverhang + (i / N) * (1 + gOverhang * 2)
-          const wobble = wobbleAmp * Math.sin(u * Math.PI * 2 * p.swellFrequency * 0.6 + time * 0.8)
-          let y =
-            level
-            + waveY(u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency)
-            - halfBand * 0.35
-            - Math.abs(wobble)
-            - p.glowOffset
-          if (p.cursorInteraction && state.pointer.active) {
-            const du = u - state.pointer.x
-            const reach = Math.max(0.02, p.cursorReach)
-            y -= p.cursorLift * Math.exp(-(du * du) / (2 * reach * reach))
-          }
-          glowPts.push([u * W + gPad, y * H + gPad])
+        for (let i = 0; i < placed.length; i++) {
+          gg.beginPath()
+          traceClosed(gg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad, gPad))
+          gg.stroke()
         }
-        gg.beginPath()
-        gg.moveTo(glowPts[0][0], glowPts[0][1])
-        smoothTo(gg, glowPts)
-        gg.stroke()
         gg.filter = 'none'
 
         ctx.globalCompositeOperation = p.glowBlend
@@ -648,56 +655,53 @@ export function Bubble(props: BubbleProps) {
         ctx.globalAlpha = 1
       }
 
-      /* ---------------------------------------------------------------- 3. the wave */
+      /* ---------------------------------------------------------------- 3. the plate */
 
       const blur = p.edgeSoftness > 0 ? Math.max(0.5, S * p.edgeSoftness * 0.5) : 0
       /*
        * A blurred shape drawn to the canvas's own edge fades there, because the blur has nothing beyond
-       * the boundary to average with — it reads as a vignette down both sides. So a soft-edged wave is
-       * drawn on a layer that is bigger than the canvas, with the curve carried past both ends, and only
-       * the middle of it is copied back.
+       * the boundary to average with — it reads as a vignette down every side. So a soft-edged plate is
+       * drawn on a layer bigger than the canvas, its outer rectangle carried past the edges, and only the
+       * middle of it copied back.
        */
       const pad = Math.ceil(blur * 3)
-      const target = blur > 0 ? waveLayer.getContext('2d')! : ctx
-      const LW = W + pad * 2
-      const LH = H + pad * 2
-
-      if (blur > 0) {
-        if (waveLayer.width !== LW || waveLayer.height !== LH) {
-          waveLayer.width = LW
-          waveLayer.height = LH
-        }
-        target.clearRect(0, 0, LW, LH)
-        target.filter = `blur(${blur}px)`
+      const PW = W + pad * 2
+      const PH = H + pad * 2
+      if (plateLayer.width !== PW || plateLayer.height !== PH) {
+        plateLayer.width = PW
+        plateLayer.height = PH
       }
+      const pg = plateLayer.getContext('2d')!
+      pg.clearRect(0, 0, PW, PH)
+      pg.globalCompositeOperation = 'source-over'
+      pg.filter = 'none'
+      pg.fillStyle = surface
+      pg.fillRect(0, 0, PW, PH)
 
-      /* `u` runs past both ends by the padding, so the curve spans the whole layer. */
-      const overhang = pad / Math.max(1, W)
-      const pts: [number, number][] = []
-      for (let i = 0; i <= N; i++) {
-        const u = -overhang + (i / N) * (1 + overhang * 2)
-        let y = level + waveY(u, time, p.swell, p.swellFrequency, p.ripple, p.rippleFrequency)
-        if (p.cursorInteraction && state.pointer.active) {
-          const du = u - state.pointer.x
-          const reach = Math.max(0.02, p.cursorReach)
-          y -= p.cursorLift * Math.exp(-(du * du) / (2 * reach * reach))
-        }
-        pts.push([u * W + (blur > 0 ? pad : 0), y * H + (blur > 0 ? pad : 0)])
+      /*
+       * The holes are *erased*, not excluded by a fill rule.
+       *
+       * One path holding the rectangle and both outlines is the obvious way to write this and it is
+       * wrong: `evenodd` counts crossings, so where the two bubbles overlap the parity flips back to
+       * filled and the plate returns as a wedge through the middle of them — two bubbles with a bite
+       * taken out of where they meet. `nonzero` has the same problem from the other side. Erasing with
+       * `destination-out` has no parity to get wrong: overlapping shapes simply erase the same pixels
+       * twice.
+       *
+       * It also has to happen on its own layer. Erasing on the main canvas would take the mesh with it
+       * and leave a hole through to whatever is behind the canvas, rather than a hole through the plate.
+       */
+      pg.globalCompositeOperation = 'destination-out'
+      if (blur > 0) pg.filter = `blur(${blur}px)`
+      for (let i = 0; i < placed.length; i++) {
+        pg.beginPath()
+        traceClosed(pg, outline(i, 1, 0, pad, pad))
+        pg.fill()
       }
+      pg.filter = 'none'
+      pg.globalCompositeOperation = 'source-over'
 
-      target.fillStyle = surface
-      target.beginPath()
-      target.moveTo(pts[0][0], pts[0][1])
-      smoothTo(target, pts)
-      target.lineTo(pts[pts.length - 1][0], LH)
-      target.lineTo(pts[0][0], LH)
-      target.closePath()
-      target.fill()
-
-      if (blur > 0) {
-        target.filter = 'none'
-        ctx.drawImage(waveLayer, pad, pad, W, H, 0, 0, W, H)
-      }
+      ctx.drawImage(plateLayer, pad, pad, W, H, 0, 0, W, H)
 
       /* ---------------------------------------------------------------- grain */
 

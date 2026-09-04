@@ -499,8 +499,8 @@ const RESEARCH = [
  * and `Bubble` is layered behind it in a plain positioned wrapper.
  *
  * The hero is given a transparent background so the mesh shows, and `Bubble` is handed the page's own
- * background token as `surfaceColor` — which is what lets its wave paint the page's colour and read as
- * though the mesh simply stops, without the component being transparent or blending with anything.
+ * background token as `surfaceColor` — which is what lets everything outside its bubbles paint the page's
+ * own colour, so they read as floating on it without the component being transparent or blending.
  */
 function HomePage({
   heroBackground = 'video',
@@ -544,8 +544,8 @@ function HomePage({
            * for that file, so anything less leaves a band of bare page above it where the video would
            * have reached. A fixed height was tried first and is what put that band there.
            *
-           * The cost is that the wave's placement is now relative to a box whose height moves with the
-           * hero's content, so `waterline` is set against the hero as it actually renders rather than
+           * The cost is that the bubbles are sized and placed against a box whose height moves with the
+           * hero's content, so `bubbleScale` is set against the hero as it actually renders rather than
            * against a number chosen here.
            */
           <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
@@ -1243,39 +1243,42 @@ export const Narrow: Story = {
  * `Bubble`, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in
  * `Hero.tsx` changes: it sits behind a `background="none"` Hero in a plain positioned wrapper here.
  *
- * One canvas, and no blending with the page at all. The mesh is opaque, and the wave below it is painted
- * in `surfaceColor` — the page-background token — so the mesh appears to stop where the wave begins
- * while the component stays opaque throughout. Because that token resolves against the canvas, the wave
- * follows the colour scheme without the story having to know which one is on.
+ * One canvas, and no blending with the page at all. Everything outside the two bubbles is painted in
+ * `surfaceColor` — the page-background token — so they read as floating on the page while the component
+ * stays opaque throughout. Because that token resolves against the canvas, the plate follows the colour
+ * scheme without the story having to know which one is on.
  *
- * Every prop is on the Controls panel, grouped as **Mesh** / **Wave** / **Cursor** — see the component's
- * own docs page for which prop is worth reaching for first.
+ * Every prop is on the Controls panel, grouped as **Bubbles** / **Mesh** / **Glow** / **Cursor** — see
+ * the component's own docs page for which prop is worth reaching for first.
  *
  * `frame: { padding: 0 }` because this one is judged on whether it reaches the viewport's edges.
  *
- * **The mesh palette is still a dark one.** The wave now follows the colour scheme on its own, but
- * `color` and `hotColor` do not — on the light canvas the mesh stays dark and the hero's dark text lands
- * on it. Picking the light pair is a palette decision rather than a mechanism one, so it is left open.
+ * Both schemes are set here: `color`/`hotColor`/`glowColor` for the dark canvas and the `*Light` trio for
+ * the light one. The component picks between them from the luminance of the resolved `surfaceColor`, so
+ * the story never has to know which scheme is on.
  */
 export const BubbleBackground: Story = {
   parameters: { frame: { fullBleed: true, padding: 0 } },
   /*
-   * Tuned for the hero rather than left on the component's defaults, and `meshScale` is why: the blobs
-   * are sized off the canvas's *shorter* side, so the same value that fills the component's own 900x420
-   * story frame leaves small islands of colour adrift in a 1764x640 hero. The rest follows from that —
-   * a wider mesh needs a lower waterline to have room, and a brighter one to carry across the width.
+   * Tuned for the hero rather than left on the component's defaults.
+   *
+   * The bubbles are sized off the canvas's *shorter* side, so a value that fills the component's own
+   * 900x420 story frame leaves two small islands adrift in a 1496x774 hero — hence a much larger
+   * `bubbleScale`, and a `bubbleSpread` wide enough to put one behind the copy and one behind the media
+   * rather than both in the middle. They still meet, which is what keeps the hero one field of colour
+   * rather than two ornaments.
    */
   args: {
     ...BUBBLE_DEFAULTS,
-    meshScale: 1.7,
-    waterline: -0.42,
-    swell: 0.11,
-    swellFrequency: 0.7,
-    edgeSoftness: 0.05,
+    bubbleScale: 0.62,
+    bubbleSpread: 0.56,
+    bubbleMorph: 0.22,
+    bubbleWander: 0.04,
+    edgeSoftness: 0.07,
     /*
-     * The grounds sit almost on the page's own colour in both schemes, which is what lets `meshFade` stay
-     * off: the mesh has no edge to hide at the top because its ground already *is* the page. All the
-     * colour comes from the blobs.
+     * The grounds sit almost on the page's own colour in both schemes, so where the colour thins out the
+     * bubbles fall away into the page rather than ending on a visible disc. All the colour comes from
+     * the masses inside them.
      */
     color: '#0a0a1e',
     hotColor: '#7c4dff',
@@ -1284,18 +1287,12 @@ export const BubbleBackground: Story = {
     richness: 0.85,
     spectralDrift: 18,
     saturation: 1.12,
-    meshFade: 0,
     glow: 0.7,
     glowOpacity: 0.8,
     glowColor: '#c9a6ff',
     glowColorLight: '#7c3aed',
-    glowWidth: 0.24,
-    /*
-     * Tighter than the component's own 2.2. The lift that keeps the band above the wave scales with the
-     * distortion, so a loose glow on a wave this wide rides a long way clear of it and stops reading as
-     * the wave's own light — which is the whole job it has here.
-     */
-    glowDistortion: 1.4,
+    glowWidth: 0.2,
+    glowOffset: 0.08,
   },
   argTypes: BUBBLE_ARG_TYPES,
   render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
