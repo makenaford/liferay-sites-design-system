@@ -384,37 +384,11 @@ function traceClosed(ctx: CanvasRenderingContext2D, pts: [number, number][]) {
 }
 
 /**
- * Bubble — two morphing bubbles, filled with a drifting colour mesh.
+ * Bubble — two morphing bubbles filled with a drifting colour mesh, drawn in four passes: mesh, rim,
+ * plate, border. The plate is `surfaceColor` filling everything *except* the bubbles, so that value has
+ * to match the page behind it. Fills its parent, which needs a height.
  *
- * Four passes on one canvas, and the third is the whole trick:
- *
- * 1. **The mesh.** Overlapping soft colour masses on a deep ground, each sitting somewhere between
- *    `hotColor` and `accentColor`, with hues drifted either side of that by `richness` and swept around
- *    by `spectralDrift`. Every mass belongs to a bubble and is placed in that bubble's own coordinates,
- *    so the colour wanders, swells and morphs with it.
- * 2. **The rim.** A blurred outline just inside each bubble's edge, composited with `glowBlend` so it
- *    sits in the mesh rather than on it.
- * 3. **The plate.** `surfaceColor` — *the page's own background* — filling everything **except** the two
- *    bubbles, which are erased out of it.
- * 4. **The border.** Optional and off by default. Drawn *after* the plate rather than before, so unlike
- *    the rim it is not trimmed to the inside of the edge: it straddles the outline and glows onto the
- *    page.
- *
- * So nothing is blended with the page. The component is opaque everywhere and still reads as two bubbles
- * floating on it, because everywhere that is not a bubble it paints exactly what the page would have —
- * which is why `surfaceColor` has to match the surface it sits on.
- *
- * The pointer draws the bubbles toward it (`cursorLift`) and pulls the mesh within them the other way
- * (`meshDrift`), so the colour lags behind the shape.
- *
- * Fills its parent, so give the parent an explicit height (or `position: absolute; inset: 0` inside a
- * positioned container).
- *
- * ```tsx
- * <div style={{ height: 480, position: 'relative' }}>
- *   <Bubble />
- * </div>
- * ```
+ * The docs page carries the longer version, in `Bubble.stories.tsx`.
  */
 export function Bubble(props: BubbleProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)

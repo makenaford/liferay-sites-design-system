@@ -25,26 +25,20 @@ const meta = {
     frame: { width: 900 },
     docs: {
       description: {
+        /*
+         * The docs page's only description — setting this replaces the component's JSDoc rather than
+         * adding to it, so the explanation lives here and `Bubble`'s own docblock stays a short
+         * orientation for whoever has the file open.
+         */
         component: [
-          'Two morphing bubbles filled with a drifting colour mesh — four passes on one canvas, and the',
-          'third is the whole trick:',
+          'Two morphing bubbles filled with a drifting colour mesh. Four passes on one canvas: the **mesh**',
+          'inside them, the **rim** just within each edge, the **plate** of `surfaceColor` filling',
+          'everything *except* the bubbles, and an optional **border** on the outline.',
           '',
-          '1. **The mesh** — overlapping soft colour masses on a deep ground, hues drifted either side of',
-          '   `hotColor` by `richness` and swept around it by `spectralDrift`. Every mass belongs to a',
-          '   bubble and is placed in *that bubble\'s* coordinates, so when a bubble wanders, swells or',
-          '   morphs, the colour inside it goes with it (`meshFollow`).',
-          '2. **The rim** — a blurred outline just inside each bubble\'s edge, composited with `glowBlend`',
-          '   so it sits in the mesh rather than on it. The plate trims whatever falls outside, so what',
-          '   survives is light caught in the bubble\'s own skin.',
-          '3. **The plate** — `surfaceColor`, *the page\'s own background*, filling everything **except**',
-          '   the two bubbles.',
-          '4. **The border** — optional, off by default, and drawn *after* the plate, so unlike the rim it',
-          '   straddles the outline instead of being trimmed to the inside of it.',
-          '',
-          'So nothing is blended with the page. The component is opaque everywhere and still reads as two',
-          'bubbles floating on it, because everywhere that is not a bubble it paints exactly what the page',
-          'would have — **which only holds while `surfaceColor` matches what is behind it.** On a card,',
-          'pass that card\'s colour.',
+          'Nothing is blended with the page. The component is opaque throughout and reads as two bubbles',
+          'floating on it only because everywhere that is not a bubble it paints exactly what the page',
+          'would have — **so `surfaceColor` has to match what is behind it.** On a card, pass the card\'s',
+          'colour.',
           '',
           '**The Controls below** are grouped by what each prop draws rather than alphabetically. The ones',
           'worth knowing before reaching for a slider:',
