@@ -221,12 +221,34 @@ export interface BubbleProps {
   /**
    * Moves the rim inside (positive) or outside (negative) the bubble's edge, as a fraction of its radius.
    *
+   * This one is *radial* — it pulls the rim in on every side at once. With `glowArc` holding the light to
+   * the lower edge, the only part that shows is the bottom of that ring, so raising it reads as lifting
+   * the light up off the edge. `glowOffsetX` is the sideways counterpart.
+   *
    * Outside the edge it is trimmed by the plate, so pushing it out fades the rim rather than moving it;
    * pulling it in floats a ring of light within the bubble.
    *
    * @default 0.06
    */
   glowOffset?: number
+  /**
+   * Which side of each bubble the light gathers on — left at negative, right at positive, as a fraction
+   * of the radius.
+   *
+   * Where `glowOffset` draws the light in from every side evenly, this moves it *across*, so it pools on
+   * one side and thins on the other — the difference between a shape lit from directly below and one lit
+   * from below and to one side.
+   *
+   * The value names the side the light ends up on, which is the opposite of the way the ring underneath
+   * it moves: sliding that ring right pushes its right side out past the edge, where the plate trims it,
+   * and leaves the left side deep enough inside to show.
+   *
+   * Each bubble shifts by a fraction of *its own* radius, so the pair stays consistent when
+   * `bubbleBalance` has made them different sizes.
+   *
+   * @default 0
+   */
+  glowOffsetX?: number
   /**
    * How much of each outline is lit, from the bottom up.
    *
@@ -307,6 +329,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   glowWidth: 0.16,
   glowDistortion: 1.6,
   glowOffset: 0.06,
+  glowOffsetX: 0,
   glowArc: 0.45,
   glowBlend: 'screen',
   grain: 0.035,
@@ -854,7 +877,16 @@ export function Bubble(props: BubbleProps) {
           rg.clearRect(0, 0, GW, GH)
           rg.filter = `blur(${glowBlur}px)`
           rg.beginPath()
-          traceClosed(rg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad, gPad))
+          /*
+           * Negated, because the ring and the light move opposite ways. Sliding the ring right pushes
+           * its right side out past the bubble's edge, where the plate trims it, and leaves its left
+           * side deep inside — so the light that survives gathers on the *left*. The prop names the side
+           * the light ends up on, which is the only side anyone can see.
+           *
+           * A fraction of *this* bubble's radius, so an uneven pair shifts by the same proportion.
+           */
+          const shiftX = -p.glowOffsetX * placed[i].radius
+          traceClosed(rg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad + shiftX, gPad))
           rg.stroke()
 
           rg.globalCompositeOperation = 'destination-out'

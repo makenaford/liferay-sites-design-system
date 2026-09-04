@@ -178,7 +178,13 @@ export const BUBBLE_ARG_TYPES = {
     control: { type: 'range', min: -0.2, max: 0.4, step: 0.01 },
     table: { category: 'Glow' },
     description:
-      'Moves the rim inside (positive) or outside (negative) the edge, as a fraction of the radius. Outside, the plate trims it.',
+      'Moves the rim inward from **every** side (positive) or outward, as a fraction of the radius. With `glowArc` low it reads as lifting the light off the lower edge.',
+  },
+  glowOffsetX: {
+    control: { type: 'range', min: -0.4, max: 0.4, step: 0.01 },
+    table: { category: 'Glow' },
+    description:
+      'Which side the light gathers on — left at negative, right at positive. The sideways counterpart to `glowOffset`.',
   },
   glowArc: {
     control: { type: 'range', min: 0.05, max: 1, step: 0.05 },
