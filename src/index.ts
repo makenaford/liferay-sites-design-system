@@ -17,6 +17,7 @@ export {
   type BannerAlign,
   type BannerPosition,
 } from './components/Banner'
+export { Bubble, BUBBLE_DEFAULTS, type BubbleProps } from './components/Bubble'
 export { Button, type ButtonProps } from './components/Button'
 export { Card, type CardProps, type CardSurface, type CardPadding } from './components/Card'
 export {
