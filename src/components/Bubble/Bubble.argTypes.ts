@@ -19,6 +19,12 @@ export const BUBBLE_ARG_TYPES = {
     table: { category: 'Bubbles' },
     description: 'Radius as a fraction of the **width**, so it keeps its meaning as the frame changes shape.',
   },
+  bubbleHeight: {
+    control: { type: 'range', min: 0.2, max: 2, step: 0.05 },
+    table: { category: 'Bubbles' },
+    description:
+      'How tall they are as a multiple of their width. 1 is a circle; below it flattens them so the edge sweeps without reaching so far down.',
+  },
   bubbleY: {
     control: { type: 'range', min: -0.3, max: 1, step: 0.01 },
     table: { category: 'Bubbles' },

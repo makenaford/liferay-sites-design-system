@@ -34,6 +34,19 @@ export interface BubbleProps {
    */
   bubbleMorph?: number
   /**
+   * How tall the bubbles are, as a multiple of their width. 1 is a circle.
+   *
+   * Their size comes from the width (see `bubbleScale`), which on a wide frame makes them tall whether or
+   * not that was wanted — this is the axis that says otherwise. Below 1 flattens them, so their lower
+   * edge sweeps across without the shape reaching so far down; above 1 stretches them into columns.
+   *
+   * Read with `bubbleY`: together they decide where the visible edge falls, which is the thing worth
+   * placing against the content in front of it.
+   *
+   * @default 1
+   */
+  bubbleHeight?: number
+  /**
    * Where the bubbles' centres sit vertically, 0 being the top edge and 1 the bottom.
    *
    * Well above centre by default, which is the point: the bubbles are bigger than the frame is tall, so
@@ -203,6 +216,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   speed: 0.4,
   bubbleScale: 0.3,
   bubbleSpread: 0.5,
+  bubbleHeight: 1,
   bubbleY: 0.18,
   bubbleMorph: 0.2,
   bubblePulse: 0.12,
@@ -559,8 +573,9 @@ export function Bubble(props: BubbleProps) {
           cy += dy * pull
         }
         const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        /* Off the width — see `bubbleScale`. The height decides how much of the bubble is on screen. */
-        return { b, cx, cy, radius: Math.max(1, W * p.bubbleScale * b.r * pulse) }
+        /* Off the width — see `bubbleScale`. The frame's height only decides how much of it is on screen. */
+        const radius = Math.max(1, W * p.bubbleScale * b.r * pulse)
+        return { b, cx, cy, radius, radiusY: radius * p.bubbleHeight }
       })
 
       /** One bubble's outline, optionally scaled and given an extra harmonic (used by the rim). */
@@ -571,7 +586,7 @@ export function Bubble(props: BubbleProps) {
         offX: number,
         offY: number,
       ): [number, number][] => {
-        const { b, cx, cy, radius } = placed[i]
+        const { b, cx, cy, radius, radiusY } = placed[i]
         const pts: [number, number][] = []
         for (let s = 0; s < STEPS; s++) {
           const theta = (s / STEPS) * Math.PI * 2
@@ -589,8 +604,11 @@ export function Bubble(props: BubbleProps) {
              */
             m += extra * 0.15 * Math.sin(theta * 1.5 - time * 0.5 + b.phase)
           }
-          const r = radius * scale * m
-          pts.push([cx + Math.cos(theta) * r + offX, cy + Math.sin(theta) * r + offY])
+          /* The morph is a multiplier on both axes, so flattening the bubble flattens its wobble too. */
+          pts.push([
+            cx + Math.cos(theta) * radius * scale * m + offX,
+            cy + Math.sin(theta) * radiusY * scale * m + offY,
+          ])
         }
         return pts
       }
@@ -628,7 +646,7 @@ export function Bubble(props: BubbleProps) {
          * the mass is nailed to the bubble; at 0 it sits still and the bubble slides over it.
          */
         const anchorX = home.cx + (blob.x + Math.cos(orbit) * blob.orbit) * home.radius
-        const anchorY = home.cy + (blob.y + Math.sin(orbit) * blob.orbit) * home.radius
+        const anchorY = home.cy + (blob.y + Math.sin(orbit) * blob.orbit) * home.radiusY
         const looseX = (0.5 + blob.x * 0.5) * W
         const looseY = (0.5 + blob.y * 0.5) * H
         const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W
@@ -698,8 +716,8 @@ export function Bubble(props: BubbleProps) {
          * the bubbles' own vertical extent rather than the canvas, so it stays put as they wander.
          */
         if (p.glowArc < 1) {
-          const top = Math.min(...placed.map((q) => q.cy - q.radius)) + gPad
-          const bottom = Math.max(...placed.map((q) => q.cy + q.radius)) + gPad
+          const top = Math.min(...placed.map((q) => q.cy - q.radiusY)) + gPad
+          const bottom = Math.max(...placed.map((q) => q.cy + q.radiusY)) + gPad
           const mask = gg.createLinearGradient(0, top, 0, bottom)
           mask.addColorStop(0, 'rgba(255,255,255,0)')
           mask.addColorStop(Math.max(0.01, 1 - Math.max(0, p.glowArc)), 'rgba(255,255,255,0)')

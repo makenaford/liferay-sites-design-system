@@ -50,9 +50,11 @@ const meta = {
           '**Working the Controls panel below:** it opens grouped by what each prop draws — **Bubbles**,',
           '**Mesh**, **Glow**, **Cursor**, plus Animation and Performance — rather than alphabetically.',
           '',
-          '- **Bubbles** is shape only. `bubbleMorph` is the one that decides whether they read as bubbles',
-          '  or as two discs; `bubbleScale` and `bubbleSpread` are read together, and the interesting range',
-          '  is where the two just touch. `edgeSoftness` decides crisp cut or soft dissolve.',
+          '- **Bubbles** is shape and placement. `bubbleMorph` decides whether they read as bubbles or as',
+          '  two discs. `bubbleY` and `bubbleHeight` place the **visible edge** — the bubbles are taller',
+          '  than the frame, so that edge is all you see, and it is what has to sit right against the',
+          '  content in front of it. `bubbleScale` and `bubbleSpread` are read together, and the',
+          '  interesting range is where the two just touch. `edgeSoftness` decides crisp or dissolved.',
           '- **Mesh** carries the colour. `hotColor` sets it, and `richness` is what turns that one colour',
           '  into several by spreading the masses\' hues either side of it — reach for `richness` before',
           '  reaching for a different `hotColor`. `spectralDrift` sweeps that spread around the palette and',
@@ -107,6 +109,33 @@ export const SoftEdge: Story = {
     <Frame>
       <Bubble {...args} />
     </Frame>
+  ),
+}
+
+/**
+ * Placing the bubbles, which is four props read together — and the thing being placed is not really the
+ * bubble, it is **the edge you can see**, since the rest of it is off the top of the frame.
+ *
+ * - `bubbleY` moves the centres up and down. Low values hang them off the top, which is the default.
+ * - `bubbleHeight` decides how far down they reach without changing how wide they are — the axis that
+ *   would otherwise be locked, since size comes from the width.
+ * - `bubbleScale` and `bubbleSpread` set how much of the frame they cover, read together.
+ *
+ * Below: flattened and high, the default, and tall and low.
+ */
+export const Placement: Story = {
+  render: (args) => (
+    <Box>
+      {[
+        { bubbleHeight: 0.55, bubbleY: 0.1 },
+        { bubbleHeight: 1, bubbleY: 0.18 },
+        { bubbleHeight: 1.4, bubbleY: 0.3 },
+      ].map((placement) => (
+        <Frame key={placement.bubbleHeight} height={220}>
+          <Bubble {...args} {...placement} />
+        </Frame>
+      ))}
+    </Box>
   ),
 }
 
