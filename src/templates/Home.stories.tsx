@@ -2,8 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
+import { Bubble, BUBBLE_DEFAULTS } from '../components/Bubble'
+import type { BubbleProps } from '../components/Bubble'
+import { BUBBLE_ARG_TYPES } from '../components/Bubble/Bubble.argTypes'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -488,8 +491,28 @@ const RESEARCH = [
 
 /* ------------------------------------------------------------------ the page */
 
-function HomePage() {
+/**
+ * `heroBackground="bubble"` swaps the hero's production video (`bubble_center.webm`) for the `Bubble`
+ * canvas component — an exploration of it as a candidate background, alongside Hero's own `drawn` SVG
+ * prototype. It does not touch `Hero.tsx`: `background="none"` skips Hero's own gradient/video layer,
+ * and `Bubble` is layered behind it in a plain positioned wrapper.
+ *
+ * The hero is given a transparent background so the mesh shows, and `Bubble` is handed the page's own
+ * background token as `surfaceColor` — which is what lets everything outside its bubbles paint the page's
+ * own colour, so they read as floating on it without the component being transparent or blending.
+ */
+function HomePage({
+  heroBackground = 'video',
+  bubbleProps,
+}: {
+  heroBackground?: 'video' | 'bubble'
+  bubbleProps?: BubbleProps
+} = {}) {
   const reducedMotion = useReducedMotion()
+  const bubbleBackground = heroBackground === 'bubble'
+  const heroBackgroundProps = bubbleBackground
+    ? { background: 'none' as const, style: { backgroundColor: 'transparent' } }
+    : { background: 'full' as const, video: bubbleFull, videoLight: bubbleFullLight }
   const [goalTab, setGoalTab] = useState('marketers')
   const [teamTab, setTeamTab] = useState('marketers')
   const [capability, setCapability] = useState('enterprise-websites')
@@ -513,16 +536,24 @@ function HomePage() {
       <SiteHeader />
 
       {/* 1. Left Hero — the solution finder above the fold, the form in the content column. */}
-      <Hero
-        background="full"
-        video={bubbleFull}
-        /*
-         * The light canvas has its own export. Without it the hero falls back to the gradient there,
-         * which is correct and built from the same tokens — but the renderer passes both, and a story
-         * that stands in for the page should show what the page shows.
-         */
-        videoLight={bubbleFullLight}
-        entrance
+      <Box pos="relative" style={{ overflow: 'hidden' }}>
+        {bubbleBackground ? (
+          /*
+           * The whole hero, which is the same ground `bubble_center.webm` covers — this is standing in
+           * for that file, so anything less leaves a band of bare page above it where the video would
+           * have reached. A fixed height was tried first and is what put that band there.
+           *
+           * The cost is that the bubbles are sized and placed against a box whose height moves with the
+           * hero's content, so `bubbleScale` is set against the hero as it actually renders rather than
+           * against a number chosen here.
+           */
+          <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
+            <Bubble {...bubbleProps} />
+          </Box>
+        ) : null}
+        <Hero
+          {...heroBackgroundProps}
+          entrance
         banner={
           <Card
             surface="glass"
@@ -652,7 +683,8 @@ function HomePage() {
             tabIndex={-1}
           />
         }
-      />
+        />
+      </Box>
 
       {/* 2. Logos scrolling section — a 64px logo row directly under the hero. */}
       <Section reveal spacing="none" pt={24}>
@@ -1206,4 +1238,72 @@ export const Page: Story = { render: () => <HomePage /> }
 export const Narrow: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: () => <HomePage />,
+}
+
+/**
+ * Exploration only — not what ships. The hero's production video (`bubble_center.webm`) is swapped for
+ * `Bubble`, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in
+ * `Hero.tsx` changes: it sits behind a `background="none"` Hero in a plain positioned wrapper here.
+ *
+ * One canvas, and no blending with the page at all. Everything outside the two bubbles is painted in
+ * `surfaceColor` — the page-background token — so they read as floating on the page while the component
+ * stays opaque throughout. Because that token resolves against the canvas, the plate follows the colour
+ * scheme without the story having to know which one is on.
+ *
+ * Every prop is on the Controls panel, grouped as **Bubbles** / **Mesh** / **Glow** / **Cursor** — see
+ * the component's own docs page for which prop is worth reaching for first.
+ *
+ * `frame: { padding: 0 }` because this one is judged on whether it reaches the viewport's edges.
+ *
+ * Both schemes are set here: `color`/`hotColor`/`glowColor` for the dark canvas and the `*Light` trio for
+ * the light one. The component picks between them from the luminance of the resolved `surfaceColor`, so
+ * the story never has to know which scheme is on.
+ */
+export const BubbleBackground: Story = {
+  parameters: { frame: { fullBleed: true, padding: 0 } },
+  /*
+   * Tuned for the hero rather than left on the component's defaults — though neither `bubbleScale` nor
+   * `bubbleSpread` is among the changes, which is the point of both being fractions of the height: the
+   * component's own values already put the bubbles at the right size and the right distance apart here,
+   * in a frame nearly twice as wide as its own.
+   *
+   * What does change is `bubbleY`, pulled higher so their lower edges sweep across at about two thirds
+   * down, leaving the copy on colour and the foot of the hero on bare page.
+   */
+  args: {
+    ...BUBBLE_DEFAULTS,
+    bubbleY: 0.1,
+    bubbleMorph: 0.22,
+    bubbleWander: 0.04,
+    edgeSoftness: 0.07,
+    /*
+     * The grounds sit almost on the page's own colour in both schemes, so where the colour thins out the
+     * bubbles fall away into the page rather than ending on a visible disc. All the colour comes from
+     * the masses inside them.
+     */
+    color: '#0a0a1e',
+    hotColor: '#7c4dff',
+    /* The brand blue against the violet, which is the pair the hero's own gradient headline runs. */
+    accentColor: '#2f6bff',
+    colorLight: '#f7f6fd',
+    /*
+     * Much paler than the dark canvas's lit colour, and not by taste. The two schemes put *opposite*
+     * text on this: light copy on the dark canvas gains contrast as the mesh deepens, dark copy on the
+     * light one loses it. A violet that reads as depth behind white text is a wash behind black text.
+     */
+    hotColorLight: '#c4b5fd',
+    accentColorLight: '#a9c9ff',
+    richness: 0.85,
+    spectralDrift: 18,
+    saturation: 1.12,
+    glow: 0.7,
+    glowOpacity: 0.8,
+    glowColor: '#c9a6ff',
+    glowColorLight: '#a78bfa',
+    glowWidth: 0.14,
+    glowOffset: 0.06,
+    glowArc: 0.4,
+  },
+  argTypes: BUBBLE_ARG_TYPES,
+  render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
 }

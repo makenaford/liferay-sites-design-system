@@ -11,6 +11,14 @@ export interface StoryFrameOptions {
    * in Docs, where stories read better aligned to the surrounding prose.
    */
   centered?: boolean
+  /**
+   * Override the outer padding — `0` for a story that has to reach the viewport's own edges.
+   *
+   * The default gutter is right for a component sitting on the page, but a *page* is not sitting on
+   * anything: a full-bleed hero drawn to the frame's edge and then inset by 32px reads as a mistake,
+   * because the thing being judged is precisely whether it reaches the edge.
+   */
+  padding?: number | string
 }
 
 export interface StoryFrameProps extends StoryFrameOptions {
@@ -43,6 +51,7 @@ export function StoryFrame({
   maxWidth = '100%',
   centered,
   fullBleed = true,
+  padding,
   children,
 }: StoryFrameProps) {
   const isCentered = centered ?? (fullBleed && width !== undefined)
@@ -50,7 +59,7 @@ export function StoryFrame({
   return (
     <Box
       bg="var(--mantine-color-body)"
-      p={fullBleed ? 'xl' : 'md'}
+      p={padding ?? (fullBleed ? 'xl' : 'md')}
       mih={fullBleed ? '100vh' : undefined}
       /*
        * Full width, so the inner `maxWidth: 100%` has something real to resolve against.
