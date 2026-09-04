@@ -47,9 +47,14 @@ export interface BubbleProps {
    * frame, stretching one vertically and moving it down look the same from the front — the only thing on
    * screen is the lower edge, and both push it down. Two controls for one visible effect is one too many.
    *
-   * 0 hangs them level, which is the one setting that reads as a single wide shape rather than two
-   * bubbles: an edge that is the same height all the way across has nothing in it to say there are two.
-   * Negative swaps which one is on top.
+   * **0 levels the visible edges, not the centres.** The two are different once `bubbleBalance` is in
+   * play — a bigger bubble centred at the same height reaches further down — and since the bubbles hang
+   * off the top of the frame, the edge is the only part anyone sees. So the size difference is taken back
+   * out of the placement, which puts the balanced setting in the middle of the range where it can be
+   * found, with either direction lifting one bubble over the other.
+   *
+   * That balanced setting is worth passing through rather than stopping at: an edge the same height all
+   * the way across has nothing in it to say there are two bubbles, and the pair reads as one wide shape.
    *
    * @default 0.09
    */
@@ -660,9 +665,31 @@ export function Bubble(props: BubbleProps) {
          * height, so the gap between the pair and the distance each one drifts stay put as the window
          * widens. Only where the pair sits moves with the frame.
          */
+        const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
+        /*
+         * Off the height, so widening the frame adds room beside the bubbles rather than inflating them.
+         * `bubbleBalance` is a seesaw around `bubbleScale`: one side gains what the other gives up, so
+         * changing it resizes the two against each other without resizing the pair.
+         */
+        const mean = basis * p.bubbleScale * pulse
+        const radius = Math.max(1, mean * (1 + b.side * p.bubbleBalance))
+
+        /*
+         * The size difference is then taken back out of the vertical placement, so that a stagger of 0
+         * puts the two **visible edges** level rather than the two centres.
+         *
+         * They are not the same thing here, and only one of them can be seen: the bubbles hang off the
+         * top of the frame, so the lower edge is the whole picture, and a bigger bubble with its centre
+         * at the same height reaches further down. Levelling centres left the edges 50px apart at the
+         * default balance — which makes 0 on this control look wrong and sends you hunting up the slider
+         * for the point where it looks level. Now that point is 0, and either direction lifts one bubble
+         * over the other.
+         */
+        const evenEdges = mean * b.side * p.bubbleBalance
+
         let cx = p.bubbleX * W + b.side * p.bubbleSpread * 0.5 * basis
           + Math.cos(wander) * p.bubbleWander * basis
-        let cy = (p.bubbleY + b.side * p.bubbleStagger * 0.5) * H
+        let cy = (p.bubbleY + b.side * p.bubbleStagger * 0.5) * H - evenEdges
           + Math.sin(wander * 1.3) * p.bubbleWander * basis
         if (p.cursorInteraction && state.pointer.active) {
           const dx = state.pointer.x * W - cx
@@ -672,13 +699,6 @@ export function Bubble(props: BubbleProps) {
           cx += dx * pull
           cy += dy * pull
         }
-        const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        /*
-         * Off the height, so widening the frame adds room beside the bubbles rather than inflating them.
-         * `bubbleBalance` is a seesaw around `bubbleScale`: one side gains what the other gives up, so
-         * changing it resizes the two against each other without resizing the pair.
-         */
-        const radius = Math.max(1, basis * p.bubbleScale * (1 + b.side * p.bubbleBalance) * pulse)
         return { b, cx, cy, radius }
       })
 
