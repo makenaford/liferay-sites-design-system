@@ -7,6 +7,8 @@ import { Accordion } from '../components/Accordion'
 import { Bubble, BUBBLE_DEFAULTS } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
 import { BUBBLE_ARG_TYPES } from '../components/Bubble/Bubble.argTypes'
+import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_LAYER2_DEFAULTS, splitBubbleLayerArgs } from '../components/Bubble/Bubble.layer2'
+import type { BubbleLayer2Args } from '../components/Bubble/Bubble.layer2'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -492,6 +494,9 @@ const RESEARCH = [
 
 /* ------------------------------------------------------------------ the page */
 
+/** The `Bubble` background's fixed height in the `heroBackground="bubble"` hero. See `HomePage` below. */
+const HERO_BUBBLE_HEIGHT = 640
+
 /**
  * `heroBackground="bubble"` swaps the hero's production video (`bubble_center.webm`) for the `Bubble`
  * canvas component — an exploration of it as a candidate background, alongside Hero's own `drawn` SVG
@@ -499,15 +504,20 @@ const RESEARCH = [
  * and `Bubble` is layered behind it in a plain positioned wrapper, the same way two `Bubble` instances
  * are stacked in its own stories.
  *
- * `bubbleProps` passes straight through to that `<Bubble>` — the `BubbleBackground` story wires it to
- * the same grouped Controls as `Bubble`'s own stories, via `BUBBLE_ARG_TYPES`.
+ * `bubbleProps` passes straight through to two stacked `<Bubble>` layers — the same `TwoLayers`
+ * composition `Bubble`'s own stories use — and the `BubbleBackground` story wires it to the same
+ * grouped Controls, via `BUBBLE_ARG_TYPES` and `BUBBLE_LAYER2_ARG_TYPES`.
  */
 function HomePage({
   heroBackground = 'video',
-  bubbleProps,
-}: { heroBackground?: 'video' | 'bubble'; bubbleProps?: BubbleProps } = {}) {
+  bubbleProps = { ...BUBBLE_DEFAULTS, ...BUBBLE_LAYER2_DEFAULTS },
+}: {
+  heroBackground?: 'video' | 'bubble'
+  bubbleProps?: BubbleProps & BubbleLayer2Args
+} = {}) {
   const reducedMotion = useReducedMotion()
   const bubbleBackground = heroBackground === 'bubble'
+  const bubbleLayers = splitBubbleLayerArgs(bubbleProps)
   const heroBackgroundProps = bubbleBackground
     ? { background: 'none' as const, style: { backgroundColor: 'transparent' } }
     : { background: 'full' as const, video: bubbleFull, videoLight: bubbleFullLight }
@@ -534,10 +544,23 @@ function HomePage({
       <SiteHeader />
 
       {/* 1. Left Hero — the solution finder above the fold, the form in the content column. */}
-      <Box pos="relative">
+      <Box pos="relative" style={{ overflow: 'hidden' }}>
         {bubbleBackground ? (
-          <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
-            <Bubble {...bubbleProps} />
+          /*
+           * Full width, fixed height — not `inset={0}`, which would stretch the canvas to match the
+           * hero's own height, and the hero's height moves with its content (the banner, form copy
+           * wrapping, mobile stacking). A fixed height keeps the wave's proportions — and its motion —
+           * the same regardless. Anchored to the bottom, so it stays put under the hero's text instead
+           * of sliding as the content above it grows or shrinks; the wrapper's `overflow: hidden` clips
+           * it to the hero's own box if the hero ever renders shorter than `HERO_BUBBLE_HEIGHT`.
+           */
+          <Box pos="absolute" left={0} right={0} bottom={0} h={HERO_BUBBLE_HEIGHT} style={{ zIndex: 0 }}>
+            <Box pos="absolute" inset={0}>
+              <Bubble {...bubbleLayers.bottomLayerProps} />
+            </Box>
+            <Box pos="absolute" inset={0} style={{ mixBlendMode: bubbleLayers.layer2BlendMode }}>
+              <Bubble {...bubbleLayers.topLayerProps} />
+            </Box>
           </Box>
         ) : null}
         <Hero
@@ -1228,16 +1251,18 @@ export const Narrow: Story = {
 
 /**
  * Exploration only — not what ships. The hero's production video (`bubble_center.webm`) is swapped for
- * the `Bubble` canvas component, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go.
- * Nothing in `Hero.tsx` changes: `Bubble` is layered behind a `background="none"` Hero in a plain
- * positioned wrapper here in the story.
+ * two stacked `Bubble` layers — the same `TwoLayers` composition `Bubble`'s own stories use — sitting
+ * where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in `Hero.tsx` changes: the
+ * layers sit behind a `background="none"` Hero in a plain positioned wrapper here in the story.
  *
- * Every `Bubble` prop is wired to the Controls panel below, grouped the same way as `Bubble`'s own
- * stories (Animation, Wave shape, Glow, Body, Color, Cursor interaction, Performance) — see that
- * component's docs page for how to work through them.
+ * The bottom layer's props are wired to the Controls panel exactly like `Bubble`'s own stories (Animation,
+ * Wave shape, Glow, Body, Color, Cursor interaction, Performance); the top layer gets the smaller
+ * **Layers** group — see that component's docs page for how to work through them.
  */
 export const BubbleBackground: Story = {
-  args: { ...BUBBLE_DEFAULTS },
-  argTypes: BUBBLE_ARG_TYPES,
-  render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
+  args: { ...BUBBLE_DEFAULTS, ...BUBBLE_LAYER2_DEFAULTS },
+  argTypes: { ...BUBBLE_ARG_TYPES, ...BUBBLE_LAYER2_ARG_TYPES },
+  render: (args) => (
+    <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps & BubbleLayer2Args} />
+  ),
 }

@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { CSSProperties } from 'react'
 import { Box } from '@mantine/core'
 import { Bubble, BUBBLE_DEFAULTS } from './Bubble'
-import type { BubbleProps } from './Bubble'
 import { BUBBLE_ARG_TYPES } from './Bubble.argTypes'
+import { BUBBLE_LAYER2_ARG_TYPES, BUBBLE_LAYER2_DEFAULTS, splitBubbleLayerArgs } from './Bubble.layer2'
+import type { BubbleLayer2Args } from './Bubble.layer2'
+import type { BubbleProps } from './Bubble'
 
 /** Fills a fixed-height, positioned box — the same wrapper the prototype and its README ask for. */
 function Frame({ height = 420, children }: { height?: number; children: React.ReactNode }) {
@@ -172,78 +173,17 @@ export const ReactbitsDefault: Story = {
  * since giving it the full 24-control set would just duplicate the panel above for no benefit.
  */
 export const TwoLayers = {
-  args: {
-    layer2BlendMode: 'screen',
-    layer2Color: '#031a12',
-    layer2HotColor: '#34e8b0',
-    layer2BackgroundColor: 'transparent',
-    layer2Waterline: 0.18,
-    layer2Swell: 0.07,
-    layer2SwellFrequency: 1.3,
-  },
-  argTypes: {
-    layer2BlendMode: {
-      control: 'select',
-      options: ['screen', 'lighten', 'difference', 'normal'],
-      table: { category: 'Layers' },
-      description: 'CSS `mix-blend-mode` on the top layer.',
-    },
-    layer2Color: { control: 'color', table: { category: 'Layers' }, description: "Top layer's deep colour." },
-    layer2HotColor: { control: 'color', table: { category: 'Layers' }, description: "Top layer's crest colour." },
-    layer2BackgroundColor: {
-      control: 'color',
-      table: { category: 'Layers' },
-      description: "Top layer's canvas background — usually `transparent` so the bottom layer shows through.",
-    },
-    layer2Waterline: {
-      control: { type: 'range', min: -1, max: 1, step: 0.02 },
-      table: { category: 'Layers' },
-    },
-    layer2Swell: {
-      control: { type: 'range', min: 0, max: 0.3, step: 0.005 },
-      table: { category: 'Layers' },
-    },
-    layer2SwellFrequency: {
-      control: { type: 'range', min: 0.5, max: 8, step: 0.1 },
-      table: { category: 'Layers' },
-    },
-  },
-  render: (
-    args: BubbleProps & {
-      layer2BlendMode: CSSProperties['mixBlendMode']
-      layer2Color: string
-      layer2HotColor: string
-      layer2BackgroundColor: string
-      layer2Waterline: number
-      layer2Swell: number
-      layer2SwellFrequency: number
-    },
-  ) => {
-    const {
-      layer2BlendMode,
-      layer2Color,
-      layer2HotColor,
-      layer2BackgroundColor,
-      layer2Waterline,
-      layer2Swell,
-      layer2SwellFrequency,
-      ...bottomLayerArgs
-    } = args
+  args: { ...BUBBLE_LAYER2_DEFAULTS },
+  argTypes: BUBBLE_LAYER2_ARG_TYPES,
+  render: (args: BubbleProps & BubbleLayer2Args) => {
+    const { bottomLayerProps, topLayerProps, layer2BlendMode } = splitBubbleLayerArgs(args)
     return (
       <Frame height={480}>
         <Box pos="absolute" inset={0}>
-          <Bubble {...bottomLayerArgs} />
+          <Bubble {...bottomLayerProps} />
         </Box>
         <Box pos="absolute" inset={0} style={{ mixBlendMode: layer2BlendMode }}>
-          <Bubble
-            {...bottomLayerArgs}
-            color={layer2Color}
-            hotColor={layer2HotColor}
-            backgroundColor={layer2BackgroundColor}
-            waterline={layer2Waterline}
-            swell={layer2Swell}
-            swellFrequency={layer2SwellFrequency}
-          />
+          <Bubble {...topLayerProps} />
         </Box>
       </Frame>
     )
