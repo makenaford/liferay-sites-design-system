@@ -630,12 +630,17 @@ export function Bubble(props: BubbleProps) {
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const plateLayer = document.createElement('canvas')
-    const glowLayer = document.createElement('canvas')
-    /** One bubble's rim at a time, so erasing its neighbour cannot touch the neighbour's own rim. */
-    const rimLayer = document.createElement('canvas')
-    /** The border and its own per-bubble scratch, for the same reason, at its own blur's padding. */
-    const borderLayer = document.createElement('canvas')
-    const borderScratch = document.createElement('canvas')
+    /*
+     * Both edge passes — the rim and the border — share these two, because they run one after the other
+     * and each is composited and finished with before the next begins. They were four canvases, which at
+     * canvas size is tens of megabytes of offscreen buffer for two passes that are never live at once.
+     *
+     * Two rather than one because the per-bubble erase has to happen somewhere its neighbour's finished
+     * stroke is not, or it takes that stroke with it: `scratch` builds one bubble's edge, `edge`
+     * accumulates them.
+     */
+    const edgeLayer = document.createElement('canvas')
+    const edgeScratch = document.createElement('canvas')
 
     let surfaceSource = ''
     let surfaceValue = '#000000'
@@ -847,31 +852,92 @@ export function Bubble(props: BubbleProps) {
         gradient.addColorStop(0.55, hsl(hue, tone, baseLight * 0.75, 0.28))
         gradient.addColorStop(1, hsl(hue, tone, baseLight * 0.5, 0))
         ctx.fillStyle = gradient
-        ctx.fillRect(0, 0, W, H)
+        /*
+         * Only the mass's own square, not the whole canvas.
+         *
+         * The gradient's last stop is at zero alpha on `radius`, so every pixel outside that circle was
+         * being composited to no effect — five times a frame, at canvas size. Clamped to the canvas so
+         * a mass hanging off an edge still fills what is on screen and nothing more.
+         */
+        const x0 = Math.max(0, Math.floor(cx - radius))
+        const y0 = Math.max(0, Math.floor(cy - radius))
+        const x1 = Math.min(W, Math.ceil(cx + radius))
+        const y1 = Math.min(H, Math.ceil(cy + radius))
+        if (x1 > x0 && y1 > y0) ctx.fillRect(x0, y0, x1 - x0, y1 - y0)
+      }
+
+      /* ------------------------------------------------------- the two edge passes, and their layers */
+
+      const rimOn = p.glow > 0 && p.glowOpacity > 0
+      const borderOn = p.borderOpacity > 0 && p.borderWidth > 0
+      const glowBlur = Math.max(1, basis * p.glowWidth * 0.45)
+      const bWidth = Math.max(0.5, basis * p.borderWidth)
+      const bBlur = p.borderBlur > 0 ? Math.max(0.5, basis * p.borderBlur) : 0
+      /* One padding for both, so the shared layers are sized once rather than resized between passes. */
+      const ePad = Math.ceil(Math.max(rimOn ? glowBlur * 2.5 : 0, borderOn ? bWidth + bBlur * 3 : 0))
+      const EW = W + ePad * 2
+      const EH = H + ePad * 2
+      if ((rimOn || borderOn) && (edgeLayer.width !== EW || edgeLayer.height !== EH)) {
+        edgeLayer.width = EW
+        edgeLayer.height = EH
+        edgeScratch.width = EW
+        edgeScratch.height = EH
+      }
+
+      /**
+       * Strokes every bubble's outline onto `acc`, one at a time with its neighbours erased from it.
+       *
+       * That erase is the outer-form rule, and it is why this is shared rather than written twice: the
+       * arcs where two bubbles overlap are interior to the shape the viewer sees, and an interior edge is
+       * not an edge. Getting it wrong once was enough — both passes now get it right or neither does.
+       */
+      const strokeOuterForm = (
+        acc: CanvasRenderingContext2D,
+        scratch: CanvasRenderingContext2D,
+        o: {
+          blur: number
+          lineWidth: number
+          stroke: string | CanvasGradient
+          scale: number
+          extra: number
+          shiftX?: (i: number) => number
+        },
+      ) => {
+        scratch.lineJoin = 'round'
+        scratch.lineWidth = o.lineWidth
+        scratch.strokeStyle = o.stroke
+        for (let i = 0; i < placed.length; i++) {
+          scratch.globalCompositeOperation = 'source-over'
+          scratch.clearRect(0, 0, EW, EH)
+          if (o.blur > 0) scratch.filter = `blur(${o.blur}px)`
+          scratch.beginPath()
+          traceClosed(scratch, outline(i, o.scale, o.extra, ePad + (o.shiftX?.(i) ?? 0), ePad))
+          scratch.stroke()
+
+          /* The erase carries the same blur, so neighbouring edges meet in a soft join rather than a cut. */
+          scratch.globalCompositeOperation = 'destination-out'
+          for (let j = 0; j < placed.length; j++) {
+            if (j === i) continue
+            scratch.beginPath()
+            traceClosed(scratch, outline(j, 1, 0, ePad, ePad))
+            scratch.fill()
+          }
+          scratch.filter = 'none'
+          scratch.globalCompositeOperation = 'source-over'
+          acc.drawImage(scratch.canvas, 0, 0)
+        }
       }
 
       /* ---------------------------------------------------------------- 2. the rim */
 
-      if (p.glow > 0 && p.glowOpacity > 0) {
-        const glowBlur = Math.max(1, basis * p.glowWidth * 0.45)
-        const gPad = Math.ceil(glowBlur * 2.5)
-        const GW = W + gPad * 2
-        const GH = H + gPad * 2
-        if (glowLayer.width !== GW || glowLayer.height !== GH) {
-          glowLayer.width = GW
-          glowLayer.height = GH
-        }
-        const gg = glowLayer.getContext('2d')!
-        gg.clearRect(0, 0, GW, GH)
-        if (rimLayer.width !== GW || rimLayer.height !== GH) {
-          rimLayer.width = GW
-          rimLayer.height = GH
-        }
-        const rg = rimLayer.getContext('2d')!
+      if (rimOn) {
+        const gg = edgeLayer.getContext('2d')!
+        gg.clearRect(0, 0, EW, EH)
+        const rg = edgeScratch.getContext('2d')!
 
         /* Banded across the frame by the same spectrum the mesh runs, so the rim belongs to the field. */
         const [gh, gs, gl] = hexToHsl(rimColor)
-        const band = rg.createLinearGradient(0, 0, GW, 0)
+        const band = rg.createLinearGradient(0, 0, EW, 0)
         const stops = 6
         for (let i = 0; i <= stops; i++) {
           const f = i / stops
@@ -879,52 +945,21 @@ export function Bubble(props: BubbleProps) {
           band.addColorStop(f, hsl(hue, Math.min(1, gs * sat), gl, Math.min(1, p.glow)))
         }
 
-        /*
-         * One bubble at a time, and each one's rim has the *other* bubble's interior taken out of it.
-         *
-         * Stroking both outlines onto one layer lights every edge each bubble has, including the arcs
-         * that run inside its neighbour — so where the two overlap the light draws a seam straight
-         * through the middle of the merged shape. But the plate opens the **union** of the two, so those
-         * arcs are interior to the shape the viewer sees, and an interior edge is not an edge at all.
-         * Erasing the neighbour leaves only the parts of each outline that are genuinely on the outside.
-         *
-         * It needs a layer per bubble because the erase is indiscriminate: done on the shared layer it
-         * would also take out the neighbour's own rim, which sits just inside the neighbour. The erase
-         * carries the same blur as the stroke, so the two rims meet in a soft join rather than a cut.
-         */
-        rg.lineJoin = 'round'
-        rg.lineWidth = Math.max(1, basis * p.glowWidth)
-        rg.strokeStyle = band
-
-        for (let i = 0; i < placed.length; i++) {
-          rg.globalCompositeOperation = 'source-over'
-          rg.clearRect(0, 0, GW, GH)
-          rg.filter = `blur(${glowBlur}px)`
-          rg.beginPath()
+        strokeOuterForm(gg, rg, {
+          blur: glowBlur,
+          lineWidth: Math.max(1, basis * p.glowWidth),
+          stroke: band,
+          scale: 1 - p.glowOffset,
+          extra: p.glowDistortion - 1,
           /*
-           * Negated, because the ring and the light move opposite ways. Sliding the ring right pushes
-           * its right side out past the bubble's edge, where the plate trims it, and leaves its left
-           * side deep inside — so the light that survives gathers on the *left*. The prop names the side
-           * the light ends up on, which is the only side anyone can see.
-           *
-           * A fraction of *this* bubble's radius, so an uneven pair shifts by the same proportion.
+           * Negated, because the ring and the light move opposite ways. Sliding the ring right pushes its
+           * right side out past the bubble's edge, where the plate trims it, and leaves its left side deep
+           * inside — so the light that survives gathers on the *left*. The prop names the side the light
+           * ends up on, which is the only side anyone can see. A fraction of *this* bubble's radius, so an
+           * uneven pair shifts by the same proportion.
            */
-          const shiftX = -p.glowOffsetX * placed[i].radius
-          traceClosed(rg, outline(i, 1 - p.glowOffset, p.glowDistortion - 1, gPad + shiftX, gPad))
-          rg.stroke()
-
-          rg.globalCompositeOperation = 'destination-out'
-          for (let j = 0; j < placed.length; j++) {
-            if (j === i) continue
-            rg.beginPath()
-            traceClosed(rg, outline(j, 1, 0, gPad, gPad))
-            rg.fill()
-          }
-          rg.filter = 'none'
-          rg.globalCompositeOperation = 'source-over'
-
-          gg.drawImage(rimLayer, 0, 0)
-        }
+          shiftX: (i) => -p.glowOffsetX * placed[i].radius,
+        })
 
         /*
          * Then the top of it is taken away, so the light gathers along the bubbles' **lower** edges.
@@ -935,21 +970,21 @@ export function Bubble(props: BubbleProps) {
          * the bubbles' own vertical extent rather than the canvas, so it stays put as they wander.
          */
         if (p.glowArc < 1) {
-          const top = Math.min(...placed.map((q) => q.cy - q.radius)) + gPad
-          const bottom = Math.max(...placed.map((q) => q.cy + q.radius)) + gPad
+          const top = Math.min(...placed.map((q) => q.cy - q.radius)) + ePad
+          const bottom = Math.max(...placed.map((q) => q.cy + q.radius)) + ePad
           const mask = gg.createLinearGradient(0, top, 0, bottom)
           mask.addColorStop(0, 'rgba(255,255,255,0)')
           mask.addColorStop(Math.max(0.01, 1 - Math.max(0, p.glowArc)), 'rgba(255,255,255,0)')
           mask.addColorStop(1, 'rgba(255,255,255,1)')
           gg.globalCompositeOperation = 'destination-in'
           gg.fillStyle = mask
-          gg.fillRect(0, 0, GW, GH)
+          gg.fillRect(0, 0, EW, EH)
           gg.globalCompositeOperation = 'source-over'
         }
 
         ctx.globalCompositeOperation = p.glowBlend
         ctx.globalAlpha = Math.min(1, p.glowOpacity)
-        ctx.drawImage(glowLayer, gPad, gPad, W, H, 0, 0, W, H)
+        ctx.drawImage(edgeLayer, ePad, ePad, W, H, 0, 0, W, H)
         ctx.globalCompositeOperation = 'source-over'
         ctx.globalAlpha = 1
       }
@@ -1010,48 +1045,19 @@ export function Bubble(props: BubbleProps) {
        * Same outer-form treatment though — each bubble's border has its neighbours erased from it, or the
        * line runs through the middle of the merged shape.
        */
-      if (p.borderOpacity > 0 && p.borderWidth > 0) {
-        const bWidth = Math.max(0.5, basis * p.borderWidth)
-        const bBlur = p.borderBlur > 0 ? Math.max(0.5, basis * p.borderBlur) : 0
-        const bPad = Math.ceil(bWidth + bBlur * 3)
-        const BW = W + bPad * 2
-        const BH = H + bPad * 2
-        if (borderLayer.width !== BW || borderLayer.height !== BH) {
-          borderLayer.width = BW
-          borderLayer.height = BH
-          borderScratch.width = BW
-          borderScratch.height = BH
-        }
-        const bg = borderLayer.getContext('2d')!
-        const bs = borderScratch.getContext('2d')!
-        bg.clearRect(0, 0, BW, BH)
-
-        bs.lineJoin = 'round'
-        bs.lineWidth = bWidth
-        bs.strokeStyle = surfaceIsLight ? p.borderColorLight : p.borderColor
-
-        for (let i = 0; i < placed.length; i++) {
-          bs.globalCompositeOperation = 'source-over'
-          bs.clearRect(0, 0, BW, BH)
-          if (bBlur > 0) bs.filter = `blur(${bBlur}px)`
-          bs.beginPath()
-          traceClosed(bs, outline(i, 1, 0, bPad, bPad))
-          bs.stroke()
-
-          bs.globalCompositeOperation = 'destination-out'
-          for (let j = 0; j < placed.length; j++) {
-            if (j === i) continue
-            bs.beginPath()
-            traceClosed(bs, outline(j, 1, 0, bPad, bPad))
-            bs.fill()
-          }
-          bs.filter = 'none'
-          bs.globalCompositeOperation = 'source-over'
-          bg.drawImage(borderScratch, 0, 0)
-        }
+      if (borderOn) {
+        const bg = edgeLayer.getContext('2d')!
+        bg.clearRect(0, 0, EW, EH)
+        strokeOuterForm(bg, edgeScratch.getContext('2d')!, {
+          blur: bBlur,
+          lineWidth: bWidth,
+          stroke: surfaceIsLight ? p.borderColorLight : p.borderColor,
+          scale: 1,
+          extra: 0,
+        })
 
         ctx.globalAlpha = Math.min(1, p.borderOpacity)
-        ctx.drawImage(borderLayer, bPad, bPad, W, H, 0, 0, W, H)
+        ctx.drawImage(edgeLayer, ePad, ePad, W, H, 0, 0, W, H)
         ctx.globalAlpha = 1
       }
 
