@@ -5,14 +5,14 @@ export interface BubbleProps {
   /** How fast the bubbles wander, morph and pulse. @default 0.4 */
   speed?: number
   /**
-   * Size of the bubbles, as a fraction of the **width**.
+   * Size of the bubbles, as a fraction of the **height**.
    *
-   * Width rather than the shorter side, because these are backgrounds for wide things: sized off the
-   * height, the same value gives two islands adrift in a hero and two shapes bursting out of a square,
-   * and every caller has to re-find it per aspect ratio. Off the width, a value keeps its meaning as the
-   * frame changes shape, and the height only decides how much of the bubble you see.
+   * Height, so the bubbles are the same size on a laptop and an ultrawide and the visible edge lands in
+   * the same place on both. Measured against the width they would grow with the window, and the edge —
+   * the thing that has to sit right against the copy in front of it — would move every time it changed.
+   * Widening the frame adds room beside them instead, which `bubbleSpread` is there to use.
    *
-   * @default 0.3
+   * @default 0.65
    */
   bubbleScale?: number
   /**
@@ -36,9 +36,9 @@ export interface BubbleProps {
   /**
    * How tall the bubbles are, as a multiple of their width. 1 is a circle.
    *
-   * Their size comes from the width (see `bubbleScale`), which on a wide frame makes them tall whether or
-   * not that was wanted — this is the axis that says otherwise. Below 1 flattens them, so their lower
-   * edge sweeps across without the shape reaching so far down; above 1 stretches them into columns.
+   * Below 1 flattens them, so their lower edge sweeps across without the shape reaching so far down;
+   * above 1 stretches them into columns. The axis to reach for when the edge is in the right place
+   * horizontally but the wrong place vertically.
    *
    * Read with `bubbleY`: together they decide where the visible edge falls, which is the thing worth
    * placing against the content in front of it.
@@ -60,7 +60,7 @@ export interface BubbleProps {
   bubblePulse?: number
   /** How far they drift from where they sit. @default 0.05 */
   bubbleWander?: number
-  /** Softness of the bubbles' edge, as a fraction of the shorter side. 0 is a crisp cut. @default 0.03 */
+  /** Softness of the bubbles' edge, as a fraction of the height. 0 is a crisp cut. @default 0.03 */
   edgeSoftness?: number
   /**
    * The colour everything outside the bubbles is painted in — **the page's own background**.
@@ -164,7 +164,7 @@ export interface BubbleProps {
   glowColor?: string
   /** The rim's colour on a light surface. @default '#7c3aed' */
   glowColorLight?: string
-  /** Thickness of the rim, as a fraction of the shorter side. @default 0.16 */
+  /** Thickness of the rim, as a fraction of the height. @default 0.16 */
   glowWidth?: number
   /**
    * How much the rim's own outline wanders off the bubble's, 1 tracking it exactly.
@@ -211,7 +211,7 @@ export interface BubbleProps {
   cursorInteraction?: boolean
   /** How far the bubbles are drawn toward the pointer, 0..1 of the distance. @default 0.16 */
   cursorLift?: number
-  /** How close the pointer has to be to pull, as a fraction of the shorter side. @default 0.5 */
+  /** How close the pointer has to be to pull, as a fraction of the height. @default 0.5 */
   cursorReach?: number
   /** How far the pointer pulls the mesh within the bubbles — its parallax against them. @default 0.12 */
   meshDrift?: number
@@ -229,7 +229,7 @@ export interface BubbleProps {
 
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
   speed: 0.4,
-  bubbleScale: 0.3,
+  bubbleScale: 0.65,
   bubbleSpread: 0.5,
   bubbleHeight: 1,
   bubbleY: 0.18,
@@ -573,7 +573,21 @@ export function Bubble(props: BubbleProps) {
         raf = requestAnimationFrame(draw)
         return
       }
-      const S = Math.min(W, H)
+      /*
+       * Every size in the component is a fraction of the **height**, and nothing is a fraction of the
+       * width.
+       *
+       * The width is the dimension that moves — a hero is the same height on a laptop and an ultrawide,
+       * and a very different width — so anything measured against it changes size as the window changes,
+       * and the visible edge lands somewhere new each time. Measured against the height, the bubbles keep
+       * their size and that edge keeps its place, and the extra width shows up as what it is: more room
+       * either side. `bubbleSpread` is the one thing still measured across the width, because spreading
+       * the pair over the frame is exactly its job.
+       *
+       * `Math.min(W, H)` was the same thing on a wide frame and quietly different on a narrow one, where
+       * it would shrink the bubbles, the rim and the plate's edge together as the window narrowed.
+       */
+      const basis = H
 
       if (p.surfaceColor !== surfaceSource || now - surfaceCheckedAt > 500) {
         surfaceSource = p.surfaceColor
@@ -600,14 +614,14 @@ export function Bubble(props: BubbleProps) {
         if (p.cursorInteraction && state.pointer.active) {
           const dx = state.pointer.x * W - cx
           const dy = state.pointer.y * H - cy
-          const reach = Math.max(0.02, p.cursorReach) * S
+          const reach = Math.max(0.02, p.cursorReach) * basis
           const pull = p.cursorLift * Math.exp(-((dx * dx + dy * dy) / (2 * reach * reach)))
           cx += dx * pull
           cy += dy * pull
         }
         const pulse = 1 + p.bubblePulse * Math.sin(time * b.rate * 1.7 + b.phase)
-        /* Off the width — see `bubbleScale`. The frame's height only decides how much of it is on screen. */
-        const radius = Math.max(1, W * p.bubbleScale * b.r * pulse)
+        /* Off the height, so widening the frame adds room beside the bubbles rather than inflating them. */
+        const radius = Math.max(1, basis * p.bubbleScale * b.r * pulse)
         return { b, cx, cy, radius, radiusY: radius * p.bubbleHeight }
       })
 
@@ -714,7 +728,7 @@ export function Bubble(props: BubbleProps) {
       /* ---------------------------------------------------------------- 2. the rim */
 
       if (p.glow > 0 && p.glowOpacity > 0) {
-        const glowBlur = Math.max(1, S * p.glowWidth * 0.45)
+        const glowBlur = Math.max(1, basis * p.glowWidth * 0.45)
         const gPad = Math.ceil(glowBlur * 2.5)
         const GW = W + gPad * 2
         const GH = H + gPad * 2
@@ -754,7 +768,7 @@ export function Bubble(props: BubbleProps) {
          * carries the same blur as the stroke, so the two rims meet in a soft join rather than a cut.
          */
         rg.lineJoin = 'round'
-        rg.lineWidth = Math.max(1, S * p.glowWidth)
+        rg.lineWidth = Math.max(1, basis * p.glowWidth)
         rg.strokeStyle = band
 
         for (let i = 0; i < placed.length; i++) {
@@ -808,7 +822,7 @@ export function Bubble(props: BubbleProps) {
 
       /* ---------------------------------------------------------------- 3. the plate */
 
-      const blur = p.edgeSoftness > 0 ? Math.max(0.5, S * p.edgeSoftness * 0.5) : 0
+      const blur = p.edgeSoftness > 0 ? Math.max(0.5, basis * p.edgeSoftness * 0.5) : 0
       /*
        * A blurred shape drawn to the canvas's own edge fades there, because the blur has nothing beyond
        * the boundary to average with — it reads as a vignette down every side. So a soft-edged plate is

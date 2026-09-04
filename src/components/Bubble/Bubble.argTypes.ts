@@ -15,9 +15,10 @@ export const BUBBLE_ARG_TYPES = {
   paused: { control: 'boolean', table: { category: 'Animation' } },
 
   bubbleScale: {
-    control: { type: 'range', min: 0.05, max: 0.8, step: 0.01 },
+    control: { type: 'range', min: 0.1, max: 1.6, step: 0.01 },
     table: { category: 'Bubbles' },
-    description: 'Radius as a fraction of the **width**, so it keeps its meaning as the frame changes shape.',
+    description:
+      'Radius as a fraction of the **height**, so the bubbles are the same size however wide the frame gets.',
   },
   bubbleHeight: {
     control: { type: 'range', min: 0.2, max: 2, step: 0.05 },
