@@ -117,6 +117,7 @@ export const SoftEdge: Story = {
  * Below: high and tight, the default, and low and wide.
  */
 export const Placement: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[
@@ -141,6 +142,7 @@ export const Placement: Story = {
  * it says there are two. The rows below put the difference back.
  */
 export const Pair: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[
@@ -161,6 +163,7 @@ export const Pair: Story = {
  * that decides whether they read as *bubbles* or as discs with colour in them.
  */
 export const Morph: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[0, 0.2, 0.45].map((bubbleMorph) => (
@@ -211,6 +214,7 @@ export const Sunset: Story = {
  * has to be kept in step.
  */
 export const Glow: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[0, 0.55, 1].map((glow) => (
@@ -229,6 +233,7 @@ export const Glow: Story = {
  * are the defaults.
  */
 export const GlowBlends: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {(['screen', 'overlay', 'soft-light', 'source-over'] as const).map((glowBlend) => (
@@ -247,6 +252,7 @@ export const GlowBlends: Story = {
  * the one you want.
  */
 export const MeshFollow: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[0, 1].map((meshFollow) => (
@@ -269,6 +275,7 @@ export const MeshFollow: Story = {
  * as drawn; past roughly its own width it stops being an edge at all and becomes a halo around the form.
  */
 export const Border: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[
@@ -290,6 +297,7 @@ export const Border: Story = {
  * that meet.
  */
 export const Richness: Story = {
+  args: { paused: true },
   render: (args) => (
     <Box>
       {[0, 0.5, 1.4].map((richness) => (

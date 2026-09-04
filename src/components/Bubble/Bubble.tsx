@@ -450,10 +450,39 @@ export function Bubble(props: BubbleProps) {
     let last = performance.now()
     let t = 0
 
+    /*
+     * Off-screen, the loop stops rather than running unseen. A docs page carrying every story of this
+     * component mounts thirty-odd canvases and shows one; a page with it in the hero leaves it running
+     * for as long as the reader is anywhere else on the page.
+     */
+    let onScreen = true
+    const io = new IntersectionObserver(
+      (entries) => {
+        const next = entries[entries.length - 1].isIntersecting
+        if (next === onScreen) return
+        onScreen = next
+        if (onScreen && !dead && !raf) {
+          last = performance.now()
+          raf = requestAnimationFrame(draw)
+        }
+      },
+      { rootMargin: '96px' },
+    )
+    io.observe(parent)
+
+    /* What the last drawn frame was drawn from, so a frozen one is not drawn again unchanged. */
+    let lastProps: BubbleProps | null = null
+    let lastW = 0
+    let lastH = 0
+
     const STEPS = 72
 
     const draw = (now: number) => {
       if (dead) return
+      if (!onScreen) {
+        raf = 0
+        return
+      }
       const p = { ...BUBBLE_DEFAULTS, ...propsRef.current }
       const dt = now - last
       last = now
@@ -497,6 +526,26 @@ export function Bubble(props: BubbleProps) {
       const ease = Math.min(1, dt / 220)
       state.lean.x += (targetX - state.lean.x) * ease
       state.lean.y += (targetY - state.lean.y) * ease
+
+      /*
+       * A frozen frame is drawn once, not redrawn identically forever. `paused` and reduced motion both
+       * hold `time` still, so with the same props, size and pointer there is nothing new to paint —
+       * which is most of a docs page, and every reader who asked not to be moved at.
+       */
+      const settled =
+        (p.paused || reduced) &&
+        propsRef.current === lastProps &&
+        W === lastW &&
+        H === lastH &&
+        Math.abs(targetX - state.lean.x) < 0.0005 &&
+        Math.abs(targetY - state.lean.y) < 0.0005
+      if (settled) {
+        raf = requestAnimationFrame(draw)
+        return
+      }
+      lastProps = propsRef.current
+      lastW = W
+      lastH = H
 
       /* Each bubble's centre and radius this frame; the mesh and the rim are both placed against these. */
       const placed = BUBBLES.map((b) => {
@@ -798,6 +847,7 @@ export function Bubble(props: BubbleProps) {
       dead = true
       cancelAnimationFrame(raf)
       ro.disconnect()
+      io.disconnect()
       canvas.removeEventListener('pointermove', onMove)
       canvas.removeEventListener('pointerleave', onLeave)
     }
