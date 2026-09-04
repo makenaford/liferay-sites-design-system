@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
+import { Bubble } from '../components/Bubble'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -489,8 +490,19 @@ const RESEARCH = [
 
 /* ------------------------------------------------------------------ the page */
 
-function HomePage() {
+/**
+ * `heroBackground="bubble"` swaps the hero's production video (`bubble_center.webm`) for the `Bubble`
+ * canvas component — an exploration of it as a candidate background, alongside Hero's own `drawn` SVG
+ * prototype. It does not touch `Hero.tsx`: `background="none"` skips Hero's own gradient/video layer,
+ * and `Bubble` is layered behind it in a plain positioned wrapper, the same way two `Bubble` instances
+ * are stacked in its own stories.
+ */
+function HomePage({ heroBackground = 'video' }: { heroBackground?: 'video' | 'bubble' } = {}) {
   const reducedMotion = useReducedMotion()
+  const bubbleBackground = heroBackground === 'bubble'
+  const heroBackgroundProps = bubbleBackground
+    ? { background: 'none' as const, style: { backgroundColor: 'transparent' } }
+    : { background: 'full' as const, video: bubbleFull, videoLight: bubbleFullLight }
   const [goalTab, setGoalTab] = useState('marketers')
   const [teamTab, setTeamTab] = useState('marketers')
   const [capability, setCapability] = useState('enterprise-websites')
@@ -514,16 +526,15 @@ function HomePage() {
       <SiteHeader />
 
       {/* 1. Left Hero — the solution finder above the fold, the form in the content column. */}
-      <Hero
-        background="full"
-        video={bubbleFull}
-        /*
-         * The light canvas has its own export. Without it the hero falls back to the gradient there,
-         * which is correct and built from the same tokens — but the renderer passes both, and a story
-         * that stands in for the page should show what the page shows.
-         */
-        videoLight={bubbleFullLight}
-        entrance
+      <Box pos="relative">
+        {bubbleBackground ? (
+          <Box pos="absolute" inset={0} style={{ zIndex: 0 }}>
+            <Bubble />
+          </Box>
+        ) : null}
+        <Hero
+          {...heroBackgroundProps}
+          entrance
         banner={
           <Card
             surface="glass"
@@ -658,7 +669,8 @@ function HomePage() {
             tabIndex={-1}
           />
         }
-      />
+        />
+      </Box>
 
       {/* 2. Logos scrolling section — a 64px logo row directly under the hero. */}
       <Section reveal spacing="none" pt={24}>
@@ -1204,4 +1216,14 @@ export const Page: Story = { render: () => <HomePage /> }
 export const Narrow: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: () => <HomePage />,
+}
+
+/**
+ * Exploration only — not what ships. The hero's production video (`bubble_center.webm`) is swapped for
+ * the `Bubble` canvas component, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go.
+ * Nothing in `Hero.tsx` changes: `Bubble` is layered behind a `background="none"` Hero in a plain
+ * positioned wrapper here in the story.
+ */
+export const BubbleBackground: Story = {
+  render: () => <HomePage heroBackground="bubble" />,
 }
