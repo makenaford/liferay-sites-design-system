@@ -33,9 +33,15 @@ export const BUBBLE_ARG_TYPES = {
       'Where the centres sit vertically. Well above centre by default, so what shows is the bubbles’ lower halves.',
   },
   bubbleSpread: {
-    control: { type: 'range', min: 0, max: 0.8, step: 0.01 },
+    control: { type: 'range', min: 0, max: 2.5, step: 0.05 },
     table: { category: 'Bubbles' },
-    description: 'How far apart the two sit. At 0 they stack and read as one shape.',
+    description:
+      'Distance between the two centres, as a fraction of the **height** — so the gap holds as the window widens. At 0 they stack and read as one shape.',
+  },
+  bubbleX: {
+    control: { type: 'range', min: -0.2, max: 1.2, step: 0.01 },
+    table: { category: 'Bubbles' },
+    description: 'Where the pair sits horizontally, 0 the left edge and 1 the right. The counterpart to `bubbleY`.',
   },
   bubbleMorph: {
     control: { type: 'range', min: 0, max: 0.6, step: 0.01 },
@@ -118,6 +124,12 @@ export const BUBBLE_ARG_TYPES = {
   meshScale: {
     control: { type: 'range', min: 0.3, max: 2.5, step: 0.05 },
     table: { category: 'Mesh' },
+  },
+  meshMotion: {
+    control: { type: 'range', min: 0, max: 6, step: 0.1 },
+    table: { category: 'Mesh' },
+    description:
+      'How far the colours travel inside their bubble. `speed` sets how fast everything moves; this sets how far the mesh churns.',
   },
   meshFade: {
     control: { type: 'range', min: 0, max: 1, step: 0.02 },

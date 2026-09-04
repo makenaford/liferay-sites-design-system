@@ -16,12 +16,17 @@ export interface BubbleProps {
    */
   bubbleScale?: number
   /**
-   * The distance between the two centres, as a fraction of the width.
+   * The distance between the two centres, as a fraction of the **height**.
+   *
+   * Height, like `bubbleScale`, so the gap between them holds as the window widens instead of opening up
+   * — measured across the width, the pair drifts apart on a wide screen and the two shapes stop being
+   * one form. Widening the frame now leaves more page either side of the pair rather than pulling it
+   * open.
    *
    * Read against `bubbleScale`: close together they merge into one form, far apart they read as two
    * bubbles that happen to share a frame. The interesting range is where they just touch.
    *
-   * @default 0.5
+   * @default 1.05
    */
   bubbleSpread?: number
   /**
@@ -46,6 +51,16 @@ export interface BubbleProps {
    * @default 1
    */
   bubbleHeight?: number
+  /**
+   * Where the pair sits horizontally, 0 being the left edge and 1 the right. The two bubbles are placed
+   * either side of this, `bubbleSpread` apart.
+   *
+   * A fraction of the frame, like `bubbleY` — placement is the one thing that should follow the frame's
+   * own proportions, while the sizes and the gap between the pair stay fixed against the height.
+   *
+   * @default 0.5
+   */
+  bubbleX?: number
   /**
    * Where the bubbles' centres sit vertically, 0 being the top edge and 1 the bottom.
    *
@@ -140,6 +155,16 @@ export interface BubbleProps {
   /** Size of the mesh's colour masses, relative to the bubble holding them. @default 1 */
   meshScale?: number
   /**
+   * How far the colour masses travel inside their bubble.
+   *
+   * Distinct from `speed`, which sets how fast everything moves — this sets how *far* the colours go, so
+   * the mesh can churn without the bubbles wandering faster. At 0 the masses hold station and the mesh
+   * only changes because the bubble under it does; high, the colours circulate visibly within it.
+   *
+   * @default 1
+   */
+  meshMotion?: number
+  /**
    * How far down the mesh dissolves into `surfaceColor` at the top edge, 0..1.
    *
    * **Off by default.** The bubbles already end the mesh on every side; this exists only for a component
@@ -230,8 +255,9 @@ export interface BubbleProps {
 export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>> = {
   speed: 0.4,
   bubbleScale: 0.65,
-  bubbleSpread: 0.5,
+  bubbleSpread: 1.05,
   bubbleHeight: 1,
+  bubbleX: 0.5,
   bubbleY: 0.18,
   bubbleMorph: 0.2,
   bubblePulse: 0.12,
@@ -249,6 +275,7 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   meshFollow: 0.85,
   saturation: 1.05,
   meshScale: 1,
+  meshMotion: 1,
   meshFade: 0,
   glow: 0.8,
   glowOpacity: 0.9,
@@ -609,8 +636,14 @@ export function Bubble(props: BubbleProps) {
        */
       const placed = BUBBLES.map((b) => {
         const wander = time * b.rate + b.phase
-        let cx = (0.5 + b.side * p.bubbleSpread * 0.5) * W + Math.cos(wander) * p.bubbleWander * W
-        let cy = (p.bubbleY + b.y) * H + Math.sin(wander * 1.3) * p.bubbleWander * H
+        /*
+         * Placement follows the frame (`bubbleX`, `bubbleY`); everything else is measured against the
+         * height, so the gap between the pair and the distance each one drifts stay put as the window
+         * widens. Only where the pair sits moves with the frame.
+         */
+        let cx = p.bubbleX * W + b.side * p.bubbleSpread * 0.5 * basis
+          + Math.cos(wander) * p.bubbleWander * basis
+        let cy = (p.bubbleY + b.y) * H + Math.sin(wander * 1.3) * p.bubbleWander * basis
         if (p.cursorInteraction && state.pointer.active) {
           const dx = state.pointer.x * W - cx
           const dy = state.pointer.y * H - cy
@@ -694,8 +727,9 @@ export function Bubble(props: BubbleProps) {
          * Placed in the bubble's coordinates, then eased back toward the canvas's by `meshFollow`. At 1
          * the mass is nailed to the bubble; at 0 it sits still and the bubble slides over it.
          */
-        const anchorX = home.cx + (blob.x + Math.cos(orbit) * blob.orbit) * home.radius
-        const anchorY = home.cy + (blob.y + Math.sin(orbit) * blob.orbit) * home.radiusY
+        const travel = blob.orbit * p.meshMotion
+        const anchorX = home.cx + (blob.x + Math.cos(orbit) * travel) * home.radius
+        const anchorY = home.cy + (blob.y + Math.sin(orbit) * travel) * home.radiusY
         const looseX = (0.5 + blob.x * 0.5) * W
         const looseY = (0.5 + blob.y * 0.5) * H
         const cx = looseX + (anchorX - looseX) * p.meshFollow + state.lean.x * p.meshDrift * W

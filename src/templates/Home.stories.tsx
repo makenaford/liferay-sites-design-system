@@ -1260,18 +1260,16 @@ export const Narrow: Story = {
 export const BubbleBackground: Story = {
   parameters: { frame: { fullBleed: true, padding: 0 } },
   /*
-   * Tuned for the hero rather than left on the component's defaults — though `bubbleScale` is not among
-   * the changes, and that is the point of it being a fraction of the height: the component's own value
-   * already puts the bubbles at the right size here.
+   * Tuned for the hero rather than left on the component's defaults — though neither `bubbleScale` nor
+   * `bubbleSpread` is among the changes, which is the point of both being fractions of the height: the
+   * component's own values already put the bubbles at the right size and the right distance apart here,
+   * in a frame nearly twice as wide as its own.
    *
    * What does change is `bubbleY`, pulled higher so their lower edges sweep across at about two thirds
-   * down, leaving the copy on colour and the foot of the hero on bare page, and a wider `bubbleSpread`
-   * to use the extra width — one bubble behind the copy, one behind the media. They still meet, which
-   * keeps this one field of colour rather than two ornaments.
+   * down, leaving the copy on colour and the foot of the hero on bare page.
    */
   args: {
     ...BUBBLE_DEFAULTS,
-    bubbleSpread: 0.56,
     bubbleY: 0.1,
     bubbleMorph: 0.22,
     bubbleWander: 0.04,
