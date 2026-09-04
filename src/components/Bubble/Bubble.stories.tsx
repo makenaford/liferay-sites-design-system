@@ -71,6 +71,9 @@ const meta = {
           '  which are worth having apart: the first changes how hot the rim is, the second how much of it',
           '  survives the blend. `glowOffset` floats it inward. `glowBlend` decides how it meets the mesh —',
           '  `screen`/`lighten` add light, `overlay`/`soft-light` keep more of the mesh\'s own hue.',
+          '- **Border** is the other way to light an edge, and off by default. The rim is drawn before the',
+          '  plate and trimmed to the inside of the outline; the border is drawn after it and straddles it,',
+          '  glowing onto the page. `borderBlur` decides whether it reads as a drawn line or a halo.',
           '- **Cursor** does two jobs from one pointer — `cursorLift` draws the bubbles toward it while',
           '  `meshDrift` pulls the mesh within them the other way, so the colour lags behind the shape.',
           '- Leave **Performance** alone unless the canvas is visibly stuttering.',
@@ -270,6 +273,32 @@ export const MeshFollow: Story = {
       {[0, 1].map((meshFollow) => (
         <Frame key={meshFollow} height={220}>
           <Bubble {...args} meshFollow={meshFollow} />
+        </Frame>
+      ))}
+    </Box>
+  ),
+}
+
+/**
+ * The border: off, a drawn line, and blurred into a halo.
+ *
+ * It is drawn *after* the plate, which is the whole difference between it and the rim — the rim comes
+ * before and is trimmed to the inside of the edge, this straddles the outline and glows out onto the
+ * page. A shape can want either, both or neither.
+ *
+ * `borderBlur` is what decides which of the two things it is. At 0 it is an outline, and the shape reads
+ * as drawn; past roughly its own width it stops being an edge at all and becomes a halo around the form.
+ */
+export const Border: Story = {
+  render: (args) => (
+    <Box>
+      {[
+        { borderOpacity: 0 },
+        { borderOpacity: 1, borderBlur: 0 },
+        { borderOpacity: 1, borderBlur: 0.03 },
+      ].map((border, i) => (
+        <Frame key={i} height={220}>
+          <Bubble {...args} {...border} borderWidth={0.006} />
         </Frame>
       ))}
     </Box>

@@ -192,6 +192,29 @@ export const BUBBLE_ARG_TYPES = {
     description:
       'How much of the outline is lit, from the bottom up. 1 rings the whole edge; below it the light gathers along the lower edge.',
   },
+  borderOpacity: {
+    control: { type: 'range', min: 0, max: 1, step: 0.05 },
+    table: { category: 'Border' },
+    description:
+      'A glowing border along the outline, **off at 0**. Drawn after the plate, so unlike the rim it straddles the edge and glows onto the page.',
+  },
+  borderWidth: {
+    control: { type: 'range', min: 0.001, max: 0.05, step: 0.001 },
+    table: { category: 'Border' },
+    description: 'Thickness, as a fraction of the height.',
+  },
+  borderBlur: {
+    control: { type: 'range', min: 0, max: 0.08, step: 0.002 },
+    table: { category: 'Border' },
+    description: '0 is a drawn line; past about the border’s own width it becomes a halo rather than an edge.',
+  },
+  borderColor: { control: 'color', table: { category: 'Border' }, description: 'On a dark surface.' },
+  borderColorLight: {
+    control: 'color',
+    table: { category: 'Border' },
+    description: 'On a light surface.',
+  },
+
   glowBlend: {
     control: 'select',
     options: ['screen', 'lighten', 'overlay', 'soft-light', 'color-dodge', 'source-over'],

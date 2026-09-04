@@ -270,6 +270,37 @@ export interface BubbleProps {
    * @default 'screen'
    */
   glowBlend?: 'screen' | 'lighten' | 'overlay' | 'soft-light' | 'color-dodge' | 'source-over'
+  /**
+   * A glowing border traced along the bubbles' outline. **Off at 0**, which is the default.
+   *
+   * Unlike the rim, this is drawn *after* the plate rather than before it, so it is not trimmed to the
+   * inside of the edge — it straddles the outline and glows outward onto the page. The rim is light
+   * caught inside the bubble; this is the bubble's edge itself being lit, and they are worth having
+   * separately because a shape can want either, both, or neither.
+   *
+   * It follows the same outer form the rim does: where the two bubbles overlap, the part of each
+   * outline running inside the other is not drawn, so the border traces the merged silhouette rather
+   * than crossing it.
+   *
+   * @default 0
+   */
+  borderOpacity?: number
+  /** Thickness of the border, as a fraction of the height. @default 0.004 */
+  borderWidth?: number
+  /**
+   * How far the border is blurred, as a fraction of the height.
+   *
+   * 0 is a drawn line — the one setting that reads as an outline rather than a glow. Above it the edge
+   * softens into light, and past about the border's own width it stops looking like a border at all and
+   * becomes a halo around the shape.
+   *
+   * @default 0.012
+   */
+  borderBlur?: number
+  /** The border's colour on a dark surface. @default '#c9b0ff' */
+  borderColor?: string
+  /** The border's colour on a light surface. @default '#7c3aed' */
+  borderColorLight?: string
   /** Film grain strength. @default 0.035 */
   grain?: number
   /** Whether the pointer draws the bubbles toward it and steers the mesh. @default true */
@@ -332,6 +363,11 @@ export const BUBBLE_DEFAULTS: Required<Omit<BubbleProps, 'className' | 'style'>>
   glowOffsetX: 0,
   glowArc: 0.45,
   glowBlend: 'screen',
+  borderOpacity: 0,
+  borderWidth: 0.004,
+  borderBlur: 0.012,
+  borderColor: '#c9b0ff',
+  borderColorLight: '#7c3aed',
   grain: 0.035,
   cursorInteraction: true,
   cursorLift: 0.16,
@@ -604,6 +640,9 @@ export function Bubble(props: BubbleProps) {
     const glowLayer = document.createElement('canvas')
     /** One bubble's rim at a time, so erasing its neighbour cannot touch the neighbour's own rim. */
     const rimLayer = document.createElement('canvas')
+    /** The border and its own per-bubble scratch, for the same reason, at its own blur's padding. */
+    const borderLayer = document.createElement('canvas')
+    const borderScratch = document.createElement('canvas')
 
     let surfaceSource = ''
     let surfaceValue = '#000000'
@@ -977,6 +1016,59 @@ export function Bubble(props: BubbleProps) {
       pg.globalCompositeOperation = 'source-over'
 
       ctx.drawImage(plateLayer, pad, pad, W, H, 0, 0, W, H)
+
+      /* ---------------------------------------------------------------- 4. the border */
+
+      /*
+       * After the plate, which is what separates it from the rim: the rim is drawn before and so gets
+       * trimmed to the inside of the edge, while this straddles the outline and glows out onto the page.
+       * Same outer-form treatment though — each bubble's border has its neighbours erased from it, or the
+       * line runs through the middle of the merged shape.
+       */
+      if (p.borderOpacity > 0 && p.borderWidth > 0) {
+        const bWidth = Math.max(0.5, basis * p.borderWidth)
+        const bBlur = p.borderBlur > 0 ? Math.max(0.5, basis * p.borderBlur) : 0
+        const bPad = Math.ceil(bWidth + bBlur * 3)
+        const BW = W + bPad * 2
+        const BH = H + bPad * 2
+        if (borderLayer.width !== BW || borderLayer.height !== BH) {
+          borderLayer.width = BW
+          borderLayer.height = BH
+          borderScratch.width = BW
+          borderScratch.height = BH
+        }
+        const bg = borderLayer.getContext('2d')!
+        const bs = borderScratch.getContext('2d')!
+        bg.clearRect(0, 0, BW, BH)
+
+        bs.lineJoin = 'round'
+        bs.lineWidth = bWidth
+        bs.strokeStyle = surfaceIsLight ? p.borderColorLight : p.borderColor
+
+        for (let i = 0; i < placed.length; i++) {
+          bs.globalCompositeOperation = 'source-over'
+          bs.clearRect(0, 0, BW, BH)
+          if (bBlur > 0) bs.filter = `blur(${bBlur}px)`
+          bs.beginPath()
+          traceClosed(bs, outline(i, 1, 0, bPad, bPad))
+          bs.stroke()
+
+          bs.globalCompositeOperation = 'destination-out'
+          for (let j = 0; j < placed.length; j++) {
+            if (j === i) continue
+            bs.beginPath()
+            traceClosed(bs, outline(j, 1, 0, bPad, bPad))
+            bs.fill()
+          }
+          bs.filter = 'none'
+          bs.globalCompositeOperation = 'source-over'
+          bg.drawImage(borderScratch, 0, 0)
+        }
+
+        ctx.globalAlpha = Math.min(1, p.borderOpacity)
+        ctx.drawImage(borderLayer, bPad, bPad, W, H, 0, 0, W, H)
+        ctx.globalAlpha = 1
+      }
 
       /* ---------------------------------------------------------------- grain */
 
