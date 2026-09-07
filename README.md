@@ -1483,6 +1483,7 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
 | `Theme` — Dark / Light | the colour scheme, not a prop |
 | Label / Header / Description / Button(s) / Link | `label`, `title`, `description`, `actions` |
+| `Content 1` — the key-point list | `bullets` |
 | Input with button | `form` |
 | Gartner logo and tags | `proof` |
 
@@ -1492,6 +1493,36 @@ the media, and 24px inside the content stack. The content and media columns are 
 
 `Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
 and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
+
+The hero's form card takes **`Condensed` fields** — the label starts in the box and moves clear of it on
+focus or a value. Every cell of the Figma `Form` set is `Condensed=True`, so this is the set's own default
+rather than a choice: a card with the label inside six fields and above the seventh reads as an oversight.
+`Textarea` gained `floating` for that seventh. It had been withheld on the argument that a label floating
+over several lines would land on content already at the top of the box, which turned out not to describe
+the implementation — the floated position is `translateY(-32px)`, into the 22px the root reserves *above*
+the box, so it clears a one-line field and a six-line one identically. The stylesheet had been matching
+`:where(input, textarea)` all along; only the prop was missing.
+
+**The hero's entrance uses `animation-fill-mode: backwards`, not `both`**, and that is a correctness
+requirement rather than a preference. All `both` was wanted for is the *from* hold — a part sitting at
+`opacity: 0` through its own delay instead of flashing before its turn — which is `backwards` alone; the
+`forwards` half was doing nothing visible, because the animation ends exactly where the element's own
+styles already are. What it *was* doing is keeping a transform animation in effect on `.heroMedia` for
+the life of the page, and an element with a filling transform animation gets a containing block and a
+compositing layer whether or not the value is the identity. That silently disabled `backdrop-filter` on
+everything inside the media column — the `Form` card's 50px blur rendered as if the property were not
+set, and the bubble behind the card came through perfectly sharp.
+
+The card's fields are also **glass**, which was an omission rather than a new idea: the rule that gives
+the hero's inline email field a scrim and a blur covered `.heroForm` only, so the six fields of a contact
+form in the media column had no fill on the dark canvas and the bubble ran straight under the type. On the
+light canvas they were already covered, because that rule keys on the hero rather than on the slot.
+`.formRoot` now sits alongside `.heroForm` on the dark rule.
+
+`bullets` sits between `description` and `form`, and it is its own slot rather than part of the
+description because it is a list and not a sentence: a screen reader should meet it as one, and the
+entrance — which takes its delays from the DOM — should give it its own beat. The `Contact Sales` page is
+what it is for, where the file fills `Content 1` with a `List marker="check"` of three key points.
 
 `banner` is the one slot with no cell on the set. Every other slot lives inside the left column; the Home
 page (node `24563:52720`) puts a 1000px solution finder across the top of the hero, above the heading and

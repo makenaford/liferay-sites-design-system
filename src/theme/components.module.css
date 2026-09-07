@@ -2163,9 +2163,23 @@
  * `:placeholder-shown` never flips and the presence of a pill is what "filled" means here.
  */
 .fieldRoot[data-floating]:has(.fieldPill) .fieldLabel {
-  /* Clear of the box: 12px of box padding plus the 22px reserved above it. */
+  /*
+   * Clear of the box, with **4px between the label and the field**.
+   *
+   * The arithmetic, since three numbers have to agree and two of them live elsewhere: the label is
+   * `position: absolute` at `top: 34px` and the root reserves `padding-top: 22px`, so the box's own top
+   * edge is at 22. Translating by 32 puts the label's line box at 2, and a 16px line box ends at 18 —
+   * four short of the field.
+   *
+   * `line-height` is the part that was missing, and the reason this read as touching. The resting label
+   * is 18/24 and only the *font size* was changing on float, so the line box stayed 24px tall while the
+   * glyphs shrank to 14 — it ended at 26, four pixels *into* the field, with the descender gap making
+   * that look flush rather than overlapping. Tightening the line box to the type size is what turns it
+   * into a real 4px.
+   */
   transform: translateY(-32px);
   font-size: 14px;
+  line-height: 16px;
   font-weight: 600;
   color: var(--sds-surfaces-text-primary);
 }
@@ -4832,6 +4846,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   margin: 0;
 }
 
+/*
+ * The `Content 1` slot: the key-point list, between the description and the actions.
+ *
+ * It takes the description's own measure rather than the column's. The list is a column of short lines
+ * with a marker hanging off the left, and a line of it running the full 600 the file draws would be
+ * reading at a different width from the sentence directly above it — the two are one block of prose to
+ * anyone reading down the hero, so they get one measure.
+ */
+.heroBullets {
+  max-width: 60ch;
+}
+
 .heroActions {
   display: flex;
   flex-wrap: wrap;
@@ -4861,7 +4887,19 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * `saturate` alongside the blur for the same reason `Card`'s glass carries it: blurring alone drains
  * colour, and a scrim over this artwork without it turns the violet behind the field grey.
  */
-.heroForm .fieldWrapper {
+/*
+ * `.formRoot` is here for the same reason `.heroForm` is, and it was the omission: this rule covered the
+ * hero's *inline* field — the one-line email capture — but not the `Form` card that takes the media
+ * column on a contact page, which is six fields in exactly the same position over exactly the same
+ * artwork. On the light canvas they were already covered, because the rule below keys on the hero rather
+ * than on the slot; on dark they had no fill at all, and where the bubble ran bright the value had no
+ * ground of its own.
+ *
+ * Not scoped to the hero, unlike the light rule. A `Form` card is a glass surface wherever it is put,
+ * and a field cut out of that surface should look cut out of it on a plain section too.
+ */
+.heroForm .fieldWrapper,
+.formRoot .fieldWrapper {
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
@@ -4933,8 +4971,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  *
  * 0.05s, then 0.1 apart, on an 0.8s curve — the demo's numbers. The parts overlap heavily: the heading
  * begins before the label has finished, which is what makes it read as one movement arriving rather
- * than as five things queuing. `both`, so a part holds at `from` through its own delay instead of
- * flashing at full opacity before its turn.
+ * than as five things queuing.
+ *
+ * **`backwards`, not `both`** — and the difference is not cosmetic. All `both` was ever wanted for is
+ * the *from* hold: a part must sit at `opacity: 0` through its own delay rather than flashing at full
+ * opacity before its turn, and that is `backwards` alone. `forwards` was doing nothing visible on top of
+ * it, because the animation ends exactly where the element's own styles already are — `opacity: 1` and
+ * `transform: none`.
+ *
+ * What it *was* doing is keeping a transform animation in effect on `.heroMedia` for the life of the
+ * page, and an element with a filling transform animation gets a containing block and a compositing
+ * layer whether or not the value is the identity. That silently broke `backdrop-filter` on everything
+ * inside the media column: the `Form` card's 50px blur, and the glass on any card put there, rendered as
+ * if the property were not set at all. The bubble behind the card came through perfectly sharp.
+ *
+ * So the rule is: hold the start, and then get out of the way.
  *
  * The banner leads at 0.05 because it sits above everything, and the media column comes in at 0.35 —
  * with the actions, not after the proof line. It is beside the text rather than below it, so pinning it
@@ -4948,7 +4999,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .hero[data-entrance] .heroBanner,
   .hero[data-entrance] .heroContent > *,
   .hero[data-entrance] .heroMedia {
-    animation: sds-hero-rise 0.8s cubic-bezier(0.16, 0.8, 0.3, 1) both;
+    animation: sds-hero-rise 0.8s cubic-bezier(0.16, 0.8, 0.3, 1) backwards;
   }
 
   .hero[data-entrance] .heroBanner { animation-delay: 0.05s; }

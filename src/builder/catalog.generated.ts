@@ -303,6 +303,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "label", kind: "slot", doc: "Above the heading — a `Label`, an eyebrow, a breadcrumb." },
       { name: "title", kind: "slot", doc: "The heading. Pass a real `h1` — the hero does not choose a heading level for you, because only the page knows whether this is its first heading. Named `title` for the slot it fills, not the `title` attribute." },
       { name: "description", kind: "slot", default: "Build once and deliver everywhere — websites, portals, commerce and search on one DXP.", doc: "A line or two under the heading." },
+      { name: "bullets", kind: "slot", doc: "A block between the description and the actions — the `Content 1` slot in Figma's `Content Block`, which the file fills with a `List marker=\"check\"` of the page's key points." },
       { name: "actions", kind: "slot", doc: "Buttons and links, in the order they should be read." },
       { name: "form", kind: "slot", doc: "The `Form` type: an email field with a contained button, in place of the buttons. Both can be present, but one of them is usually the point." },
       { name: "proof", kind: "slot", doc: "The Gartner logo and its tags, or any other proof that sits under the actions." },
@@ -477,6 +478,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Textarea — Figma `Input` set (node `16166:23969`), `Type=Text Area`.",
     props: [
       { name: "info", kind: "slot", doc: "Figma's `Info Button`: an explanation beside the label, in a tooltip." },
+      { name: "floating", kind: "boolean", doc: "Figma's `Condensed` axis, as on `TextInput` and `Select` — the label starts in the box and moves clear of it once the field has focus or a value." },
     ],
   },
 ]

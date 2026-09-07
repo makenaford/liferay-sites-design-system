@@ -1,24 +1,24 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
-import { presetFor } from './page-presets'
+import { templateFor } from './page-templates'
 import type { PageSpec } from './page-schema'
 
 const meta = {
-  title: 'Templates/Presets',
+  title: 'Templates/Page templates',
   parameters: {
     layout: 'fullscreen',
     frame: { fullBleed: true },
     docs: {
       description: {
         component: [
-          'What a new mockup starts as. Each of these is exactly what the **New** menu in `Templates/Page builder` drops in — the same `create()` call, so a story going wrong is the preset going wrong.',
+          'What a new mockup starts as. Each of these is exactly what the **New** menu in `Templates/Page builder` drops in — the same `create()` call, so a story going wrong is the template going wrong.',
           '',
-          'A preset is a **starting point, not a template**: it is copied once, on creation, and the copy belongs to the mockup. Editing a preset never reaches back into pages already made from it. That is deliberate — nothing has to migrate, and a preset that turns out to be wrong costs one page of re-editing rather than a data migration.',
+          'A template here is a **starting point, not a live master** — the sense a word processor means, not a CMS. It is copied once, on creation, and the copy belongs to the mockup; editing a template never reaches back into pages already made from it. That is deliberate: nothing has to migrate, and a template that turns out to be wrong costs one page of re-editing rather than a data migration.',
           '',
-          '**They are short on purpose.** The Figma file draws component sets, not pages — its only two pages are `Cover` and `❖ Components` — so these section runs are inferred rather than copied. Adding a section is one click; noticing that a section was never meant to be there is not. So each preset carries what that kind of page cannot be without, and stops.',
+          '**They are short on purpose.** The Figma file draws component sets, not pages — its only two pages are `Cover` and `❖ Components` — so these section runs are inferred rather than copied. Adding a section is one click; noticing that a section was never meant to be there is not. So each template carries what that kind of page cannot be without, and stops.',
           '',
-          'A preset composes `blank()` sections from `section-catalog.ts` rather than restating their placeholder copy, so a default has one home. Where a preset *does* override a blank, that override is the claim that the difference belongs to the page kind rather than the section type.',
+          'A template composes `blank()` sections from `section-catalog.ts` rather than restating their placeholder copy, so a default has one home. Where a template *does* override a blank, that override is the claim that the difference belongs to the page kind rather than the section type.',
         ].join('\n'),
       },
     },
@@ -36,7 +36,7 @@ export const Landing: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('landing')!.create()} />
+      <PageRenderer page={templateFor('landing')!.create()} />
       <SiteFooter />
     </>
   ),
@@ -53,7 +53,7 @@ export const Industry: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('industry')!.create()} />
+      <PageRenderer page={templateFor('industry')!.create()} />
       <SiteFooter />
     </>
   ),
@@ -74,7 +74,7 @@ export const ProductDetail: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('product')!.create()} />
+      <PageRenderer page={templateFor('product')!.create()} />
       <SiteFooter />
     </>
   ),
@@ -92,7 +92,7 @@ export const SolutionDetail: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('solution')!.create()} />
+      <PageRenderer page={templateFor('solution')!.create()} />
       <SiteFooter />
     </>
   ),
@@ -115,7 +115,7 @@ export const FormPage: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('form')!.create()} />
+      <PageRenderer page={templateFor('form')!.create()} />
       <SiteFooter />
     </>
   ),
@@ -134,7 +134,7 @@ export const CustomerStoryCatalog: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('catalog')!.create()} />
+      <PageRenderer page={templateFor('catalog')!.create()} />
       <SiteFooter />
     </>
   ),

@@ -152,6 +152,15 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
   title?: ReactNode
   /** A line or two under the heading. */
   description?: ReactNode
+  /**
+   * A block between the description and the actions — the `Content 1` slot in Figma's `Content Block`,
+   * which the file fills with a `List marker="check"` of the page's key points.
+   *
+   * Its own slot rather than part of `description`, because it is a list and not a sentence: a screen
+   * reader should meet it as one, and the entrance should give it its own beat. Pass anything; the hero
+   * only decides where it sits and how wide it runs.
+   */
+  bullets?: ReactNode
   /** Buttons and links, in the order they should be read. */
   actions?: ReactNode
   /**
@@ -169,7 +178,8 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * that happens to use this component should not get it uninvited. `Templates/Home` and `PageRenderer`
    * turn it on.
    *
-   * The order is the reading order — banner, label, heading, description, form, actions, proof — because
+   * The order is the reading order — banner, label, heading, description, bullets, form, actions, proof —
+   * because
    * the delays come from the DOM rather than from a list of slots, so a hero without a label starts its
    * cascade at the heading instead of holding an empty beat for the part that is not there.
    *
@@ -431,6 +441,7 @@ export function Hero({
   label,
   title,
   description,
+  bullets,
   actions,
   form,
   proof,
@@ -577,6 +588,7 @@ export function Hero({
           {label ? <div className={classes.heroLabel}>{label}</div> : null}
           {title ? <div className={classes.heroTitle}>{title}</div> : null}
           {description ? <div className={classes.heroDescription}>{description}</div> : null}
+          {bullets ? <div className={classes.heroBullets}>{bullets}</div> : null}
           {form ? <div className={classes.heroForm}>{form}</div> : null}
           {actions ? <div className={classes.heroActions}>{actions}</div> : null}
           {proof ? <div className={classes.heroProof}>{proof}</div> : null}

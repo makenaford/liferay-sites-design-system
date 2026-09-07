@@ -38,9 +38,9 @@ export interface LabelProps
  *
  * | Figma | Prop |
  * | --- | --- |
- * | Style = Gradient | `variant="filled"` |
- * | Style = Tonal | `variant="light"` (default) |
- * | Style = Outline | `variant="outline"` |
+ * | Style = Filled | `variant="filled"` (default) |
+ * | Style = Glass | `variant="glass"` |
+ * | Style = Gradient | `variant="gradient"` |
  * | Size = Large / Medium / Small | `size="lg" \| "md" \| "sm"` (default `lg`) |
  * | Show Icon + its instance swap | `leftSection` |
  * | Text | `children` |
