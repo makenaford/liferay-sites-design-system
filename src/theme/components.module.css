@@ -8063,7 +8063,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   --sds-map-step-x: calc(var(--sds-map-tile) * 0.75);
   --sds-map-step-y: calc(var(--sds-map-tile) * 0.8660254);
   --sds-map-ratio: 0.8660254;
-  --sds-map-hub-w: 1.9;
+  --sds-map-hub-w: 1.6;
   /*
    * The figure's own vertical centring.
    *
@@ -8159,6 +8159,64 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 @media (prefers-reduced-motion: reduce) {
   .mapGrid { transition: none; }
+}
+
+/*
+ * The same lattice, at rest.
+ *
+ * The reveal above starts at `opacity: 0`, which meant the figure's *first still frame* — the thumbnail,
+ * the screenshot in a deck, the reader who never moves the mouse — had sixteen tiles floating on a wash
+ * with nothing underneath them. The drawing is about a honeycomb the platform is cut from, and it was
+ * only ever showing that to someone who went looking. This layer is always painted, at a third of the
+ * strength, so the figure sits on the lattice and the pointer uncovers the rest of it.
+ *
+ * **Two layers rather than one whose mask changes.** `mask-image` does not interpolate, so a single layer
+ * swapping between the static ellipse and the pointer's circle snaps between them instead of fading. This
+ * one takes only the ellipse — the same one that keeps the revealed cells from ending on a straight cut
+ * at the canvas edge — so it needs none of the pointer properties, which is also what makes it right on a
+ * touch device: the reveal never paints there, and this does.
+ *
+ * The two are additive, and that is the point of the ratio: hover reads as *more of this* rather than as
+ * a second drawing arriving.
+ */
+.mapGridRest {
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  opacity: 1;
+  transition: none;
+}
+
+/*
+ * The lattice breathes with the hub — and it is the only other thing that does.
+ *
+ * `4.5s ease-in-out alternate`, the hub's own timing, so the two are one movement rather than two: the
+ * honeycomb comes up as the platform swells and settles back as it does. That is the claim the figure is
+ * making — the products are cut from the lattice the hub sits at the centre of — and a shared timeline is
+ * the cheapest way to say it. Both animations start at mount and share a period, so they stay in phase
+ * without either one being driven by the other.
+ *
+ * **`stroke-opacity`, not a transform.** Scaling the lattice would pull it off the tiles, which are placed
+ * by cell and do not move: the drawing would come apart at the peak of every breath. Brightness is the one
+ * property the mesh can pulse without lying about where its cells are.
+ *
+ * `--sds-map-grid-rest` is the **peak**, and the trough is 45% of it. The token moved up a little with this
+ * — 0.075 was right for a lattice standing still, and a line that spends most of its cycle under that
+ * needs the top of the swing to be worth arriving at — but it is still under half of `map-grid-line`, so
+ * the mesh at its brightest stays well below the reveal and never competes with the network, whose lines
+ * are the ones carrying a message.
+ *
+ * The reveal layer is not in this. It is the same drawing at full strength under the cursor, and a pointer
+ * asking to see the structure should be shown it steadily, not on a four-and-a-half-second cycle.
+ */
+.mapGridRest path {
+  stroke: var(--sds-map-grid-rest);
+  animation: sds-map-mesh-breathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes sds-map-mesh-breathe {
+  from { stroke-opacity: 0.45; }
+  to { stroke-opacity: 1; }
 }
 
 .mapWash {
@@ -8364,6 +8422,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 .mapTraceHalo { animation-name: sds-map-draw-halo; }
+
+/*
+ * The four core-seeded traces, which are the ones that put a line on the hub — and they need their own
+ * timing, because the shared one takes it back off again.
+ *
+ * `stroke-dasharray: 100 100` with `pathLength="100"` means the offset *is* the draw: at 100 the gap
+ * covers the path, at 0 the dash covers it whole. A walk's points start at its seed vertex, so 100 -> 0
+ * grows the line outward from the hub — right. Carrying on to -100 then slides the dash off the far end,
+ * and the segment that leaves *first* is the one at the hub: past 20% of the cycle the line is a stub
+ * drifting outward, attached to nothing. Each core trace was therefore on the hub for 4%-20% of 7.5s,
+ * about 1.2s, against 1.875s between them — so the middle of the figure had stretches with nothing
+ * touching it, which is what this is fixing.
+ *
+ * So a core trace **withdraws the way it came**: 100 -> 0 -> 100, back into the hub rather than off
+ * through it. The hub end is held for 4%-58% of the cycle — 4.05s against 1.875s spacing — so two are
+ * always attached and sometimes three, and each is still off for two-fifths of its cycle so the middle
+ * keeps turning over instead of holding four static lines.
+ *
+ * The hold from 20% to 40% is what stops the reversal reading as a bounce: drawn, a beat at full length,
+ * then drawn back.
+ */
+[data-core] > .mapTrace { animation-name: sds-map-draw-core; }
+[data-core] > .mapTraceHalo { animation-name: sds-map-draw-core-halo; }
+
+@keyframes sds-map-draw-core {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.4; }
+  20% { stroke-dashoffset: 0; opacity: 0.4; }
+  40% { stroke-dashoffset: 0; opacity: 0.4; }
+  54% { stroke-dashoffset: 100; opacity: 0.12; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+
+@keyframes sds-map-draw-core-halo {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.09; }
+  20% { stroke-dashoffset: 0; opacity: 0.09; }
+  40% { stroke-dashoffset: 0; opacity: 0.09; }
+  54% { stroke-dashoffset: 100; opacity: 0.03; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
 .mapLoopHalo { animation-name: sds-map-lap-halo; }
 .mapLinkHalo { animation-name: sds-map-link-halo; }
 
@@ -8603,15 +8704,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * the label and the gap under it taking 0.22 of a tile, the icon's own top corners land at
  * `-(s + 0.22)/2`, and solving `s/2 <= W/2 - 0.576(s + 0.22)/2` puts them on the edge just past a whole
  * tile — which the rendered figure agrees with: stepped through in the browser, 1.00 has all four
- * corners inside the silhouette and 1.05 does not. 0.96 is that with the margin the padding wants, and
- * it makes the mark 55% of the hub's width where it used to be 20%.
+ * corners inside the silhouette and 1.05 does not. That put the mark at 55% of the hub's width where it
+ * used to be 20%.
+ *
+ * **Against the hub, not against the tile.** The paragraph above solves the mark against a *silhouette*,
+ * and the silhouette is `hub` tiles across — so writing the answer as a multiple of the tile hard-codes
+ * the 1.9 it was solved at, and the mark then knows nothing about a hub that has moved. It showed as the
+ * globe bursting the left and right vertices while the flat bottom edge cropped `DXP`. 0.505 is the 0.96
+ * that was here divided by that 1.9, so a 1.9 hub still renders exactly what it did.
  *
  * The octagon has more room at that height than the hexagon does, so this one number is safe on both and
  * the figure does not need a second.
  */
 .mapTileIcon[data-hub] {
-  width: calc(var(--sds-map-tile) * 0.96);
-  height: calc(var(--sds-map-tile) * 0.96);
+  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
+  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
 }
 
 /*
@@ -8645,12 +8752,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .mapHub {
   --sds-map-q: 0;
   --sds-map-r: 0;
-  /*
-   * 1.9 cells across. It went to 2.5 while the sections were pushed out to ±4 columns and the middle was
-   * empty; with them back at ±2 and their names inside them, 2.5 reached the section names. 1.9 is the
-   * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
-   * else. It is what `Homepage Redesign` draws, too.
-   */
+  /* 1.6 cells across, and why is in the lattice — this only spends the number. */
   width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill));
   height: calc(
     var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill) * var(--sds-map-ratio)
@@ -8690,8 +8792,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * symmetric curve played forwards and back has no rest in it, which is what makes this read as breathing
  * rather than as a pulse.
  *
- * 3.5% over four and a half seconds. The tile fills 95% of its cell, so that is most of the room there
- * is to grow into before the hub starts touching the gap the lattice gives everything else.
+ * 8% over four and a half seconds, and the lattice under it brightens on the same timeline.
+ *
+ * It went 3.5% -> 5% -> 8%. 3.5% was most of the room a 1.9 hub had to grow into before it started
+ * touching the gap the lattice gives everything else; a 1.6 hub is a sixth smaller, so the same
+ * percentage was a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody
+ * can see. 5% put the movement back. 8% is that made deliberate rather than merely detectable.
+ *
+ * Collision is not what caps it, and it is worth being honest about that: the nearest tile's centre is
+ * 2.14 cells out and its near boundary about 1.665, against a hub half-extent of 0.76, so the hexagon
+ * could more than double before it touched anything. What caps it is the failure this animation already
+ * has a history of — seventeen tiles pulsing at once read as a screensaver — and 8% is the most one
+ * shape can move in the middle of sixteen still ones while still reading as a centre breathing.
  */
 .mapHub > .mapTileBody {
   animation: sds-map-breathe 4.5s ease-in-out infinite alternate;
@@ -8699,7 +8811,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 @keyframes sds-map-breathe {
   from { transform: scale(1); }
-  to { transform: scale(1.035); }
+  to { transform: scale(1.08); }
 }
 
 /*
@@ -8716,10 +8828,19 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   to { opacity: 0.96; }
 }
 
+/*
+ * Asked for less motion, all three hold still — and the mesh holds at its peak rather than wherever the
+ * cycle happened to be, since the token is the value the layer was designed at.
+ */
 @media (prefers-reduced-motion: reduce) {
   .mapHub > .mapTileBody,
-  .mapWash {
+  .mapWash,
+  .mapGridRest path {
     animation: none;
+  }
+
+  .mapGridRest path {
+    stroke-opacity: 1;
   }
 }
 
@@ -8752,10 +8873,55 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   );
 }
 
+/*
+ * `DXP`, sized from the hub for the reason the mark above is: it shares the hub's centred column, so it
+ * is measured against the same silhouette and 0.0842 is the 0.16 that was here divided by 1.9.
+ */
 .mapHub .mapTileLabel {
-  font-size: calc(var(--sds-map-tile) * 0.16);
+  font-size: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.0842);
   font-weight: 700;
   color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * The tiles breathe too — 2%, and out of phase with each other.
+ *
+ * This was tried once and failed, and the failure is worth restating because it is the whole design of
+ * this rule: all seventeen shared one timeline with identical scale and identical `currentTime` at every
+ * sample, so the figure inflated as a single object and read as a screensaver. Two things are different
+ * here.
+ *
+ * **The amplitude is a quarter of the hub's.** 2% against 8%, so the centre is still unambiguously the
+ * thing moving and the tiles are a texture under it rather than sixteen competing pulses. At an ordinary
+ * figure size that is around three pixels of travel — present at the edge of notice, which is what
+ * "subtle" has to mean for something repeated sixteen times.
+ *
+ * **The phase is ordered by distance from the hub**, via `--sds-map-breath` — negative, so each tile is
+ * already mid-cycle at load. The sixteen cells sit 1.50 to 2.60 tiles out, and at 1100ms a tile that is
+ * 1210ms of a 4500ms half-swing between the nearest and the furthest: a little over a quarter, so a ring
+ * is visibly behind its neighbour without the inner and outer rings ever working against each other.
+ * The offset is **radial**, so cells at equal distance share it: the sixteen tiles resolve to four
+ * phases, not sixteen, because the four sections are the same diamond mirrored. That is the honest
+ * description and also the right behaviour — a breath leaving the centre should reach two symmetric tiles
+ * at the same moment. What it rules out is the thing that failed, which was one phase for all seventeen.
+ * No tile is at the same point in the cycle as its own neighbours, so what the eye gets is the lattice
+ * settling rather than the drawing being scaled.
+ *
+ * **`scale`, not `transform`.** The body's `transform` is the hover's 1.14 and the press's 1.07, and an
+ * animation beats a normal declaration — a breath written as `transform` would simply delete the hover
+ * growth. As separate properties the two compose, and the hover rule below then turns the breath *off*
+ * so a hovered tile lands on exactly 1.14 rather than on 1.14 times wherever the cycle had got to.
+ *
+ * The hub is excluded because it has its own, four times larger, above.
+ */
+.mapTile:not(.mapHub) > .mapTileBody {
+  animation: sds-map-tile-breathe 4.5s ease-in-out infinite alternate;
+  animation-delay: var(--sds-map-breath, 0ms);
+}
+
+@keyframes sds-map-tile-breathe {
+  from { scale: 1; }
+  to { scale: 1.02; }
 }
 
 /* ---- interaction ----------------------------------------------------------------------------
@@ -8769,7 +8935,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 @media (hover: hover) {
   .mapTile[data-interactive]:hover { z-index: 800; }
-  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); }
+  /*
+   * The breath stops for the tile being pointed at, so the hover is a definite 1.14 and not 1.14 times
+   * whatever the cycle happened to be. `animation-name: none` rather than `paused`, which would hold the
+   * scale wherever it stopped; dropping the animation lets `scale` fall back to its own base of 1.
+   */
+  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); animation-name: none; }
   .mapTile[data-interactive]:hover .mapTileSheen { opacity: 1; }
   .mapTile[data-interactive]:hover .mapTileLabel { color: var(--sds-surfaces-text-primary); }
   .mapTile[data-interactive]:hover .mapTileFace { background-color: var(--sds-map-tile-fill-hover); }
@@ -8801,10 +8972,72 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 }
 
+/* ---- the entrance ---------------------------------------------------------------------------
+ *
+ * The map arrives fully drawn, which left the ambient network as the only motion in the figure — and the
+ * traces and loops are deliberately slow and quiet, so nothing ever *explains* the arrangement. This
+ * says it once, on the way in: the tiles settle outward from the hub, and the network draws after them.
+ *
+ * The order is the geometry rather than the markup. Each tile's delay is its own distance from the
+ * centre, written by the component as `--sds-map-enter`, so the wave moves through the figure the way the
+ * connectors do and does not depend on which cluster happens to be listed first.
+ *
+ * `data-sds-enter` is set once, when the figure first comes into view, and never unset. The resting state
+ * of every element below is the finished figure — no element is parked at `opacity: 0` waiting for it —
+ * so a browser that never fires the observer, or a reader who arrives mid-page, sees the map complete.
+ */
+.mapRoot[data-sds-enter] .mapTile {
+  animation: sds-map-enter 620ms var(--sds-motion-ease-out) both;
+  animation-delay: var(--sds-map-enter, 0ms);
+}
+
+/*
+ * The hub goes first and alone, because it is what the others are arranged around: its delay is zero by
+ * construction — it sits at the centre the distances are measured from.
+ *
+ * Its own breath is on `.mapTileBody`, one level down, so the two do not fight over `transform`.
+ */
+/*
+ * The reveal layer is deliberately not in this list. It rests at `opacity: 0` and is raised by `:hover`,
+ * and an animation with `both` would pin it to 1 for the life of the page — the pointer's circle would
+ * simply be on, permanently.
+ */
+.mapRoot[data-sds-enter] .mapGridRest,
+.mapRoot[data-sds-enter] .mapNetwork,
+.mapRoot[data-sds-enter] .mapName {
+  animation: sds-map-enter-fade 900ms var(--sds-motion-ease-out) both;
+  animation-delay: var(--sds-map-enter, 620ms);
+}
+
+@keyframes sds-map-enter {
+  from { opacity: 0; scale: 0.82; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes sds-map-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/*
+ * Asked for less motion, the figure simply is where it was going. The observer does not run at all in
+ * that case — this is the belt to that brace, and it also covers the preference changing mid-visit.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .mapRoot[data-sds-enter] .mapTile,
+  .mapRoot[data-sds-enter] .mapGridRest,
+  .mapRoot[data-sds-enter] .mapNetwork,
+  .mapRoot[data-sds-enter] .mapName {
+    animation: none;
+  }
+}
+
 /* Focus mirrors hover, so the keyboard gets the same tile — and the same grouping, which is information. */
 .mapTile[data-interactive]:focus-visible { z-index: 800; }
 .mapTile[data-interactive]:focus-visible > .mapTileBody {
   transform: scale(1.14);
+  /* Focus mirrors hover here too — the tile being read from should not be moving. */
+  animation-name: none;
   background-image: radial-gradient(
     140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
     var(--sds-map-rim-from),
@@ -8827,10 +9060,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   color: var(--sds-surfaces-text-primary);
 }
 
-/* Pressed: the growth settles back towards rest rather than going further. */
+/*
+ * Pressed: the growth settles back towards rest rather than going further.
+ *
+ * Right, and on its own invisible. 1.14 down to 1.07 is 6% of a hexagon, which on a glass tile at this
+ * size is below notice — so the press had the correct *direction* and no feedback. The fill is where a
+ * press on glass can be seen, and it is a step past hover in the same direction rather than a new colour:
+ * the tile is being pushed further into its socket, not lit up.
+ *
+ * Faster than the settle it accompanies. A press wants to have already happened by the time the finger
+ * knows it pressed; the release then carries the tile back over the body's own duration.
+ */
 .mapTile[data-interactive]:active > .mapTileBody {
   transform: scale(1.07);
   transition-duration: var(--sds-motion-press);
+}
+
+.mapTile[data-interactive]:active .mapTileFace {
+  background-color: var(--sds-map-tile-fill-press);
+  transition-duration: 60ms;
 }
 
 /*
@@ -8858,6 +9106,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .mapLinkHalo { opacity: 0.08; stroke-dasharray: none; }
 
   .mapTileBody { transition: none; }
+  .mapTile:not(.mapHub) > .mapTileBody { animation: none; }
   .mapTile[data-interactive]:hover > .mapTileBody,
   .mapTile[data-interactive]:focus-visible > .mapTileBody,
   .mapTile[data-interactive]:active > .mapTileBody {

@@ -128,6 +128,20 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'map-grid-line': scheme === 'light' ? 'rgba(11, 95, 255, 0.14)' : 'rgba(99, 153, 255, 0.22)',
 
     /**
+     * The lattice as it looks with nobody pointing at it — under half of `map-grid-line`.
+     *
+     * The reveal is the same drawing at full strength under the cursor, so this is not a second design
+     * decision so much as the floor the first one rises from: enough that the figure is visibly sitting
+     * on a honeycomb in a still frame, little enough that it never competes with the network.
+     *
+     * It is the **peak** of the mesh's breath rather than a still value — the layer pulses down to 45% of
+     * it on the hub's timeline — so it is set a little above where a static lattice would sit: 0.075 read
+     * as right standing still, and a line that spends most of its cycle below that needs the top of the
+     * swing to be worth arriving at. Still a third of the reveal, which is the ratio that matters.
+     */
+    'map-grid-rest': scheme === 'light' ? 'rgba(11, 95, 255, 0.065)' : 'rgba(99, 153, 255, 0.1)',
+
+    /**
      * `CapabilityMap`'s tile edge: `Components/Glass Line` at about half its token value.
      *
      * The token is calibrated for one card on a page. Sixteen tiles ringing a single hub is a different
@@ -143,6 +157,14 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     /** The tile's ground, and the firmer version it takes on hover so the rim stays a rim. */
     'map-tile-fill': scheme === 'light' ? 'rgba(255, 255, 255, 0.62)' : 'rgba(11, 17, 33, 0.72)',
     'map-tile-fill-hover': scheme === 'light' ? 'rgba(255, 255, 255, 0.78)' : 'rgba(16, 25, 48, 0.8)',
+    /**
+     * And the pressed one — a step past hover in the same direction, brought toward the rim's blue.
+     *
+     * The press already settles the tile from 1.14 back to 1.07 rather than growing it further, which is
+     * the right instinct and completely invisible: 6% of a hexagon this size is below notice on glass. The
+     * fill is where a press on a glass surface can actually be seen.
+     */
+    'map-tile-fill-press': scheme === 'light' ? 'rgba(219, 232, 255, 0.9)' : 'rgba(35, 60, 130, 0.9)',
 
     /** `Glass Step 01` and `02`, halved on a tile for the same reason the edge is. */
     'map-tile-sheen-from':

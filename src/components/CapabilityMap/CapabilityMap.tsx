@@ -270,12 +270,21 @@ const HEXAGON: Lattice = {
   oy: -0.2165,
 
   /*
-   * 1.9 cells across. It went to 2.5 while the sections were pushed out to ±4 columns and the middle was
-   * empty; with them back at ±2 and their names inside them, 2.5 reached the section names. 1.9 is the
-   * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
-   * else. It is what `Homepage Redesign` draws, too.
+   * 1.6 cells across.
+   *
+   * The number that matters is not the hub's width but its **ratio to a product tile**, because that is
+   * what a reader actually compares: a tile fills 0.95 of its cell, so 1.9 made the hub 2.00x one of the
+   * sixteen and 1.6 makes it 1.68x. Two-to-one had the middle winning the picture — the four sections are
+   * the subject, and DXP is what they sit on — where 1.68 still holds the centre without arguing for it.
+   *
+   * It is not a constraint that moved. 1.9 was the largest that clears the nearest tile at 2.14 cells out,
+   * and everything below that clears it by more, so the lattice never objected to any of this; what
+   * objected was the hub's own contents, which are sized from `hub` below for exactly this reason.
+   *
+   * What it does *not* buy is room. `canvas` and `canvasOutside` are unchanged, so the middle simply gets
+   * emptier — a tighter figure means bringing the sections in, which is a different change.
    */
-  hub: 1.9,
+  hub: 1.6,
   fill: 0.95,
   padX: 0.11,
 }
@@ -464,11 +473,15 @@ function build(L: Lattice) {
    * behind the solid hub, and six at the outermost vertices, so the edges carry lines instead of
    * trailing off.
    *
+   * Each walk records **whether it started at the core**, because that is what the phasing downstream
+   * has to know: seeding four lines at the middle only puts a line on the hub if one of the four happens
+   * to be drawn, and `core` is how the render spaces them so one always is.
+   *
    * Deterministic: a small generator per walk rather than `Math.random`, so the routes are identical on
    * the server and the client and React has nothing to replace on hydration.
    */
-  const WALKS: string[] = (() => {
-    const out: string[] = []
+  const WALKS: { points: string; core: boolean }[] = (() => {
+    const out: { points: string; core: boolean }[] = []
     const total = 24
     const edgeFirst = [...BY_RADIUS].reverse()
     for (let t = 0; t < total; t += 1) {
@@ -493,7 +506,7 @@ function build(L: Lattice) {
         prev = cur
         cur = options[Math.floor(rand() * options.length)]
       }
-      if (pts.length >= 3) out.push(pts.join(' '))
+      if (pts.length >= 3) out.push({ points: pts.join(' '), core: t < 4 })
     }
     return out
   })()
@@ -871,8 +884,36 @@ const trackField = (event: PointerEvent<HTMLElement>) => {
  * The row is the lattice's own — a hexagon's odd columns hang half a row lower, an octagon's do not — so
  * this asks the lattice rather than assuming the honeycomb.
  */
-const place = (L: Lattice, q: number, r: number): CSSProperties =>
-  ({ '--sds-map-q': q, '--sds-map-r': L.pos(q, r).y / L.step.y }) as CSSProperties
+const place = (L: Lattice, q: number, r: number): CSSProperties => {
+  const p = L.pos(q, r)
+  return {
+    '--sds-map-q': q,
+    '--sds-map-r': p.y / L.step.y,
+    /*
+     * The entrance's delay: the cell's own distance from the centre, in tiles, at 90ms a tile. The order
+     * is then the geometry — a wave leaving the hub — rather than the order the clusters happen to be
+     * listed in, and the hub's own delay falls out as zero because it is the point being measured from.
+     */
+    '--sds-map-enter': `${Math.round(Math.hypot(p.x, p.y) * 90)}ms`,
+    /*
+     * And the breath's **phase**, from the same distance — negative, so every tile is already mid-cycle
+     * when the figure loads rather than starting together and staying together.
+     *
+     * This one number is the whole reason the tiles may breathe at all. The version that failed had all
+     * seventeen on one timeline with identical scale and identical `currentTime` at every sample, so the
+     * figure inflated as a single object; ordering the phase by distance means no two rings are at the
+     * same point in the cycle, and what moves is the lattice rather than the picture.
+     *
+     * **1100ms a tile**, which is a number that had to be measured rather than guessed. 170ms a tile was
+     * the first attempt and it was far too little: read back off the rendered figure, the sixteen cells
+     * span 1.50 to 2.60 tiles from the centre, so 170 spread them over 187ms of a 4500ms half-swing —
+     * four per cent, which is the lockstep it was meant to break. 1100 spreads the same range over
+     * 1210ms, a little over a quarter of the swing: enough that a ring is visibly behind its neighbour,
+     * short of the half-swing that would have the inner and outer rings moving against each other.
+     */
+    '--sds-map-breath': `${-Math.round(Math.hypot(p.x, p.y) * 1100)}ms`,
+  } as CSSProperties
+}
 
 /** Which arrow key moves which way. */
 const DIRS: Record<string, [number, number]> = {
@@ -1014,6 +1055,37 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
     return () => observer.disconnect()
   }, [canvas.w])
 
+  /**
+   * The entrance, run once, when the figure is first far enough into view to be worth explaining.
+   *
+   * A flag on the root rather than state, for the same reason the pointer trackers write straight to the
+   * element: this fires once and a re-render buys nothing. It is only ever *set* — the resting state of
+   * every element is the finished figure, so the map is complete for a reader who arrives mid-page, for a
+   * browser with no observer, and for the still frame a thumbnail takes.
+   *
+   * `prefers-reduced-motion` is honoured by not running at all. The stylesheet also neutralises the
+   * animations under the same query, which covers the preference changing after this has fired.
+   */
+  useEffect(() => {
+    const field = fieldRef.current
+    if (!field) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (typeof IntersectionObserver === 'undefined') {
+      field.dataset.sdsEnter = ''
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        field.dataset.sdsEnter = ''
+      },
+      { threshold: 0.35 },
+    )
+    observer.observe(field)
+    return () => observer.disconnect()
+  }, [])
+
   /** Lighting a section is a property of the cell, not of where the tile sits in the markup. */
   const markSection = useCallback(
     (group: number | null) => {
@@ -1112,15 +1184,32 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
       {...props}
     >
       {grid ? (
-        <svg
-          className={classes.mapGrid}
-          viewBox={viewBox}
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden
-          focusable="false"
-        >
-          <path d={layout.grid} />
-        </svg>
+        <>
+          {/*
+           * The lattice twice over: once faintly and always, once at full strength under the pointer.
+           * Same path, so there is one description of the honeycomb and the second layer cannot drift
+           * away from the first; the difference between them is entirely the mask and the stroke, both
+           * in the stylesheet.
+           */}
+          <svg
+            className={`${classes.mapGrid} ${classes.mapGridRest}`}
+            viewBox={viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden
+            focusable="false"
+          >
+            <path d={layout.grid} />
+          </svg>
+          <svg
+            className={classes.mapGrid}
+            viewBox={viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden
+            focusable="false"
+          >
+            <path d={layout.grid} />
+          </svg>
+        </>
       ) : null}
 
       {wash ? (
@@ -1150,17 +1239,47 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
             </linearGradient>
           </defs>
 
-          {geometry.walks.map((points, i) => {
-            const style = {
-              '--sds-map-delay': `${-(i * (7.5 / geometry.walks.length)).toFixed(2)}s`,
-            } as CSSProperties
-            return (
-              <g key={`walk-${i}`}>
-                <polyline className={classes.mapTraceHalo} points={points} pathLength={100} style={style} />
-                <polyline className={classes.mapTrace} points={points} pathLength={100} style={style} />
-              </g>
-            )
-          })}
+          {/*
+           * The traces, phased in two groups — and the split is the whole point of it.
+           *
+           * A trace is drawn for 44% of its 7.5s cycle: up at 4%, fully drawn at 20%, gone by 44%. On one
+           * shared stagger the four core-seeded walks took consecutive slots — 0, -0.31, -0.63, -0.94s
+           * out of 7.5 — so all four were on at once and then the middle of the figure had no line
+           * touching it for the other four and a bit seconds of every cycle. The hub spent most of its
+           * time wired to nothing.
+           *
+           * So the **core walks are spaced across the whole cycle** rather than sharing the queue: four
+           * lines at 7.5/4 = 1.875s apart, each drawn for 3.3s. Since the on-window is longer than the
+           * spacing, at least one core trace is always mid-draw — one or two at any instant — and that is
+           * arithmetic rather than something to check by watching. The rest keep their own even stagger
+           * over their own count, which is what the original was for.
+           */}
+          {(() => {
+            const core = geometry.walks.filter((w) => w.core).length
+            const rest = geometry.walks.length - core
+            let ci = -1
+            let ri = -1
+            return geometry.walks.map((walk, i) => {
+              const slot = walk.core ? ((ci += 1), ci / Math.max(core, 1)) : ((ri += 1), ri / Math.max(rest, 1))
+              const style = { '--sds-map-delay': `${-(slot * 7.5).toFixed(2)}s` } as CSSProperties
+              return (
+                <g key={`walk-${i}`} data-core={walk.core ? '' : undefined}>
+                  <polyline
+                    className={classes.mapTraceHalo}
+                    points={walk.points}
+                    pathLength={100}
+                    style={style}
+                  />
+                  <polyline
+                    className={classes.mapTrace}
+                    points={walk.points}
+                    pathLength={100}
+                    style={style}
+                  />
+                </g>
+              )
+            })
+          })()}
 
           {[geometry.hubLoop, ...layout.loops].map((points, i) => {
             const style = { '--sds-map-delay': `${(i * -4.75).toFixed(1)}s` } as CSSProperties
