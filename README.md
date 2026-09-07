@@ -912,8 +912,26 @@ in, and the names stopped needing rows of their own — and since a card is the 
 numbers, the same window now draws a considerably bigger hexagon. **Height is what binds** at every width
 down to about 1000, which is a comfortable place to be: it is the dimension `maxHeight` controls.
 
-The hub is **1.9 cells** across, the largest that clears the nearest tile at 2.14 cells with the gap the
-lattice gives everything else, and what the file draws.
+The hub is **1.6 cells** across, down from 1.9.
+
+The number that matters is not its width but its **ratio to a product tile**, because that is what a
+reader compares: a tile fills 0.95 of its cell, so 1.9 made the hub 2.00× one of the sixteen and 1.6
+makes it 1.68×. Two-to-one had the middle winning the picture, and the four sections are the subject —
+DXP is what they sit on. 1.68 still holds the centre without arguing for it.
+
+No constraint moved. 1.9 was the largest that clears the nearest tile at 2.14 cells with the gap the
+lattice gives everything else, so everything below it clears by more; the lattice never objected to any
+of this. What objected was the hub's own contents, below. And it buys no room — the canvas is unchanged,
+so the middle simply gets emptier. A tighter figure means bringing the sections in, which is a different
+change.
+
+**The mark and the label are sized from the hub, not from the tile.** They are solved against the hub's
+*silhouette* — the icon and the label are a centred column, so the icon's top corners sit where a hexagon
+has already begun narrowing toward its flat top — and the silhouette is `hub` tiles across. Written as a
+multiple of the tile, as they were, they hard-code the 1.9 they were solved at and know nothing about a
+hub that has moved: at 1.3 the globe bursts the left and right vertices while the flat bottom edge crops
+`DXP`. The constants are now `hub × 0.505` and `hub × 0.0842`, which are the old 0.96 and 0.16 divided by
+1.9 — so a 1.9 hub still renders exactly what it did, and the octagon, which keeps 1.9, is untouched.
 
 ### `names="outside"` — the other drawing in the file
 
@@ -1018,6 +1036,34 @@ hundred vertices, a start almost never lands near the middle or out at the rim �
 any line came to the centre was 2.78 cells. Four now begin at the core and six at the outermost
 vertices, so the middle and the edges both carry lines.
 
+### The lattice, at rest and revealed
+
+The figure draws sixteen cells of a grid that carries on past the canvas in every direction, and the rest
+of it is shown in **two layers over one path**.
+
+The **resting** layer is always painted, at `--sds-map-grid-rest` — a third of `map-grid-line`. It was not
+there: the reveal started at `opacity: 0`, so the figure's first still frame — the thumbnail, the
+screenshot in a deck, the reader who never moves the mouse — had sixteen tiles floating on a wash with
+nothing underneath them. The drawing is about a honeycomb the platform is cut from, and it was only ever
+showing that to someone who went looking.
+
+The **reveal** layer is the same path at full strength through a circle that follows the cursor, fading in
+on hover and put away on leaving, so the structure is available without being decoration the whole time.
+The two are additive, and that is the point of the ratio: hover reads as *more of this* rather than as a
+second drawing arriving.
+
+Two layers rather than one whose mask changes, because `mask-image` does not interpolate — a single layer
+swapping between the two masks snaps instead of fading. The resting layer takes only the static ellipse,
+the one that already keeps the revealed cells from ending on a straight cut wherever the box does, so it
+needs none of the pointer properties. That is also what makes it right on a touch device, where
+`hover: hover` stops the reveal painting at the last place a finger happened to land: the resting lattice
+is what a phone gets.
+
+Both layers are **clipped**, and that is a real bug rather than tidiness: the grid is drawn wider than the
+canvas on purpose, and an SVG set to `overflow: visible` paints those cells outside its own box where they
+widen the *document*. The layout suite caught it as a horizontal overflow on every capability-map story at
+all three widths.
+
 ### Two rendering rules, learned the hard way
 
 **`pathLength` and `vector-effect: non-scaling-stroke` cannot both apply to one stroke.** The second
@@ -1072,8 +1118,8 @@ of `Brand/Primary`. Being solid is what lets the traces cross the middle — a l
 platform disappears behind it — and it puts the brightest edge in the figure around the thing the figure
 is about.
 
-It sits on the lattice cell at the origin that no section may use, 1.8 cells wide, which clears its
-nearest neighbour by a fifth of a tile.
+It sits on the lattice cell at the origin that no section may use, 1.6 cells wide, which clears its
+nearest neighbour with room to spare — see the ratio argument above for why that is the number.
 
 ### The hub breathes, and nothing else does
 
@@ -1081,7 +1127,7 @@ The breath went from all seventeen tiles, to the hub alone, to nothing, and it i
 alone**. One thing moving in the middle of sixteen still ones reads as a centre; seventeen moving at once
 read as a screensaver, which is what the first pass was.
 
-3.5% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
+5% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
 the two never quite line up — the light reaching its brightest a little after the hub reaches its widest
 is what stops the pair reading as one object being scaled.
 
@@ -1093,7 +1139,37 @@ still holds: the tiles were **already** perfectly synchronised when they looked 
 shared one timeline with identical scale and `currentTime` at every sample — and a swell's amplitude
 comes from the fill, since 95% is what leaves room to grow into.
 
+It was 3.5%, which was most of the room a 1.9 hub had. A 1.6 hub is a sixth smaller, so the same
+percentage is a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody can
+see. 5% of the smaller hub moves about what 3.5% of the larger one did, and the gap it grows into is
+wider now than it was.
+
 Off under `prefers-reduced-motion`, both of them.
+
+### The entrance
+
+The map arrived fully drawn, which left the ambient network as the only motion in it — and the traces and
+loops are deliberately slow and quiet, so nothing ever *explained* the arrangement. The entrance says it
+once: the tiles settle from 0.82 over 620ms, and the network, the names and the resting lattice fade in
+behind them.
+
+**The order is the geometry, not the markup.** Each tile's delay is its own distance from the centre at
+90ms a tile, written by `place` alongside the two numbers that position it, so the wave leaves the hub the
+way the connectors do and does not depend on which cluster happens to be listed first. The hub's delay
+falls out as zero, because it is the point the distances are measured from.
+
+It runs **once**, when the figure is 35% into view, as a flag on the root rather than as state — this
+fires once and a re-render buys nothing. The flag is only ever set, never cleared, and the resting state
+of every element is the finished figure: nothing is parked at `opacity: 0` waiting for an observer, so a
+reader who arrives mid-page, a browser with no `IntersectionObserver`, and the still frame a thumbnail
+takes all see the map complete.
+
+The reveal layer is deliberately not in the fade. It rests at `opacity: 0` and is raised by `:hover`, and
+an animation with `animation-fill-mode: both` would pin it to 1 for the life of the page — the pointer's
+circle simply on, permanently.
+
+Under `prefers-reduced-motion` the observer never runs, and the stylesheet neutralises the animations
+under the same query as well, which covers the preference changing mid-visit.
 
 ### Interaction
 
@@ -1109,6 +1185,14 @@ On top of that, **the section stays lit**: everything outside the hovered tile's
 `saturate(0.5) brightness(0.58)` and the three tiles beside it only to `0.92`/`0.9`, and the section's
 name comes up with them. The hub belongs to no section and dims with the outsiders. The hover teaches
 the taxonomy instead of a legend, and the keyboard gets it too.
+
+**The press is a fill, not a movement.** `:active` settles the tile from 1.14 back to 1.07 rather than
+growing it further, which is the right instinct and on its own invisible: 6% of a hexagon this size is
+below notice on glass, so the press had the correct direction and no feedback. The face takes
+`map-tile-fill-press` — a step past hover in the same direction, brought toward the rim's blue — over
+**60ms**, faster than the settle it accompanies, because a press wants to have already happened by the
+time the finger knows it pressed. The release carries the tile back over the body's own duration. The tile
+is being pushed further into its socket, not lit up.
 
 **Arrow keys walk the lattice.** Tab order on a spatial figure follows the DOM rather than the drawing;
 the arrow keys move to the nearest tile in that direction through a **70° cone** — wide, because a

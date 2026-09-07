@@ -270,12 +270,21 @@ const HEXAGON: Lattice = {
   oy: -0.2165,
 
   /*
-   * 1.9 cells across. It went to 2.5 while the sections were pushed out to ±4 columns and the middle was
-   * empty; with them back at ±2 and their names inside them, 2.5 reached the section names. 1.9 is the
-   * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
-   * else. It is what `Homepage Redesign` draws, too.
+   * 1.6 cells across.
+   *
+   * The number that matters is not the hub's width but its **ratio to a product tile**, because that is
+   * what a reader actually compares: a tile fills 0.95 of its cell, so 1.9 made the hub 2.00x one of the
+   * sixteen and 1.6 makes it 1.68x. Two-to-one had the middle winning the picture — the four sections are
+   * the subject, and DXP is what they sit on — where 1.68 still holds the centre without arguing for it.
+   *
+   * It is not a constraint that moved. 1.9 was the largest that clears the nearest tile at 2.14 cells out,
+   * and everything below that clears it by more, so the lattice never objected to any of this; what
+   * objected was the hub's own contents, which are sized from `hub` below for exactly this reason.
+   *
+   * What it does *not* buy is room. `canvas` and `canvasOutside` are unchanged, so the middle simply gets
+   * emptier — a tighter figure means bringing the sections in, which is a different change.
    */
-  hub: 1.9,
+  hub: 1.6,
   fill: 0.95,
   padX: 0.11,
 }
@@ -871,8 +880,19 @@ const trackField = (event: PointerEvent<HTMLElement>) => {
  * The row is the lattice's own — a hexagon's odd columns hang half a row lower, an octagon's do not — so
  * this asks the lattice rather than assuming the honeycomb.
  */
-const place = (L: Lattice, q: number, r: number): CSSProperties =>
-  ({ '--sds-map-q': q, '--sds-map-r': L.pos(q, r).y / L.step.y }) as CSSProperties
+const place = (L: Lattice, q: number, r: number): CSSProperties => {
+  const p = L.pos(q, r)
+  return {
+    '--sds-map-q': q,
+    '--sds-map-r': p.y / L.step.y,
+    /*
+     * The entrance's delay: the cell's own distance from the centre, in tiles, at 90ms a tile. The order
+     * is then the geometry — a wave leaving the hub — rather than the order the clusters happen to be
+     * listed in, and the hub's own delay falls out as zero because it is the point being measured from.
+     */
+    '--sds-map-enter': `${Math.round(Math.hypot(p.x, p.y) * 90)}ms`,
+  } as CSSProperties
+}
 
 /** Which arrow key moves which way. */
 const DIRS: Record<string, [number, number]> = {
@@ -1014,6 +1034,37 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
     return () => observer.disconnect()
   }, [canvas.w])
 
+  /**
+   * The entrance, run once, when the figure is first far enough into view to be worth explaining.
+   *
+   * A flag on the root rather than state, for the same reason the pointer trackers write straight to the
+   * element: this fires once and a re-render buys nothing. It is only ever *set* — the resting state of
+   * every element is the finished figure, so the map is complete for a reader who arrives mid-page, for a
+   * browser with no observer, and for the still frame a thumbnail takes.
+   *
+   * `prefers-reduced-motion` is honoured by not running at all. The stylesheet also neutralises the
+   * animations under the same query, which covers the preference changing after this has fired.
+   */
+  useEffect(() => {
+    const field = fieldRef.current
+    if (!field) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (typeof IntersectionObserver === 'undefined') {
+      field.dataset.sdsEnter = ''
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        observer.disconnect()
+        field.dataset.sdsEnter = ''
+      },
+      { threshold: 0.35 },
+    )
+    observer.observe(field)
+    return () => observer.disconnect()
+  }, [])
+
   /** Lighting a section is a property of the cell, not of where the tile sits in the markup. */
   const markSection = useCallback(
     (group: number | null) => {
@@ -1112,15 +1163,32 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
       {...props}
     >
       {grid ? (
-        <svg
-          className={classes.mapGrid}
-          viewBox={viewBox}
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden
-          focusable="false"
-        >
-          <path d={layout.grid} />
-        </svg>
+        <>
+          {/*
+           * The lattice twice over: once faintly and always, once at full strength under the pointer.
+           * Same path, so there is one description of the honeycomb and the second layer cannot drift
+           * away from the first; the difference between them is entirely the mask and the stroke, both
+           * in the stylesheet.
+           */}
+          <svg
+            className={`${classes.mapGrid} ${classes.mapGridRest}`}
+            viewBox={viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden
+            focusable="false"
+          >
+            <path d={layout.grid} />
+          </svg>
+          <svg
+            className={classes.mapGrid}
+            viewBox={viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden
+            focusable="false"
+          >
+            <path d={layout.grid} />
+          </svg>
+        </>
       ) : null}
 
       {wash ? (
