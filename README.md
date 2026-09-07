@@ -1494,6 +1494,21 @@ the media, and 24px inside the content stack. The content and media columns are 
 `Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
 and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
 
+The hero's form card takes **`Condensed` fields** — the label starts in the box and moves clear of it on
+focus or a value. Every cell of the Figma `Form` set is `Condensed=True`, so this is the set's own default
+rather than a choice: a card with the label inside six fields and above the seventh reads as an oversight.
+`Textarea` gained `floating` for that seventh. It had been withheld on the argument that a label floating
+over several lines would land on content already at the top of the box, which turned out not to describe
+the implementation — the floated position is `translateY(-32px)`, into the 22px the root reserves *above*
+the box, so it clears a one-line field and a six-line one identically. The stylesheet had been matching
+`:where(input, textarea)` all along; only the prop was missing.
+
+The card's fields are also **glass**, which was an omission rather than a new idea: the rule that gives
+the hero's inline email field a scrim and a blur covered `.heroForm` only, so the six fields of a contact
+form in the media column had no fill on the dark canvas and the bubble ran straight under the type. On the
+light canvas they were already covered, because that rule keys on the hero rather than on the slot.
+`.formRoot` now sits alongside `.heroForm` on the dark rule.
+
 `bullets` sits between `description` and `form`, and it is its own slot rather than part of the
 description because it is a list and not a sentence: a screen reader should meet it as one, and the
 entrance — which takes its delays from the DOM — should give it its own beat. The `Contact Sales` page is

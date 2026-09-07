@@ -4873,7 +4873,19 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * `saturate` alongside the blur for the same reason `Card`'s glass carries it: blurring alone drains
  * colour, and a scrim over this artwork without it turns the violet behind the field grey.
  */
-.heroForm .fieldWrapper {
+/*
+ * `.formRoot` is here for the same reason `.heroForm` is, and it was the omission: this rule covered the
+ * hero's *inline* field — the one-line email capture — but not the `Form` card that takes the media
+ * column on a contact page, which is six fields in exactly the same position over exactly the same
+ * artwork. On the light canvas they were already covered, because the rule below keys on the hero rather
+ * than on the slot; on dark they had no fill at all, and where the bubble ran bright the value had no
+ * ground of its own.
+ *
+ * Not scoped to the hero, unlike the light rule. A `Form` card is a glass surface wherever it is put,
+ * and a field cut out of that surface should look cut out of it on a plain section too.
+ */
+.heroForm .fieldWrapper,
+.formRoot .fieldWrapper {
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);

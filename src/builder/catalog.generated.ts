@@ -478,6 +478,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Textarea — Figma `Input` set (node `16166:23969`), `Type=Text Area`.",
     props: [
       { name: "info", kind: "slot", doc: "Figma's `Info Button`: an explanation beside the label, in a tooltip." },
+      { name: "floating", kind: "boolean", doc: "Figma's `Condensed` axis, as on `TextInput` and `Select` — the label starts in the box and moves clear of it once the field has focus or a value." },
     ],
   },
 ]

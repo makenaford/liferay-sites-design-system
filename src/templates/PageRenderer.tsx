@@ -367,19 +367,39 @@ function HeroFormCard({ spec }: { spec: NonNullable<HeroSpec['formCard']> }) {
       footnote={spec.footnote}
       onSubmit={(event) => event.preventDefault()}
     >
+      {/*
+        * Every field is `floating` — Figma's `Condensed` axis, which the whole `Form` set is drawn at.
+        * It is a property of the card rather than of the page, so it is set here for all three field
+        * types instead of being a flag in the spec: a form with the label in the box on six fields and
+        * above it on the seventh reads as an oversight, and the file never draws that.
+        */}
       {spec.rows.map((row, i) => (
         // eslint-disable-next-line react/no-array-index-key
         <Form.Row key={i}>
           {row.map((field) =>
             field.type === 'textarea' ? (
-              <Textarea key={field.label} label={field.label} required={field.required} autosize minRows={3} />
+              <Textarea
+                key={field.label}
+                label={field.label}
+                required={field.required}
+                floating
+                autosize
+                minRows={3}
+              />
             ) : field.type === 'select' ? (
-              <Select key={field.label} label={field.label} required={field.required} data={field.options ?? []} />
+              <Select
+                key={field.label}
+                label={field.label}
+                required={field.required}
+                floating
+                data={field.options ?? []}
+              />
             ) : (
               <TextInput
                 key={field.label}
                 label={field.label}
                 required={field.required}
+                floating
                 type={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
               />
             ),
