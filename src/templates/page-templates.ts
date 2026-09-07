@@ -373,8 +373,12 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
           ],
           consent:
             'I agree that Liferay may share my contact details with Partners operating in my country to offer extended expertise and support, if their involvement is considered to bring value.',
-          terms:
-            'This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.',
+          /*
+           * No `terms`. The reCAPTCHA and Google Privacy Policy line is a *deployment* fact rather than
+           * a design one — it is owed only where reCAPTCHA is actually wired up — and a starting point
+           * that ships it makes a legal claim on every page copied from this one. `Form` still takes
+           * `terms`, so a page that does use reCAPTCHA passes it.
+           */
           submit: 'Submit',
         },
         /*
@@ -385,13 +389,28 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
         proof: { rating: { score: '4.6', outOf: 5, source: 'Source: Gartner Peer Insights™' } },
       },
       /*
-       * The file's spine under the hero: the numbers, the logos, then what the platform does. No FAQ —
-       * the node ends on a second content section and the footer, and the FAQ that used to be here was
-       * carried over from the detail pages rather than drawn on this one. Re-checked against
-       * `24263:171708` on this pass: `Stats Bar`, `Logos scrolling section`, a `Section` with a
-       * `Tabs Pill Menu` over a content block and its media, then a second `Section`. Unchanged.
+       * The file's spine under the hero, read section by section off `24263:171708` rather than by
+       * section *count*, which is what went wrong before:
+       *
+       * | Figma | y | Section |
+       * | --- | --- | --- |
+       * | `Stats Bar` (`24745:40904`) | 878 | `statsBar` |
+       * | `Logos scrolling section` (`24745:40905`) | 1033 | `logoMarquee` |
+       * | `Section` (`24263:171719`) | 1121 | `tabbedContent` |
+       * | `Section` (`24263:171720`) | 1864 | `faq` |
+       *
+       * **The last one is an FAQ, and this template said `mediaBand`.** Both are "a `Section` with
+       * something in it" from the outside, and the node list gives them the same name — the difference is
+       * only visible by opening the second one, which draws `Frequently Asked Questions` over four
+       * accordion rows. The comment that used to sit here went further and asserted the page has *no*
+       * FAQ, and that the one previously in this run had been carried over from the detail pages. That
+       * was exactly backwards: the FAQ is drawn on this page, and it is the page's last word.
+       *
+       * Which makes sense for the page it is. A contact page's questions are the ones that stop someone
+       * writing in, so answering them last — after the figures, the logos and what the platform does —
+       * is the last thing the page can usefully do before the footer. A media band there says nothing.
        */
-      sections: [blank('statsBar'), blank('logoMarquee'), blank('tabbedContent'), blank('mediaBand')],
+      sections: [blank('statsBar'), blank('logoMarquee'), blank('tabbedContent'), blank('faq')],
     }),
   },
   {

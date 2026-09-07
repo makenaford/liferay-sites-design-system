@@ -1503,6 +1503,16 @@ the implementation — the floated position is `translateY(-32px)`, into the 22p
 the box, so it clears a one-line field and a six-line one identically. The stylesheet had been matching
 `:where(input, textarea)` all along; only the prop was missing.
 
+**The hero's entrance uses `animation-fill-mode: backwards`, not `both`**, and that is a correctness
+requirement rather than a preference. All `both` was wanted for is the *from* hold — a part sitting at
+`opacity: 0` through its own delay instead of flashing before its turn — which is `backwards` alone; the
+`forwards` half was doing nothing visible, because the animation ends exactly where the element's own
+styles already are. What it *was* doing is keeping a transform animation in effect on `.heroMedia` for
+the life of the page, and an element with a filling transform animation gets a containing block and a
+compositing layer whether or not the value is the identity. That silently disabled `backdrop-filter` on
+everything inside the media column — the `Form` card's 50px blur rendered as if the property were not
+set, and the bubble behind the card came through perfectly sharp.
+
 The card's fields are also **glass**, which was an omission rather than a new idea: the rule that gives
 the hero's inline email field a scrim and a blur covered `.heroForm` only, so the six fields of a contact
 form in the media column had no fill on the dark canvas and the bubble ran straight under the type. On the
