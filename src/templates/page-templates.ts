@@ -9,19 +9,25 @@ import { sectionTypeFor } from './section-catalog'
 /**
  * What a new mockup starts as.
  *
- * A preset is a **starting point, not a template**. It is copied once, on creation, and the copy is
- * then the designer's — editing a preset later does not reach back into mockups already made from it.
- * That is the whole difference between this and a CMS, and it is the reason this file can stay a few
- * plain factories: nothing has to migrate, nothing has to stay in sync, and a preset that turns out to
- * be wrong costs one page's worth of re-editing rather than a data migration.
+ * A template here is a **starting point, not a live master** — the sense a word processor's templates
+ * have rather than a CMS's. It is copied once, on creation, and the copy is then the designer's:
+ * editing a template later does not reach back into mockups already made from it. That is the whole
+ * difference between this and a CMS, and it is the reason this file can stay a few plain factories —
+ * nothing has to migrate, nothing has to stay in sync, and a template that turns out to be wrong costs
+ * one page's worth of re-editing rather than a data migration.
+ *
+ * These were called *presets* until the vocabulary collided: `builder/presets.tsx` holds a per-component
+ * kind of preset, drawn from the stories, and `node.preset` in the saved document is that one. Two
+ * different things under one word in the same app is a coin toss every time either is mentioned, so the
+ * page-level ones are templates and the component-level ones kept the name.
  *
  * ## Why they are short
  *
  * The file draws component sets, not pages — its only two pages are `Cover` and `❖ Components`. There
- * is no drawn Industry page to copy, so the section run below is inferred, and an inferred preset that
- * guesses long is worse than one that guesses short: **a designer adds a section in one click and
+ * is no drawn Industry page to copy, so the section run below is inferred, and an inferred template
+ * that guesses long is worse than one that guesses short: **a designer adds a section in one click and
  * deletes one in one click, but they have to first work out that the extra section was never meant to
- * be there.** So each preset carries the sections that kind of page cannot be without, and stops.
+ * be there.** So each template carries the sections that kind of page cannot be without, and stops.
  *
  * ## Where a default actually belongs
  *
@@ -32,12 +38,12 @@ import { sectionTypeFor } from './section-catalog'
  * 2. **True of every new section of a type → `blank()` in `section-catalog.ts`.**
  * 3. **True of this kind of page → here.**
  *
- * A preset composes `blank()` sections rather than restating their content, so placeholder copy has
- * exactly one home. When a preset needs a section to differ from its blank, it overrides the field —
+ * A template composes `blank()` sections rather than restating their content, so placeholder copy has
+ * exactly one home. When a template needs a section to differ from its blank, it overrides the field —
  * and that override is the honest signal that the difference is the *page kind's*, not the type's.
  */
 
-export interface PagePreset {
+export interface PageTemplate {
   id: string
   /** What the picker calls it. */
   label: string
@@ -47,7 +53,7 @@ export interface PagePreset {
   create: () => PageSpec
 }
 
-/** A blank of the given type, so presets never restate placeholder copy. */
+/** A blank of the given type, so templates never restate placeholder copy. */
 function blank<T extends SectionSpec['type']>(type: T) {
   const entry = sectionTypeFor(type)
   if (!entry) throw new Error(`No section type '${type}' in the catalog`)
@@ -57,7 +63,7 @@ function blank<T extends SectionSpec['type']>(type: T) {
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non lacinia mi. Etiam nec mauris fringilla, tincidunt tellus sed, feugiat nulla.'
 
-export const PAGE_PRESETS: PagePreset[] = [
+export const PAGE_TEMPLATES: PageTemplate[] = [
   {
     id: 'landing',
     label: 'Landing page',
@@ -128,7 +134,7 @@ export const PAGE_PRESETS: PagePreset[] = [
         },
       },
       /*
-       * `fullCard` before the grids, and it is the reason this preset exists rather than being the
+       * `fullCard` before the grids, and it is the reason this template exists rather than being the
        * landing one with a different hero: an industry page's first job after the hero is the one card
        * that says what the offer is *for this industry*, with its numbers on it.
        */
@@ -152,7 +158,7 @@ export const PAGE_PRESETS: PagePreset[] = [
       /*
        * `Detail Pages` -> `Product Info` (node `24631:68532`), section by section as the file draws it.
        *
-       * The first pass at this preset was assembled from section *heights* without looking at the page,
+       * The first pass at this template was assembled from section *heights* without looking at the page,
        * and three of the eight were wrong: the tabbed panel is a key-point list rather than an
        * accordion, the grid is six icon cards rather than four image ones, and the band after it is a
        * customer story — a photograph, a paragraph, three figures and a link — where a `mediaBand` had
@@ -303,18 +309,40 @@ export const PAGE_PRESETS: PagePreset[] = [
     hint: 'A form card in the hero, over the numbers, the logos, and what the platform does.',
     create: () => ({
       /*
-       * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants of this page; they
-       * differ in what sits under the form, not in the shape above it, so this is the common spine.
+       * `Forms` -> `Contact Sales`, node `24263:171708`.
+       *
+       * Re-read against that node, which is the one the sections below were already taken from — the
+       * hero was still built from `24263:76429`, an earlier draw of the same page, and the two differ
+       * on the left-hand column rather than on the form.
+       *
+       * **The left column argues, the right column asks.** What the newer node adds is the argument:
+       * an eyebrow, a check list of three key points, and the Gartner rating under them. That is what
+       * the file puts opposite a six-field form, and the reason is not decoration — a form is a cost,
+       * and everything to the left of it is there to make the cost look worth paying before someone
+       * starts typing rather than after.
        *
        * **The proof is stacked directly under the hero, and that is the page.** A contact page has one
        * job and everything below the fold is there to make the form worth filling in: the figures, then
-       * the logos, then what the platform does, then the questions that stop someone writing in. There
-       * is nothing to read *after* the form, so the page ends at the FAQ rather than handing on.
+       * the logos, then what the platform does. There is nothing to read *after* the form, so the page
+       * ends on the second content section rather than handing on.
        */
       hero: {
         background: 'corner',
+        /* `Card hero` -> `Label CTA`, `Style=Gradient` at `Size=Large`. The file's own placeholder. */
+        label: 'Label',
         title: { text: 'Talk to sales' },
         description: { text: LOREM },
+        /*
+         * `Content 1` -> `List marker="check"`, three items. The file draws its own placeholder copy
+         * here — `Key Point Main List` over `Short description here` — and it is kept rather than
+         * invented over, because this is a starting point and a designer replacing three obvious
+         * placeholders is better served than one hunting for the three sentences somebody guessed.
+         */
+        bullets: [
+          { title: 'Key Point Main List', text: 'Short description here' },
+          { title: 'Key Point Main List', text: 'Short description here' },
+          { title: 'Key Point Main List', text: 'Short description here' },
+        ],
         /*
          * The whole form, in the column the media would otherwise fill — which is what the file draws.
          * It was an inline email field and a button, the shape a marketing hero uses to start a trial;
@@ -349,11 +377,19 @@ export const PAGE_PRESETS: PagePreset[] = [
             'This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.',
           submit: 'Submit',
         },
+        /*
+         * `Bottom` -> `Gartner`: 4.6 of 5 on Gartner Peer Insights, which the file draws as the badge,
+         * the figure, four and a half stars and the source line. `proof` already carries exactly this
+         * shape, so the page says the numbers and the renderer draws the furniture.
+         */
+        proof: { rating: { score: '4.6', outOf: 5, source: 'Source: Gartner Peer Insights™' } },
       },
       /*
        * The file's spine under the hero: the numbers, the logos, then what the platform does. No FAQ —
-       * node `24263:171708` ends on a second content section and the footer, and the FAQ that used to
-       * be here was carried over from the detail pages rather than drawn on this one.
+       * the node ends on a second content section and the footer, and the FAQ that used to be here was
+       * carried over from the detail pages rather than drawn on this one. Re-checked against
+       * `24263:171708` on this pass: `Stats Bar`, `Logos scrolling section`, a `Section` with a
+       * `Tabs Pill Menu` over a content block and its media, then a second `Section`. Unchanged.
        */
       sections: [blank('statsBar'), blank('logoMarquee'), blank('tabbedContent'), blank('mediaBand')],
     }),
@@ -389,4 +425,5 @@ export const PAGE_PRESETS: PagePreset[] = [
   },
 ]
 
-export const presetFor = (id: string) => PAGE_PRESETS.find((preset) => preset.id === id)
+export const templateFor = (id: string) =>
+  PAGE_TEMPLATES.find((template) => template.id === id)

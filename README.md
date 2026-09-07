@@ -1483,6 +1483,7 @@ import bubble from './assets/bubbles/bubble_corner.webm'
 | `Size` — Desktop / Mobile | **responsive**, a media query at 1200px |
 | `Theme` — Dark / Light | the colour scheme, not a prop |
 | Label / Header / Description / Button(s) / Link | `label`, `title`, `description`, `actions` |
+| `Content 1` — the key-point list | `bullets` |
 | Input with button | `form` |
 | Gartner logo and tags | `proof` |
 
@@ -1492,6 +1493,11 @@ the media, and 24px inside the content stack. The content and media columns are 
 
 `Type=Form` and `Type=Guide` are **compositions, not chrome** — a hero with a form instead of buttons,
 and a hero with no media — so they are stories rather than props, the same way the Card's five types are.
+
+`bullets` sits between `description` and `form`, and it is its own slot rather than part of the
+description because it is a list and not a sentence: a screen reader should meet it as one, and the
+entrance — which takes its delays from the DOM — should give it its own beat. The `Contact Sales` page is
+what it is for, where the file fills `Content 1` with a `List marker="check"` of three key points.
 
 `banner` is the one slot with no cell on the set. Every other slot lives inside the left column; the Home
 page (node `24563:52720`) puts a 1000px solution finder across the top of the hero, above the heading and

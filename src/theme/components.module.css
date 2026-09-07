@@ -4832,6 +4832,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   margin: 0;
 }
 
+/*
+ * The `Content 1` slot: the key-point list, between the description and the actions.
+ *
+ * It takes the description's own measure rather than the column's. The list is a column of short lines
+ * with a marker hanging off the left, and a line of it running the full 600 the file draws would be
+ * reading at a different width from the sentence directly above it — the two are one block of prose to
+ * anyone reading down the hero, so they get one measure.
+ */
+.heroBullets {
+  max-width: 60ch;
+}
+
 .heroActions {
   display: flex;
   flex-wrap: wrap;

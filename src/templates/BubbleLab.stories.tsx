@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Box, Stack, Text } from '@mantine/core'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
-import { PAGE_PRESETS, presetFor } from './page-presets'
+import { PAGE_TEMPLATES, templateFor } from './page-templates'
 import type { HeroBackground, HeroMediaSource } from '../components/Hero'
 
 /*
@@ -11,11 +11,11 @@ import type { HeroBackground, HeroMediaSource } from '../components/Hero'
  *
  * Every bubble bug this library has had was invisible in isolation and obvious on a page: the artwork's
  * cut edges land where they land relative to the *hero's* edges, and a hero on a padded canvas has
- * different edges from a hero on a page. So this story is a page — a real preset, the real chrome — with
+ * different edges from a hero on a page. So this story is a page — a real template, the real chrome — with
  * exactly one thing swapped out.
  *
  * It lives in `Templates` rather than beside the Hero's own stories for one reason: it needs
- * `page-presets` and the site chrome, and a component's story reaching up into the templates layer
+ * `page-templates` and the site chrome, and a component's story reaching up into the templates layer
  * points the dependency the wrong way round. The Hero's `InPage` story stays what it is — the thin
  * documentation of a hero followed by content.
  */
@@ -191,7 +191,7 @@ function Ruler({ nonce }: { nonce: string }) {
 }
 
 interface LabProps {
-  /** Which preset to draw the bubble on. The hero is the preset's own, not an approximation of one. */
+  /** Which template to draw the bubble on. The hero is the template's own, not an approximation of one. */
   template: string
   /**
    * The file, or the drawing.
@@ -200,7 +200,7 @@ interface LabProps {
    * frame. Flip between them on the same page at the same size — that comparison is the point of it.
    */
   bubble: 'file' | 'css'
-  /** Figma's `Type`, overriding whatever the preset asked for. */
+  /** Figma's `Type`, overriding whatever the template asked for. */
   background: HeroBackground
   /** The file for the dark canvas. A webm, or a still — both render under the same geometry. */
   video?: HeroMediaSource
@@ -211,14 +211,14 @@ interface LabProps {
 }
 
 /**
- * A preset, its own hero, and one bubble swapped out.
+ * A template, its own hero, and one bubble swapped out.
  *
  * `PageRenderer` takes the override; the story does not rebuild a hero out of props. That matters — a
  * hand-written approximation of a landing hero drifts from the real one, and then the thing you are
  * looking at is not the thing that ships.
  */
 function BubbleInPage({ template, background, bubble, video, videoLight, ruler }: LabProps) {
-  const page = presetFor(template)?.create() ?? presetFor('landing')!.create()
+  const page = templateFor(template)?.create() ?? templateFor('landing')!.create()
   page.hero.background = background
 
   /* Enough to tell the ruler that what it measured is no longer what is on screen. */
@@ -263,14 +263,14 @@ const meta = {
   },
   argTypes: {
     template: {
-      options: PAGE_PRESETS.map((preset) => preset.id),
+      options: PAGE_TEMPLATES.map((template) => template.id),
       control: 'inline-radio',
       description: 'The page under the bubble. Each is exactly what the **New** menu drops in.',
     },
     background: {
       options: ['none', 'full', 'corner'],
       control: 'inline-radio',
-      description: "Figma's `Type`, overriding the preset's own.",
+      description: "Figma's `Type`, overriding the template's own.",
     },
     bubble: {
       options: ['file', 'css'],
@@ -300,7 +300,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          'A room for looking at bubbles: a real preset, the real site chrome, and one file swapped out. Drop a webm or a still on `video`, flip the scheme, switch `background` between Corner and Full.',
+          'A room for looking at bubbles: a real template, the real site chrome, and one file swapped out. Drop a webm or a still on `video`, flip the scheme, switch `background` between Corner and Full.',
           '',
           '**Why a page and not a hero.** A bubble is positioned against the *hero*’s edges — the corner artwork is pinned by its right cut so that cut lands past the page edge, and the vertical fade has to reach nothing before whatever section follows. Neither claim can be checked on a padded canvas with nothing under it. Every bubble bug this library has had was invisible in isolation and obvious here.',
           '',

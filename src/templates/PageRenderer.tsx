@@ -414,6 +414,11 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       /*
+       * The eyebrow. `Label CTA` in the file draws `Style=Gradient` at `Size=Large`, and Large is
+       * `Label`'s own default, so only the variant has to be said.
+       */
+      label={hero.label ? <Label variant="gradient">{hero.label}</Label> : undefined}
+      /*
        * The page's own arrival. A rendered page is a marketing page by definition — it is what this
        * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
        * the same way sections carry their reveal.
@@ -442,6 +447,28 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
             </>
           ) : null}
         </p>
+      }
+      /*
+       * The key points. `marker="check"` is what the file draws and also `List`'s default at the top
+       * level, but a hero's list is the one place worth being explicit: the check is the whole reason
+       * these read as claims about the product rather than as an unordered pile.
+       */
+      bullets={
+        hero.bullets?.length ? (
+          <List marker="check">
+            {/*
+             * `index` is the key, not the title — the same rule the stat row above records, and for the
+             * same reason: the file's placeholder is three items all called `Key Point Main List`, so
+             * keying by the text made React treat them as one node and drop two of the three. Position
+             * is what actually identifies a point in an ordered list.
+             */}
+            {hero.bullets.map((point, index) => (
+              <List.Item key={index} title={point.title}>
+                {point.text}
+              </List.Item>
+            ))}
+          </List>
+        ) : undefined
       }
       form={
         hero.form ? (

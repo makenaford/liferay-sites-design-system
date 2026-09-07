@@ -108,9 +108,22 @@ export type HeroBanner = {
 export interface HeroSpec {
   background?: 'none' | 'full' | 'corner'
   banner?: HeroBanner
+  /**
+   * The eyebrow above the heading — Figma's `Card hero`, a `Label CTA` sitting in the `Top` cell of the
+   * hero's `Content Block`. One short word or phrase; it renders as a gradient `Label`.
+   */
+  label?: string
   title: Headline
   /** The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. */
   description: { text: string; emphasis?: string }
+  /**
+   * The key points under the description — Figma's `Content 1` cell, drawn as a `List marker="check"`.
+   *
+   * `title` is the point and `text` the line beneath it, which is the shape `Sub Item List` draws: a
+   * semibold phrase with a sentence under it. Give every item a `text` or none of them one, so the list
+   * reads as one kind of thing rather than a mix.
+   */
+  bullets?: { title: string; text?: string }[]
   /** The email capture: a field with a contained button. */
   form?: { placeholder: string; submit: string }
   /**
