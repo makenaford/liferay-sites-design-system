@@ -1121,13 +1121,14 @@ is about.
 It sits on the lattice cell at the origin that no section may use, 1.6 cells wide, which clears its
 nearest neighbour with room to spare — see the ratio argument above for why that is the number.
 
-### The hub breathes, and nothing else does
+### The hub breathes, and the lattice breathes with it
 
-The breath went from all seventeen tiles, to the hub alone, to nothing, and it is back on **the hub
-alone**. One thing moving in the middle of sixteen still ones reads as a centre; seventeen moving at once
-read as a screensaver, which is what the first pass was.
+The breath went from all seventeen tiles, to the hub alone, to nothing, and it is back on **the hub and
+the lattice under it** — and the tiles are still the thing that stays still. One shape moving in the
+middle of sixteen still ones reads as a centre; seventeen moving at once read as a screensaver, which is
+what the first pass was.
 
-5% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
+8% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
 the two never quite line up — the light reaching its brightest a little after the hub reaches its widest
 is what stops the pair reading as one object being scaled.
 
@@ -1139,12 +1140,37 @@ still holds: the tiles were **already** perfectly synchronised when they looked 
 shared one timeline with identical scale and `currentTime` at every sample — and a swell's amplitude
 comes from the fill, since 95% is what leaves room to grow into.
 
-It was 3.5%, which was most of the room a 1.9 hub had. A 1.6 hub is a sixth smaller, so the same
-percentage is a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody can
-see. 5% of the smaller hub moves about what 3.5% of the larger one did, and the gap it grows into is
-wider now than it was.
+It went 3.5% → 5% → 8%. 3.5% was most of the room a 1.9 hub had; a 1.6 hub is a sixth smaller, so the
+same percentage is a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody
+can see. 5% put the movement back, and 8% is that made deliberate rather than merely detectable.
 
-Off under `prefers-reduced-motion`, both of them.
+Collision is not what caps it, and that is worth being honest about: the nearest tile's centre is 2.14
+cells out and its near boundary about 1.665, against a hub half-extent of 0.76, so the hexagon could more
+than double before it touched anything. What caps it is the failure this animation already has a history
+of, and 8% is the most one shape can move in the middle of sixteen still ones while still reading as a
+centre breathing.
+
+**The mesh breathes with it**, on the hub's own `4.5s ease-in-out alternate` — so the two are one movement
+rather than two: the honeycomb comes up as the platform swells and settles back as it does. That is the
+claim the figure makes, that the products are cut from the lattice the hub sits at the centre of, and a
+shared timeline is the cheapest way to say it. Both start at mount and share a period, so they stay in
+phase without either being driven by the other; measured in the browser, the two animations sample at a
+0ms phase delta.
+
+It pulses in **`stroke-opacity`, not in scale.** Scaling the lattice would pull it off the tiles, which
+are placed by cell and do not move — the drawing would come apart at the peak of every breath. Brightness
+is the one property the mesh can pulse without lying about where its cells are.
+
+`--sds-map-grid-rest` is the **peak** and the trough is 45% of it. The token moved up a little with this,
+from 0.075 to 0.1: 0.075 was right for a lattice standing still, and a line that spends most of its cycle
+under that needs the top of the swing to be worth arriving at. It is still under half of `map-grid-line`,
+so the mesh at its brightest stays well below the reveal.
+
+The reveal layer is deliberately not in this. It is the same drawing at full strength under the cursor,
+and a pointer asking to see the structure should be shown it steadily rather than on a cycle.
+
+Off under `prefers-reduced-motion`, all three — and the mesh holds at its peak rather than wherever the
+cycle happened to be, since the token is the value the layer was designed at.
 
 ### The entrance
 

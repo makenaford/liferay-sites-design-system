@@ -8187,8 +8187,36 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   transition: none;
 }
 
+/*
+ * The lattice breathes with the hub — and it is the only other thing that does.
+ *
+ * `4.5s ease-in-out alternate`, the hub's own timing, so the two are one movement rather than two: the
+ * honeycomb comes up as the platform swells and settles back as it does. That is the claim the figure is
+ * making — the products are cut from the lattice the hub sits at the centre of — and a shared timeline is
+ * the cheapest way to say it. Both animations start at mount and share a period, so they stay in phase
+ * without either one being driven by the other.
+ *
+ * **`stroke-opacity`, not a transform.** Scaling the lattice would pull it off the tiles, which are placed
+ * by cell and do not move: the drawing would come apart at the peak of every breath. Brightness is the one
+ * property the mesh can pulse without lying about where its cells are.
+ *
+ * `--sds-map-grid-rest` is the **peak**, and the trough is 45% of it. The token moved up a little with this
+ * — 0.075 was right for a lattice standing still, and a line that spends most of its cycle under that
+ * needs the top of the swing to be worth arriving at — but it is still under half of `map-grid-line`, so
+ * the mesh at its brightest stays well below the reveal and never competes with the network, whose lines
+ * are the ones carrying a message.
+ *
+ * The reveal layer is not in this. It is the same drawing at full strength under the cursor, and a pointer
+ * asking to see the structure should be shown it steadily, not on a four-and-a-half-second cycle.
+ */
 .mapGridRest path {
   stroke: var(--sds-map-grid-rest);
+  animation: sds-map-mesh-breathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes sds-map-mesh-breathe {
+  from { stroke-opacity: 0.45; }
+  to { stroke-opacity: 1; }
 }
 
 .mapWash {
@@ -8721,11 +8749,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * symmetric curve played forwards and back has no rest in it, which is what makes this read as breathing
  * rather than as a pulse.
  *
- * 5% over four and a half seconds. It was 3.5%, which was most of the room a 1.9 hub had to grow into
- * before it started touching the gap the lattice gives everything else. A 1.6 hub is a sixth smaller, so
- * the same percentage is a sixth less travel — under a device pixel at ordinary widths, which is a breath
- * nobody can see. 5% of the smaller hub is about what 3.5% of the larger one moved, and the gap it grows
- * into is wider now than it was.
+ * 8% over four and a half seconds, and the lattice under it brightens on the same timeline.
+ *
+ * It went 3.5% -> 5% -> 8%. 3.5% was most of the room a 1.9 hub had to grow into before it started
+ * touching the gap the lattice gives everything else; a 1.6 hub is a sixth smaller, so the same
+ * percentage was a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody
+ * can see. 5% put the movement back. 8% is that made deliberate rather than merely detectable.
+ *
+ * Collision is not what caps it, and it is worth being honest about that: the nearest tile's centre is
+ * 2.14 cells out and its near boundary about 1.665, against a hub half-extent of 0.76, so the hexagon
+ * could more than double before it touched anything. What caps it is the failure this animation already
+ * has a history of — seventeen tiles pulsing at once read as a screensaver — and 8% is the most one
+ * shape can move in the middle of sixteen still ones while still reading as a centre breathing.
  */
 .mapHub > .mapTileBody {
   animation: sds-map-breathe 4.5s ease-in-out infinite alternate;
@@ -8733,7 +8768,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 @keyframes sds-map-breathe {
   from { transform: scale(1); }
-  to { transform: scale(1.05); }
+  to { transform: scale(1.08); }
 }
 
 /*
@@ -8750,10 +8785,19 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   to { opacity: 0.96; }
 }
 
+/*
+ * Asked for less motion, all three hold still — and the mesh holds at its peak rather than wherever the
+ * cycle happened to be, since the token is the value the layer was designed at.
+ */
 @media (prefers-reduced-motion: reduce) {
   .mapHub > .mapTileBody,
-  .mapWash {
+  .mapWash,
+  .mapGridRest path {
     animation: none;
+  }
+
+  .mapGridRest path {
+    stroke-opacity: 1;
   }
 }
 

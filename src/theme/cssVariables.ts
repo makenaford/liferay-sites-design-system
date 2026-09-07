@@ -128,13 +128,18 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'map-grid-line': scheme === 'light' ? 'rgba(11, 95, 255, 0.14)' : 'rgba(99, 153, 255, 0.22)',
 
     /**
-     * The lattice as it looks with nobody pointing at it — a third of `map-grid-line`.
+     * The lattice as it looks with nobody pointing at it — under half of `map-grid-line`.
      *
      * The reveal is the same drawing at full strength under the cursor, so this is not a second design
      * decision so much as the floor the first one rises from: enough that the figure is visibly sitting
      * on a honeycomb in a still frame, little enough that it never competes with the network.
+     *
+     * It is the **peak** of the mesh's breath rather than a still value — the layer pulses down to 45% of
+     * it on the hub's timeline — so it is set a little above where a static lattice would sit: 0.075 read
+     * as right standing still, and a line that spends most of its cycle below that needs the top of the
+     * swing to be worth arriving at. Still a third of the reveal, which is the ratio that matters.
      */
-    'map-grid-rest': scheme === 'light' ? 'rgba(11, 95, 255, 0.05)' : 'rgba(99, 153, 255, 0.075)',
+    'map-grid-rest': scheme === 'light' ? 'rgba(11, 95, 255, 0.065)' : 'rgba(99, 153, 255, 0.1)',
 
     /**
      * `CapabilityMap`'s tile edge: `Components/Glass Line` at about half its token value.
