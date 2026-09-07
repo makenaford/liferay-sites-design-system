@@ -642,6 +642,20 @@ inferred from the set's.
 canvas a picked chip is only just distinguishable from a resting one. It is reproduced as drawn; a filter
 row where selection is the whole point wants more separation than that.
 
+### Selected has to restate its text colour
+
+`State=Selected` rebinds the fill and nothing else, so a picked chip's label is the same
+`Surfaces/Text/Primary` as a resting one. It is declared twice all the same, because Mantine paints a
+checked chip like a filled button — a white label, from a `[data-checked]` rule that ties with the
+stylesheet's own on specificity and wins on source order.
+
+On the dark canvas that rule is invisible: `Surfaces/Text/Primary` is near-white there anyway. In light
+mode it was **white on `Surfaces/Card BG/Blue` at 25% over a near-white page** — a selected filter chip
+that could not be read at all, and the weak fill above is what let it hide. Restating the token on
+`.chipWrapper .chipInput:checked + .chipLabel` outranks Mantine's rule and puts the label back to 13.2:1
+in light and 16.6:1 in dark. The same shape of fix as the resting fill, which has to outrank a Mantine
+rule for the same reason.
+
 ### No check mark, and no built-in remove
 
 Mantine puts a tick inside a checked chip and reflows the label around it. Figma does not, so the tick is
@@ -1809,6 +1823,37 @@ The `Dropdown` set has five cells. Three are covered, because they are the three
 `Drilldown` and `Slot` are deliberately out of scope: nested menus and arbitrary content are not select
 behaviours and need `Menu` or a `Popover` underneath. Approximating them with a `Select` would give the
 wrong keyboard model, which is the part of a combobox that matters.
+
+### The menu's surface and motion
+
+Three things the `Dropdown` set does not draw, added because a menu that opens over a page has to
+behave like one:
+
+- **Glass, at 88%.** The same recipe the mega panel uses — a translucent ground, `blur(24px)
+  saturate(160%)` behind it and a `Glass/Line` hairline — but a step more opaque than the panel's 72%.
+  A menu opens over whatever the page happens to be showing, so unlike a panel its contrast ratio is
+  not knowable in advance; 88% holds the option text at 12:1 over the worst ground on the catalog page
+  and still reads as glass. Where `backdrop-filter` is unsupported the ground goes fully opaque, since
+  a translucent surface with no blur is worse than no effect at all.
+- **A slide down.** 8px and 120ms on `--sds-motion-ease-out`, `opacity` and `transform` only. The same
+  distance the mega panel drops, so the library's two disclosures move by the same amount. Mantine's
+  own `fade-down` travels 30px, which on a menu hanging 4px off its field reads as the list being
+  thrown rather than opened.
+- **The caret turns over.** Keyed off the `data-expanded` that `Combobox.Target` already sets, so it
+  covers `Select`, `MultiSelect` and the catalog's filter pills from one rule. It is a no-op on
+  `Select` itself, whose chevron is Mantine's symmetric up-and-down glyph — giving that field a single
+  caret is a change to the drawn `Input` box and belongs in the design file, not here.
+
+The pill's own row needed the same treatment as the chip above: `.mantine-Input-input` sets
+`display: block`, which tied with the stylesheet's `inline-flex` and won on source order — so the pill
+was never a flex container, its `gap` had nothing to space, and the count badge sat hard against the last
+letter of the label. Qualifying the rule with `.fieldWrapper` restores the 8px the rest of the library
+puts between a label and the thing attached to it.
+
+The catalog's filter menus are also **wider than their pills**. `Combobox` sizes a menu to its target,
+which is right for a `Select` — field and list are one column — and wrong for a control sized to its
+label: `Industry` is a 119px pill, so `Customer Portal` wrapped to two lines inside it and the list
+read as a paragraph. They take a 240px floor and a 360px cap instead.
 
 ### The multi-select is not drawn
 

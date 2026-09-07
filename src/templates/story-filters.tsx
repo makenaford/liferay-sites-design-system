@@ -12,6 +12,7 @@ import {
 } from '@mantine/core'
 import { Chip } from '../components/Chip'
 import { IconClose, IconDown } from '../icons'
+import { DROPDOWN_TRANSITION } from '../theme/components'
 import classes from '../theme/components.module.css'
 
 /** What a filter offers: its label, which is also the key into a card's `facets`, and its options. */
@@ -77,14 +78,29 @@ function FilterPill({
       store={combobox}
       withinPortal
       position="bottom-start"
+      /* The 4px the field's own menu hangs off the box, so the two look hinged to their control. */
+      offset={4}
+      /* The library's entrance — see `DROPDOWN_TRANSITION`, which the selects beside this one share. */
+      transitionProps={DROPDOWN_TRANSITION}
       onOptionSubmit={onToggle}
       classNames={{
-        dropdown: classes.fieldDropdown,
+        /* `filterDropdown` composes `fieldDropdown` and widens it — the pill is sized to its label. */
+        dropdown: classes.filterDropdown,
         options: classes.fieldOptions,
         option: classes.fieldOption,
       }}
     >
-      <Combobox.Target>
+      {/*
+       * `withExpandedAttribute` is what makes this a real combobox to a screen reader: it adds
+       * `role="combobox"` and `aria-expanded` alongside the `aria-controls` and `aria-haspopup` the
+       * target already gets. Without it the control announces as a plain button that opens nothing, and
+       * the open state exists only as the `data-expanded` the stylesheet turns the caret over on.
+       *
+       * Not a hand-written `aria-expanded` on the `InputBase`: `Combobox.Target` clones its child with
+       * its own attributes last, and it writes `aria-expanded: undefined` when this flag is off — so the
+       * hand-written one was silently dropped, which is how this was found.
+       */}
+      <Combobox.Target withExpandedAttribute>
         <InputBase
           component="button"
           type="button"
@@ -92,9 +108,10 @@ function FilterPill({
           radius="xl"
           w="auto"
           /*
-           * `md` explicitly. The theme sets it as a default on `Select` and `TextInput`, but `InputBase`
-           * is not extended, so it falls back to `sm` and this control comes out 36px beside a 47px
-           * field — close enough to look like a mistake rather than a choice.
+           * `md` explicitly, though the theme now defaults `InputBase` to it as well — see the entry in
+           * `components.ts`, which is also where the set's `inputVars` reach this control. Both are
+           * needed: the size alone gave Mantine's own 42px box in a row of the library's 48px fields,
+           * and six pixels is exactly the amount that reads as a mistake rather than a choice.
            */
           size="md"
           classNames={{
@@ -235,7 +252,13 @@ export function StoryFilterBar({
          */
         <Group gap={8} wrap="wrap" role="list" aria-label="Selected filters">
           {chips.map((chip) => (
-            <Box key={`${chip.label}-${chip.value}`} role="listitem">
+            /*
+             * `inline-flex`, or the row is 18px taller than the chips in it. A `listitem` with a `label`
+             * inside is an inline box, so it takes the *row's* line-height — 48px here, against the
+             * chip's own 30 — and the chips sit on the bottom of it with dead space above. Which is
+             * what made the 12px between the pills and the chips measure 30.
+             */
+            <Box key={`${chip.label}-${chip.value}`} role="listitem" display="inline-flex">
               {/*
                * A `Chip` removes itself by being unchecked — it is a toggle, and every cell the file
                * draws carries the close glyph on the right. So the glyph is decoration and the chip's
