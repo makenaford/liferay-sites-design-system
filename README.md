@@ -1121,12 +1121,13 @@ is about.
 It sits on the lattice cell at the origin that no section may use, 1.6 cells wide, which clears its
 nearest neighbour with room to spare — see the ratio argument above for why that is the number.
 
-### The hub breathes, and the lattice breathes with it
+### The hub breathes, the lattice with it, and the tiles under both
 
-The breath went from all seventeen tiles, to the hub alone, to nothing, and it is back on **the hub and
-the lattice under it** — and the tiles are still the thing that stays still. One shape moving in the
-middle of sixteen still ones reads as a centre; seventeen moving at once read as a screensaver, which is
-what the first pass was.
+The breath went from all seventeen tiles, to the hub alone, to nothing, back to **the hub and the lattice
+under it**, and now to the tiles as well — at a quarter of the amplitude and out of phase, which is the
+part that matters. Seventeen moving at once read as a screensaver the first time, and the diagnosis was
+never the count: all seventeen shared one timeline with identical scale and identical `currentTime` at
+every sample, so the figure inflated as a single object.
 
 8% over four and a half seconds, with the wash breathing between 0.78 and 0.96 on a **7.3s** period so
 the two never quite line up — the light reaching its brightest a little after the hub reaches its widest
@@ -1169,7 +1170,28 @@ so the mesh at its brightest stays well below the reveal.
 The reveal layer is deliberately not in this. It is the same drawing at full strength under the cursor,
 and a pointer asking to see the structure should be shown it steadily rather than on a cycle.
 
-Off under `prefers-reduced-motion`, all three — and the mesh holds at its peak rather than wherever the
+**The tiles breathe at 2%**, a quarter of the hub's, so the centre is still unambiguously the thing moving
+and the tiles are a texture under it. At an ordinary figure size that is around three pixels of travel,
+which is what "subtle" has to mean for something repeated sixteen times.
+
+Their **phase is ordered by distance from the hub**, at 1100ms a tile, and that number was measured rather
+than guessed. 170ms a tile was the first attempt: the sixteen cells span 1.50 to 2.60 tiles from the
+centre, so it spread them over 187ms of a 4500ms half-swing — four per cent, which is the lockstep it was
+supposed to break. 1100 spreads the same range over 1210ms, a little over a quarter of the swing, so a
+ring is visibly behind its neighbour without the inner and outer rings working against each other.
+
+The offset is **radial**, so cells at equal distance share it: the sixteen tiles resolve to four phases
+rather than sixteen, because the four sections are one diamond mirrored. That is the right behaviour — a
+breath leaving the centre should reach two symmetric tiles at the same moment — and it still rules out the
+thing that failed, which was one phase for all seventeen.
+
+It animates **`scale`, not `transform`**. The body's `transform` carries the hover's 1.14 and the press's
+1.07, and an animation beats a normal declaration, so a breath written as `transform` would simply delete
+the hover growth. As separate properties they compose — and hover and focus then drop the animation
+entirely (`animation-name: none`, not `paused`, which would freeze the scale wherever it stopped) so a
+tile being pointed at or read from lands on exactly 1.14 and holds still.
+
+Off under `prefers-reduced-motion`, all four — and the mesh holds at its peak rather than wherever the
 cycle happened to be, since the token is the value the layer was designed at.
 
 ### The entrance

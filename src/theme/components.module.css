@@ -8840,6 +8840,47 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   color: var(--sds-surfaces-text-primary);
 }
 
+/*
+ * The tiles breathe too — 2%, and out of phase with each other.
+ *
+ * This was tried once and failed, and the failure is worth restating because it is the whole design of
+ * this rule: all seventeen shared one timeline with identical scale and identical `currentTime` at every
+ * sample, so the figure inflated as a single object and read as a screensaver. Two things are different
+ * here.
+ *
+ * **The amplitude is a quarter of the hub's.** 2% against 8%, so the centre is still unambiguously the
+ * thing moving and the tiles are a texture under it rather than sixteen competing pulses. At an ordinary
+ * figure size that is around three pixels of travel — present at the edge of notice, which is what
+ * "subtle" has to mean for something repeated sixteen times.
+ *
+ * **The phase is ordered by distance from the hub**, via `--sds-map-breath` — negative, so each tile is
+ * already mid-cycle at load. The sixteen cells sit 1.50 to 2.60 tiles out, and at 1100ms a tile that is
+ * 1210ms of a 4500ms half-swing between the nearest and the furthest: a little over a quarter, so a ring
+ * is visibly behind its neighbour without the inner and outer rings ever working against each other.
+ * The offset is **radial**, so cells at equal distance share it: the sixteen tiles resolve to four
+ * phases, not sixteen, because the four sections are the same diamond mirrored. That is the honest
+ * description and also the right behaviour — a breath leaving the centre should reach two symmetric tiles
+ * at the same moment. What it rules out is the thing that failed, which was one phase for all seventeen.
+ * No tile is at the same point in the cycle as its own neighbours, so what the eye gets is the lattice
+ * settling rather than the drawing being scaled.
+ *
+ * **`scale`, not `transform`.** The body's `transform` is the hover's 1.14 and the press's 1.07, and an
+ * animation beats a normal declaration — a breath written as `transform` would simply delete the hover
+ * growth. As separate properties the two compose, and the hover rule below then turns the breath *off*
+ * so a hovered tile lands on exactly 1.14 rather than on 1.14 times wherever the cycle had got to.
+ *
+ * The hub is excluded because it has its own, four times larger, above.
+ */
+.mapTile:not(.mapHub) > .mapTileBody {
+  animation: sds-map-tile-breathe 4.5s ease-in-out infinite alternate;
+  animation-delay: var(--sds-map-breath, 0ms);
+}
+
+@keyframes sds-map-tile-breathe {
+  from { scale: 1; }
+  to { scale: 1.02; }
+}
+
 /* ---- interaction ----------------------------------------------------------------------------
  *
  * `Card`'s hover on a hexagon: the tile grows, its edge fills with `card-Focus Ring` lit from where the
@@ -8851,7 +8892,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 @media (hover: hover) {
   .mapTile[data-interactive]:hover { z-index: 800; }
-  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); }
+  /*
+   * The breath stops for the tile being pointed at, so the hover is a definite 1.14 and not 1.14 times
+   * whatever the cycle happened to be. `animation-name: none` rather than `paused`, which would hold the
+   * scale wherever it stopped; dropping the animation lets `scale` fall back to its own base of 1.
+   */
+  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); animation-name: none; }
   .mapTile[data-interactive]:hover .mapTileSheen { opacity: 1; }
   .mapTile[data-interactive]:hover .mapTileLabel { color: var(--sds-surfaces-text-primary); }
   .mapTile[data-interactive]:hover .mapTileFace { background-color: var(--sds-map-tile-fill-hover); }
@@ -8947,6 +8993,8 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .mapTile[data-interactive]:focus-visible { z-index: 800; }
 .mapTile[data-interactive]:focus-visible > .mapTileBody {
   transform: scale(1.14);
+  /* Focus mirrors hover here too — the tile being read from should not be moving. */
+  animation-name: none;
   background-image: radial-gradient(
     140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
     var(--sds-map-rim-from),
@@ -9015,6 +9063,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .mapLinkHalo { opacity: 0.08; stroke-dasharray: none; }
 
   .mapTileBody { transition: none; }
+  .mapTile:not(.mapHub) > .mapTileBody { animation: none; }
   .mapTile[data-interactive]:hover > .mapTileBody,
   .mapTile[data-interactive]:focus-visible > .mapTileBody,
   .mapTile[data-interactive]:active > .mapTileBody {

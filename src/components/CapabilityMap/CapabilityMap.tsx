@@ -891,6 +891,23 @@ const place = (L: Lattice, q: number, r: number): CSSProperties => {
      * listed in, and the hub's own delay falls out as zero because it is the point being measured from.
      */
     '--sds-map-enter': `${Math.round(Math.hypot(p.x, p.y) * 90)}ms`,
+    /*
+     * And the breath's **phase**, from the same distance — negative, so every tile is already mid-cycle
+     * when the figure loads rather than starting together and staying together.
+     *
+     * This one number is the whole reason the tiles may breathe at all. The version that failed had all
+     * seventeen on one timeline with identical scale and identical `currentTime` at every sample, so the
+     * figure inflated as a single object; ordering the phase by distance means no two rings are at the
+     * same point in the cycle, and what moves is the lattice rather than the picture.
+     *
+     * **1100ms a tile**, which is a number that had to be measured rather than guessed. 170ms a tile was
+     * the first attempt and it was far too little: read back off the rendered figure, the sixteen cells
+     * span 1.50 to 2.60 tiles from the centre, so 170 spread them over 187ms of a 4500ms half-swing —
+     * four per cent, which is the lockstep it was meant to break. 1100 spreads the same range over
+     * 1210ms, a little over a quarter of the swing: enough that a ring is visibly behind its neighbour,
+     * short of the half-swing that would have the inner and outer rings moving against each other.
+     */
+    '--sds-map-breath': `${-Math.round(Math.hypot(p.x, p.y) * 1100)}ms`,
   } as CSSProperties
 }
 
