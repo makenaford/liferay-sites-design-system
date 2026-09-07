@@ -8422,6 +8422,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 .mapTraceHalo { animation-name: sds-map-draw-halo; }
+
+/*
+ * The four core-seeded traces, which are the ones that put a line on the hub — and they need their own
+ * timing, because the shared one takes it back off again.
+ *
+ * `stroke-dasharray: 100 100` with `pathLength="100"` means the offset *is* the draw: at 100 the gap
+ * covers the path, at 0 the dash covers it whole. A walk's points start at its seed vertex, so 100 -> 0
+ * grows the line outward from the hub — right. Carrying on to -100 then slides the dash off the far end,
+ * and the segment that leaves *first* is the one at the hub: past 20% of the cycle the line is a stub
+ * drifting outward, attached to nothing. Each core trace was therefore on the hub for 4%-20% of 7.5s,
+ * about 1.2s, against 1.875s between them — so the middle of the figure had stretches with nothing
+ * touching it, which is what this is fixing.
+ *
+ * So a core trace **withdraws the way it came**: 100 -> 0 -> 100, back into the hub rather than off
+ * through it. The hub end is held for 4%-58% of the cycle — 4.05s against 1.875s spacing — so two are
+ * always attached and sometimes three, and each is still off for two-fifths of its cycle so the middle
+ * keeps turning over instead of holding four static lines.
+ *
+ * The hold from 20% to 40% is what stops the reversal reading as a bounce: drawn, a beat at full length,
+ * then drawn back.
+ */
+[data-core] > .mapTrace { animation-name: sds-map-draw-core; }
+[data-core] > .mapTraceHalo { animation-name: sds-map-draw-core-halo; }
+
+@keyframes sds-map-draw-core {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.4; }
+  20% { stroke-dashoffset: 0; opacity: 0.4; }
+  40% { stroke-dashoffset: 0; opacity: 0.4; }
+  54% { stroke-dashoffset: 100; opacity: 0.12; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+
+@keyframes sds-map-draw-core-halo {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.09; }
+  20% { stroke-dashoffset: 0; opacity: 0.09; }
+  40% { stroke-dashoffset: 0; opacity: 0.09; }
+  54% { stroke-dashoffset: 100; opacity: 0.03; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
 .mapLoopHalo { animation-name: sds-map-lap-halo; }
 .mapLinkHalo { animation-name: sds-map-link-halo; }
 

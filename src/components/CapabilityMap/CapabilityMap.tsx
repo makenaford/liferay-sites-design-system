@@ -473,11 +473,15 @@ function build(L: Lattice) {
    * behind the solid hub, and six at the outermost vertices, so the edges carry lines instead of
    * trailing off.
    *
+   * Each walk records **whether it started at the core**, because that is what the phasing downstream
+   * has to know: seeding four lines at the middle only puts a line on the hub if one of the four happens
+   * to be drawn, and `core` is how the render spaces them so one always is.
+   *
    * Deterministic: a small generator per walk rather than `Math.random`, so the routes are identical on
    * the server and the client and React has nothing to replace on hydration.
    */
-  const WALKS: string[] = (() => {
-    const out: string[] = []
+  const WALKS: { points: string; core: boolean }[] = (() => {
+    const out: { points: string; core: boolean }[] = []
     const total = 24
     const edgeFirst = [...BY_RADIUS].reverse()
     for (let t = 0; t < total; t += 1) {
@@ -502,7 +506,7 @@ function build(L: Lattice) {
         prev = cur
         cur = options[Math.floor(rand() * options.length)]
       }
-      if (pts.length >= 3) out.push(pts.join(' '))
+      if (pts.length >= 3) out.push({ points: pts.join(' '), core: t < 4 })
     }
     return out
   })()
@@ -1235,17 +1239,47 @@ export const CapabilityMap = forwardRef<HTMLDivElement, CapabilityMapProps>(func
             </linearGradient>
           </defs>
 
-          {geometry.walks.map((points, i) => {
-            const style = {
-              '--sds-map-delay': `${-(i * (7.5 / geometry.walks.length)).toFixed(2)}s`,
-            } as CSSProperties
-            return (
-              <g key={`walk-${i}`}>
-                <polyline className={classes.mapTraceHalo} points={points} pathLength={100} style={style} />
-                <polyline className={classes.mapTrace} points={points} pathLength={100} style={style} />
-              </g>
-            )
-          })}
+          {/*
+           * The traces, phased in two groups — and the split is the whole point of it.
+           *
+           * A trace is drawn for 44% of its 7.5s cycle: up at 4%, fully drawn at 20%, gone by 44%. On one
+           * shared stagger the four core-seeded walks took consecutive slots — 0, -0.31, -0.63, -0.94s
+           * out of 7.5 — so all four were on at once and then the middle of the figure had no line
+           * touching it for the other four and a bit seconds of every cycle. The hub spent most of its
+           * time wired to nothing.
+           *
+           * So the **core walks are spaced across the whole cycle** rather than sharing the queue: four
+           * lines at 7.5/4 = 1.875s apart, each drawn for 3.3s. Since the on-window is longer than the
+           * spacing, at least one core trace is always mid-draw — one or two at any instant — and that is
+           * arithmetic rather than something to check by watching. The rest keep their own even stagger
+           * over their own count, which is what the original was for.
+           */}
+          {(() => {
+            const core = geometry.walks.filter((w) => w.core).length
+            const rest = geometry.walks.length - core
+            let ci = -1
+            let ri = -1
+            return geometry.walks.map((walk, i) => {
+              const slot = walk.core ? ((ci += 1), ci / Math.max(core, 1)) : ((ri += 1), ri / Math.max(rest, 1))
+              const style = { '--sds-map-delay': `${-(slot * 7.5).toFixed(2)}s` } as CSSProperties
+              return (
+                <g key={`walk-${i}`} data-core={walk.core ? '' : undefined}>
+                  <polyline
+                    className={classes.mapTraceHalo}
+                    points={walk.points}
+                    pathLength={100}
+                    style={style}
+                  />
+                  <polyline
+                    className={classes.mapTrace}
+                    points={walk.points}
+                    pathLength={100}
+                    style={style}
+                  />
+                </g>
+              )
+            })
+          })()}
 
           {[geometry.hubLoop, ...layout.loops].map((points, i) => {
             const style = { '--sds-map-delay': `${(i * -4.75).toFixed(1)}s` } as CSSProperties

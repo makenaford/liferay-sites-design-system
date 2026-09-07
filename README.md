@@ -1036,6 +1036,26 @@ hundred vertices, a start almost never lands near the middle or out at the rim �
 any line came to the centre was 2.78 cells. Four now begin at the core and six at the outermost
 vertices, so the middle and the edges both carry lines.
 
+**And one of them is always on the hub.** Seeding four walks at the middle only puts a line on the hub
+when one of the four happens to be drawn, and on the shared stagger those four took consecutive slots —
+0, -0.31, -0.63, -0.94s out of 7.5 — so they came up together and left together. Two things fix it, and
+both were needed:
+
+- The core walks are **spaced across the whole cycle** rather than sharing the queue: 7.5/4 = 1.875s
+  apart. Each walk now records whether it started at the core, because the phasing is the only thing that
+  needs to know.
+- They **withdraw the way they came.** `stroke-dasharray: 100 100` with `pathLength="100"` means the
+  offset *is* the draw, and a walk's points start at its seed vertex, so 100 → 0 grows the line outward
+  from the hub. Carrying on to −100, as the shared keyframe does, slides the dash off the far end — and
+  the part that leaves *first* is the end at the hub, so past 20% of the cycle the line is a stub
+  drifting outward, attached to nothing. A core trace runs 100 → 0 → 100 instead, drawn back into the
+  hub rather than off through it, which holds its hub end for 4%–58% of the cycle against that 1.875s
+  spacing.
+
+Sampled across the full cycle in the browser at 100ms steps, **two core traces are attached at every
+instant** and never fewer. Each is still dark for two-fifths of its cycle, so the middle keeps turning
+over rather than holding four static lines.
+
 ### The lattice, at rest and revealed
 
 The figure draws sixteen cells of a grid that carries on past the canvas in every direction, and the rest
