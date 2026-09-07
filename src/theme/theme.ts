@@ -73,6 +73,17 @@ export const theme = createTheme({
   primaryShade: 6,
   autoContrast: true,
 
+  /**
+   * Every JavaScript-driven transition in the library drops to 0ms for a reader who has asked for less
+   * motion — the accordion's row height, the dropdown's slide, every Mantine `Transition`.
+   *
+   * Mantine's default is `false`, so this had to be stated. The stylesheet has honoured the preference
+   * from the start via `@media (prefers-reduced-motion: reduce)`, and `Accordion`'s
+   * `transitionDuration` has carried a comment saying this flag was on since before it was — so the
+   * library both documented and half-implemented a promise it was not keeping. This is the other half.
+   */
+  respectReducedMotion: true,
+
   colors: {
     brand,
     neutralLight: neutralRamp(colorLight),

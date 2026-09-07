@@ -2293,11 +2293,68 @@
  */
 .fieldDropdown[data-position], .fieldDropdown {
   padding: 8px;
-  border: none;
   border-radius: var(--mantine-radius-md);
-  background-color: var(--sds-surfaces-card-bg-grey);
-  box-shadow: var(--sds-elevation-tight-4);
+  /*
+   * **Glass, the same recipe the mega panel uses** — a translucent ground, a blur behind it, `saturate`
+   * to put back the colour the blur drains, and the hairline that gives the panel an edge of its own.
+   *
+   * 88%, not the panel's 72%. A menu is a column of 16px type and it opens over whatever the page
+   * happens to be showing — a card, a gradient, another menu — so unlike a panel it has a contrast
+   * ratio somebody has to be able to guarantee. At 88% the option text holds 12:1 against the worst
+   * ground on the catalog page and the surface still reads as glass; at 72% the ratio moves with the
+   * artwork underneath, which is the trap `heroForm` documents further up this file.
+   */
+  border: 1px solid var(--sds-glass-line-to);
+  background-color: color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 88%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  /*
+   * Three shadows doing three jobs: `elevation/tight/4` is the token the set draws, the long soft one
+   * lifts the menu off the page far enough to read as floating over it rather than printed on it, and
+   * the brand glow is the same 18% `Action/Primary/Hover` bloom a focused field carries — an open menu
+   * and a focused field are the same event, so they get the same light.
+   */
+  box-shadow:
+    var(--sds-elevation-tight-4),
+    0 18px 40px rgba(0, 0, 0, 0.4),
+    0 0 24px -4px color-mix(in srgb, var(--sds-action-primary-hover) 18%, transparent);
 }
+
+/*
+ * No blur, no transparency. Without `backdrop-filter` the 88% ground is just a washed-out panel with
+ * the page legible through it, which is worse than no effect at all — so the fallback is the opaque
+ * surface this rule replaced.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fieldDropdown[data-position], .fieldDropdown {
+    background-color: var(--sds-surfaces-card-bg-grey);
+  }
+}
+
+/*
+ * The caret turns over while the menu is open.
+ *
+ * Keyed off `data-expanded`, which `Combobox.Target` puts on the target itself — so this one rule
+ * covers `Select`, `MultiSelect` and the filter pill without any of them plumbing state to their icon.
+ * `:has()` because the icon slot is the input's *sibling* inside the wrapper, not its child.
+ *
+ * Scoped to the right slot: the left slot holds a search or currency glyph, and there is nothing about
+ * an open menu that should turn one of those upside down.
+ */
+.fieldWrapper .fieldSection[data-position='right'] > svg {
+  transition: transform var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.fieldWrapper:has(.fieldInput[data-expanded]) .fieldSection[data-position='right'] > svg {
+  transform: rotate(180deg);
+}
+
+/*
+ * Worth knowing: on `Select` this is deliberately a no-op. Mantine's `Combobox.Chevron` is the
+ * symmetric up-and-down glyph, which looks identical turned over — the rule bites on the single
+ * chevrons, `IconDown` on the filter pill and `IconDownSmallFilled` on the language picker. Giving
+ * `Select` a single caret is a change to the drawn field, so it belongs in the `Input` set, not here.
+ */
 
 .fieldOption {
   border-radius: var(--mantine-radius-sm);
@@ -7917,6 +7974,17 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 .chipWrapper .chipInput:checked + .chipLabel {
   background-color: var(--sds-surfaces-card-bg-blue);
+  /*
+   * The **text colour has to be restated here**, even though it is the same `Surfaces/Text/Primary` the
+   * resting pill already carries and the `Selected` cell rebinds nothing.
+   *
+   * Mantine paints a checked chip like a filled button — white label — from a `[data-checked]` rule that
+   * ties with `.chipWrapper .chipLabel` on specificity and wins on stylesheet order. On the dark canvas
+   * that is invisible, because `Surfaces/Text/Primary` is near-white there anyway; in light mode it was
+   * white on `Surfaces/Card BG/Blue` at 25% over a near-white page — a selected filter chip that could
+   * not be read at all. Same argument, and same shape of fix, as the resting fill two rules above.
+   */
+  color: var(--sds-surfaces-text-primary);
 }
 
 .chipWrapper .chipInput:checked + .chipLabel::before {
@@ -9385,11 +9453,46 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .filterInput {
   /* Composes the real input, so a change to fields reaches this without being copied. */
   composes: fieldInput;
+  width: auto;
+  font-weight: 600;
+}
+
+/*
+ * The pill's own row — its label and, when a filter is on, the count.
+ *
+ * **Qualified with `.fieldWrapper`, or none of it applies.** Mantine's `.mantine-Input-input` sets
+ * `display: block`, which ties with a bare `.filterInput` on specificity and wins on stylesheet order —
+ * so the `inline-flex` here was never in effect, `gap` had no flex container to space and the count sat
+ * hard against the last letter of the label with no space at all. The same two-class shape the rest of
+ * this file uses to outrank Mantine's input rules.
+ *
+ * 8px is the gap the `Input` set puts between a field's glyph and its text, and the gap `Chip` puts
+ * between its label and its close glyph — the same distance between a label and the thing attached to
+ * it, everywhere in the library.
+ */
+.fieldWrapper .filterInput {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: auto;
-  font-weight: 600;
+}
+
+/*
+ * The filter's menu is **wider than its pill**.
+ *
+ * `Combobox` defaults to `width="target"`, which is right for a `Select` — its menu is the field's own
+ * list and the two should be one column — and wrong here, because these pills are sized to their label.
+ * `Industry` is a 117px control, so `Customer Portal` wrapped to two lines inside a 117px menu and the
+ * list read as a paragraph. A `min-width` is all it takes: Mantine writes the target's width as an
+ * inline `width`, and `min-width` outranks it.
+ *
+ * 240px fits the longest option any of the three filters carries on one line, with the checkbox and the
+ * padding counted. The cap is what keeps a menu off the other side of the page on a narrow viewport;
+ * past it an option is allowed to wrap, because at that point wrapping is the lesser problem.
+ */
+.filterDropdown {
+  composes: fieldDropdown;
+  min-width: 240px;
+  max-width: min(360px, calc(100vw - 32px));
 }
 
 /* A filter holding a selection keeps a brand edge whether or not its list is open. */
