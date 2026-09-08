@@ -2523,7 +2523,7 @@ around Figma's 24px glyph, which is inferred; the file draws no target.
 
 ## What the Home template needed
 
-The `Home` page (node `24563:52720`) — a 1440×8559 frame — is built in `src/templates/Home.stories.tsx`
+The `Home` page (node `24563:52720`) — a 1440×8559 frame — is built in `src/templates/HomePage.tsx`
 from the library, as an interactive prototype rather than a picture: the header opens its mega menus, three
 separate pill sets swap the panel below them, the industry tabs retitle the card, the carousel snaps, the
 marquee runs, the accordion expands and both forms validate. All of it verified by driving it at 1440 and at
@@ -2534,6 +2534,41 @@ goal-card titles, the four customer quotes with their figures and attributions, 
 the industry stats, the six capability cells, the two report tags, the whole footer taxonomy and the Gartner
 disclaimer. Where the file has not been written yet, that is said below rather than papered over with
 invented copy.
+
+### The page is one component and two content files
+
+`Built Pages/Home` and `Built Pages/Japan Home` are the *same* `HomePage`. Markup, icons, footage and
+layout live in `HomePage.tsx`; every string lives in a `HomeContent` object — `home-content.ts` for the
+global page, `home-content.ja.ts` for Japan — and the pictures are zipped in by position, so a locale
+supplies copy and nothing else. The chrome follows the same split: `footer-content.ts` and its `.ja`
+twin, and `site-nav.ja.ts`, which is a *translation layer* over `site-nav.ts` rather than a second nav,
+so a menu added to the global nav cannot go missing from the Japanese one.
+
+Two things that only show up once a page has a second language:
+
+**Japanese sets no space between clauses.** Most headings on this page gradient their second clause, so
+they are stored as `{ lead, accent, trail }` and joined. English needs a space at each join; Japanese
+does not — its punctuation already carries the pause — and inserting one opens a visible gap mid-
+sentence. `Split` takes `spaced`, off for `ja`.
+
+**Figures that differ per tab.** The global sheet gives one set of three numbers for all three team
+tabs and only ever draws the Financial Services industry card. The Japanese sheet writes all of them
+out, so `metrics` moved onto the team panel and the industry card became one entry per tab. The global
+content repeats itself where the file does; nothing was invented to fill the new shape.
+
+### The Japan page
+
+`Built Pages/Japan Home`, from `JP_Homepage_Nav_Content.xlsx`. It opens in **light** mode — the story
+sets the `colorScheme` global rather than restyling anything, since every colour on the page is already
+a token — and it is not simply the global page translated. The sheet marks its divergences ⚑, and they
+are carried through: a Japanese customer logo strip, eight JP-specific benefit cards pivoted from
+campaigns and commerce to portals and intranets, per-tab figures, six written industry cards, and two
+industry links (医療・ヘルスケア, 物流・ロジスティクス) the global nav has no room for.
+
+Links are `href="#"`, as on the global page. The sheet's `JP URL` column is a mix of published pages,
+pages `JP_page_plan` has yet to create and provisional stand-ins for gaps, and wiring half of them
+would make the page look routed when it is not. The gaps the sheet marks ⚠ are listed on the story's
+docs page.
 
 ### The integrations row scrolls, and its logos are invented
 
