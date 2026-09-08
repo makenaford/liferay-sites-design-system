@@ -154,9 +154,16 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     'map-tile-line-to':
       scheme === 'light' ? 'rgba(111, 160, 255, 0.22)' : 'rgba(255, 255, 255, 0.062)',
 
-    /** The tile's ground, and the firmer version it takes on hover so the rim stays a rim. */
-    'map-tile-fill': scheme === 'light' ? 'rgba(255, 255, 255, 0.62)' : 'rgba(11, 17, 33, 0.72)',
-    'map-tile-fill-hover': scheme === 'light' ? 'rgba(255, 255, 255, 0.78)' : 'rgba(16, 25, 48, 0.8)',
+    /**
+     * The tile's ground, under the wash, and the firmer version it takes on hover so the rim stays a rim.
+     *
+     * Light is deliberately *low* — 42%, where it used to be 62. The white-to-blue gradient above it is
+     * what colours the tile now, and a solid white ground under it washes the blue end back out: at 78%
+     * the wash was there in the tokens and invisible on the screen. Letting the gradient carry the face
+     * is the whole point of having one.
+     */
+    'map-tile-fill': scheme === 'light' ? 'rgba(255, 255, 255, 0.42)' : 'rgba(11, 17, 33, 0.72)',
+    'map-tile-fill-hover': scheme === 'light' ? 'rgba(255, 255, 255, 0.62)' : 'rgba(16, 25, 48, 0.8)',
     /**
      * And the pressed one — a step past hover in the same direction, brought toward the rim's blue.
      *
@@ -166,10 +173,27 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      */
     'map-tile-fill-press': scheme === 'light' ? 'rgba(219, 232, 255, 0.9)' : 'rgba(35, 60, 130, 0.9)',
 
-    /** `Glass Step 01` and `02`, halved on a tile for the same reason the edge is. */
-    'map-tile-sheen-from':
-      scheme === 'light' ? 'rgba(173, 201, 255, 0.05)' : 'rgba(255, 255, 255, 0.026)',
-    'map-tile-sheen-to': 'rgba(140, 150, 169, 0.016)',
+    /**
+     * The wash across a tile's face: white into light blue, rather than the grey it was.
+     *
+     * This used to be `Glass Step 01` and `02` halved — two greys a hundredth of an alpha apart, which
+     * is a sheen only in name. What actually coloured a light-mode tile was the base fill (white) and
+     * the well shading it toward `rgba(16, 24, 40, …)`, a **neutral** near-black; neutral shading over
+     * white on a near-white page is the recipe for grey, and it left sixteen grey hexagons carrying
+     * sixteen blue icons.
+     *
+     * So the face carries a real gradient now, and the tile body joins the palette instead of sitting
+     * outside it. Light runs white at the top-left into `Brand/Primary` at about 18% at the
+     * bottom-right; the grey is gone from the mix entirely.
+     *
+     * Dark keeps the same *shape* rather than the same colours — a near-white lift into a blue one, at
+     * the alphas glass takes on a near-black canvas. Inverting the light values would put a pale blue
+     * plate on a dark page, which is a different component.
+     */
+    'map-tile-grad-from':
+      scheme === 'light' ? 'rgba(255, 255, 255, 0.98)' : 'rgba(255, 255, 255, 0.036)',
+    'map-tile-grad-to':
+      scheme === 'light' ? 'rgba(163, 199, 255, 0.92)' : 'rgba(84, 138, 255, 0.055)',
 
     /**
      * The hub's fill. Opaque, which is what lets the network cross the middle and vanish behind it.
@@ -182,11 +206,13 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      *
      * Tokens because black does not translate. 66% black on the near-black canvas is a well; on a white
      * one it is a smudge that turns every tile into a grey blob and buries the icons. Light mode uses a
-     * fifth of the strength, in the neutral the rest of the light theme shades with rather than pure
-     * black.
+     * fifth of the strength — and shades in a **blue**, not the neutral it used to. A neutral well is
+     * what greyed these tiles: it pulled the rim toward slate while the face was going white-to-blue, so
+     * the two halves of the same hexagon disagreed about whether it had a hue. Same value, same depth,
+     * in the family the rest of the figure is drawn in.
      */
-    'map-well-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.045)' : 'rgba(0, 0, 0, 0.2)',
-    'map-well-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.13)' : 'rgba(0, 0, 0, 0.66)',
+    'map-well-mid': scheme === 'light' ? 'rgba(23, 74, 168, 0.05)' : 'rgba(0, 0, 0, 0.2)',
+    'map-well-edge': scheme === 'light' ? 'rgba(23, 74, 168, 0.14)' : 'rgba(0, 0, 0, 0.66)',
     'map-well-hub-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.03)' : 'rgba(0, 0, 0, 0.14)',
     'map-well-hub-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.07)' : 'rgba(0, 0, 0, 0.34)',
 
