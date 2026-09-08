@@ -8870,24 +8870,23 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
- * 0.345 of a tile, which is 0.3 with the icons' own box growth taken back out.
+ * 0.35 of a tile, and now that means something it did not before.
  *
- * The glass icons used to declare a 64 viewBox and draw outside it, so the browser cropped them and 0.3
- * of a tile was 0.3 of a *cropped* icon. Their boxes now fit their artwork — a median of 74 units, so
- * the same container renders them about 13% smaller than it used to. This puts the mark back at the size
- * it has always appeared at; nothing about the drawing changed, only how much of it is visible.
+ * Each icon's `viewBox` is wrapped tightly around its own artwork — see
+ * `scripts/fit-glass-icon-viewbox.mjs` — so a mark's longest edge lands on the edge of its box and the
+ * container sets its size directly. Every icon in the figure draws at the same size, within 2%.
  *
- * The mean rather than each icon's own factor: normalising every icon to one apparent size would flatten
- * the differences the set is drawn with, and an icon authored larger than its frame was authored that
- * way on purpose.
+ * It used to be 0.3 of a tile against a shared 64 box that the artwork did not fit: the drawings ran
+ * from 66 to 83 units inside it, so the marks came out at a 26% spread and the ones that overflowed were
+ * cropped as well. 0.3 was 0.3 of *whatever was left* of each icon.
  */
 .mapTileIcon {
   position: relative;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: calc(var(--sds-map-tile) * 0.345);
-  height: calc(var(--sds-map-tile) * 0.345);
+  width: calc(var(--sds-map-tile) * 0.35);
+  height: calc(var(--sds-map-tile) * 0.35);
 }
 
 .mapTileIcon > svg { width: 100%; height: 100%; }
@@ -8916,10 +8915,10 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * The octagon has more room at that height than the hexagon does, so this one number is safe on both and
  * the figure does not need a second.
  */
-/* 0.505 with the same correction as `.mapTileIcon` — the DXP mark's box went 64 to 70. */
+/* 0.505 carried through the same correction as `.mapTileIcon`, against the DXP mark's own fitted box. */
 .mapTileIcon[data-hub] {
-  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.553);
-  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.553);
+  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.56);
+  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.56);
 }
 
 /*

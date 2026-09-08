@@ -22,9 +22,18 @@
  *
  * ## What it writes
  *
- * A square box, centred on the artwork, never smaller than the original 64. Square because these render
- * in a square container and a non-square box would letterbox them; centred because an icon nudged
- * off-centre inside its own frame reads as a mistake even when nothing is clipped.
+ * A square box wrapped tightly around the artwork and centred on it. Tight, not "at least 64", so every
+ * icon's longest edge lands on the edge of its own box — which is what makes the set render at **one
+ * apparent size**. The 64 frame was never a common measure anyway: the artwork inside it ran from 66 to
+ * 83 units, so a shared box meant a 26% spread in how large the marks actually drew.
+ *
+ * Square because these render in a square container and a non-square box would letterbox them; centred
+ * because an icon nudged off-centre inside its own frame reads as a mistake even when nothing is clipped.
+ *
+ * The normalisation is by bounding box, which is the honest approximation and not the same as optical
+ * weight: an icon with a wide soft glow spends more of its box on the glow than a hard-edged one does, so
+ * its solid part draws a little smaller. Correcting for that means deciding what counts as the mark, per
+ * icon, by eye — worth doing if any of them look wrong, and not worth guessing at here.
  *
  * Idempotent: run it twice and the second run writes nothing.
  *
@@ -65,15 +74,15 @@ for (const file of files) {
     return { x: b.x, y: b.y, width: b.width, height: b.height }
   })
 
-  const left = Math.min(0, box.x - PAD)
-  const top = Math.min(0, box.y - PAD)
-  const right = Math.max(64, box.x + box.width + PAD)
-  const bottom = Math.max(64, box.y + box.height + PAD)
+  const left = box.x - PAD
+  const top = box.y - PAD
+  const right = box.x + box.width + PAD
+  const bottom = box.y + box.height + PAD
 
-  /* Square, centred on whatever the content actually occupies. */
+  /* Square, centred on whatever the content actually occupies — and no larger than that. */
   const side = Math.ceil(Math.max(right - left, bottom - top))
-  const x = Math.floor((left + right) / 2 - side / 2)
-  const y = Math.floor((top + bottom) / 2 - side / 2)
+  const x = Math.round((left + right) / 2 - side / 2)
+  const y = Math.round((top + bottom) / 2 - side / 2)
 
   const viewBox = `${x} ${y} ${side} ${side}`
   const current = (svg.match(/viewBox="([^"]+)"/) ?? [])[1]
