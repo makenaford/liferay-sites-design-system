@@ -1,0 +1,112 @@
+/*
+ * Japanese typography.
+ *
+ * Everything here is scoped to `:lang(ja)`, which the Japan page sets on its own root — so this file
+ * changes nothing on any Latin page, and a Japanese *fragment* inside an English page (a customer
+ * name, a quote) picks the rules up on its own without the page having to know.
+ *
+ * These are corrections, not restyling. Each one exists because a rule that is right for Latin is
+ * wrong for Japanese, and the reason is written above it.
+ */
+
+/*
+ * A Japanese family in the stack at all.
+ *
+ * `Source Sans 3` has no CJK glyphs, so without this every Japanese character falls through to
+ * whatever the operating system happens to prefer — Hiragino on macOS, Yu Gothic on Windows, Noto on
+ * Android. Three different pages, and none of them chosen. It also breaks mixed runs: `Liferay DXPなら`
+ * draws the Latin from Source Sans and the kana from the fallback, at a different weight and x-height,
+ * so the sentence changes texture halfway through.
+ *
+ * The order keeps Source Sans first, so Latin inside Japanese copy — product names, `SEO/AEO`, the
+ * figures — still renders in the brand face and only the CJK falls through.
+ *
+ * `Yu Gothic Medium` rather than `Yu Gothic`: Windows' regular weight is markedly lighter than
+ * Hiragino and than Source Sans beside it, and picking Medium is what keeps the page from looking
+ * washed out on the machines most of this audience is using.
+ */
+:lang(ja) {
+  font-family:
+    'Source Sans 3',
+    'Noto Sans JP',
+    'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN',
+    'Yu Gothic Medium',
+    'Yu Gothic',
+    Meiryo,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+
+  /*
+   * Kinsoku shori — the line-breaking rules Japanese publishing has always followed: 、。」）ー cannot
+   * begin a line and 「（ cannot end one. Browsers default to `auto`, which is looser, and the result
+   * is a full stop stranded at the start of a line.
+   */
+  line-break: strict;
+
+  /*
+   * Japanese wraps at nearly any character on its own, so it needs no help — and `break-all` would
+   * also start breaking the Latin product names mid-word. Stated rather than left to inheritance,
+   * because a component reaching for `break-all` to fix an English overflow would otherwise take
+   * this page with it.
+   */
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/*
+ * Body copy opens up; headings tighten.
+ *
+ * Latin gets its inter-line space partly from ascenders and descenders. Japanese has neither — every
+ * glyph fills its em box — so 1.5 that reads as comfortable in English reads as cramped here, and the
+ * convention for running text is 1.7 to 1.8.
+ *
+ * Headings want the opposite. With no ragged baseline to open up, the same 1.5 leaves a Japanese
+ * two-line heading looking loosely stacked rather than set, so it comes in to about 1.35.
+ *
+ * `em` throughout, so both follow the responsive size scale in `typography.generated.css` rather than
+ * pinning a pixel value the breakpoints would then move out from under.
+ */
+:lang(ja) p,
+:lang(ja) li,
+:lang(ja) dd {
+  line-height: 1.75em;
+}
+
+:lang(ja) h1,
+:lang(ja) h2,
+:lang(ja) h3,
+:lang(ja) h4,
+:lang(ja) h5,
+:lang(ja) h6 {
+  line-height: 1.35em;
+
+  /*
+   * Proportional kana spacing. At default metrics every glyph sits on a full em body, which leaves
+   * conspicuous gaps around the punctuation this page's headings are full of — 、。「」・ and the
+   * full-width comma. `palt` pulls those in to the shapes' actual widths. It is the single change
+   * that most separates a Japanese heading that has been set from one that has been defaulted, and
+   * it is kept to headings because at body size the default spacing is the more readable of the two.
+   */
+  font-feature-settings: 'palt' 1;
+}
+
+/*
+ * Small caps and tracking, which do nothing here.
+ *
+ * `text-transform: uppercase` has no effect on kana or kanji, so an eyebrow reading `ガイド` stays as
+ * drawn while the Latin beside it goes up — half a transform, which reads as a mistake rather than as
+ * a style. And letter-spacing pushes apart characters that are already on a fixed em body: the 0.06em
+ * that gives a Latin eyebrow its air just makes a Japanese one look spaced out.
+ *
+ * This reaches the `Label` eyebrows on the Trending and Research cards, the `Quotee` job titles under
+ * every customer quote, and the section eyebrows.
+ */
+:lang(ja) [class*='label'],
+:lang(ja) [class*='eyebrow'],
+:lang(ja) [class*='overline'] {
+  text-transform: none;
+  letter-spacing: normal;
+}

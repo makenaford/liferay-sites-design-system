@@ -4,6 +4,7 @@ import { theme } from './theme'
 
 import '@mantine/core/styles.css'
 import './typography.generated.css'
+import './cjk.css'
 
 export interface LiferaySitesProviderProps
   extends Omit<MantineProviderProps, 'theme' | 'cssVariablesResolver'> {

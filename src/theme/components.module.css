@@ -1475,6 +1475,12 @@
   letter-spacing: 0.06em;
 }
 
+/* Same correction as `.statLabel` below, at the specificity this rule needs. See `cjk.css`. */
+:global(:lang(ja)) .stat[data-size][data-layout='inline'] .statLabel {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 /*
  * The value row: icon, number, icon. Figma sets no gap between them at all, which is why the icons
  * sit tight against the digits.
@@ -1525,6 +1531,18 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/*
+ * Japanese has no case, so `uppercase` above transforms the Latin in this slot and leaves the kana and
+ * kanji as drawn — half a transform, which reads as a mistake. And 6% tracking pushes apart glyphs
+ * that already sit on a fixed em body, which spaces the line out rather than giving it air. See
+ * `cjk.css`, which carries the rest of the Japanese layer.
+ */
+:global(:lang(ja)) .statLabel {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 
 .stat[data-size='sm'] .statLabel {
   font-size: var(--sds-size-paragraph-x-small);
@@ -2863,6 +2881,18 @@
   text-transform: uppercase;
 }
 
+/*
+ * Japanese has no case, so `uppercase` above transforms the Latin in this slot and leaves the kana and
+ * kanji as drawn — half a transform, which reads as a mistake. And 6% tracking pushes apart glyphs
+ * that already sit on a fixed em body, which spaces the line out rather than giving it air. See
+ * `cjk.css`, which carries the rest of the Japanese layer.
+ */
+:global(:lang(ja)) .megaHeading {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+
 /* With a prompt above them the columns start from it, not from the top of the panel. */
 .megaHeading + .megaColumns {
   padding-top: 20px;
@@ -2889,6 +2919,18 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/*
+ * Japanese has no case, so `uppercase` above transforms the Latin in this slot and leaves the kana and
+ * kanji as drawn — half a transform, which reads as a mistake. And 6% tracking pushes apart glyphs
+ * that already sit on a fixed em body, which spaces the line out rather than giving it air. See
+ * `cjk.css`, which carries the rest of the Japanese layer.
+ */
+:global(:lang(ja)) .megaColumnHeading {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 
 .megaColumnItems {
   display: flex;
@@ -3785,6 +3827,18 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/*
+ * Japanese has no case, so `uppercase` above transforms the Latin in this slot and leaves the kana and
+ * kanji as drawn — half a transform, which reads as a mistake. And 6% tracking pushes apart glyphs
+ * that already sit on a fixed em body, which spaces the line out rather than giving it air. See
+ * `cjk.css`, which carries the rest of the Japanese layer.
+ */
+:global(:lang(ja)) .headerDrawerPanel .megaCtaLabel {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 
 .headerDrawerPanel .megaCtaAction {
   display: none;
@@ -4749,6 +4803,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   padding-top: 8px;
   color: var(--sds-surfaces-text-secondary);
 }
+
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
  *
@@ -7408,6 +7463,32 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * the same white the links beside them are pinned to, which is `Link variant="secondary"`'s dark-canvas
  * value and the one colour this band is allowed to reason about.
  */
+/*
+ * The attribution under a customer quote — `Quotee` in `templates/shared.tsx`.
+ *
+ * A class rather than the inline `tt`/`lts` props it used to carry, so the Japanese correction below
+ * can reach it: Mantine writes style props as inline styles, which no stylesheet can override without
+ * `!important`.
+ *
+ * Small caps at 150% — the tracking needs the extra leading, or the line sits tight under the name.
+ */
+.quoteeTitle {
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* Neither case nor tracking does anything for kana and kanji. See `cjk.css`. */
+:global(:lang(ja)) .quoteeTitle {
+  text-transform: none;
+  letter-spacing: normal;
+  /* Back to the paragraph scale: without the small-caps treatment there is no reason to sit under it. */
+  font-size: var(--sds-size-paragraph-x-small);
+}
+
 .footerColumnTitle {
   margin: 0;
   color: var(--sds-footer-text);
@@ -7417,6 +7498,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/*
+ * Japanese has no case, so `uppercase` above transforms the Latin in this slot and leaves the kana and
+ * kanji as drawn — half a transform, which reads as a mistake. And 6% tracking pushes apart glyphs
+ * that already sit on a fixed em body, which spaces the line out rather than giving it air. See
+ * `cjk.css`, which carries the rest of the Japanese layer.
+ */
+:global(:lang(ja)) .footerColumnTitle {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 
 .footerLinks {
   display: flex;

@@ -147,15 +147,11 @@ export function Quotee({ name, title }: { name: string; title: string }) {
       <Text fz="md" fw={600}>
         {name}
       </Text>
-      {/* Small caps, at 150% — the tracking needs the extra leading or the line sits tight under the name. */}
-      <Text
-        fz={12}
-        lh={1.5}
-        fw={600}
-        tt="uppercase"
-        lts="0.06em"
-        c="var(--sds-surfaces-text-secondary)"
-      >
+      {/*
+        * `.quoteeTitle` rather than style props: Mantine writes `tt`/`lts` as inline styles, and the
+        * Japanese layer has to be able to turn both off — see the rule and its `:lang(ja)` companion.
+        */}
+      <Text component="span" display="block" className={classes.quoteeTitle}>
         {title}
       </Text>
     </Stack>
