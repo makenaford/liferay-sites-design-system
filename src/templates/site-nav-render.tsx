@@ -88,7 +88,7 @@ function menuOf(menu: NavMenu) {
 
       {menu.cta ? (
         <MegaMenu.Cta
-          label="Ready to Evaluate?"
+          label={menu.cta.prompt ?? 'Ready to Evaluate?'}
           action={{ label: menu.cta.label, href: menu.cta.href }}
         >
           <Button variant="outline" size="sm" rightSection={<IconArrowRight />}>
@@ -100,12 +100,16 @@ function menuOf(menu: NavMenu) {
   )
 }
 
-/** What `Header` takes for `items`. */
-export const SITE_NAV_ITEMS = SITE_NAV.map((menu) => ({
-  value: menu.value,
-  label: menu.label,
-  menu: menuOf(menu),
-}))
+/** What `Header` takes for `items`, for any set of menus — a locale passes its own. */
+export const navItems = (menus: NavMenu[]) =>
+  menus.map((menu) => ({
+    value: menu.value,
+    label: menu.label,
+    menu: menuOf(menu),
+  }))
+
+/** The global nav, ready for `Header`. */
+export const SITE_NAV_ITEMS = navItems(SITE_NAV)
 
 /** The foot of the mobile drawer: the same three controls the bar holds, as data. */
 export const SITE_DRAWER_CONTROLS = {
@@ -145,7 +149,15 @@ export const SITE_DRAWER_CONTROLS = {
  * own, so the stories showed two bare links where the templates showed the file's combobox and an
  * account link with its person and its caret — and a fix to one never reached the other.
  */
-export const SITE_ACTIONS = (
+export const siteActions = ({
+  language = SITE_DRAWER_CONTROLS.language,
+  loginLabel = 'Log In',
+  contactLabel = 'Contact Sales',
+}: {
+  language?: typeof SITE_DRAWER_CONTROLS.language
+  loginLabel?: string
+  contactLabel?: string
+} = {}) => (
   <>
     {/*
      * Both carets are the nav's `IconDown`, not the field's small filled one: these sit in the same row
@@ -154,8 +166,8 @@ export const SITE_ACTIONS = (
      */}
     <LanguagePicker
       aria-label="Language"
-      defaultValue={SITE_DRAWER_CONTROLS.language.value}
-      data={SITE_DRAWER_CONTROLS.language.options}
+      defaultValue={language.value}
+      data={language.options}
       rightSection={<IconDown />}
     />
     {/*
@@ -174,8 +186,11 @@ export const SITE_ACTIONS = (
       leftSection={<IconUser1Filled />}
       rightSection={<IconDown />}
     >
-      Log In
+      {loginLabel}
     </Link>
-    <Button size="sm">Contact Sales</Button>
+    <Button size="sm">{contactLabel}</Button>
   </>
 )
+
+/** The global bar's right-hand side. */
+export const SITE_ACTIONS = siteActions()

@@ -166,7 +166,7 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    *
    * Off by default. A hero is the first thing on a page and the animation plays on load, so it is the
    * one piece of motion in the library with no second chance to be judged — a docs page or an app shell
-   * that happens to use this component should not get it uninvited. `Templates/Home` and `PageRenderer`
+   * that happens to use this component should not get it uninvited. `Built Pages/Home` and `PageRenderer`
    * turn it on.
    *
    * The order is the reading order — banner, label, heading, description, form, actions, proof — because

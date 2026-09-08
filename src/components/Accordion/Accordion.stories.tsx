@@ -98,7 +98,7 @@ export const Small: Story = { ...Playground, args: { size: 'sm' } }
  *
  * It needs to own the value, so it does nothing with `multiple` or with a `value` you control.
  *
- * `Templates/Home` uses it for `Different Teams. One Platform.` — a section showing what the platform
+ * `Built Pages/Home` uses it for `Different Teams. One Platform.` — a section showing what the platform
  * does. The FAQ block deliberately does not: someone reading an FAQ came for one answer.
  */
 export const Autoplay: Story = { ...Playground, args: { autoplay: true } }

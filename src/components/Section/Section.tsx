@@ -19,7 +19,7 @@ export interface SectionProps extends BoxProps, Omit<ElementProps<'section'>, 't
    * Drift the section up into place as it scrolls into view.
    *
    * Off by default: it belongs to a long marketing page reading as a sequence, and a section in an app
-   * shell or a docs page has no such sequence to join. `Templates/Home` turns it on throughout.
+   * shell or a docs page has no such sequence to join. `Built Pages/Home` turns it on throughout.
    *
    * An `IntersectionObserver` trips once as the section reaches the fold and a 0.8s transition draws the
    * rise, as in the demo this comes from. Nothing happens under `prefers-reduced-motion`.

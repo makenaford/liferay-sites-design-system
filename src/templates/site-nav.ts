@@ -53,8 +53,13 @@ export interface NavMenu {
   featuredStacked?: boolean
   /** The "see all" link that closes the rail. */
   featuredMore?: { label: string; href: string }
-  /** The strip across the bottom of the Platform menu. */
-  cta?: { label: string; href: string }
+  /**
+   * The strip across the bottom of the Platform menu.
+   *
+   * `prompt` is the line to the left of the button. It has a default rather than being required
+   * because only one menu draws this strip; a locale that translates the label translates it too.
+   */
+  cta?: { label: string; href: string; prompt?: string }
 }
 
 export const SITE_NAV: NavMenu[] = [
@@ -107,7 +112,11 @@ export const SITE_NAV: NavMenu[] = [
         ],
       },
     ],
-    cta: { label: 'See Subscription & Deployment Options', href: 'https://www.liferay.com/subscriptions' },
+    cta: {
+      prompt: 'Ready to Evaluate?',
+      label: 'See Subscription & Deployment Options',
+      href: 'https://www.liferay.com/subscriptions',
+    },
   },
   {
     value: 'solutions',

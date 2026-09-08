@@ -6,6 +6,7 @@ import { StoryFrame, type StoryFrameOptions } from './StoryFrame'
 
 import '@mantine/core/styles.css'
 import '../src/theme/typography.generated.css'
+import '../src/theme/cjk.css'
 
 const preview: Preview = {
   parameters: {
@@ -14,7 +15,7 @@ const preview: Preview = {
     controls: { matchers: { color: /(background|color)$/i } },
     options: {
       storySort: {
-        order: ['Overview', ['Introduction', 'Design Tokens', 'Icons'], 'Components'],
+        order: ['Overview', ['Introduction', 'Design Tokens', 'Icons'], 'Components', 'Blocks', 'Built Pages', 'Templates'],
       },
     },
   },

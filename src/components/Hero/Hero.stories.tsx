@@ -174,7 +174,7 @@ export const Default: Story = {
  * on load, which means nobody can choose to watch it again, and a page that makes a reader wait for its
  * own first sentence has spent something it cannot earn back. Off under `prefers-reduced-motion`.
  *
- * `Templates/Home` and `PageRenderer` turn it on; the component's own default is off, since a docs page
+ * `Built Pages/Home` and `PageRenderer` turn it on; the component's own default is off, since a docs page
  * or an app shell that happens to use a hero should not get it uninvited.
  *
  * Reload the story to see it again.

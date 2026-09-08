@@ -21,7 +21,9 @@ import { logoTile } from './logo-tile'
 
 /* Re-exported: it used to live here, and the templates import it from here. */
 export { logoTile }
-import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from './site-nav-render'
+import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS, navItems } from './site-nav-render'
+import { FOOTER_CONTENT, type FooterContent } from './footer-content'
+import type { NavMenu } from './site-nav'
 
 /*
  * What every page template shares.
@@ -162,67 +164,6 @@ export function Quotee({ name, title }: { name: string; title: string }) {
 
 /* ------------------------------------------------------------------ the chrome's content */
 
-const FOOTER_LINKS: [string, string[]][] = [
-  [
-    'Getting Started',
-    ['Request a Demo', 'Start Free Trial', 'Marketplace', 'Liferay SaaS/PaaS/Self-Hosted', 'Implementation Guide'],
-  ],
-  ['More Industries', ['Insurance', 'Transport & Logistics', 'Education', 'Wealth Management']],
-  [
-    'Compare',
-    [
-      'Liferay vs. Adobe',
-      'Liferay vs. Sitecore',
-      'Liferay vs. Optimizely',
-      'Liferay vs. SharePoint',
-      'Liferay vs. Magnolia',
-      'Liferay vs. Salesforce',
-    ],
-  ],
-  [
-    'New to Liferay?',
-    [
-      'What is a DXP?',
-      'SaaS vs PaaS',
-      'Web Portals Explained',
-      'Portal Examples',
-      'Headless CMS Guide',
-      'Get Your Website Management Score in 2 Minutes',
-    ],
-  ],
-  ['Digital Transformation', ['Financial Services', 'Public Sector', 'Healthcare', 'Manufacturing']],
-]
-
-const FOOTER_LINKS_2: [string, string[]][] = [
-  [
-    'See What’s Possible',
-    [
-      '16 Awesome Web Portal Examples',
-      '3 Examples of Successful Digital Transformation in Manufacturing',
-      '8 Exceptional Customer Portal Examples',
-      '7 Intranet Examples That Boost Productivity',
-      '3 Real-World Examples of Self-Service in Manufacturing',
-    ],
-  ],
-  [
-    'Company',
-    ['About Us', 'What’s New', 'What’s Next', 'Liferay in the News', 'Careers', 'Locations', 'Contact Us'],
-  ],
-  ['Legal', ['Trust Center', 'Customer Agreement Framework', 'Privacy Policy', 'Compliance', 'Accessibility']],
-  [
-    'Developers',
-    [
-      'Developer Blog',
-      'Liferay Discuss',
-      'Liferay User Groups',
-      'Download Liferay DXP',
-      'GitHub',
-      'Upgrading Liferay DXP to Jakarta',
-      'Liferay Cloud Platform Status',
-    ],
-  ],
-]
-
 const SOCIALS: [string, ReactNode][] = [
   ['Facebook', <IconFacebook key="f" />],
   ['GitHub', <IconGithub key="g" />],
@@ -249,20 +190,29 @@ const SOCIALS: [string, ReactNode][] = [
  * links floating on a picture with no surface under it. The band is translucent, so the bubble is still
  * visible through it and still starts at the very top; what it stops doing is disappearing.
  */
-export function SiteHeader() {
+export function SiteHeader({
+  menus,
+  actions,
+  drawerControls,
+}: {
+  /** This locale's menus. Defaults to the global nav in `site-nav.ts`. */
+  menus?: NavMenu[]
+  actions?: ReactNode
+  drawerControls?: typeof SITE_DRAWER_CONTROLS
+} = {}) {
   return (
     <Header
       position="fixed"
       condense={false}
-      items={SITE_NAV_ITEMS}
-      drawerControls={SITE_DRAWER_CONTROLS}
-      actions={SITE_ACTIONS}
+      items={menus ? navItems(menus) : SITE_NAV_ITEMS}
+      drawerControls={drawerControls ?? SITE_DRAWER_CONTROLS}
+      actions={actions ?? SITE_ACTIONS}
     />
   )
 }
 
 /** `LRDC footer` — the action band, the disclaimers, the numbers and the link grid. */
-export function SiteFooter() {
+export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterContent } = {}) {
   return (
   <Footer
     cta={
@@ -278,18 +228,20 @@ export function SiteFooter() {
              */
             title={
               <>
-                Ready for the future?{' '}
+                {content.cta.title.lead}
+                {/* Japanese sets no space between the clauses; see `Split` in `HomePage.tsx`. */}
+                {content.locale.startsWith('ja') ? '' : ' '}
                 <Text
                   span
                   inherit
                   variant="gradient"
                   gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
                 >
-                  Let&apos;s get there together.
+                  {content.cta.title.accent}
                 </Text>
               </>
             }
-            description="Join thousands of organizations transforming their digital experiences with Liferay. Start your free trial today."
+            description={content.cta.description}
           />
           {/*
             * A bare form row rather than `Form`: `Form` is Figma's glass *form card* — a 40px
@@ -304,70 +256,61 @@ export function SiteFooter() {
           >
             <Group gap={16} align="flex-start" wrap="nowrap">
               <TextInput
-                aria-label="Work email"
+                aria-label={content.cta.emailLabel}
                 type="email"
-                placeholder="Enter Your Email"
+                placeholder={content.cta.emailPlaceholder}
                 required
                 flex="1 1 auto"
               />
               <Button type="submit" size="md" flex="0 0 auto">
-                Start Free Trial
+                {content.cta.trialCta}
               </Button>
             </Group>
           </Box>
           <Group gap={16} justify="center">
             <Button variant="outline" size="md">
-              Start Free Trial
+              {content.cta.trialCta}
             </Button>
             <Button variant="outline" size="md">
-              Contact Sales
+              {content.cta.contactCta}
             </Button>
           </Group>
         </Stack>
 
         <Stack gap={16} c="var(--sds-surfaces-text-secondary)">
-          <Text fz="xs">
-            *Metrics reflect results from individual Liferay customer stories and may vary by
-            organization.
-          </Text>
-          <Text fz="xs">
-            *Gartner, Voice of the Customer for Digital Experience Platforms, Peer Community
-            Contributor, 27 July 2026.
-            <br />
-            Gartner, Peer Insights, and Customers&apos; Choice are trademarks of Gartner, Inc.,
-            and/or its affiliates. Gartner Peer Insights content consists of the opinions of
-            individual end users based on their own experiences, and should not be construed as
-            statements of fact, nor do they represent the views of Gartner or its affiliates.
-            Gartner does not endorse any vendor, product or service depicted in this content nor
-            makes any warranties, expressed or implied, with respect to this content, about its
-            accuracy or completeness, including any warranties of merchantability or fitness for a
-            particular purpose.
-          </Text>
+          {content.disclaimers.map((text) => (
+            /* The Gartner notice is two paragraphs in one string; the break is where it splits. */
+            <Text key={text.slice(0, 40)} fz="xs" style={{ whiteSpace: 'pre-line' }}>
+              {text}
+            </Text>
+          ))}
         </Stack>
       </Stack>
     }
     stats={
       <Box maw={1280} mx="auto">
         <StatBar align="center">
-          <Stat
-            size="sm"
-            layout="inline"
-            value={<>1,200{unitAccent('+')}</>}
-            label="Enterprise Customers"
-          />
-          <Stat size="sm" layout="inline" value={<>17{unitAccent('+')}</>} label="Years of Innovation" />
+          {content.stats.map((stat) => (
+            <Stat
+              key={stat.label}
+              size="sm"
+              layout="inline"
+              value={<>{stat.value}{unitAccent(stat.accent)}</>}
+              label={stat.label}
+            />
+          ))}
         </StatBar>
       </Box>
     }
     legal={
       <>
         <Text fz="sm" span>
-          Built on Liferay Digital Experience Platform
+          {content.legal.built}
         </Text>
         <Text fz="sm" span>
-          &copy; 2023 Liferay Inc. All Rights Reserved
+          {content.legal.copyright}
         </Text>
-        {['GDPR', 'Accessibility', 'Legal', 'Compliance', 'Privacy Policy'].map((label) => (
+        {content.legal.links.map((label) => (
           <Link key={label} href="#" variant="secondary" size="sm">
             {label}
           </Link>
@@ -375,7 +318,7 @@ export function SiteFooter() {
       </>
     }
   >
-    {FOOTER_LINKS.map(([title, links]) => (
+    {content.columns.map(([title, links]) => (
       <Footer.Column key={title} title={title}>
         {links.map((label) => (
           <Footer.Link key={label} href="#">
@@ -392,7 +335,7 @@ export function SiteFooter() {
     <Footer.Brand
       /* The file heads the brand block with the lockup; it was the one slot left empty. */
       logo={<Logo height={40} />}
-      address={'1400 Montefino Avenue\nDiamond Bar, CA 91765\nUSA\n+1-877-LIFERAY'}
+      address={content.address}
       social={SOCIALS.map(([name, icon]) => (
         <a key={name} href="#" aria-label={name}>
           {icon}
@@ -400,7 +343,7 @@ export function SiteFooter() {
       ))}
     />
 
-    {FOOTER_LINKS_2.map(([title, links]) => (
+    {content.columnsBelow.map(([title, links]) => (
       <Footer.Column key={title} title={title}>
         {links.map((label) => (
           <Footer.Link key={label} href="#">
