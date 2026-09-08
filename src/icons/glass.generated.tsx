@@ -42,7 +42,7 @@ export function IconGlassAiHub({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-1 -2 69 69"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -241,7 +241,7 @@ export function IconGlassAnalytics({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 68 68"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -377,7 +377,7 @@ export function IconGlassAnalyticsPerformance({ size = 48, ...props }: GlassIcon
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 68 68"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -485,7 +485,7 @@ export function IconGlassCloudNativeExperience({ size = 48, ...props }: GlassIco
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-7 -4 72 72"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -625,7 +625,7 @@ export function IconGlassCommerce({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -3 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -733,7 +733,7 @@ export function IconGlassComposable({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-2 -8 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -849,7 +849,7 @@ export function IconGlassContentManagement({ size = 48, ...props }: GlassIconPro
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -1 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -955,7 +955,7 @@ export function IconGlassContentMarketingPlatform({ size = 48, ...props }: Glass
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-4 -2 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1067,7 +1067,7 @@ export function IconGlassContentPerformance({ size = 48, ...props }: GlassIconPr
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -1 71 71"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1173,7 +1173,7 @@ export function IconGlassCustomerPortals({ size = 48, ...props }: GlassIconProps
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -2 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1246,7 +1246,7 @@ export function IconGlassDAM({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-7 -3 77 77"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1352,7 +1352,7 @@ export function IconGlassDashboard({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -1 75 75"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1502,7 +1502,7 @@ export function IconGlassDatabase({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-5 -7 73 73"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1772,7 +1772,7 @@ export function IconGlassDeveloperTools({ size = 48, ...props }: GlassIconProps)
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-7 -2 73 73"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -1876,7 +1876,7 @@ export function IconGlassDigitalSalesRooms({ size = 48, ...props }: GlassIconPro
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -3 75 75"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2020,7 +2020,7 @@ export function IconGlassDocumentation({ size = 48, ...props }: GlassIconProps) 
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -3 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2128,7 +2128,7 @@ export function IconGlassDXP({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 66 65"
+      viewBox="-5 -2 70 70"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2220,7 +2220,7 @@ export function IconGlassEnterpriseWebsite4({ size = 48, ...props }: GlassIconPr
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-10 -3 77 77"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2326,7 +2326,7 @@ export function IconGlassFinancialServices({ size = 48, ...props }: GlassIconPro
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-10 -2 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2464,7 +2464,7 @@ export function IconGlassGlobalServices({ size = 48, ...props }: GlassIconProps)
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 75 75"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2537,7 +2537,7 @@ export function IconGlassIntegration({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -1 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2641,7 +2641,7 @@ export function IconGlassIntegrationIndustry({ size = 48, ...props }: GlassIconP
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-7 -6 84 84"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2745,7 +2745,7 @@ export function IconGlassIntranets({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -3 69 69"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -2901,7 +2901,7 @@ export function IconGlassLiferayDataPlatform({ size = 48, ...props }: GlassIconP
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-2 -20 86 86"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3059,7 +3059,7 @@ export function IconGlassLowCode({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-5 -3 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3204,7 +3204,7 @@ export function IconGlassMail({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -4 75 75"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3308,7 +3308,7 @@ export function IconGlassPartnerPortals({ size = 48, ...props }: GlassIconProps)
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-4 -2 68 68"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3407,7 +3407,7 @@ export function IconGlassPerformance({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -4 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3521,7 +3521,7 @@ export function IconGlassPersonalization({ size = 48, ...props }: GlassIconProps
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-6 -3 70 70"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3851,7 +3851,7 @@ export function IconGlassPIM({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -3 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -3948,7 +3948,7 @@ export function IconGlassPremiumSecurity({ size = 48, ...props }: GlassIconProps
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -9 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4052,7 +4052,7 @@ export function IconGlassProofOfValue({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-8 -8 80 80"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4162,7 +4162,7 @@ export function IconGlassSearch({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 67 67"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4264,7 +4264,7 @@ export function IconGlassSecurityCompliance({ size = 48, ...props }: GlassIconPr
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-9 -4 74 74"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4368,7 +4368,7 @@ export function IconGlassSites({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 75 75"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4512,7 +4512,7 @@ export function IconGlassSupplierPortals({ size = 48, ...props }: GlassIconProps
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-10 -3 77 77"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
@@ -4622,7 +4622,7 @@ export function IconGlassSupport({ size = 48, ...props }: GlassIconProps) {
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="-3 -2 76 76"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"

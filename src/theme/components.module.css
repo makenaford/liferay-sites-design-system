@@ -8869,13 +8869,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
+/*
+ * 0.345 of a tile, which is 0.3 with the icons' own box growth taken back out.
+ *
+ * The glass icons used to declare a 64 viewBox and draw outside it, so the browser cropped them and 0.3
+ * of a tile was 0.3 of a *cropped* icon. Their boxes now fit their artwork — a median of 74 units, so
+ * the same container renders them about 13% smaller than it used to. This puts the mark back at the size
+ * it has always appeared at; nothing about the drawing changed, only how much of it is visible.
+ *
+ * The mean rather than each icon's own factor: normalising every icon to one apparent size would flatten
+ * the differences the set is drawn with, and an icon authored larger than its frame was authored that
+ * way on purpose.
+ */
 .mapTileIcon {
   position: relative;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: calc(var(--sds-map-tile) * 0.3);
-  height: calc(var(--sds-map-tile) * 0.3);
+  width: calc(var(--sds-map-tile) * 0.345);
+  height: calc(var(--sds-map-tile) * 0.345);
 }
 
 .mapTileIcon > svg { width: 100%; height: 100%; }
@@ -8904,9 +8916,10 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * The octagon has more room at that height than the hexagon does, so this one number is safe on both and
  * the figure does not need a second.
  */
+/* 0.505 with the same correction as `.mapTileIcon` — the DXP mark's box went 64 to 70. */
 .mapTileIcon[data-hub] {
-  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
-  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
+  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.553);
+  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.553);
 }
 
 /*
