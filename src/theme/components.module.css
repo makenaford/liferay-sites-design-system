@@ -9984,6 +9984,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 .glassLight {
   display: none;
+
+  /*
+   * A contrast correction on the light artwork, and only on it.
+   *
+   * The light set is drawn frosted: a lot of each icon is near-white glass with the saturated blue used
+   * as an accent. Measured as alpha coverage over a 200px render, the ink in these ranges from 89 to 156
+   * — a 1.75x spread — and the pale end of that had almost nothing to hold against a `#f4f7ff` tile. The
+   * artwork is not at fault and nothing is being dropped in the pipeline; it reads correctly on the
+   * mid-grey Figma canvas it was drawn on, and the tile is lighter than that.
+   *
+   * `saturate` deepens the blue that is there and `brightness` brings the frosted parts down off the
+   * ground. **Not `contrast`**, which was the obvious reach and is wrong here: contrast pushes values
+   * away from the midpoint, so near-white glass on a near-white tile gets *whiter* and the icons the
+   * correction is for come out worse. Checked against both ends of the range — the palest gain a lot,
+   * the most saturated are marginally richer and none are muddied.
+   *
+   * This is a correction, not a fix. The fix is light artwork drawn for the ground it sits on.
+   */
+  filter: saturate(1.3) brightness(0.93);
 }
 
 :where([data-mantine-color-scheme='light']) .glassDark {
