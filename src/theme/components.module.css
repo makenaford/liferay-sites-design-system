@@ -2789,14 +2789,28 @@
   min-width: 0;
 }
 
+/*
+ * `min-width: 0` and a capped mark, because the lockup is the one thing in this bar that cannot push.
+ *
+ * `.headerLeft` already declines to be a floor for its contents, but the mark inside it is an `svg` sized
+ * `height: 48px; width: auto` — an intrinsic width with nothing to say it may be less. On a 375 viewport
+ * the bar asks 152 for the logo, 151 for Contact Sales and 44 for the burger out of 335, and the surplus
+ * came off the *box* while the drawing kept its width: the wordmark ran 22px under the button. A bar that
+ * runs out of room should wrap or drop something, and below it does — never overlap the brand.
+ */
 .headerLogo {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   color: var(--sds-surfaces-text-primary);
   font-size: 22px;
   font-weight: 600;
   letter-spacing: 0.2px;
+}
+
+.headerLogo > svg {
+  max-width: 100%;
 }
 
 .headerNav {
@@ -3652,6 +3666,24 @@
   flex: none;
 }
 
+/*
+ * On a phone the bar is the logo and the burger, and Contact Sales is at the foot of the drawer.
+ *
+ * Three fixed-width things do not fit in 375: 152 + 10 + 151 + 10 + 44 asks 367 of the 335 the gutters
+ * leave, and the button's own size is written by Mantine as inline variables, so the bar cannot shrink
+ * its copy from here — the note on `SITE_DRAWER_CONTROLS.cta` says as much. Something has to go, and the
+ * one that goes is the copy that has a second home: `.headerDrawerFooter` draws the same node, which is
+ * where the mobile file puts it and, per that note, where the button matters most.
+ *
+ * 480 rather than the width it starts fitting at (410, and only just). A call to action wedged between a
+ * clipped wordmark and a burger is not worth the 70px.
+ */
+@media (max-width: 479px) {
+  .headerBarCta {
+    display: none;
+  }
+}
+
 /* Back / title / close. The title names the level you are on, so it is empty at the top. */
 .headerDrawerBar {
   flex: none;
@@ -4257,6 +4289,17 @@
   container-name: sds-hero;
   isolation: isolate;
   /*
+   * A column, so the phone case can reorder it — see `sds-hero (max-width: 767px)` below, where the
+   * solution finder moves under the headline.
+   *
+   * Unconditional, and it has to be: `.hero` *is* the `sds-hero` container, and a container query styles
+   * a container's descendants, never the container itself. So the reorder's `order` can live in the query
+   * and the `display` it needs cannot. It is a no-op at this width in any case — the rows are full-width
+   * blocks that stack either way, and the bubble is `position: absolute`, so it is not a flex item.
+   */
+  display: flex;
+  flex-direction: column;
+  /*
    * Down the page, not across it.
    *
    * The bubble deliberately runs past the **foot** of the hero — the mask dissolves what hangs below
@@ -4837,6 +4880,22 @@ body:has(.headerShell[data-position='fixed']) .heroBanner {
   padding-block-start: 64px;
 }
 
+/*
+ * And the same clearance for anything scrolled to rather than laid out.
+ *
+ * The hero clears the bar because it is at the top of the page and knows it. An in-page anchor has no
+ * such luck: the browser aligns the target with the top of the scrollport, the fixed bar is over the top
+ * 64px of the scrollport, and the heading you asked for lands behind it. `scroll-padding-top` is the one
+ * declaration that fixes this for every anchor on the page — smooth-scrolled, jumped to, or arrived at
+ * from a link in someone else's page — and it belongs on the scrolling element, so `html` and not `body`.
+ *
+ * 56 rather than 64 would track the condensed bar, but an anchor arriving mid-page is arriving scrolled,
+ * and the header condenses on scroll: 64 is the height it has at the moment the jump starts.
+ */
+html:has(.headerShell[data-position='fixed']) {
+  scroll-padding-top: 64px;
+}
+
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
   padding-block-start: 64px;
 }
@@ -5269,6 +5328,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
   .heroMedia {
     width: 100%;
+  }
+}
+
+/* -------------------------------------------------------------- the banner goes under, on a phone
+ *
+ * Beside the heading the solution finder is an offer. Stacked above it, it is a gate.
+ *
+ * The desktop frame draws the finder as a band over *both* columns, so on a wide screen a reader takes in
+ * the headline and the finder in one look and the order between them barely exists. Collapse that to one
+ * column and it becomes a reading order: the first screen asks which industry you are in and which use
+ * case you have, 300px before it has said what Liferay is. Anyone who cannot answer yet has been handed a
+ * form and no reason to fill it.
+ *
+ * So below 768 the hero reads headline, subhead, actions, *then* the finder — the same content, in the
+ * order someone decides in. `order` rather than a second markup tree, because the hero is one story and
+ * two DOM orders would be two stories to keep in step; the hero only becomes a flex column here, and the
+ * bubble is `position: absolute`, so it is not a flex item in either case.
+ *
+ * 768 and not the 1199 above it: at tablet widths the columns have already stacked but the finder is
+ * still a band a reader sees whole, which is the desktop reading. This is the phone case only.
+ */
+@container sds-hero (max-width: 767px) {
+  .hero[data-with-banner] > .heroInner {
+    order: 1;
+  }
+
+  .hero[data-with-banner] > .heroBanner {
+    order: 2;
+  }
+
+  /*
+   * The clearance moves with the content.
+   *
+   * A fixed header reserves no space and the banner used to be what cleared the bar. Now the content
+   * column is first, so it takes the bar's 64px, and the banner drops back to its own 40px gap — which is
+   * what it is for once there is something above it to be separated from.
+   */
+  body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroInner {
+    padding-block-start: 64px;
+  }
+
+  body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroBanner {
+    padding-block-start: 40px;
   }
 }
 
@@ -6808,7 +6910,6 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   gap: 16px;
 }
 
-/* The mobile cell's action is full width; that happens on its own once the row has wrapped. */
 .sectionTitleRoot[data-align='center'] .sectionTitleActions {
   justify-content: center;
 }
@@ -6943,6 +7044,32 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * and collapsing both the same way throws it away.
  */
 @container sds-section (max-width: 900px) {
+  /*
+   * Figma's Mobile cell, drawn rather than left to the wrap.
+   *
+   * The row wrapping was doing the right thing for a button and the wrong thing for anything sized in
+   * percent. A wrapped action is still `flex: 0 1 auto`, so its width comes from its content — and the
+   * goals tabs are `variant="pills"`, whose root is an `inline-size` container and therefore contributes
+   * *nothing* to a content-based measurement. The box measured 16px, the tabs' own `w={{ base: '100%' }}`
+   * resolved against those 16, and the Marketers / IT-Developers switch rendered as a 16px sliver with
+   * 314px of tabs inside it. The `md: 520` half of that prop was written for this exact hazard; the
+   * `base` half had nothing holding it up.
+   *
+   * Turning the axis is what fixes it: `stretch` gives the action a definite width to be 100% of, and it
+   * lands on the Mobile cell exactly — action under the heading, full width — instead of near it.
+   *
+   * `flex: 0 0 auto` on the text for the same reason the centred cell resets it: a basis of
+   * `min(100%, 34rem)` is a *height* once the axis is vertical, and 100% of an auto height is indefinite.
+   */
+  .sectionTitleRoot:not([data-align='center']) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sectionTitleRoot:not([data-align='center']) .sectionTitleText {
+    flex: 0 0 auto;
+  }
+
   /*
    * Stacked, so there is nothing to stick beside: the figure is above the text rather than next to it,
    * and a sticky figure would pin itself over the paragraph it belongs to.
