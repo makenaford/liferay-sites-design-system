@@ -5,7 +5,12 @@
     "the MingCute UI glyphs in manifest.json, and not interchangeable with them.",
     "Run `pnpm glass-icons` after editing. Set \"icons\" to \"*\" to generate all 165.",
     "Two icons whose file names match (Dashboard, Analytics, Integration, Pricing, Global Services)",
-    "need an { \"path\": \"...\", \"as\": \"...\" } entry to tell their components apart."
+    "need an { \"path\": \"...\", \"as\": \"...\" } entry to tell their components apart.",
+    "",
+    "Each icon also looks for the same path under assets/glass-icons-light/, the light-canvas artwork.",
+    "34 of the 37 below have one. These three do not, because the Figma light set has no component for",
+    "them, and they render their dark artwork in both schemes until it does:",
+    "  Customer/Customer Portals, Customer Support/Global Services, Customer Support/Support."
   ],
   "icons": [
     {

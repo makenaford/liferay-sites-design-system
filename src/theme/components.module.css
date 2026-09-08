@@ -10006,3 +10006,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ------------------------------------------------------------------ the glass icons' two artworks
+ *
+ * A glass icon is an illustration with its gradients baked in, so it cannot take a colour the way the
+ * MingCute glyphs do — the dark set is drawn to glow on a near-black page and dissolves into a white
+ * one; the light set is drawn the other way round. An icon that has both ships both and hides one.
+ *
+ * `revert` rather than `block` on the shown group: an SVG `<g>` has no `display: block`, and forcing one
+ * changes nothing except to invite the question later. `:where()` keeps the specificity at zero so a
+ * call site can still override.
+ */
+.glassLight {
+  display: none;
+}
+
+:where([data-mantine-color-scheme='light']) .glassDark {
+  display: none;
+}
+
+:where([data-mantine-color-scheme='light']) .glassLight {
+  display: revert;
+}

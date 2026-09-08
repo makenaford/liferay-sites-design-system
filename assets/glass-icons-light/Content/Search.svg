@@ -1,0 +1,44 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Glass icon / Content / Search">
+<g id="Light">
+<path id="Vector (Stroke)" d="M53.3828 16.7913C53.3827 14.4822 52.4386 12.2474 50.7256 10.5838C49.0091 8.91688 46.6604 7.96316 44.1914 7.96311C41.7223 7.96311 39.3738 8.91685 37.6572 10.5838C35.9441 12.2474 35.0001 14.4822 35 16.7913C35 19.1007 35.9441 21.3362 37.6572 22.9999C39.3737 24.6667 41.7224 25.6206 44.1914 25.6206C46.6604 25.6205 49.0091 24.6668 50.7256 22.9999C52.4387 21.3362 53.3828 19.1006 53.3828 16.7913ZM61.3828 16.7913C61.3828 19.896 60.5017 22.9024 58.8877 25.501L68.9697 35.2916C70.551 36.8272 70.5827 39.3487 69.04 40.9227C67.4973 42.4967 64.9641 42.5273 63.3828 40.9917L53.1924 31.0952C50.5007 32.711 47.3881 33.5836 44.1914 33.5837C39.6635 33.5837 35.3014 31.8377 32.0703 28.7C28.8358 25.559 27 21.2769 27 16.7913C27.0001 12.3059 28.8359 8.0246 32.0703 4.88363C35.3014 1.74583 39.6634 0 44.1914 0C48.7193 5.04982e-05 53.0814 1.74588 56.3125 4.88363C59.5468 8.02458 61.3827 12.306 61.3828 16.7913Z" fill="url(#paint0_linear_0_1)"/>
+<g id="UI icon / user / user_3" filter="url(#filter0_dii_0_1)">
+<mask id="mask0_0_1" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="8" y="5" width="52" height="58">
+<path id="Union" d="M34 36.8337C40.7872 36.8337 46.9638 38.7988 51.5039 41.5691C53.7729 42.9536 55.709 44.5866 57.1084 46.3582C58.4851 48.1011 59.5 50.1868 59.5 52.4167C59.5 54.8108 58.3351 56.6983 56.6592 58.0437C55.0709 59.3187 52.978 60.1615 50.7529 60.7507C46.2833 61.9343 40.3155 62.3337 34 62.3337C27.6845 62.3337 21.7167 61.9343 17.2471 60.7507C15.022 60.1615 12.9291 59.3187 11.3408 58.0437C9.66485 56.6983 8.5 54.8108 8.5 52.4167C8.5 50.1868 9.51485 48.1011 10.8916 46.3582C12.291 44.5866 14.2271 42.9536 16.4961 41.5691C21.0362 38.7988 27.2128 36.8337 34 36.8337ZM34 5.66675C41.824 5.66675 48.167 12.0097 48.167 19.8337C48.1668 27.6576 41.8239 33.9998 34 33.9998C26.1761 33.9998 19.8332 27.6576 19.833 19.8337C19.833 12.0097 26.176 5.66675 34 5.66675Z" fill="#6C6C75"/>
+</mask>
+<g mask="url(#mask0_0_1)">
+<rect id="Color" width="68" height="68" fill="#99BCFF" fill-opacity="0.5"/>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_dii_0_1" x="-4" y="-4" width="76" height="76" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="1.3"/>
+<feGaussianBlur stdDeviation="0.65"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.344262 0 0 0 0 1 0 0 0 0.7 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.5"/>
+<feGaussianBlur stdDeviation="0.5"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_0_1"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="3"/>
+<feGaussianBlur stdDeviation="2.5"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.376471 0 0 0 0 0.623529 0 0 0 0 1 0 0 0 0.4 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_0_1" result="effect3_innerShadow_0_1"/>
+</filter>
+<linearGradient id="paint0_linear_0_1" x1="63.6659" y1="-5.83667e-06" x2="41.4146" y2="37.9134" gradientUnits="userSpaceOnUse">
+<stop stop-color="#47FFFC"/>
+<stop offset="0.514423" stop-color="#0B5FFF"/>
+<stop offset="1" stop-color="#1514A4"/>
+</linearGradient>
+</defs>
+</svg>
