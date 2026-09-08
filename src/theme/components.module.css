@@ -821,6 +821,18 @@
   border-radius: inherit;
 }
 
+/*
+ * A full-bleed card's picture carries the elevation, because on this padding there is nothing else that
+ * can. The transition lives here rather than on the root: the root animates its own `transform` and
+ * `box-shadow`, and on a `none` card neither of those moves — the picture is what rises.
+ */
+.cardRoot[data-align][data-padding='none'][data-interactive] > .cardImage {
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out),
+    filter var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
 .cardRoot[data-padding='all'] > .cardImage,
 .cardRoot[data-padding='full'] > .cardImage {
   /* Inside the padding, the image gets its own smaller corner. */
@@ -1341,9 +1353,24 @@
     transform: scale(1.06);
   }
 
+  /*
+   * ...and it lifts, with the same cast shadow a padded card gets.
+   *
+   * A `none` card has no surface, so the shadow cannot go on the card: under the picture there is only
+   * the page, a tag and a title sitting on it, and a card-shaped shadow would draw a box around text
+   * that has no box at rest. It goes on the picture, which is the same answer this padding already
+   * reached for its hover ring — the image is the one thing here with an edge to light or to raise.
+   *
+   * Identical values to `padding='all'` and `content`: 2px of lift and a 24px glow at a third of
+   * `Action/Primary/Hover`, tight enough to belong to the gap the lift opened rather than reading as a
+   * backlight. The scale on the child stays; the two together are the picture coming forward.
+   */
   .cardRoot[data-align][data-padding='none'][data-interactive]:hover > .cardImage {
     /* A touch of light, so the image reads as active and not only as bigger. */
     filter: brightness(1.06);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -12px
+      color-mix(in srgb, var(--sds-action-primary-hover) 34%, transparent);
   }
 
   /*
