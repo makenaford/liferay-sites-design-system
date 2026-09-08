@@ -8813,14 +8813,9 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   inset: 1.5px;
   clip-path: var(--sds-map-hex);
   background-color: var(--sds-map-tile-fill);
-  /*
-   * 155deg — down and slightly right, so the light reads as coming from above the figure rather than
-   * from its lower-left corner, which is where the old 60deg put it. On a hexagon with a flat top the
-   * near-vertical run also crosses the widest part of the shape, so the whole face turns rather than
-   * just one corner of it.
-   */
+  /* 60deg, the angle `Card` runs its glass fill at — a tile is the same material in the same light. */
   background-image: linear-gradient(
-    155deg,
+    60deg,
     var(--sds-map-tile-grad-from) 0%,
     var(--sds-map-tile-grad-to) 100%
   );
@@ -8853,6 +8848,38 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
     color-mix(in srgb, var(--sds-map-well-edge) 66%, transparent) 88%,
     var(--sds-map-well-edge) 100%
   );
+}
+
+/*
+ * On the light canvas a tile is a glass card cut to a hexagon.
+ *
+ * The colours come from the card's own tokens — see `map-tile-grad-*` and `map-tile-line-*` in
+ * `cssVariables.ts`, which alias `glass-step-*` and `glass-line-*` rather than copying them. Two things
+ * cannot be said in a token and are said here.
+ *
+ * **The blur.** `Card` blurs its backdrop by `--sds-glass-blur`, which is 50px; the tile was on 18 with a
+ * saturate, tuned for a near-black canvas where a heavy blur has nothing to show. On white the page
+ * behind a tile is the lattice and the wash, and 50px is what turns those into the diffuse ground that
+ * makes the shape read as glass rather than as a flat pane.
+ *
+ * **The shadow.** A card raises itself with `box-shadow`; a `box-shadow` follows the border box, and
+ * every tile here is a `clip-path`, so on a hexagon it draws a rectangle's shadow around a hexagon's
+ * silhouette. `drop-shadow` follows the rendered alpha and is the only form that fits. It goes on
+ * `.mapTile` rather than on `.mapTileBody` because the body's `filter` is already spoken for — the
+ * dimming of every tile that is not the hovered one — and a second `filter` on the same element would
+ * replace it rather than add to it.
+ *
+ * The hub is excluded. It is opaque, it is the subject, and it is already lit from within by its core.
+ */
+:where([data-mantine-color-scheme='light']) .mapTileFace {
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
+}
+
+:where([data-mantine-color-scheme='light']) .mapTile:not(.mapHub) {
+  filter:
+    drop-shadow(0 8px 20px rgba(16, 24, 40, 0.08))
+    drop-shadow(0 1px 3px rgba(16, 24, 40, 0.06));
 }
 
 /* The sheen: `Card`'s pointer-tracked light, sized to the tile rather than to the cursor. */
