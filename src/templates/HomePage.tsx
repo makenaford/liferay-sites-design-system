@@ -33,7 +33,7 @@ import { VENDOR_LOGOS } from './vendor-logos'
 import classes from '../theme/components.module.css'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
 import { CrossfadeMedia } from './PageRenderer'
-import { Quotee, SiteFooter, SiteHeader, Wordmark, logoTile, unit } from './shared'
+import { Quotee, SiteFooter, SiteHeader, StarRating, Wordmark, logoTile, unit } from './shared'
 import { Tabs } from '../components/Tabs'
 import { Select, TextInput } from '../components/Input'
 import { HOME_CONTENT, type HomeContent, type SplitTitle } from './home-content'
@@ -57,7 +57,6 @@ import {
   IconMonitor,
   IconPresentation1,
   IconShoppingCart1,
-  IconStarFilled,
   IconUser1,
 } from '../icons'
 
@@ -305,7 +304,11 @@ export function HomePage({
           banner={
             <Card surface="glass" padding="none" radius="pill" w="100%" maw={1000}>
               <Group gap={16} px={16} py={8} align="center">
-                <Text fz="lg" fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
+                {/*
+                 * 18px, a literal: the typography scale has no 18px step — `Paragraph/Large` is 21 and
+                 * the one below it is 16 — which is the same gap the Accordion's condensed label records.
+                 */}
+                <Text fz={18} fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
                   {content.hero.finder.label}
                 </Text>
                 <Select
@@ -370,20 +373,11 @@ export function HomePage({
                 <Text fz={28} fw={700} lh={1}>
                   {content.hero.rating}
                 </Text>
-                <Group gap={0} aria-hidden>
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <IconStarFilled
-                      key={i}
-                      width={16}
-                      height={16}
-                      color={
-                        i < 4
-                          ? 'var(--sds-surfaces-text-primary)'
-                          : 'var(--sds-surfaces-text-secondary)'
-                      }
-                    />
-                  ))}
-                </Group>
+                {/*
+                 * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
+                 * and the figure beside it already says so.
+                 */}
+                <StarRating value={Number(content.hero.rating)} />
               </Group>
               <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
                 {content.hero.ratingSource}
@@ -673,6 +667,14 @@ export function HomePage({
       >
         <Card
           align="horizontal"
+          /*
+           * Its links do the work — the same call `PageRenderer` already makes for this section.
+           *
+           * A `glass` card is a target by default, which is right where the whole surface goes one
+           * place. This one carries two links and a stat row, so a card-wide target would be a control
+           * wrapped around two other controls with no single destination of its own to offer.
+           */
+          interactive={false}
           titleSize="full"
           hero={<IconGlassFinancialServices width={48} height={48} />}
           title={industry}

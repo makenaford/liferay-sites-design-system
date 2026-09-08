@@ -21,13 +21,22 @@ const checkOnly = process.argv.includes('--check')
 
 /**
  * The colour files that make up each mode. Figma's variable export writes one file per mode, but a
- * mode can be assembled from several files — `color.action.*` was read out of the Plugin API because
- * the UI export omitted the `Action/*` group. Later files override earlier ones on key collisions,
- * and aliases are resolved across the whole merged set.
+ * mode can be assembled from several files — `color.action.*` and `color.gradient-card.*` were read out
+ * of the Plugin API because the UI export omitted the `Action/*` and `Components/Gradient Card/*`
+ * groups. Later files override earlier ones on key collisions, and aliases are resolved across the
+ * whole merged set.
  */
 const COLOR_MODES = {
-  light: ['color.light.tokens.json', 'color.action.light.tokens.json'],
-  dark: ['color.dark.tokens.json', 'color.action.dark.tokens.json'],
+  light: [
+    'color.light.tokens.json',
+    'color.action.light.tokens.json',
+    'color.gradient-card.light.tokens.json',
+  ],
+  dark: [
+    'color.dark.tokens.json',
+    'color.action.dark.tokens.json',
+    'color.gradient-card.dark.tokens.json',
+  ],
 }
 
 /** The three Figma typography modes, and the min-width each one takes over at. */

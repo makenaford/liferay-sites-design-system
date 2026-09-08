@@ -1,0 +1,96 @@
+{
+  "Components": {
+    "Gradient Card": {
+      "01": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.058824,
+            0.07451,
+            0.105882
+          ],
+          "alpha": 1,
+          "hex": "#0F131B"
+        },
+        "$extensions": {
+          "com.figma.scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      },
+      "02": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.058824,
+            0.07451,
+            0.105882
+          ],
+          "alpha": 1,
+          "hex": "#0F131B"
+        },
+        "$extensions": {
+          "com.figma.scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      },
+      "03": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.058824,
+            0.07451,
+            0.105882
+          ],
+          "alpha": 1,
+          "hex": "#0F131B"
+        },
+        "$extensions": {
+          "com.figma.scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      },
+      "purple": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.454902,
+            0.078431,
+            1.0
+          ],
+          "alpha": 1,
+          "hex": "#7414FF"
+        },
+        "$extensions": {
+          "com.figma.scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      },
+      "blue": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.003922,
+            0.090196,
+            0.682353
+          ],
+          "alpha": 1,
+          "hex": "#0117AE"
+        },
+        "$extensions": {
+          "com.figma.scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    }
+  }
+}

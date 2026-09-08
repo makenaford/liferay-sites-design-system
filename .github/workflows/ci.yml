@@ -1,0 +1,95 @@
+# Checks every pull request before anyone reviews it, so a review is about design rather than broken
+# code. These are the same gates `deploy-storybook.yml` runs after a merge — running them earlier is
+# the point: a contributor sees red on their own branch instead of on main.
+#
+# Two jobs rather than one, because they fail for different reasons and the reviewer should be able to
+# tell which from the checks list alone: `build` is "the code compiles and no generated file was
+# hand-edited", `layout` is "no story overflows its own viewport".
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+  # So a branch can be checked before its pull request exists.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A superseded run tells the reviewer nothing, so cancel it rather than racing the newer push.
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          # Matches the "engines" field in package.json.
+          node-version: '22'
+          cache: 'pnpm'
+
+      # --frozen-lockfile resolves from pnpm-lock.yaml, so the minimumReleaseAge policy in
+      # pnpm-workspace.yaml cannot fail a pull request over a version that was fine locally. It also
+      # fails outright if the lockfile was written by npm or yarn.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `pnpm build` is tokens:check, icons:check, glass-icons:check, builder:catalog:check,
+      # assets:check, tsc --noEmit, the worker typecheck, and both bundles. Running the script rather
+      # than restating its steps here keeps this workflow honest when the script changes.
+      - name: Check generated files, typecheck and build
+        run: pnpm build
+
+  layout:
+    name: layout
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The suite runs against the built Storybook, not the dev server: on-demand compilation is what
+      # made the first CI attempt time out. See the comment in playwright.config.ts.
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      # Browsers are not in the lockfile — they live in a shared cache and are fetched on demand.
+      # `--with-deps` pulls the system libraries a headless Chromium needs on a bare runner.
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Structural questions asked of every story at 375/768/1440 in both colour schemes: does it
+      # overflow, does it throw while rendering.
+      - name: Layout tests
+        run: pnpm test
+
+      # Traces for whatever failed, so a contributor can see the failure without reproducing it.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

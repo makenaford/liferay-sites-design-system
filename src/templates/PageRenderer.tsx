@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Button as MantineButton, Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
+import { Form } from '../components/Form'
 import { GradientText, highlightPhrase } from '../components/GradientText'
 import { Hero, type HeroMediaSource } from '../components/Hero'
 import { Image } from '../components/Image'
@@ -21,7 +22,7 @@ import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section as SDSSection, SectionTitle, type SectionProps } from '../components/Section'
 import { Stat, StatBar, CountUp } from '../components/Stat'
 import { Tabs } from '../components/Tabs'
-import { Select, TextInput } from '../components/Input'
+import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
   IconArrowUp,
@@ -59,15 +60,20 @@ import {
   IconGlassSupplierPortals,
   IconSearch,
   IconShoppingCart1,
-  IconStarFilled,
   IconUser1,
 } from '../icons'
 import { PRODUCT_MAP_MAX_HEIGHT } from './product-map'
 import { VENDOR_LOGOS } from './vendor-logos'
 import { CUSTOMER_THUMBNAILS, customerThumbnailAlt } from './customer-thumbnails'
-import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit } from './shared'
+import { MeshBackdrop, Quotee, VendorTile, Wordmark, unit, StarRating } from './shared'
 import classes from '../theme/components.module.css'
 import { isVideo } from './page-schema'
+import {
+  ResultCount,
+  StoryFilterBar,
+  matchesSelection,
+  type StorySelection,
+} from './story-filters'
 import type {
   CardSpec,
   GlassIconName,
@@ -228,6 +234,7 @@ function HeroMedia({ media }: { media: ImageRef }) {
 }
 
 /**
+/**
  * A still or a clip, in a box of the given ratio.
  *
  * `HeroMedia` is not reusable here and it was a mistake to try: its `<video>` carries no sizing at all,
@@ -339,6 +346,58 @@ export function CrossfadeMedia({ media }: { media: ImageRef }) {
   )
 }
 
+/**
+ * The hero's form card — Figma's `Form` instance, in the column `media` would otherwise fill.
+ *
+ * Every slot here is one the `Form` component already draws, which is the point of it existing: the
+ * heading pair, `Form.Row` per row, the terms *above* the button because they are agreed to by pressing
+ * it, and the footnote under. Nothing about the card's surface, padding or breakpoints is decided here.
+ */
+function HeroFormCard({ spec }: { spec: NonNullable<HeroSpec['formCard']> }) {
+  return (
+    <Form
+      title={spec.title}
+      description={spec.description}
+      terms={spec.terms}
+      submit={
+        <Button size="md" fullWidth>
+          {spec.submit}
+        </Button>
+      }
+      footnote={spec.footnote}
+      onSubmit={(event) => event.preventDefault()}
+    >
+      {spec.rows.map((row, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <Form.Row key={i}>
+          {row.map((field) =>
+            field.type === 'textarea' ? (
+              <Textarea key={field.label} label={field.label} required={field.required} autosize minRows={3} />
+            ) : field.type === 'select' ? (
+              <Select key={field.label} label={field.label} required={field.required} data={field.options ?? []} />
+            ) : (
+              <TextInput
+                key={field.label}
+                label={field.label}
+                required={field.required}
+                type={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
+              />
+            ),
+          )}
+        </Form.Row>
+      ))}
+
+      {spec.consent ? (
+        /*
+         * Mantine's `Checkbox` — the library has no wrapper for one, and the theme styles Mantine's
+         * directly, so a pass-through here would be a component whose whole body is a re-export.
+         */
+        <Checkbox label={spec.consent} />
+      ) : null}
+    </Form>
+  )
+}
+
 function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
 
@@ -428,7 +487,14 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
         ) : undefined
       }
       proof={hero.proof ? renderProof(hero.proof) : undefined}
-      media={hero.media ? <HeroMedia media={hero.media} /> : undefined}
+      /* A form card takes the media column: the file draws one or the other there, never both. */
+      media={
+        hero.formCard ? (
+          <HeroFormCard spec={hero.formCard} />
+        ) : hero.media ? (
+          <HeroMedia media={hero.media} />
+        ) : undefined
+      }
     />
   )
 }
@@ -442,20 +508,11 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
             <Text fz={28} fw={700} lh={1}>
               {proof.rating.score}
             </Text>
-            <Group gap={0} aria-hidden>
-              {Array.from({ length: proof.rating.outOf }, (_, i) => (
-                <IconStarFilled
-                  key={i}
-                  width={16}
-                  height={16}
-                  color={
-                    i < Math.round(Number(proof.rating?.score ?? 0))
-                      ? 'var(--sds-surfaces-text-primary)'
-                      : 'var(--sds-surfaces-text-secondary)'
-                  }
-                />
-              ))}
-            </Group>
+            {/*
+             * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
+             * stars — a better rating than the number beside it claimed.
+             */}
+            <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} />
           </Group>
           <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
             {proof.rating.source}
@@ -495,7 +552,11 @@ function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> })
       maw={1000}
     >
       <Group gap={16} px={16} py={8} align="center">
-        <Text fz="lg" fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
+        {/*
+         * 18px, a literal: the typography scale has no 18px step — `Paragraph/Large` is 21 and
+         * the one below it is 16 — which is the same gap the Accordion's condensed label records.
+         */}
+        <Text fz={18} fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
           {banner.label}
         </Text>
         {banner.fields.map((field) => (
@@ -700,6 +761,56 @@ function StoryCard({ story }: { story: StorySpec }) {
 }
 
 /** `Type=Carousel` — centre-titled, bleeding off both edges, arrows rather than dots. */
+/**
+ * `All Stories` — the whole catalog behind a filter bar.
+ *
+ * The selection lives here rather than in the bar, because the grid below is the thing it changes and
+ * a bar that owned it would have to hand it back out anyway. `useMemo` on the filtered list, not on
+ * taste: this runs on every keystroke of a checkbox against every card in the catalog.
+ */
+function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'storyCatalog' }> }) {
+  const [selection, setSelection] = useState<StorySelection>({})
+  const shown = useMemo(
+    () => spec.cards.filter((card) => matchesSelection(card.facets, selection)),
+    [spec.cards, selection],
+  )
+
+  return (
+    <Section
+      title={
+        <Stack gap={16} w="100%">
+          <Group justify="space-between" align="baseline" wrap="nowrap">
+            <SectionTitle title={spec.title} />
+            <ResultCount count={shown.length} />
+          </Group>
+          <StoryFilterBar
+            filters={spec.filters}
+            selection={selection}
+            onSelectionChange={setSelection}
+          />
+        </Stack>
+      }
+    >
+      {shown.length ? (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+          {shown.map((card, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <GridCard key={`${card.title}-${i}`} card={card} />
+          ))}
+        </SimpleGrid>
+      ) : (
+        /*
+         * An empty result is a state, not a blank. Without it the page just ends after the filter bar
+         * and reads as broken rather than as a filter that matched nothing.
+         */
+        <Text c="var(--sds-surfaces-text-secondary)" fz={18}>
+          No stories match these filters.
+        </Text>
+      )}
+    </Section>
+  )
+}
+
 function CustomerStoriesSection({
   spec,
 }: {
@@ -1335,6 +1446,8 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CardGridSection key={index} spec={spec} />
     case 'resourceGrid':
       return <ResourceGridSection key={index} spec={spec} />
+    case 'storyCatalog':
+      return <StoryCatalogSection key={index} spec={spec} />
     case 'customerStories':
       return <CustomerStoriesSection key={index} spec={spec} />
     case 'logoMarquee':

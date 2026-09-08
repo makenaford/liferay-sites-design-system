@@ -99,18 +99,23 @@ export const SolutionDetail: Story = {
 }
 
 /**
- * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants; they differ in what
- * sits under the form rather than in the shape above it, so this is their common spine.
+ * `Forms` -> node `24263:171708`. Named for what it is — a page whose hero *is* a form — rather than
+ * for the one errand it was first drawn for. The file has four variants; they differ in what sits under
+ * the form rather than in the shape above it, so this is their common spine.
  *
- * Everything below the fold exists to make the form worth filling in — the figures, the logos, what the
- * platform does, the questions that stop someone writing in — and the page ends at the FAQ, because
- * there is nothing to read after the form.
+ * The hero's right column is the whole card: name, work email, company, country, phone, what you want
+ * to talk about, the partner-sharing consent and the reCAPTCHA line. It used to be a single inline
+ * email field, which is the shape a marketing hero uses to start a trial — not the shape of a page
+ * whose point is the fields it asks for.
+ *
+ * Everything below the fold exists to make the form worth filling in: the figures, the logos, then what
+ * the platform does.
  */
-export const ContactSales: Story = {
+export const FormPage: Story = {
   render: () => (
     <>
       <SiteHeader />
-      <PageRenderer page={presetFor('contact')!.create()} />
+      <PageRenderer page={presetFor('form')!.create()} />
       <SiteFooter />
     </>
   ),

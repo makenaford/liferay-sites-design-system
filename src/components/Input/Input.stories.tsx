@@ -4,6 +4,7 @@ import { Group, Stack, Text } from '@mantine/core'
 import { TextInput } from './TextInput'
 import { Textarea } from './Textarea'
 import { Select } from './Select'
+import { MultiSelect } from './MultiSelect'
 import { LanguagePicker } from './LanguagePicker'
 import { Button } from '../Button'
 import { IconArrowRight, IconSearch } from '../../icons'
@@ -232,6 +233,122 @@ export const DropdownSelect: Story = {
         nothingFoundMessage="No product matches that"
         data={['DXP', 'Cloud', 'Analytics', 'Commerce', 'Search', 'Content']}
       />
+    </Stack>
+  ),
+}
+
+/**
+ * **Multi-select** — the same box holding more than one value, as pills. Not a cell in the Figma
+ * library: it is composed from the field box, the `Dropdown` menu and the `Chip` treatment, because the
+ * alternative in a real form is a column of checkboxes that stops being readable around six options.
+ *
+ * The box grows with its pills rather than scrolling them — a value the user chose and can no longer
+ * see is a value they will choose twice. Add four or five and watch it wrap.
+ */
+export const MultiSelectStory: Story = {
+  name: 'Multi Select',
+  render: () => (
+    <Stack gap="24">
+      <MultiSelect
+        label="Industries"
+        description="Pick as many as apply."
+        required
+        placeholder="Pick a few"
+        data={INDUSTRIES}
+      />
+      <MultiSelect
+        label="Already chosen"
+        placeholder="Pick a few"
+        data={INDUSTRIES}
+        defaultValue={[INDUSTRIES[0], INDUSTRIES[2]]}
+        clearable
+      />
+      <MultiSelect
+        label="Searchable"
+        description="Type to filter, Backspace to remove the last pill."
+        placeholder="Search industries"
+        data={INDUSTRIES}
+        searchable
+        nothingFoundMessage="No industry matches that"
+      />
+      <MultiSelect
+        label="Groups, capped at two"
+        placeholder="Pick up to two"
+        maxValues={2}
+        data={[
+          { group: 'Platform', items: ['DXP', 'Cloud', 'Analytics'] },
+          { group: 'Modules', items: ['Commerce', 'Search', 'Content'] },
+        ]}
+      />
+    </Stack>
+  ),
+}
+
+/**
+ * **`floating` on a multi-select.** The same `Condensed=True` prop the text field and the select take.
+ * It cannot key off `:placeholder-shown` here — a multi-select's own input stays empty whatever is
+ * chosen, since the values are pills beside it — so the label rises on the first pill instead.
+ */
+export const FloatingMultiSelect: Story = {
+  name: 'Floating Multi Select',
+  render: () => (
+    <Stack gap="24">
+      <MultiSelect floating label="Industries" required data={INDUSTRIES} />
+      <MultiSelect
+        floating
+        label="Already chosen"
+        data={INDUSTRIES}
+        defaultValue={[INDUSTRIES[1], INDUSTRIES[3]]}
+      />
+      <MultiSelect floating label="Searchable" data={INDUSTRIES} searchable />
+    </Stack>
+  ),
+}
+
+/**
+ * **`rounded`** — `Border Radius/round` corners instead of the set's `Border Radius/medium`, on both
+ * dropdowns. A boolean rather than `radius="round"` for the reason `Button` makes `rounded` a variant:
+ * the two shapes are the two the library draws, and a call site free to name any radius will eventually
+ * name one the system does not have. An explicit `radius` still wins where a field has to match
+ * something else on the page.
+ *
+ * All four combinations of the two axes — label above the box or floating inside it, 8px corner or
+ * pill — so a form can be checked for the pair it actually uses.
+ */
+export const RoundedDropdowns: Story = {
+  name: 'Rounded',
+  render: () => (
+    <Stack gap="32">
+      <Stack gap="16">
+        <Text fz="sm" fw={600} c="var(--sds-surfaces-text-secondary)">
+          Label above the box
+        </Text>
+        <Select label="Select, 8px" data={INDUSTRIES} placeholder="Pick one" />
+        <Select rounded label="Select, round" data={INDUSTRIES} placeholder="Pick one" />
+        <MultiSelect label="Multi-select, 8px" data={INDUSTRIES} placeholder="Pick a few" />
+        <MultiSelect
+          rounded
+          label="Multi-select, round"
+          data={INDUSTRIES}
+          placeholder="Pick a few"
+          defaultValue={[INDUSTRIES[0]]}
+        />
+      </Stack>
+      <Stack gap="16">
+        <Text fz="sm" fw={600} c="var(--sds-surfaces-text-secondary)">
+          Floating label
+        </Text>
+        <Select floating label="Select, 8px" data={INDUSTRIES} />
+        <Select floating rounded label="Select, round" data={INDUSTRIES} />
+        <MultiSelect floating label="Multi-select, 8px" data={INDUSTRIES} />
+        <MultiSelect
+          floating
+          rounded
+          label="Multi-select, round"
+          data={INDUSTRIES}
+          defaultValue={[INDUSTRIES[2]]}
+        />
+      </Stack>
     </Stack>
   ),
 }

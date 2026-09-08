@@ -2169,8 +2169,18 @@
  * cannot reach backwards from the input to the label.
  */
 .fieldRoot[data-floating]:focus-within .fieldLabel,
-.fieldRoot[data-floating]:has(.fieldInput:not(:placeholder-shown)) .fieldLabel,
-.fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel {
+/*
+ * `:where(input, textarea)` because `MultiSelect`'s box is a `<div>` carrying the same class, and
+ * `:placeholder-shown` never matches a div — so `:not(:placeholder-shown)` was true for every empty
+ * multi-select and its label started out floated.
+ */
+.fieldRoot[data-floating]:has(.fieldInput:where(input, textarea):not(:placeholder-shown)) .fieldLabel,
+.fieldRoot[data-floating]:has(.fieldInput[data-filled]) .fieldLabel,
+/*
+ * `MultiSelect`: its own input stays empty whatever is chosen — the values are pills beside it — so
+ * `:placeholder-shown` never flips and the presence of a pill is what "filled" means here.
+ */
+.fieldRoot[data-floating]:has(.fieldPill) .fieldLabel {
   /* Clear of the box: 12px of box padding plus the 22px reserved above it. */
   transform: translateY(-32px);
   font-size: 14px;
@@ -2192,6 +2202,14 @@
 }
 
 .fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInput::placeholder {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.fieldRoot[data-floating] .fieldInputField::placeholder {
+  color: transparent;
+}
+
+.fieldRoot[data-floating] .fieldWrapper:focus-within .fieldInputField::placeholder {
   color: var(--sds-surfaces-text-tertiary);
 }
 
@@ -2293,11 +2311,68 @@
  */
 .fieldDropdown[data-position], .fieldDropdown {
   padding: 8px;
-  border: none;
   border-radius: var(--mantine-radius-md);
-  background-color: var(--sds-surfaces-card-bg-grey);
-  box-shadow: var(--sds-elevation-tight-4);
+  /*
+   * **Glass, the same recipe the mega panel uses** — a translucent ground, a blur behind it, `saturate`
+   * to put back the colour the blur drains, and the hairline that gives the panel an edge of its own.
+   *
+   * 88%, not the panel's 72%. A menu is a column of 16px type and it opens over whatever the page
+   * happens to be showing — a card, a gradient, another menu — so unlike a panel it has a contrast
+   * ratio somebody has to be able to guarantee. At 88% the option text holds 12:1 against the worst
+   * ground on the catalog page and the surface still reads as glass; at 72% the ratio moves with the
+   * artwork underneath, which is the trap `heroForm` documents further up this file.
+   */
+  border: 1px solid var(--sds-glass-line-to);
+  background-color: color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 88%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  /*
+   * Three shadows doing three jobs: `elevation/tight/4` is the token the set draws, the long soft one
+   * lifts the menu off the page far enough to read as floating over it rather than printed on it, and
+   * the brand glow is the same 18% `Action/Primary/Hover` bloom a focused field carries — an open menu
+   * and a focused field are the same event, so they get the same light.
+   */
+  box-shadow:
+    var(--sds-elevation-tight-4),
+    0 18px 40px rgba(0, 0, 0, 0.4),
+    0 0 24px -4px color-mix(in srgb, var(--sds-action-primary-hover) 18%, transparent);
 }
+
+/*
+ * No blur, no transparency. Without `backdrop-filter` the 88% ground is just a washed-out panel with
+ * the page legible through it, which is worse than no effect at all — so the fallback is the opaque
+ * surface this rule replaced.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fieldDropdown[data-position], .fieldDropdown {
+    background-color: var(--sds-surfaces-card-bg-grey);
+  }
+}
+
+/*
+ * The caret turns over while the menu is open.
+ *
+ * Keyed off `data-expanded`, which `Combobox.Target` puts on the target itself — so this one rule
+ * covers `Select`, `MultiSelect` and the filter pill without any of them plumbing state to their icon.
+ * `:has()` because the icon slot is the input's *sibling* inside the wrapper, not its child.
+ *
+ * Scoped to the right slot: the left slot holds a search or currency glyph, and there is nothing about
+ * an open menu that should turn one of those upside down.
+ */
+.fieldWrapper .fieldSection[data-position='right'] > svg {
+  transition: transform var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.fieldWrapper:has(.fieldInput[data-expanded]) .fieldSection[data-position='right'] > svg {
+  transform: rotate(180deg);
+}
+
+/*
+ * Worth knowing: on `Select` this is deliberately a no-op. Mantine's `Combobox.Chevron` is the
+ * symmetric up-and-down glyph, which looks identical turned over — the rule bites on the single
+ * chevrons, `IconDown` on the filter pill and `IconDownSmallFilled` on the language picker. Giving
+ * `Select` a single caret is a change to the drawn field, so it belongs in the `Input` set, not here.
+ */
 
 .fieldOption {
   border-radius: var(--mantine-radius-sm);
@@ -2332,6 +2407,100 @@
   padding: 8px 12px;
   font-size: 14px;
   color: var(--sds-surfaces-text-tertiary);
+}
+
+/* ------------------------------------------------------------------ the multi-value field
+ *
+ * `MultiSelect`. No cell in the `Input` set draws one, so it is the drawn field box holding the pills
+ * the `Dropdown` set's checked rows already imply. Three classes of its own — the box's multiline
+ * behaviour, the pill, and the search input beside the pills — over the same wrapper, ring and label
+ * every other field uses.
+ */
+
+/*
+ * The box **grows** rather than scrolling its pills: a chosen value the user can no longer see is a
+ * value they will choose twice. Figma's 48px becomes a floor, and the 12px of vertical padding becomes
+ * 8 so a single 30px pill row still comes to exactly 48.
+ */
+.fieldWrapper[data-multiline] .fieldInput {
+  height: auto;
+  min-height: var(--input-height);
+  padding-block: 8px;
+}
+
+/* Figma's 8px step between chips, and the same step between two wrapped rows of them. */
+.fieldWrapper .fieldPillsList {
+  gap: 8px;
+}
+
+/*
+ * The pill is the `Dropdown` set's checked row, shrunk: same `Action/Primary/bg-cta` fill and
+ * `Action/Link/Default` text, so the value in the field and the checked option in the menu are visibly
+ * the same thing. Its 14px SemiBold is the `Paragraph/X-Small/Semi Bold` text style `Chip` uses.
+ */
+.fieldPillsList .fieldPill {
+  height: 30px;
+  padding-inline-start: 8px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--sds-action-primary-bg-cta);
+  color: var(--sds-action-link-default-link);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* No cross to clear, so the pill closes up on its end edge too. */
+.fieldPillsList .fieldPill:not([data-with-remove]) {
+  padding-inline-end: 8px;
+}
+
+/*
+ * The remove cross rides on the pill's own colour rather than Mantine's grey. `:global`, because
+ * `MultiSelect`'s Styles API stops at the pill root — the cross inside it is only reachable by
+ * Mantine's static class, and claiming `Pill` in the theme would restyle every pill in the library.
+ */
+.fieldPillsList .fieldPill :global(.mantine-Pill-remove) {
+  color: inherit;
+  opacity: 0.7;
+}
+
+@media (hover: hover) {
+  .fieldPillsList .fieldPill :global(.mantine-Pill-remove):hover {
+    opacity: 1;
+    background-color: transparent;
+  }
+}
+
+/*
+ * The search input shares its line with the pills, so it cannot carry the field's own 48px height — it
+ * takes one line of the field's type and stretches to fill whatever the pills leave.
+ */
+.fieldWrapper .fieldInputField {
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--sds-neutral-10);
+}
+
+.fieldWrapper .fieldInputField::placeholder {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/*
+ * Once there is a pill the placeholder has said its piece — it can only repeat what the pills already
+ * show — and it is what pushed the search input onto a second row: Mantine reserves 100px for the
+ * field, which in a 300px-wide box two pills have already spent. So with a value present the
+ * placeholder goes and the field keeps just enough width to click into and type in.
+ */
+.fieldPillsList:has(.fieldPill) .fieldInputField {
+  min-width: 40px;
+}
+
+.fieldPillsList:has(.fieldPill) .fieldInputField::placeholder {
+  color: transparent;
 }
 
 /* ------------------------------------------------------------------- the country selector
@@ -3102,14 +3271,19 @@
   }
 }
 
-/* The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule. */
+/*
+ * The featured rail, on its own gradient, divided from the columns by a `Neutral/03` rule.
+ *
+ * `Gradient Card/03` into `Gradient Card/blue`, both real tokens now — the first was standing in as
+ * `Surfaces/Card BG/Grey` while the group was missing from the Figma export.
+ */
 .megaFeatured {
   width: clamp(260px, 24vw, 320px);
   border-inline-start: 1px solid var(--sds-neutral-03);
   padding: clamp(28px, 4vw, 40px) clamp(20px, 4vw, 48px) clamp(40px, 6vw, 64px) clamp(20px, 3vw, 40px);
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 50%, transparent) 64%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 50%, transparent) 64%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 28%, transparent) 100%
   );
 }
@@ -3666,16 +3840,33 @@
  * A sibling of the panel stack rather than the last thing in a panel: the stack clips and scrolls, so
  * anything inside it scrolls away, and the file keeps this button on screen at every level.
  */
+/*
+ * The foot of the drawer.
+ *
+ * Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves, which is what the
+ * file draws. Two *columns* rather than a column per child, so a third item wraps to a second row
+ * instead of shrinking all three — three equal columns on a phone leaves about 100px a button, which is
+ * not enough for `Create an account`.
+ */
 .headerDrawerFooter {
   flex: none;
   display: grid;
-  /* Two 171px buttons across a 414 frame, 24 either side and 24 between: equal halves. */
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   padding: 20px 24px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   border-top: 1px solid color-mix(in srgb, var(--sds-neutral-03) 60%, transparent);
+}
+
+/*
+ * An odd one out takes the whole row rather than half of it and a gap.
+ *
+ * With the two the file draws this never matches. With three — two account buttons and the call to
+ * action — it puts the call to action across the foot, which is where the primary action wants to be
+ * anyway.
+ */
+.headerDrawerFooter > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 .headerDrawerFooter > * {
@@ -3731,17 +3922,17 @@
  *
  *   linear-gradient(178deg, Components/Gradient Card/03 63.85%, Components/Gradient Card/blue 84.95%)
  *
- * `Gradient Card/03` is **not exported** — the token pipeline brings across only the blue and purple
- * stops, on the grounds that the other three are all `Surfaces/Card BG/Grey`. So that is what stands in
- * here, at the file's own 15%, which is also what the desktop rail already does. The two differ by
- * #0F131B against Figma's #0A0E17, which at 15% alpha is not a difference anyone can see — but it is a
- * stand-in, and it is written down as one.
+ * `Gradient Card/03` is a real token now — `tokens/figma/color.gradient-card.*.tokens.json`, read out of
+ * the Plugin API because the UI export omits the group. It used to stand in as `Surfaces/Card BG/Grey`,
+ * with a note that the two differed by #0F131B against Figma's #0A0E17. The export says #0F131B, so
+ * either the file moved or the note was wrong; either way the stand-in is gone and this is the value
+ * the file holds.
  */
 .headerDrawerPanel .megaFeatured,
 .headerDrawerPanel .megaCta {
   background-image: linear-gradient(
     178deg,
-    color-mix(in srgb, var(--sds-surfaces-card-bg-grey) 15%, transparent) 63.85%,
+    color-mix(in srgb, var(--sds-gradient-card-03) 15%, transparent) 63.85%,
     color-mix(in srgb, var(--sds-gradient-card-blue) 15%, transparent) 84.95%
   );
 }
@@ -4096,10 +4287,19 @@
   mix-blend-mode: screen;
 }
 
+/*
+ * The light files carry **alpha**, so there is nothing to blend away.
+ *
+ * They used to be white-ground exports and this rule was `multiply`, the mirror of the dark canvas's
+ * `screen`. The current pair (`Bubble_*_LM`) arrived drawn on a *black* ground instead, which multiply
+ * would have painted across the whole layer, so the matte was unpremultiplied into a real alpha channel
+ * at encode time — see README.md. With alpha there is no ground left to remove, and a blend would only
+ * tint the artwork with the page it is sitting on.
+ */
 :where([data-mantine-color-scheme='light'])
   .hero[data-video]:not([data-bubble-css])
   .heroBubble {
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
 .heroBubble {
@@ -4250,10 +4450,12 @@
  *   right  = -(1 - 1035/1200) * 88.9% - 3%  the ground right of the cut, plus a 3% overshoot so the
  *                                            cut itself lands past the hero's edge rather than on it
  *
- * The vertical fade then ends at the bottom cut — 630/866 on the dark file, 623/866 on the
- * light one, so it takes the earlier of the two, 71.9% down the frame, so the one
+ * The vertical fade then ends at the bottom cut — 630 of 866, i.e. 71.9% down the frame — so the one
  * cut still on screen arrives at zero alpha instead of a line. Below that there is nothing left to see,
  * which is also why the hero no longer carries a bubble hanging a whole frame past its foot.
+ *
+ * These are the **dark** file's measurements. The light export is a different frame and takes its own
+ * numbers, further down.
  */
 .hero[data-background='corner'] .heroVideo {
   left: auto;
@@ -4269,6 +4471,72 @@
    */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 71.9%);
+}
+
+/* ---------------------------------------------------------- the light canvas is a different frame
+ *
+ * Every number above measures the *dark* exports: 1200x866, artwork inset into y 142-680 (centre) and
+ * into the top-left 1035x630 (corner). The light pair is a different export altogether — 1200x582 and
+ * 674x674, with the artwork sitting somewhere else inside each — so it gets its own geometry rather
+ * than a compromise that lands neither. `data-canvas` is what the hero sets when it is showing
+ * `videoLight`.
+ *
+ * Measured off the files' own alpha, over 40 frames of each loop (`bbox` on the alpha plane, so these
+ * are the artwork's bounds and not the frame's).
+ */
+
+/*
+ * Centre, 1200x582: the artwork is flush to the top and to both sides and ends at y 551, so all that
+ * is surplus is 30 rows of empty ground at the foot.
+ *
+ *   height = 100% / (552/582) = 105.4%   the frame that puts a hero's worth of artwork on screen
+ *   top    = 0                           there is no ground above the artwork to lift off
+ */
+.hero[data-canvas='light'][data-background='full'] .heroVideo {
+  top: 0;
+  height: 105.4%;
+  /*
+   * The fade is placed to match the dark file's, in *hero* terms rather than frame terms.
+   *
+   * Both centre files put their artwork over the same box — 0 to 100% of the hero here, 0 to 102% there
+   * — so the drawings are the same size on the page. What was making the light one look like it sat
+   * lower was this fade: the dark rule starts dissolving at 62% of a box that runs from -26.3% to
+   * 134.4%, which is **73.3% of the hero**, and an 86% start here was 90.6% of it. The light bubble
+   * held full strength for another sixth of the hero, and a scheme flip read as the bubble moving.
+   *
+   *   start = 73.3% / 105.4% = 69.5%   the dark file's fade start, in this box's coordinates
+   *   end   = 94.8%                    the artwork's own bottom cut, which the fade has to beat: its
+   *                                    lower edge is a cut in the corners, where the magenta runs to
+   *                                    the last row
+   */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 69.5%, transparent 94.8%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 69.5%, transparent 94.8%);
+}
+
+/*
+ * Corner, 674x674: the artwork is flush to the top and to the **right** (the sphere's right side is cut
+ * by the export), with 16 columns of ground on the left and nothing below y 511.
+ *
+ *   width  = 61.9% / (658/674) = 63.4%   the frame that puts as much artwork on screen as the dark
+ *                                        file does — see below
+ *   right  = -3%                         no ground right of the cut, so only the overshoot that puts
+ *                                        the cut itself past the hero's edge rather than on it
+ *
+ * **The width matches the dark file, not the Figma number.** Sizing this to `Corner Bubble`'s drawn
+ * 1105 of 1440 (76.7%) is what the dark rule's arithmetic targets, but the dark *file* does not deliver
+ * it: its artwork is inset 197px inside its own frame and lands at **61.9%** of the hero. Asking the
+ * light file for the nominal 76.7% therefore drew it 15 points wider and 10 points further down than
+ * the dark one, and flipping the colour scheme moved the bubble. The reference is the file that is
+ * already on the page, so this matches the measured 61.9% — after which the two agree within a point
+ * horizontally, and vertically too, since the frame is square and the height follows the width.
+ */
+.hero[data-canvas='light'][data-background='corner'] .heroVideo {
+  right: -3%;
+  width: 63.4%;
+  aspect-ratio: 1;
+  /* The artwork is cut at 512/674 = 76% of this box, so the fade is at nothing by 74%. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 74%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 74%);
 }
 
 /* ---------------------------------------------------------------------- the bubble, drawn
@@ -4480,15 +4748,18 @@
  * and it never stretches past the width it is given.
  */
 /*
- * The banner's top padding is the file's 40 — plus the bar's own height when a fixed header is over it.
+ * Under a fixed header the banner clears the bar and no more: 64px, the bar's own height.
  *
  * `:has()` rather than a prop: the hero cannot be told what is above it without every page having to
  * pass that down, and the one thing that reliably knows is the document. A fixed header reserves no
- * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it,
- * and 64 + 40 is exactly where `Hero` sits under `LRDC Primary Nav` in the file.
+ * space, which is the point — the bubble runs up behind it — so the *content* is what has to clear it.
+ *
+ * It was 64 + 40, the bar plus the file's own gap between the nav and the banner, which came to 104 and
+ * left the solution finder floating well down the hero. The 40 is the gap under a nav that occupies its
+ * own band; a fixed bar the artwork already runs behind does not want it twice.
  */
 body:has(.headerShell[data-position='fixed']) .heroBanner {
-  padding-block-start: calc(40px + 64px);
+  padding-block-start: 64px;
 }
 
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
@@ -4648,6 +4919,61 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/*
+ * On the light canvas the fill is **opaque white**, and every field on the bubble gets one.
+ *
+ * The rule above is a dark-canvas rule wearing no label. There the type is white and darkening what is
+ * behind it recovers contrast; here the type is `Neutral/10` — near-black — so a 20% black scrim moves
+ * the field's ground *towards* its text and takes contrast away. The banner's selects were worse still:
+ * no fill at all, near-black type straight onto the artwork.
+ *
+ * The deeper problem is that a translucent field has no fixed contrast ratio. What is behind it is a
+ * 20-second animation, so the reading against the type changes frame by frame and there is no number
+ * anyone can guarantee — which is why this is opaque rather than a heavier scrim. `Neutral/00`, pure
+ * white, gives the value 19.7:1 and holds it in every frame.
+ *
+ * Opaque also means the blur has nothing left to do, so it comes off: a `backdrop-filter` behind an
+ * opaque fill is a compositing layer per field for an effect nobody can see.
+ *
+ * **White at 50%, not opaque** — a design call, and it keeps the field cut out of the glass rather than
+ * laid on it as a white card. The blur stays for that reason: at 50% the artwork still comes through,
+ * and defocusing it is what stops a hard colour edge running underneath a line of type. `saturate`
+ * alongside it for the same reason `Card`'s glass carries it — blurring alone drains the violet to grey.
+ *
+ * The trade is real and worth stating: an opaque fill has one contrast ratio, and a translucent one has
+ * a different ratio in every frame of a 20-second loop. Measured worst case over the loop is in
+ * README.md.
+ */
+:where([data-mantine-color-scheme='light']) .hero[data-video] .fieldWrapper {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/*
+ * And the placeholder has to clear 4.5:1 on that white, which `Surfaces/Text/Tertiary` does not.
+ *
+ * Measured: #6f798e on #ffffff is **4.37:1**, just under. Everywhere else in the library that is a
+ * placeholder beside a visible label, and the label is what names the field. The hero's email field has
+ * no visible label — only an `aria-label` — so its placeholder *is* the field's name on screen, and a
+ * name has to be readable.
+ *
+ * Mixed 80/20 towards `Secondary` rather than swapped for it: `Secondary` is #363e4c at 10.8:1, which
+ * reads as a value already typed rather than as a prompt. The mix lands at **5.19:1** and still sits
+ * visibly lighter than the value's `Neutral/10`.
+ *
+ * The token itself is the real fix — tertiary is ~4.3:1 on the page background too, so every
+ * placeholder in the library is a shade too light. That is a design-file change, noted in README.md,
+ * not something to do behind one rule.
+ */
+:where([data-mantine-color-scheme='light']) .hero[data-video] .fieldInput::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--sds-surfaces-text-tertiary) 80%,
+    var(--sds-surfaces-text-secondary)
+  );
 }
 
 /* ---- the entrance -----------------------------------------------------------------------------
@@ -7783,6 +8109,17 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 .chipWrapper .chipInput:checked + .chipLabel {
   background-color: var(--sds-surfaces-card-bg-blue);
+  /*
+   * The **text colour has to be restated here**, even though it is the same `Surfaces/Text/Primary` the
+   * resting pill already carries and the `Selected` cell rebinds nothing.
+   *
+   * Mantine paints a checked chip like a filled button — white label — from a `[data-checked]` rule that
+   * ties with `.chipWrapper .chipLabel` on specificity and wins on stylesheet order. On the dark canvas
+   * that is invisible, because `Surfaces/Text/Primary` is near-white there anyway; in light mode it was
+   * white on `Surfaces/Card BG/Blue` at 25% over a near-white page — a selected filter chip that could
+   * not be read at all. Same argument, and same shape of fix, as the resting fill two rules above.
+   */
+  color: var(--sds-surfaces-text-primary);
 }
 
 .chipWrapper .chipInput:checked + .chipLabel::before {
@@ -7861,7 +8198,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   --sds-map-step-x: calc(var(--sds-map-tile) * 0.75);
   --sds-map-step-y: calc(var(--sds-map-tile) * 0.8660254);
   --sds-map-ratio: 0.8660254;
-  --sds-map-hub-w: 1.9;
+  --sds-map-hub-w: 1.6;
   /*
    * The figure's own vertical centring.
    *
@@ -7957,6 +8294,64 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 @media (prefers-reduced-motion: reduce) {
   .mapGrid { transition: none; }
+}
+
+/*
+ * The same lattice, at rest.
+ *
+ * The reveal above starts at `opacity: 0`, which meant the figure's *first still frame* — the thumbnail,
+ * the screenshot in a deck, the reader who never moves the mouse — had sixteen tiles floating on a wash
+ * with nothing underneath them. The drawing is about a honeycomb the platform is cut from, and it was
+ * only ever showing that to someone who went looking. This layer is always painted, at a third of the
+ * strength, so the figure sits on the lattice and the pointer uncovers the rest of it.
+ *
+ * **Two layers rather than one whose mask changes.** `mask-image` does not interpolate, so a single layer
+ * swapping between the static ellipse and the pointer's circle snaps between them instead of fading. This
+ * one takes only the ellipse — the same one that keeps the revealed cells from ending on a straight cut
+ * at the canvas edge — so it needs none of the pointer properties, which is also what makes it right on a
+ * touch device: the reveal never paints there, and this does.
+ *
+ * The two are additive, and that is the point of the ratio: hover reads as *more of this* rather than as
+ * a second drawing arriving.
+ */
+.mapGridRest {
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  opacity: 1;
+  transition: none;
+}
+
+/*
+ * The lattice breathes with the hub — and it is the only other thing that does.
+ *
+ * `4.5s ease-in-out alternate`, the hub's own timing, so the two are one movement rather than two: the
+ * honeycomb comes up as the platform swells and settles back as it does. That is the claim the figure is
+ * making — the products are cut from the lattice the hub sits at the centre of — and a shared timeline is
+ * the cheapest way to say it. Both animations start at mount and share a period, so they stay in phase
+ * without either one being driven by the other.
+ *
+ * **`stroke-opacity`, not a transform.** Scaling the lattice would pull it off the tiles, which are placed
+ * by cell and do not move: the drawing would come apart at the peak of every breath. Brightness is the one
+ * property the mesh can pulse without lying about where its cells are.
+ *
+ * `--sds-map-grid-rest` is the **peak**, and the trough is 45% of it. The token moved up a little with this
+ * — 0.075 was right for a lattice standing still, and a line that spends most of its cycle under that
+ * needs the top of the swing to be worth arriving at — but it is still under half of `map-grid-line`, so
+ * the mesh at its brightest stays well below the reveal and never competes with the network, whose lines
+ * are the ones carrying a message.
+ *
+ * The reveal layer is not in this. It is the same drawing at full strength under the cursor, and a pointer
+ * asking to see the structure should be shown it steadily, not on a four-and-a-half-second cycle.
+ */
+.mapGridRest path {
+  stroke: var(--sds-map-grid-rest);
+  animation: sds-map-mesh-breathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes sds-map-mesh-breathe {
+  from { stroke-opacity: 0.45; }
+  to { stroke-opacity: 1; }
 }
 
 .mapWash {
@@ -8162,6 +8557,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 .mapTraceHalo { animation-name: sds-map-draw-halo; }
+
+/*
+ * The four core-seeded traces, which are the ones that put a line on the hub — and they need their own
+ * timing, because the shared one takes it back off again.
+ *
+ * `stroke-dasharray: 100 100` with `pathLength="100"` means the offset *is* the draw: at 100 the gap
+ * covers the path, at 0 the dash covers it whole. A walk's points start at its seed vertex, so 100 -> 0
+ * grows the line outward from the hub — right. Carrying on to -100 then slides the dash off the far end,
+ * and the segment that leaves *first* is the one at the hub: past 20% of the cycle the line is a stub
+ * drifting outward, attached to nothing. Each core trace was therefore on the hub for 4%-20% of 7.5s,
+ * about 1.2s, against 1.875s between them — so the middle of the figure had stretches with nothing
+ * touching it, which is what this is fixing.
+ *
+ * So a core trace **withdraws the way it came**: 100 -> 0 -> 100, back into the hub rather than off
+ * through it. The hub end is held for 4%-58% of the cycle — 4.05s against 1.875s spacing — so two are
+ * always attached and sometimes three, and each is still off for two-fifths of its cycle so the middle
+ * keeps turning over instead of holding four static lines.
+ *
+ * The hold from 20% to 40% is what stops the reversal reading as a bounce: drawn, a beat at full length,
+ * then drawn back.
+ */
+[data-core] > .mapTrace { animation-name: sds-map-draw-core; }
+[data-core] > .mapTraceHalo { animation-name: sds-map-draw-core-halo; }
+
+@keyframes sds-map-draw-core {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.4; }
+  20% { stroke-dashoffset: 0; opacity: 0.4; }
+  40% { stroke-dashoffset: 0; opacity: 0.4; }
+  54% { stroke-dashoffset: 100; opacity: 0.12; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
+
+@keyframes sds-map-draw-core-halo {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  4% { opacity: 0.09; }
+  20% { stroke-dashoffset: 0; opacity: 0.09; }
+  40% { stroke-dashoffset: 0; opacity: 0.09; }
+  54% { stroke-dashoffset: 100; opacity: 0.03; }
+  58% { stroke-dashoffset: 100; opacity: 0; }
+  100% { stroke-dashoffset: 100; opacity: 0; }
+}
 .mapLoopHalo { animation-name: sds-map-lap-halo; }
 .mapLinkHalo { animation-name: sds-map-link-halo; }
 
@@ -8401,15 +8839,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * the label and the gap under it taking 0.22 of a tile, the icon's own top corners land at
  * `-(s + 0.22)/2`, and solving `s/2 <= W/2 - 0.576(s + 0.22)/2` puts them on the edge just past a whole
  * tile — which the rendered figure agrees with: stepped through in the browser, 1.00 has all four
- * corners inside the silhouette and 1.05 does not. 0.96 is that with the margin the padding wants, and
- * it makes the mark 55% of the hub's width where it used to be 20%.
+ * corners inside the silhouette and 1.05 does not. That put the mark at 55% of the hub's width where it
+ * used to be 20%.
+ *
+ * **Against the hub, not against the tile.** The paragraph above solves the mark against a *silhouette*,
+ * and the silhouette is `hub` tiles across — so writing the answer as a multiple of the tile hard-codes
+ * the 1.9 it was solved at, and the mark then knows nothing about a hub that has moved. It showed as the
+ * globe bursting the left and right vertices while the flat bottom edge cropped `DXP`. 0.505 is the 0.96
+ * that was here divided by that 1.9, so a 1.9 hub still renders exactly what it did.
  *
  * The octagon has more room at that height than the hexagon does, so this one number is safe on both and
  * the figure does not need a second.
  */
 .mapTileIcon[data-hub] {
-  width: calc(var(--sds-map-tile) * 0.96);
-  height: calc(var(--sds-map-tile) * 0.96);
+  width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
+  height: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.505);
 }
 
 /*
@@ -8443,12 +8887,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .mapHub {
   --sds-map-q: 0;
   --sds-map-r: 0;
-  /*
-   * 1.9 cells across. It went to 2.5 while the sections were pushed out to ±4 columns and the middle was
-   * empty; with them back at ±2 and their names inside them, 2.5 reached the section names. 1.9 is the
-   * largest that clears the nearest tile — 2.14 cells out — with the gap the lattice gives everything
-   * else. It is what `Homepage Redesign` draws, too.
-   */
+  /* 1.6 cells across, and why is in the lattice — this only spends the number. */
   width: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill));
   height: calc(
     var(--sds-map-tile) * var(--sds-map-hub-w) * var(--sds-map-fill) * var(--sds-map-ratio)
@@ -8488,8 +8927,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * symmetric curve played forwards and back has no rest in it, which is what makes this read as breathing
  * rather than as a pulse.
  *
- * 3.5% over four and a half seconds. The tile fills 95% of its cell, so that is most of the room there
- * is to grow into before the hub starts touching the gap the lattice gives everything else.
+ * 8% over four and a half seconds, and the lattice under it brightens on the same timeline.
+ *
+ * It went 3.5% -> 5% -> 8%. 3.5% was most of the room a 1.9 hub had to grow into before it started
+ * touching the gap the lattice gives everything else; a 1.6 hub is a sixth smaller, so the same
+ * percentage was a sixth less travel — under a device pixel at ordinary widths, which is a breath nobody
+ * can see. 5% put the movement back. 8% is that made deliberate rather than merely detectable.
+ *
+ * Collision is not what caps it, and it is worth being honest about that: the nearest tile's centre is
+ * 2.14 cells out and its near boundary about 1.665, against a hub half-extent of 0.76, so the hexagon
+ * could more than double before it touched anything. What caps it is the failure this animation already
+ * has a history of — seventeen tiles pulsing at once read as a screensaver — and 8% is the most one
+ * shape can move in the middle of sixteen still ones while still reading as a centre breathing.
  */
 .mapHub > .mapTileBody {
   animation: sds-map-breathe 4.5s ease-in-out infinite alternate;
@@ -8497,7 +8946,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 @keyframes sds-map-breathe {
   from { transform: scale(1); }
-  to { transform: scale(1.035); }
+  to { transform: scale(1.08); }
 }
 
 /*
@@ -8514,10 +8963,19 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   to { opacity: 0.96; }
 }
 
+/*
+ * Asked for less motion, all three hold still — and the mesh holds at its peak rather than wherever the
+ * cycle happened to be, since the token is the value the layer was designed at.
+ */
 @media (prefers-reduced-motion: reduce) {
   .mapHub > .mapTileBody,
-  .mapWash {
+  .mapWash,
+  .mapGridRest path {
     animation: none;
+  }
+
+  .mapGridRest path {
+    stroke-opacity: 1;
   }
 }
 
@@ -8550,10 +9008,55 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   );
 }
 
+/*
+ * `DXP`, sized from the hub for the reason the mark above is: it shares the hub's centred column, so it
+ * is measured against the same silhouette and 0.0842 is the 0.16 that was here divided by 1.9.
+ */
 .mapHub .mapTileLabel {
-  font-size: calc(var(--sds-map-tile) * 0.16);
+  font-size: calc(var(--sds-map-tile) * var(--sds-map-hub-w) * 0.0842);
   font-weight: 700;
   color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * The tiles breathe too — 2%, and out of phase with each other.
+ *
+ * This was tried once and failed, and the failure is worth restating because it is the whole design of
+ * this rule: all seventeen shared one timeline with identical scale and identical `currentTime` at every
+ * sample, so the figure inflated as a single object and read as a screensaver. Two things are different
+ * here.
+ *
+ * **The amplitude is a quarter of the hub's.** 2% against 8%, so the centre is still unambiguously the
+ * thing moving and the tiles are a texture under it rather than sixteen competing pulses. At an ordinary
+ * figure size that is around three pixels of travel — present at the edge of notice, which is what
+ * "subtle" has to mean for something repeated sixteen times.
+ *
+ * **The phase is ordered by distance from the hub**, via `--sds-map-breath` — negative, so each tile is
+ * already mid-cycle at load. The sixteen cells sit 1.50 to 2.60 tiles out, and at 1100ms a tile that is
+ * 1210ms of a 4500ms half-swing between the nearest and the furthest: a little over a quarter, so a ring
+ * is visibly behind its neighbour without the inner and outer rings ever working against each other.
+ * The offset is **radial**, so cells at equal distance share it: the sixteen tiles resolve to four
+ * phases, not sixteen, because the four sections are the same diamond mirrored. That is the honest
+ * description and also the right behaviour — a breath leaving the centre should reach two symmetric tiles
+ * at the same moment. What it rules out is the thing that failed, which was one phase for all seventeen.
+ * No tile is at the same point in the cycle as its own neighbours, so what the eye gets is the lattice
+ * settling rather than the drawing being scaled.
+ *
+ * **`scale`, not `transform`.** The body's `transform` is the hover's 1.14 and the press's 1.07, and an
+ * animation beats a normal declaration — a breath written as `transform` would simply delete the hover
+ * growth. As separate properties the two compose, and the hover rule below then turns the breath *off*
+ * so a hovered tile lands on exactly 1.14 rather than on 1.14 times wherever the cycle had got to.
+ *
+ * The hub is excluded because it has its own, four times larger, above.
+ */
+.mapTile:not(.mapHub) > .mapTileBody {
+  animation: sds-map-tile-breathe 4.5s ease-in-out infinite alternate;
+  animation-delay: var(--sds-map-breath, 0ms);
+}
+
+@keyframes sds-map-tile-breathe {
+  from { scale: 1; }
+  to { scale: 1.02; }
 }
 
 /* ---- interaction ----------------------------------------------------------------------------
@@ -8567,7 +9070,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 @media (hover: hover) {
   .mapTile[data-interactive]:hover { z-index: 800; }
-  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); }
+  /*
+   * The breath stops for the tile being pointed at, so the hover is a definite 1.14 and not 1.14 times
+   * whatever the cycle happened to be. `animation-name: none` rather than `paused`, which would hold the
+   * scale wherever it stopped; dropping the animation lets `scale` fall back to its own base of 1.
+   */
+  .mapTile[data-interactive]:hover > .mapTileBody { transform: scale(1.14); animation-name: none; }
   .mapTile[data-interactive]:hover .mapTileSheen { opacity: 1; }
   .mapTile[data-interactive]:hover .mapTileLabel { color: var(--sds-surfaces-text-primary); }
   .mapTile[data-interactive]:hover .mapTileFace { background-color: var(--sds-map-tile-fill-hover); }
@@ -8599,10 +9107,72 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 }
 
+/* ---- the entrance ---------------------------------------------------------------------------
+ *
+ * The map arrives fully drawn, which left the ambient network as the only motion in the figure — and the
+ * traces and loops are deliberately slow and quiet, so nothing ever *explains* the arrangement. This
+ * says it once, on the way in: the tiles settle outward from the hub, and the network draws after them.
+ *
+ * The order is the geometry rather than the markup. Each tile's delay is its own distance from the
+ * centre, written by the component as `--sds-map-enter`, so the wave moves through the figure the way the
+ * connectors do and does not depend on which cluster happens to be listed first.
+ *
+ * `data-sds-enter` is set once, when the figure first comes into view, and never unset. The resting state
+ * of every element below is the finished figure — no element is parked at `opacity: 0` waiting for it —
+ * so a browser that never fires the observer, or a reader who arrives mid-page, sees the map complete.
+ */
+.mapRoot[data-sds-enter] .mapTile {
+  animation: sds-map-enter 620ms var(--sds-motion-ease-out) both;
+  animation-delay: var(--sds-map-enter, 0ms);
+}
+
+/*
+ * The hub goes first and alone, because it is what the others are arranged around: its delay is zero by
+ * construction — it sits at the centre the distances are measured from.
+ *
+ * Its own breath is on `.mapTileBody`, one level down, so the two do not fight over `transform`.
+ */
+/*
+ * The reveal layer is deliberately not in this list. It rests at `opacity: 0` and is raised by `:hover`,
+ * and an animation with `both` would pin it to 1 for the life of the page — the pointer's circle would
+ * simply be on, permanently.
+ */
+.mapRoot[data-sds-enter] .mapGridRest,
+.mapRoot[data-sds-enter] .mapNetwork,
+.mapRoot[data-sds-enter] .mapName {
+  animation: sds-map-enter-fade 900ms var(--sds-motion-ease-out) both;
+  animation-delay: var(--sds-map-enter, 620ms);
+}
+
+@keyframes sds-map-enter {
+  from { opacity: 0; scale: 0.82; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes sds-map-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/*
+ * Asked for less motion, the figure simply is where it was going. The observer does not run at all in
+ * that case — this is the belt to that brace, and it also covers the preference changing mid-visit.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .mapRoot[data-sds-enter] .mapTile,
+  .mapRoot[data-sds-enter] .mapGridRest,
+  .mapRoot[data-sds-enter] .mapNetwork,
+  .mapRoot[data-sds-enter] .mapName {
+    animation: none;
+  }
+}
+
 /* Focus mirrors hover, so the keyboard gets the same tile — and the same grouping, which is information. */
 .mapTile[data-interactive]:focus-visible { z-index: 800; }
 .mapTile[data-interactive]:focus-visible > .mapTileBody {
   transform: scale(1.14);
+  /* Focus mirrors hover here too — the tile being read from should not be moving. */
+  animation-name: none;
   background-image: radial-gradient(
     140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
     var(--sds-map-rim-from),
@@ -8625,10 +9195,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   color: var(--sds-surfaces-text-primary);
 }
 
-/* Pressed: the growth settles back towards rest rather than going further. */
+/*
+ * Pressed: the growth settles back towards rest rather than going further.
+ *
+ * Right, and on its own invisible. 1.14 down to 1.07 is 6% of a hexagon, which on a glass tile at this
+ * size is below notice — so the press had the correct *direction* and no feedback. The fill is where a
+ * press on glass can be seen, and it is a step past hover in the same direction rather than a new colour:
+ * the tile is being pushed further into its socket, not lit up.
+ *
+ * Faster than the settle it accompanies. A press wants to have already happened by the time the finger
+ * knows it pressed; the release then carries the tile back over the body's own duration.
+ */
 .mapTile[data-interactive]:active > .mapTileBody {
   transform: scale(1.07);
   transition-duration: var(--sds-motion-press);
+}
+
+.mapTile[data-interactive]:active .mapTileFace {
+  background-color: var(--sds-map-tile-fill-press);
+  transition-duration: 60ms;
 }
 
 /*
@@ -8656,6 +9241,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .mapLinkHalo { opacity: 0.08; stroke-dasharray: none; }
 
   .mapTileBody { transition: none; }
+  .mapTile:not(.mapHub) > .mapTileBody { animation: none; }
   .mapTile[data-interactive]:hover > .mapTileBody,
   .mapTile[data-interactive]:focus-visible > .mapTileBody,
   .mapTile[data-interactive]:active > .mapTileBody {
@@ -9237,4 +9823,105 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .meshHost > *:not(.meshBackdrop) {
   position: relative;
   z-index: 1;
+}
+
+/* ============================================================================ story filters
+ *
+ * The catalog's filter bar — `All Stories` (node `24581:69993`).
+ *
+ * The control itself is a `Combobox` wearing the theme's own `field*` classes, so it is a `Select` in
+ * every respect the eye can check — height, hairline, focus ring, dropdown. Only the two things a
+ * select cannot do are here: the count badge, and a width that hugs the label instead of filling its
+ * column.
+ */
+.filterInput {
+  /* Composes the real input, so a change to fields reaches this without being copied. */
+  composes: fieldInput;
+  width: auto;
+  font-weight: 600;
+}
+
+/*
+ * The pill's own row — its label and, when a filter is on, the count.
+ *
+ * **Qualified with `.fieldWrapper`, or none of it applies.** Mantine's `.mantine-Input-input` sets
+ * `display: block`, which ties with a bare `.filterInput` on specificity and wins on stylesheet order —
+ * so the `inline-flex` here was never in effect, `gap` had no flex container to space and the count sat
+ * hard against the last letter of the label with no space at all. The same two-class shape the rest of
+ * this file uses to outrank Mantine's input rules.
+ *
+ * 8px is the gap the `Input` set puts between a field's glyph and its text, and the gap `Chip` puts
+ * between its label and its close glyph — the same distance between a label and the thing attached to
+ * it, everywhere in the library.
+ */
+.fieldWrapper .filterInput {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * The filter's menu is **wider than its pill**.
+ *
+ * `Combobox` defaults to `width="target"`, which is right for a `Select` — its menu is the field's own
+ * list and the two should be one column — and wrong here, because these pills are sized to their label.
+ * `Industry` is a 117px control, so `Customer Portal` wrapped to two lines inside a 117px menu and the
+ * list read as a paragraph. A `min-width` is all it takes: Mantine writes the target's width as an
+ * inline `width`, and `min-width` outranks it.
+ *
+ * 240px fits the longest option any of the three filters carries on one line, with the checkbox and the
+ * padding counted. The cap is what keeps a menu off the other side of the page on a narrow viewport;
+ * past it an option is allowed to wrap, because at that point wrapping is the lesser problem.
+ */
+.filterDropdown {
+  composes: fieldDropdown;
+  min-width: 240px;
+  max-width: min(360px, calc(100vw - 32px));
+}
+
+/* A filter holding a selection keeps a brand edge whether or not its list is open. */
+.filterInput[data-active] {
+  border-color: var(--sds-brand-primary-lighten-3);
+}
+
+/* The count. `Brand/Primary` filled, because it is the one thing in the row saying "this is on". */
+.filterPillCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--sds-brand-primary-primary);
+  color: var(--sds-action-neutral-inverted);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/*
+ * Clear Filters. A `<button>` wearing the link's colour — it clears state rather than going anywhere,
+ * so it is not a link however much it looks like one.
+ */
+.filterClear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sds-action-link-default-link);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .filterClear:hover {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+.filterClear:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

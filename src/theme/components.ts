@@ -3,8 +3,10 @@ import {
   Anchor,
   Badge,
   Chip as MantineChipComponent,
+  InputBase,
   List,
   Button,
+  MultiSelect,
   Select,
   Tabs,
   Textarea,
@@ -162,6 +164,32 @@ const INPUT_ORDER: ('label' | 'input' | 'description' | 'error')[] = [
   'description',
   'error',
 ]
+
+/**
+ * How every dropdown in the library opens: it **slides down** into place while fading in.
+ *
+ * Mantine's own `fade-down` travels 30px, which on a menu hanging 4px off its field reads as the list
+ * being thrown rather than opened — and at that distance the first option is still moving when the
+ * pointer arrives. Eight pixels is the distance the mega panel drops, so the two disclosures in the
+ * library move by the same amount, and 120ms is `--sds-motion-fast`: a state change, not a journey.
+ *
+ * `opacity` and `transform` only. Both are composited, so the whole entrance is paint-free over a
+ * surface that is already an expensive one to paint — see the glass in `components.module.css`.
+ *
+ * Exported because the filter bar's `Combobox` is assembled at the call site rather than configured
+ * here (`templates/story-filters.tsx`), and a menu that opened differently from the selects beside it
+ * would be the one thing in the row that looked like a mistake.
+ */
+export const DROPDOWN_TRANSITION = {
+  transition: {
+    in: { opacity: 1, transform: 'translateY(0)' },
+    out: { opacity: 0, transform: 'translateY(-8px)' },
+    transitionProperty: 'opacity, transform',
+  },
+  duration: 120,
+  exitDuration: 120,
+  timingFunction: 'var(--sds-motion-ease-out)',
+} as const
 
 /**
  * Central component configuration for the theme.
@@ -370,7 +398,67 @@ export const componentTheme: MantineThemeComponents = {
       groupLabel: classes.fieldGroupLabel,
       empty: classes.fieldEmpty,
     },
-    defaultProps: { size: 'md', inputWrapperOrder: INPUT_ORDER },
+    defaultProps: {
+      size: 'md',
+      inputWrapperOrder: INPUT_ORDER,
+      comboboxProps: { transitionProps: DROPDOWN_TRANSITION },
+    },
+    vars: inputVars,
+  }),
+
+  /**
+   * The multi-value dropdown. Not a cell in the `Input` set — see `MultiSelect.tsx` — so it borrows the
+   * set's field classes wholesale and adds three of its own: the pill, the row the pills sit in, and the
+   * search input tucked in beside them.
+   */
+  MultiSelect: MultiSelect.extend({
+    classNames: {
+      root: classes.fieldRoot,
+      wrapper: classes.fieldWrapper,
+      input: classes.fieldInput,
+      inputField: classes.fieldInputField,
+      pill: classes.fieldPill,
+      pillsList: classes.fieldPillsList,
+      section: classes.fieldSection,
+      label: classes.fieldLabel,
+      required: classes.fieldRequired,
+      description: classes.fieldDescription,
+      error: classes.fieldError,
+      dropdown: classes.fieldDropdown,
+      option: classes.fieldOption,
+      options: classes.fieldOptions,
+      group: classes.fieldGroup,
+      groupLabel: classes.fieldGroupLabel,
+      empty: classes.fieldEmpty,
+    },
+    defaultProps: {
+      size: 'md',
+      inputWrapperOrder: INPUT_ORDER,
+      /*
+       * Chosen values stay in the list, checked, rather than disappearing from it: with them hidden the
+       * menu reflows under the pointer on every pick, and unchecking is only possible on the pill.
+       */
+      hidePickedOptions: false,
+      nothingFoundMessage: 'Nothing found',
+      comboboxProps: { transitionProps: DROPDOWN_TRANSITION },
+    },
+    vars: inputVars,
+  }),
+
+  /**
+   * `InputBase` — the field box with no input inside it.
+   *
+   * It exists in the theme for one caller: the story catalog's filter pill, which is a `Combobox`
+   * wearing a `<button>` in the shape of a field (`templates/story-filters.tsx`). `InputBase` is not
+   * `TextInput`, so it inherited none of the set's `inputVars` — and `--input-height` unset means
+   * Mantine's own `size="md"`, a 42px box in a row of 48px fields. Six pixels is exactly the amount
+   * that reads as a mistake rather than a choice.
+   *
+   * Only `vars` and the size: the classes stay at the call site, because that control swaps the input
+   * class for its own (`filterInput`) and a theme-level `classNames` would put both on the element.
+   */
+  InputBase: InputBase.extend({
+    defaultProps: { size: 'md' },
     vars: inputVars,
   }),
 

@@ -298,9 +298,9 @@ export const PAGE_PRESETS: PagePreset[] = [
     }),
   },
   {
-    id: 'contact',
-    label: 'Contact sales',
-    hint: 'A form hero over the numbers, the logos, and the questions people ask before writing in.',
+    id: 'form',
+    label: 'Form Page',
+    hint: 'A form card in the hero, over the numbers, the logos, and what the platform does.',
     create: () => ({
       /*
        * `Forms` -> `Contact Sales` (node `24263:76429`). The file draws four variants of this page; they
@@ -315,15 +315,47 @@ export const PAGE_PRESETS: PagePreset[] = [
         background: 'corner',
         title: { text: 'Talk to sales' },
         description: { text: LOREM },
-        form: { placeholder: 'Work email', submit: 'Contact sales' },
-        media: { src: heroMedia, alt: 'Replace with a shot of the team or the product', ratio: '4:3' },
+        /*
+         * The whole form, in the column the media would otherwise fill — which is what the file draws.
+         * It was an inline email field and a button, the shape a marketing hero uses to start a trial;
+         * this page's hero *is* the form, and the fields it asks for are the point of the page.
+         */
+        formCard: {
+          title: 'Form Heading',
+          description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          rows: [
+            [
+              { label: 'First Name', required: true },
+              { label: 'Last Name', required: true },
+            ],
+            [
+              { label: 'Work Email', type: 'email', required: true },
+              { label: 'Company', required: true },
+            ],
+            [
+              {
+                label: 'Country',
+                type: 'select',
+                required: true,
+                options: ['United States', 'United Kingdom', 'Germany', 'Brazil', 'Japan'],
+              },
+              { label: 'Phone', type: 'tel', required: true },
+            ],
+            [{ label: 'What would you like to talk about', type: 'textarea', required: true }],
+          ],
+          consent:
+            'I agree that Liferay may share my contact details with Partners operating in my country to offer extended expertise and support, if their involvement is considered to bring value.',
+          terms:
+            'This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.',
+          submit: 'Submit',
+        },
       },
-      sections: [
-        blank('statsBar'),
-        blank('logoMarquee'),
-        blank('tabbedContent'),
-        blank('faq'),
-      ],
+      /*
+       * The file's spine under the hero: the numbers, the logos, then what the platform does. No FAQ —
+       * node `24263:171708` ends on a second content section and the footer, and the FAQ that used to
+       * be here was carried over from the detail pages rather than drawn on this one.
+       */
+      sections: [blank('statsBar'), blank('logoMarquee'), blank('tabbedContent'), blank('mediaBand')],
     }),
   },
   {
@@ -347,7 +379,12 @@ export const PAGE_PRESETS: PagePreset[] = [
         title: { text: 'Customer Stories' },
         description: { text: 'How teams like yours build with Liferay.' },
       },
-      sections: [blank('customerStories'), blank('resourceGrid'), blank('mediaBand')],
+      /*
+       * The stories worth leading with, then the whole list behind its filters. `storyCatalog` replaces
+       * the plain `resourceGrid` that stood here: the file's catalog has a filter bar and a result
+       * count, and a grid that renders everything it is given cannot express either.
+       */
+      sections: [blank('customerStories'), blank('storyCatalog'), blank('mediaBand')],
     }),
   },
 ]

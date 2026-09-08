@@ -96,7 +96,12 @@ export const colorLight = {
   "action-primary-hover": "#377cff",
   "action-primary-hover-lighten": "#f2f0fa",
   "action-primary-opaque-label": "rgba(11, 95, 255, 0.1)",
-  "action-primary-text-cta": "#0b5fff"
+  "action-primary-text-cta": "#0b5fff",
+  "components-gradient-card-01": "#f4f6fb",
+  "components-gradient-card-02": "#f4f6fb",
+  "components-gradient-card-03": "#f4f6fb",
+  "components-gradient-card-purple": "#7414ff",
+  "components-gradient-card-blue": "#adc9ff"
 } as const
 
 /** Colour tokens for the Figma "LRDC-Dark" mode. Same keys as `colorLight`. */
@@ -190,7 +195,12 @@ export const colorDark: Record<keyof typeof colorLight, string> = {
   "action-primary-hover": "#377cff",
   "action-primary-hover-lighten": "#f2f0fa",
   "action-primary-opaque-label": "rgba(255, 255, 255, 0.1)",
-  "action-primary-text-cta": "#659aff"
+  "action-primary-text-cta": "#659aff",
+  "components-gradient-card-01": "#0f131b",
+  "components-gradient-card-02": "#0f131b",
+  "components-gradient-card-03": "#0f131b",
+  "components-gradient-card-purple": "#7414ff",
+  "components-gradient-card-blue": "#0117ae"
 }
 
 /** Every colour token name, usable as `--sds-${ColorToken}` at runtime. */
