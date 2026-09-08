@@ -141,34 +141,20 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      */
     'map-grid-rest': scheme === 'light' ? 'rgba(11, 95, 255, 0.065)' : 'rgba(99, 153, 255, 0.1)',
 
-    /**
-     * `CapabilityMap`'s tile edge.
-     *
-     * **Light aliases the card's own token rather than copying its value.** A tile in light mode is a
-     * glass card cut to a hexagon, and `var()` is what makes that true rather than merely momentarily
-     * equal — retune `Glass Line` and the map follows, which is the whole point of saying the two are
-     * the same material.
-     *
-     * Dark keeps its own halved values. There the concern that produced them still holds: sixteen tiles
-     * ringing a hub is not one card on a page, and at the full token the edges were the brightest thing
-     * in the figure while the centre, which is the subject, read as the dimmest. On the light canvas the
-     * hairline is a shadow of a line rather than a lit one, so it does not compete and does not need it.
-     */
-    'map-tile-line-from':
-      scheme === 'light' ? 'var(--sds-glass-line-from)' : 'rgba(255, 255, 255, 0.09)',
-    'map-tile-line-to':
-      scheme === 'light' ? 'var(--sds-glass-line-to)' : 'rgba(255, 255, 255, 0.062)',
 
     /**
-     * The tile's ground under the wash, and the firmer version it takes on hover so the rim stays a rim.
+     * The tile's ground, and the firmer version it takes on hover so the rim stays a rim.
      *
-     * Light has **none**, which is what a glass card has: the card is a gradient over a blurred backdrop
-     * and nothing else, and any ground under it is one more thing the blur is not showing. Hover is the
-     * exception — a surface that responds has to change, and `Glass Step 01` at a firmer alpha is the
-     * card's own hover move.
+     * **The hub's ground, aliased.** A tile and the hub are one material now — the difference between
+     * them is size, the core, and the breath, not what they are made of. `var()` rather than the same
+     * literal twice, for the same reason the edge aliases `Glass Line`: they cannot drift apart.
+     *
+     * Hover is the one place a tile is allowed to differ, because a surface that responds has to change
+     * and the hub does not respond to anything. One step off the ground in the direction the scheme
+     * already runs.
      */
-    'map-tile-fill': scheme === 'light' ? 'transparent' : 'rgba(11, 17, 33, 0.72)',
-    'map-tile-fill-hover': scheme === 'light' ? 'rgba(173, 201, 255, 0.14)' : 'rgba(16, 25, 48, 0.8)',
+    'map-tile-fill': 'var(--sds-map-hub-fill)',
+    'map-tile-fill-hover': scheme === 'light' ? '#e8f0ff' : '#131c38',
     /**
      * And the pressed one — a step past hover in the same direction, brought toward the rim's blue.
      *
@@ -178,23 +164,6 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
      */
     'map-tile-fill-press': scheme === 'light' ? 'rgba(219, 232, 255, 0.9)' : 'rgba(35, 60, 130, 0.9)',
 
-    /**
-     * The wash across a tile's face.
-     *
-     * Light is `Glass Step 01` into `02` — the card's fill, aliased. It went the long way round to get
-     * here: the original halved those two steps into a pair of greys a hundredth of an alpha apart, which
-     * with a neutral well over a white ground made sixteen grey hexagons carrying sixteen blue icons; a
-     * white-to-blue wash fixed the grey but invented a treatment this system does not otherwise use.
-     * Taking the card's own values is the version that needs no explanation — a tile *is* a glass card
-     * cut to a hexagon, so it should be made of the same thing.
-     *
-     * Dark keeps its own: a near-white lift into a blue one, at the alphas glass takes on a near-black
-     * canvas. The card's light values inverted would be a pale blue plate on a dark page.
-     */
-    'map-tile-grad-from':
-      scheme === 'light' ? 'var(--sds-glass-step-01)' : 'rgba(255, 255, 255, 0.036)',
-    'map-tile-grad-to':
-      scheme === 'light' ? 'var(--sds-glass-step-02)' : 'rgba(84, 138, 255, 0.055)',
 
     /**
      * The hub's fill. Opaque, which is what lets the network cross the middle and vanish behind it.
@@ -205,20 +174,16 @@ function componentTokens(color: Record<ColorToken, string>, scheme: 'light' | 'd
     /**
      * The socket: the even shadow inside a tile's outline, and the shallower one inside the hub's.
      *
-     * Tokens because black does not translate — and light mode now takes **nothing at all**.
+     * Tokens because black does not translate: 66% black on the near-black canvas is a well, and on a
+     * white one it is a smudge that buries the icons.
      *
-     * A well is what sets a tile *into* a surface, and a glass card is not set into anything: it sits on
-     * the page and says so with a cast shadow. Keeping both would be the tile claiming to be recessed and
-     * raised at once. The shadow that replaces it is in `components.module.css`, because it has to be a
-     * `drop-shadow` — a `box-shadow` follows the border box and this shape is a clip-path.
-     *
-     * Dark keeps its well: there the tile is not a card, and 66% black inside the outline is what gives
-     * the lattice its depth.
+     * There is **one** well now, the shallow one the hub was already using — every hexagon in the figure
+     * is set into the lattice by the same depth. The deeper pair this replaced existed to distinguish a
+     * tile from the hub, which is no longer a distinction worth drawing in shadow: the hub is larger, it
+     * carries the core, and it breathes.
      */
-    'map-well-mid': scheme === 'light' ? 'transparent' : 'rgba(0, 0, 0, 0.2)',
-    'map-well-edge': scheme === 'light' ? 'transparent' : 'rgba(0, 0, 0, 0.66)',
-    'map-well-hub-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.03)' : 'rgba(0, 0, 0, 0.14)',
-    'map-well-hub-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.07)' : 'rgba(0, 0, 0, 0.34)',
+    'map-well-mid': scheme === 'light' ? 'rgba(16, 24, 40, 0.03)' : 'rgba(0, 0, 0, 0.14)',
+    'map-well-edge': scheme === 'light' ? 'rgba(16, 24, 40, 0.07)' : 'rgba(0, 0, 0, 0.34)',
 
     /** The core: `Brand/Primary` lighting the hub from within. */
     'map-core-from': scheme === 'light' ? 'rgba(11, 95, 255, 0.2)' : 'rgba(11, 95, 255, 0.36)',

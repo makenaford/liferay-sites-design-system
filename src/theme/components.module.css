@@ -8775,12 +8775,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .mapTile[data-interactive] { cursor: pointer; }
 
 /*
- * The edge is `Components/Glass Line` at 225°, the hairline `Card` draws on every glass surface — at
- * about half the token value on a tile.
+ * The edge is `Components/Glass Line` at 225°, the hairline `Card` draws on every glass surface.
  *
- * The token is right for one card on a page. Sixteen ringing a single hub is a different problem: at full
- * strength the edges were the brightest thing in the figure and the centre, which is the subject, read as
- * the dimmest. The hub keeps the full value, so the hierarchy runs core, then tiles, then network.
+ * Full strength on every hexagon, the hub included. It was half that on a tile, to stop sixteen lit edges
+ * out-shouting the centre — a real problem when the tiles were translucent and the rim was the most
+ * definite thing about them. With an opaque face the tile has a body of its own to be read by, and the
+ * hierarchy is carried by size, the core and the breath instead.
  *
  * Painted on the body and revealed as a 1.5px rim by insetting everything above it: a clip-path cannot
  * take a border, and the masked pseudo-element ring the rounded cards use does not survive a hexagon —
@@ -8799,8 +8799,8 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   text-align: center;
   background-image: linear-gradient(
     225deg,
-    var(--sds-map-tile-line-from) 1%,
-    var(--sds-map-tile-line-to) 92%
+    var(--sds-glass-line-from) 1%,
+    var(--sds-glass-line-to) 92%
   );
   transition:
     transform var(--sds-motion-medium) var(--sds-motion-ease-out),
@@ -8812,15 +8812,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   position: absolute;
   inset: 1.5px;
   clip-path: var(--sds-map-hex);
+  /*
+   * Opaque, and nothing over it — the hub's face, which every hexagon in the figure now wears.
+   *
+   * There is no gradient and no `backdrop-filter` because the hub has neither, and those two were the
+   * whole of what made a tile a different material: glass shows the lattice and the wash through itself
+   * and picks up whatever colour is behind it, so sixteen tiles over a blue wash came out sixteen
+   * shades of blue. An opaque ground is the same ground everywhere it is drawn.
+   */
   background-color: var(--sds-map-tile-fill);
-  /* 60deg, the angle `Card` runs its glass fill at — a tile is the same material in the same light. */
-  background-image: linear-gradient(
-    60deg,
-    var(--sds-map-tile-grad-from) 0%,
-    var(--sds-map-tile-grad-to) 100%
-  );
-  backdrop-filter: blur(18px) saturate(1.45);
-  -webkit-backdrop-filter: blur(18px) saturate(1.45);
   transition: background-color var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
@@ -8841,45 +8841,17 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   inset: 1.5px;
   clip-path: var(--sds-map-hex);
   pointer-events: none;
+  /*
+   * The hub's profile, on every hexagon: `transparent` to 58% and only then shading. The tiles used to
+   * start at 44% with an extra stop, which is a deeper socket — right when a tile was a different, more
+   * recessed thing than the hub, and now just an inconsistency between shapes made of the same material.
+   */
   background-image: radial-gradient(
     closest-side at 50% 50%,
-    transparent 44%,
-    var(--sds-map-well-mid) 70%,
-    color-mix(in srgb, var(--sds-map-well-edge) 66%, transparent) 88%,
+    transparent 58%,
+    var(--sds-map-well-mid) 80%,
     var(--sds-map-well-edge) 100%
   );
-}
-
-/*
- * On the light canvas a tile is a glass card cut to a hexagon.
- *
- * The colours come from the card's own tokens — see `map-tile-grad-*` and `map-tile-line-*` in
- * `cssVariables.ts`, which alias `glass-step-*` and `glass-line-*` rather than copying them. Two things
- * cannot be said in a token and are said here.
- *
- * **The blur.** `Card` blurs its backdrop by `--sds-glass-blur`, which is 50px; the tile was on 18 with a
- * saturate, tuned for a near-black canvas where a heavy blur has nothing to show. On white the page
- * behind a tile is the lattice and the wash, and 50px is what turns those into the diffuse ground that
- * makes the shape read as glass rather than as a flat pane.
- *
- * **The shadow.** A card raises itself with `box-shadow`; a `box-shadow` follows the border box, and
- * every tile here is a `clip-path`, so on a hexagon it draws a rectangle's shadow around a hexagon's
- * silhouette. `drop-shadow` follows the rendered alpha and is the only form that fits. It goes on
- * `.mapTile` rather than on `.mapTileBody` because the body's `filter` is already spoken for — the
- * dimming of every tile that is not the hovered one — and a second `filter` on the same element would
- * replace it rather than add to it.
- *
- * The hub is excluded. It is opaque, it is the subject, and it is already lit from within by its core.
- */
-:where([data-mantine-color-scheme='light']) .mapTileFace {
-  backdrop-filter: blur(var(--sds-glass-blur));
-  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
-}
-
-:where([data-mantine-color-scheme='light']) .mapTile:not(.mapHub) {
-  filter:
-    drop-shadow(0 8px 20px rgba(16, 24, 40, 0.08))
-    drop-shadow(0 1px 3px rgba(16, 24, 40, 0.06));
 }
 
 /* The sheen: `Card`'s pointer-tracked light, sized to the tile rather than to the cursor. */
@@ -8977,22 +8949,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   cursor: default;
 }
 
-/* The full `Components/Glass Line`: one shape rather than sixteen, so the strength that was too much on
- * the tiles is exactly right here — and it puts the brightest edge around the thing the figure is about. */
+/*
+ * The hub's own rules are down to one: it is a little tighter inside than a tile.
+ *
+ * Its face and its edge used to be overridden here. They are the base rules now — a tile is the hub's
+ * material at a smaller size — so saying it twice would be two places to change one decision.
+ */
 .mapHub > .mapTileBody {
-  background-image: linear-gradient(
-    225deg,
-    var(--sds-glass-line-from) 1%,
-    var(--sds-glass-line-to) 92%
-  );
   gap: calc(var(--sds-map-tile) * 0.03);
-}
-
-.mapHub .mapTileFace {
-  background-color: var(--sds-map-hub-fill);
-  background-image: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 /*
@@ -9058,17 +9022,6 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .mapGridRest path {
     stroke-opacity: 1;
   }
-}
-
-/* Shallower: the hub is what the others are set around, not another socket, and at full strength the
- * shadow would close over the core. */
-.mapHub .mapTileWell {
-  background-image: radial-gradient(
-    closest-side at 50% 50%,
-    transparent 58%,
-    var(--sds-map-well-hub-mid) 80%,
-    var(--sds-map-well-hub-edge) 100%
-  );
 }
 
 /*
