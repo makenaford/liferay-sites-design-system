@@ -303,25 +303,43 @@ export function HomePage({
           entrance
           banner={
             <Card surface="glass" padding="none" radius="pill" w="100%" maw={1000}>
-              <Group gap={16} px={16} py={8} align="center">
+              {/*
+               * The row gives space back from the selects rather than wrapping.
+               *
+               * Figma draws this at 1000 wide with a 200 and a 320 select, and in English the four
+               * children come to exactly 1000. Nothing in that arrangement is slack, so a label even
+               * slightly longer than `Explore customized solutions` pushes the button onto a second
+               * row — which is what Japanese does: `カスタマイズされたソリューションを見る` measures 416
+               * against the English 289, and the bar became two rows tall.
+               *
+               * So the selects are bases that shrink but do not grow — `0 1 200px` and `0 1 320px`,
+               * which holds them at the drawn widths whenever the row fits and takes the difference out
+               * of them when it does not. The label is the opposite, `1 0 auto`: it absorbs the slack in
+               * English, exactly as it did before, and in Japanese it cannot be squeezed, because a
+               * label that has to be read in full is the wrong place to find the missing pixels. The
+               * button never gives: it is the target.
+               */}
+              <div className={classes.heroFinderRow}>
                 {/*
                  * 18px, a literal: the typography scale has no 18px step — `Paragraph/Large` is 21 and
                  * the one below it is 16 — which is the same gap the Accordion's condensed label records.
                  */}
-                <Text fz={18} fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 1 auto' }}>
+                <Text fz={18} fw={600} pl={8} flex={{ base: '1 1 100%', md: '1 0 auto' }}>
                   {content.hero.finder.label}
                 </Text>
                 <Select
                   aria-label={content.hero.finder.industryLabel}
                   radius="xl"
-                  w={{ base: '100%', md: 200 }}
+                  flex={{ base: '1 1 100%', md: '0 1 200px' }}
+                  miw={0}
                   defaultValue={content.hero.finder.industries[0].value}
                   data={content.hero.finder.industries}
                 />
                 <Select
                   aria-label={content.hero.finder.useCaseLabel}
                   radius="xl"
-                  w={{ base: '100%', md: 320 }}
+                  flex={{ base: '1 1 100%', md: '0 1 320px' }}
+                  miw={0}
                   defaultValue={content.hero.finder.useCases[0].value}
                   data={content.hero.finder.useCases}
                 />
@@ -329,11 +347,18 @@ export function HomePage({
                   variant="rounded"
                   size="sm"
                   w={{ base: '100%', md: 'auto' }}
+                  /*
+                   * `0 0 auto`, or the row takes its missing pixels out of the button: at 1440 the
+                   * Japanese `次へ` was being squeezed until it broke across two lines inside its own
+                   * pill. A two-character label has no slack to give, and it is the thing the bar exists
+                   * to be clicked.
+                   */
+                  flex={{ base: '1 1 100%', md: '0 0 auto' }}
                   rightSection={<IconArrowRight />}
                 >
                   {content.hero.finder.cta}
                 </Button>
-              </Group>
+              </div>
             </Card>
           }
           title={

@@ -2023,6 +2023,18 @@
   line-height: 24px;
   /* `Neutral/10` — the filled value's colour, mode-aware. */
   color: var(--sds-neutral-10);
+  /*
+   * A value too long for the field ends in an ellipsis rather than mid-character.
+   *
+   * The default is `clip`, which cuts the glyph in half wherever the box ends and leaves no sign that
+   * anything is missing — on a `Select` that is worse than on a text input, because the value is not
+   * something the reader typed and a half-word reads as the option's actual name. Found on the hero's
+   * solution finder at 375, where `Knowledge Management Systems` loses its last 63 pixels.
+   *
+   * `<input>` ellipsises only while unfocused, which is the right behaviour: focused, the caret needs
+   * to be able to travel to the end of the value.
+   */
+  text-overflow: ellipsis;
 }
 
 /* A text area grows, so the fixed height becomes a minimum and the padding does the rest. */
@@ -4694,6 +4706,42 @@
  * Narrow heroes: the field is taller than it is wide here, so it is turned further and pushed further
  * out — the same composition arriving by different numbers, which is the thing a file cannot do.
  */
+/*
+ * The solution finder's row: shrinks rather than wraps.
+ *
+ * Wide enough for the bar to be one row, `flex-wrap` is the wrong lever. The flex algorithm assigns
+ * items to lines from their *bases* before it distributes space along a line, so a row whose bases
+ * come to a few pixels over the container breaks the last child onto a second row and then grows the
+ * others to fill the gap it just made — the opposite of what is wanted. `nowrap` is what lets the
+ * selects give their space back instead.
+ *
+ * Below the breakpoint it wraps, because there the bar is meant to stack.
+ *
+ * A **media** query, and the one exception in this file to the container queries everything else uses.
+ * The threshold has to be the same one the children's own `flex` props switch at, or there is a band
+ * where the selects are side by side and the row still wants to wrap — which is exactly the two-row bar
+ * this rule exists to prevent, just at a narrower window. Those props are Mantine's `md`, and Mantine
+ * breakpoints are viewport-based, so this has to be too. A container query at any threshold is measuring
+ * a different thing from the props it has to agree with.
+ *
+ * A class rather than `Group`: this needs `flex-wrap` to change at a breakpoint, `Group` takes `wrap`
+ * as a plain prop and writes it to an inline style, and an inline style cannot be overridden from a
+ * stylesheet without `!important`. The row is four children in a line — it does not need a component.
+ */
+.heroFinderRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 16px;
+}
+
+@media (min-width: 62em) {
+  .heroFinderRow {
+    flex-wrap: nowrap;
+  }
+}
+
 @container sds-hero (max-width: 1199px) {
   .hero[data-background='corner'][data-bubble-css] .heroWaves {
     right: -60%;
