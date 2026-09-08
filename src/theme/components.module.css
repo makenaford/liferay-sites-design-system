@@ -4804,6 +4804,48 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   color: var(--sds-surfaces-text-secondary);
 }
 
+/*
+ * The analyst badges in the hero's proof row — G2 and Gartner Peer Insights.
+ *
+ * `align-items: flex-end` rather than centre: the two badges are different shapes (a tall shield and
+ * a wide roundel) and sitting them on a common baseline reads as a row, where centring them reads as
+ * two unrelated objects at different heights.
+ */
+.heroBadges {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.heroBadges img {
+  display: block;
+  width: auto;
+  /* One height for both, so the row is even whatever each file's own proportions are. */
+  height: 72px;
+}
+
+/*
+ * The plate behind a white-only badge.
+ *
+ * Gartner supplies the Customers' Choice mark in two variants, and the file committed here is the
+ * **white** one — every opaque pixel in it is white, so on the light canvas it is invisible. Recolouring
+ * it is not an option: the badge is Gartner's trademark and their usage terms do not permit altering it,
+ * which rules out the `filter: invert()` this would otherwise be a one-liner for.
+ *
+ * So the artwork is left exactly as supplied and the ground under it changes instead. In dark mode this
+ * is nothing at all; in light mode it is a dark chip, which is the placement Gartner's own guidelines
+ * describe for the reversed variant. Swap in the dark-variant PNG and this rule can go.
+ */
+.heroBadgePlate {
+  display: inline-flex;
+  border-radius: 8px;
+}
+
+:where([data-mantine-color-scheme='light']) .heroBadgePlate {
+  padding: 8px 12px;
+  background-color: var(--sds-neutral-10);
+}
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
  *
