@@ -10,6 +10,7 @@ import {
   UNTRANSLATED_NAV_LABELS,
 } from './site-nav.ja'
 import { siteActions } from './site-nav-render'
+import { PRODUCT_CLUSTERS_JA, UNTRANSLATED_MAP_LABELS } from './product-map.ja'
 import { Button } from '../components/Button'
 
 const JA_ACTIONS = siteActions({
@@ -33,6 +34,7 @@ function JapanHome() {
       navActions={JA_ACTIONS}
       navDrawerControls={JA_DRAWER}
       footer={FOOTER_CONTENT_JA}
+      clusters={PRODUCT_CLUSTERS_JA}
     />
   )
 }
@@ -105,14 +107,28 @@ export const Dark: Story = {
  */
 export const UntranslatedNavLabels: Story = {
   parameters: { layout: 'padded', frame: { fullBleed: false } },
-  render: () =>
-    UNTRANSLATED_NAV_LABELS.length ? (
-      <ul>
-        {UNTRANSLATED_NAV_LABELS.map((label) => (
-          <li key={label}>{label}</li>
+  render: () => {
+    const gaps = [
+      ['Navigation', UNTRANSLATED_NAV_LABELS],
+      ['Product map', UNTRANSLATED_MAP_LABELS],
+    ] as const
+    return (
+      <>
+        {gaps.map(([name, labels]) => (
+          <section key={name}>
+            <h3>{name}</h3>
+            {labels.length ? (
+              <ul>
+                {labels.map((label) => (
+                  <li key={label}>{label}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>Every string has a Japanese entry.</p>
+            )}
+          </section>
         ))}
-      </ul>
-    ) : (
-      <p>Every nav string has a Japanese entry.</p>
-    ),
+      </>
+    )
+  },
 }

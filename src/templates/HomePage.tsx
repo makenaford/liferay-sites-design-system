@@ -233,6 +233,8 @@ export interface HomePageProps {
   navDrawerControls?: NonNullable<ComponentProps<typeof SiteHeader>>['drawerControls']
   /** The footer's copy, when this locale has its own. */
   footer?: FooterContent
+  /** The product map's sixteen tiles, when this locale has its own labels for them. */
+  clusters?: typeof PRODUCT_CLUSTERS
 }
 
 export function HomePage({
@@ -243,6 +245,7 @@ export function HomePage({
   navActions,
   navDrawerControls,
   footer,
+  clusters = PRODUCT_CLUSTERS,
 }: HomePageProps = {}) {
   const reducedMotion = useReducedMotion()
   /* Japanese sets no inter-clause space; see `Split`. */
@@ -762,7 +765,7 @@ export function HomePage({
         title={<SectionTitle align="center" title={<Split title={content.platformMap.title} spaced={spaced} />} />}
       >
         <CapabilityMap
-          clusters={PRODUCT_CLUSTERS}
+          clusters={clusters}
           names="outside"
           hubIcon={<IconGlassDXP />}
           hubLabel={content.platformMap.hubLabel}
