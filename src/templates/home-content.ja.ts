@@ -50,11 +50,16 @@ export const HOME_CONTENT_JA: HomeContent = {
     trialCta: '無料トライアルを開始',
     demoCta: 'デモを依頼する',
     rating: '4.6',
-    ratingSource: '出典：Gartner Peer Insights™',
+    /*
+     * The node's new sentence, translated here rather than taken from the sheet — the sheet predates
+     * this row, so this string is the one thing on the page a Japanese reader should check. The figure
+     * and the date are the global page's, since they describe the same Gartner listing.
+     */
+    ratingSource: '2026年5月時点、認証済みユーザー64名の評価　出典：Gartner Peer Insights™',
     /* The badges are Gartner's and G2's own marks, so the artwork is not localized — only the alt text. */
     badges: [
-      { alt: 'G2 2026年秋 リーダー（エンタープライズ）' },
       { alt: 'Gartner Peer Insights カスタマーズチョイス 2026' },
+      { alt: 'G2 2026年秋 リーダー（エンタープライズ）' },
     ],
     marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
     mediaAlt: 'Liferay DXPでページを構成しているところ',

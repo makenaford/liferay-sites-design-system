@@ -5307,6 +5307,119 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   background-color: var(--sds-neutral-10);
 }
 
+/* ------------------------------------------------------ the Home hero's proof row (`card-main`)
+ *
+ * Figma node `7655:14935`. One row with the verdicts at one end and the certifications at the other,
+ * rather than the four stacked blocks `.heroProof` flows on its own.
+ *
+ * **Its own classes, and deliberately.** `.heroProof` is the slot every hero renders — the Industry and
+ * Detail pages reach it through `renderProof`, which draws a rating and marks and no badges. Putting
+ * `space-between` on the slot would relayout those pages to match a node drawn for this one. So the
+ * Home page passes a single element into the slot and lays out inside it: one flex child in a wrapping
+ * flex parent is the parent's whole job done, and nothing else moves.
+ *
+ * 8px, so the gap above comes to the drawn 40: `.heroContent`'s 24 gap, `.heroProof`'s 8 padding, and
+ * this. The number is in three places because three different things own the space.
+ */
+.heroProofMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  /* Room for the labels to sit beside the rating before the row gives up and wraps them under it. */
+  gap: 16px 24px;
+  width: 100%;
+  padding-top: 8px;
+}
+
+/*
+ * The verdicts: the score and its stars, the two badges, and the sentence that sources them.
+ *
+ * `0 1 auto` — never grows, shrinks only when the line is genuinely over-full. It does not grow because
+ * the certifications are what should take the slack when there is room; it must be allowed to shrink
+ * because the caption is the widest thing in here at 358px, and on a phone the column is 271. Pinned at
+ * `flex: none` it kept that 358 and pushed 35px of sentence off the right of the viewport — which
+ * `tests/layout.spec.ts` catches at 375. Shrinking wraps the caption onto a second line instead, and
+ * nothing above it moves: the score, the stars and the badges are all smaller than the column.
+ */
+.heroProofRating {
+  display: flex;
+  flex-direction: column;
+  /* `Content Text` gap 4 — the caption belongs to the figure above it, not beside it. */
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/*
+ * Score, stars, badges, on one line.
+ *
+ * `align-items: center` here where `.heroBadges` uses `flex-end` for a row of its own: against a 40px
+ * numeral the badges are the smaller objects and centring them on its optical middle is what makes the
+ * line read as one thing. `wrap` so the badges drop under the score on a phone rather than squeezing it.
+ */
+.heroProofScore {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+/*
+ * 40px, not `.heroBadges`' 72.
+ *
+ * 72 was right when the badges had a row to themselves. Inline beside the score they are annotations on
+ * it, and at 72 they were nearly twice the height of the number they qualify — so they read as the
+ * subject and the rating as the caption, which is backwards. 40 is the drawn height, and it is also the
+ * numeral's own size, which is what makes the line sit level.
+ */
+.heroProofScore .heroBadges {
+  align-items: center;
+  gap: 4px;
+}
+
+.heroProofScore .heroBadges img {
+  height: 40px;
+}
+
+/*
+ * The plate keeps the badge 40px tall including its padding, or the one badge that has a chip under it
+ * stands taller than the one that does not and the line stops being level. Light mode only — see above.
+ */
+:where([data-mantine-color-scheme='light']) .heroProofScore .heroBadgePlate {
+  padding: 4px 8px;
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofScore .heroBadgePlate img {
+  height: 32px;
+}
+
+/*
+ * `Container` — the certifications, at the far end of the row where there is room for them.
+ *
+ * **At today's hero width there is not, and the row wraps.** Worth writing down, because it is a
+ * measurement and not a preference. The node is drawn in a 602px frame; the hero's content column is
+ * 565, and it does not grow — `.heroInner` caps at 1280 and splits it, so the column is 565 at 1440 and
+ * at 2560 alike. The rating side comes to 358 of that, because the caption is the widest thing in it,
+ * and one line of four chips is 355. 358 + 355 does not fit in 565 at any gap.
+ *
+ * Shrinking the chips into two rows beside the rating does not rescue it either: flex wraps on
+ * hypothetical sizes *before* it shrinks, so pinning a smaller basis to keep them on the line leaves
+ * them 183px and three rows deep, which is worse than being under the rating in one clean line.
+ *
+ * So the outer row wraps and this sits below, left-aligned with everything above it. The rest of the
+ * node — the badges inline with the score, the caption bound to it, the 40px figure — is unaffected.
+ * The drawn single line needs a wider content column or a smaller caption; both are decisions above
+ * this rule's pay grade, and it will take the line the moment either arrives.
+ */
+.heroProofMarks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  /* The drawn `gap-[4px_8px]`: 4 between rows, 8 between chips. */
+  gap: 4px 8px;
+}
+
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
  *
  * Figma draws a Mobile cell; the difference that matters is that the two columns stop being columns.

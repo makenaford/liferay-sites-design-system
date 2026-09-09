@@ -180,10 +180,16 @@ export const HOME_CONTENT: HomeContent = {
     trialCta: 'Start Free Trial',
     demoCta: 'Request a Demo',
     rating: '4.6',
-    ratingSource: 'Source: Gartner Peer Insights™',
+    /*
+     * The node reads "by 64 verified users as of May 2026, Source: Gartner Peer Insights". The ™ is
+     * kept: it is on the mark everywhere else this repository names it, including the Gartner
+     * disclaimer in the footer, and dropping it from an attribution is a legal call rather than a
+     * design one.
+     */
+    ratingSource: 'by 64 verified users as of May 2026, Source: Gartner Peer Insights™',
     badges: [
-      { alt: 'G2 Fall 2026 Leader, Enterprise' },
       { alt: 'Gartner Peer Insights Customers’ Choice 2026' },
+      { alt: 'G2 Fall 2026 Leader, Enterprise' },
     ],
     marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
     mediaAlt: 'Liferay DXP composing a page',

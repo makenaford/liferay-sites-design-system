@@ -170,9 +170,16 @@ const CAPABILITY_ICONS: Record<string, { glass: ReactNode; icon: ReactNode }> = 
  * canvas — see `.heroBadgePlate`. Gartner supplies a dark variant of this mark; when that file replaces
  * this one, the flag comes off.
  */
+/*
+ * Zipped by position with `content.hero.badges`, so the two arrays are one order in two files.
+ *
+ * Gartner leads, as `card-main` draws it: the sentence under the row cites Gartner Peer Insights, and a
+ * caption should name what the eye reached first. `plate` travels with the Gartner artwork — it is the
+ * white-only file that needs a ground under it on the light canvas.
+ */
 const HERO_BADGES = [
-  { src: g2Badge, plate: false },
   { src: gartnerBadge, plate: true },
+  { src: g2Badge, plate: false },
 ]
 
 /** The six Trending thumbnails, in the order the six cards are written. */
@@ -403,43 +410,60 @@ export function HomePage({
             </Link>
           }
           proof={
-            <>
-              <Group gap={8} wrap="nowrap">
-                <Text fz={28} fw={700} lh={1}>
-                  {content.hero.rating}
+            /*
+             * `card-main`, node `7655:14935`. The verdicts at one end of a row and the certifications at
+             * the other, where this used to be four blocks stacked down the column.
+             *
+             * The grouping is the change, not just the arrangement: the score, its stars and the two
+             * awarded badges are all the *same* claim — other people's judgement of the product — so
+             * they sit on one line with the sentence that sources them underneath. `SOC 2` and `HIPAA`
+             * are certifications of it, a different kind of claim, and they get the other end.
+             *
+             * One element in the slot rather than a fragment, so `.heroProof` stays the layout every
+             * other hero gets. See `.heroProofMain`.
+             */
+            <div className={classes.heroProofMain}>
+              <div className={classes.heroProofRating}>
+                <div className={classes.heroProofScore}>
+                  <Text fz={40} fw={700} lh={1.25}>
+                    {content.hero.rating}
+                  </Text>
+                  {/*
+                   * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
+                   * and the figure beside it already says so. The node draws four and a grey fifth,
+                   * which is a mockup's shorthand; five-star widgets round and this one does not.
+                   *
+                   * 20px is the drawn size, up from the 16 the slot defaults to.
+                   */}
+                  <StarRating value={Number(content.hero.rating)} size={20} />
+                  {/*
+                   * The awarded badges, inline with the rating they qualify. Gartner first, as drawn —
+                   * it is the mark the sentence below cites, so the eye should reach it first.
+                   */}
+                  <div className={classes.heroBadges}>
+                    {content.hero.badges.map((badge, i) => (
+                      <span
+                        key={badge.alt}
+                        className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
+                      >
+                        <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
+                  {content.hero.ratingSource}
                 </Text>
-                {/*
-                 * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
-                 * and the figure beside it already says so.
-                 */}
-                <StarRating value={Number(content.hero.rating)} />
-              </Group>
-              <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
-                {content.hero.ratingSource}
-              </Text>
-              {/*
-               * The awarded badges, beside the rating they come from rather than down with the
-               * compliance marks: both are third-party verdicts on the product, where `SOC 2` and
-               * `HIPAA` are certifications of it, and mixing the two flattens the difference.
-               */}
-              <div className={classes.heroBadges}>
-                {content.hero.badges.map((badge, i) => (
-                  <span
-                    key={badge.alt}
-                    className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
-                  >
-                    <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
-                  </span>
-                ))}
               </div>
-              <Group gap={8} wrap="wrap">
+
+              <div className={classes.heroProofMarks}>
                 {content.hero.marks.map((mark) => (
                   <Label key={mark} variant="glass" size="sm" radius="sm">
                     {mark}
                   </Label>
                 ))}
-              </Group>
-            </>
+              </div>
+            </div>
           }
           media={
             /*
