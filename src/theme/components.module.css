@@ -7947,15 +7947,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /*
  * The stats strip — `Number Footer`, node `7655:19963`.
  *
- * The figure is the band's white rather than `Accent/Primary Blue Accent`, and the unit beside it keeps
- * the blue: on a dark band under a page of blue accents, a 32px blue number reads as another link, and
- * the mockup draws exactly this — a white figure with a blue `+` on its shoulder.
+ * The figure is the page's own ink rather than `Accent/Primary Blue Accent`, and the unit beside it keeps
+ * the blue: under a page of blue accents a 32px blue number reads as another link, and the mockup draws
+ * exactly this — a plain figure with a blue `+` on its shoulder.
  *
- * Pinned here for the same reason the links and the headings above are: this band is dark in both
- * schemes, so a mode-aware token would invert underneath it on the light canvas.
+ * **A mode-aware token, unlike the links and headings below.** This used to take `--sds-footer-text`, on
+ * the reasoning that pins those: the band is dark in both schemes, so mode-aware ink would invert under
+ * it. That reasoning is right about `.footerBase` and wrong here — this is a separate band above it, and
+ * its own ground is `Surfaces/Card BG Blue`, which *is* mode-aware: `rgba(99,153,255,.05)` over a near
+ * black page, and `rgba(232,238,251,.25)` over a near white one. So the pinned white was white on white,
+ * and every figure in the strip disappeared on the light canvas — 1,200 and 17 gone, with only the blue
+ * 社+ and 年+ left behind them. `Surfaces/Text/Primary` is `#f0f1f5` in dark mode, the same value that
+ * was pinned, so the dark band is unchanged to the byte and only the light one moves.
  */
 .footerStats .statValue {
-  color: var(--sds-footer-text);
+  color: var(--sds-surfaces-text-primary);
 }
 
 .footerInner {
