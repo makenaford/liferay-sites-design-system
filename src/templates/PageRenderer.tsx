@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -196,19 +196,30 @@ function renderStat(stat: StatSpec, align?: 'center', index = 0) {
  */
 function HeroMedia({ media }: { media: ImageRef }) {
   const reducedMotion = useReducedMotion()
+  const scheme = useComputedColorScheme('dark')
   const [failed, setFailed] = useState(false)
+
+  /*
+   * One file per canvas where the media carries alpha, the same pick `Hero` makes for its bubble.
+   *
+   * `srcLight` is optional and usually absent — an opaque picture is the same picture in both schemes.
+   * It matters for the hero animation, whose chrome is translucent: the light page bleeds through it,
+   * so the dark export arrives grey. `?? media.src` is the whole fallback, so media that needs no
+   * second file says nothing.
+   */
+  const src = scheme === 'light' ? (media.srcLight ?? media.src) : media.src
 
   /*
    * Footage lives in the git-ignored `media/` folder, so "the file is not there" is the *normal* case
    * on a fresh clone and on the deployed Storybook — not an edge case. Falling back to the still keeps
    * the hero a hero instead of an empty column.
    */
-  const showStill = !isVideo(media.src) || (failed && media.poster)
+  const showStill = !isVideo(src) || (failed && media.poster)
 
   if (showStill) {
     return (
       <Image
-        src={failed ? media.poster! : media.src}
+        src={failed ? media.poster! : src}
         alt={media.alt}
         ratio={media.ratio ?? '4:3'}
         radius="md"
@@ -218,7 +229,12 @@ function HeroMedia({ media }: { media: ImageRef }) {
 
   return (
     <video
-      src={media.src}
+      /*
+       * Keyed on the source, because a `src` swap on a playing `video` is not reliably picked up —
+       * switching scheme would otherwise leave the previous canvas's footage on screen.
+       */
+      key={src}
+      src={src}
       poster={media.poster}
       autoPlay={!reducedMotion}
       muted

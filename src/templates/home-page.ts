@@ -10,6 +10,7 @@ import { VENDOR_NAMES } from './vendor-logos'
  */
 
 import heroAnimation from '../../assets/home/hero-animation.webm'
+import heroAnimationLight from '../../assets/home/hero-animation-light.webm'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import goal1 from '../../assets/home/goal-1.png'
@@ -215,6 +216,8 @@ export const HOME_PAGE: PageSpec = {
     },
     media: {
       src: heroAnimation,
+      /* The light-canvas export. The dark one's chrome is translucent and greys out over a light page. */
+      srcLight: heroAnimationLight,
       /* The still is the fallback, not decoration — see `poster` in page-schema.ts. */
       poster: heroMedia,
       alt: 'A Liferay-built product catalogue with simulation and asset-intelligence tools',

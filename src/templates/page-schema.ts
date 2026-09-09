@@ -45,6 +45,18 @@ export interface ImageRef {
    * declared, so swapping a still for a motion version is a one-field change in a builder.
    */
   src: string
+  /**
+   * The same media drawn for the light canvas, when one file cannot serve both.
+   *
+   * Optional, and most media needs it: a screenshot or a photograph is the same picture whichever way
+   * the page is themed. What needs it is footage with an alpha channel, where the *page* shows through
+   * — the LRDC hero animation's chrome is about 70% opaque, so on a light canvas the white ground
+   * bleeds up through it and a dark product mockup arrives as flat grey with unreadable navigation.
+   *
+   * Missing is not a failure: `src` serves both canvases, which is the right answer whenever the media
+   * is opaque. Same contract as `Hero`'s `video` / `videoLight` pair, and named to match it.
+   */
+  srcLight?: string
   /** Empty for decorative media. Required so it cannot be forgotten. */
   alt: string
   /**

@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ComponentProps, ReactNode } from 'react'
-import { Box, Group, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Box, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Bubble } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
@@ -65,6 +65,7 @@ import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import heroAnimation from '../../assets/home/hero-animation.webm'
+import heroAnimationLight from '../../assets/home/hero-animation-light.webm'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
@@ -248,6 +249,12 @@ export function HomePage({
   clusters = PRODUCT_CLUSTERS,
 }: HomePageProps = {}) {
   const reducedMotion = useReducedMotion()
+  /*
+   * Which hero animation the canvas gets. See the `video` in the hero's `media` slot below for why
+   * there are two, and `Hero` for the same pick made for the bubble behind it.
+   */
+  const heroCanvas =
+    useComputedColorScheme('dark') === 'light' ? heroAnimationLight : heroAnimation
   /* Japanese sets no inter-clause space; see `Split`. */
   const spaced = !content.locale.startsWith('ja')
   const bubbleBackground = heroBackground === 'bubble'
@@ -440,12 +447,20 @@ export function HomePage({
              * are transparent and the middle is about 70% opaque. `.heroMedia` blurs the bubble behind
              * it; see components.module.css.
              *
+             * That translucency is why there are two files. The dark export was drawn against a near
+             * black page, and on the light canvas the white ground bleeds up through its chrome: the
+             * mockup arrives as flat grey with navigation nobody can read. `hero-animation-light.webm`
+             * is the same 28.5s animation exported opaque for that canvas. Same pick `Hero` makes for
+             * its bubble, and `keyed` on the source because a `src` swap on a playing video is not
+             * reliably picked up — the previous canvas's footage would stay on screen.
+             *
              * Under `prefers-reduced-motion` it still renders, paused on its first frame: the content is
              * the point and removing it would leave the hero half empty. `preload="auto"` so there *is*
              * a first frame to show — a posterless video that has not buffered draws nothing.
              */
             <video
-              src={heroAnimation}
+              key={heroCanvas}
+              src={heroCanvas}
               poster={heroMedia}
               autoPlay={!reducedMotion}
               muted
