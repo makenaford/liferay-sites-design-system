@@ -5309,25 +5309,30 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 /* ------------------------------------------------------ the Home hero's proof row (`card-main`)
  *
- * Figma node `7655:14935`. One row with the verdicts at one end and the certifications at the other,
- * rather than the four stacked blocks `.heroProof` flows on its own.
+ * Figma node `7655:14935`. The verdicts as one block — the score, its stars, the two awarded badges and
+ * the sentence that sources them — with the certifications on their own line beneath, where the slot's
+ * own flow used to put four separate stacked blocks.
  *
  * **Its own classes, and deliberately.** `.heroProof` is the slot every hero renders — the Industry and
- * Detail pages reach it through `renderProof`, which draws a rating and marks and no badges. Putting
- * `space-between` on the slot would relayout those pages to match a node drawn for this one. So the
- * Home page passes a single element into the slot and lays out inside it: one flex child in a wrapping
- * flex parent is the parent's whole job done, and nothing else moves.
+ * Detail pages reach it through `renderProof`, which draws a rating and marks and no badges. Laying this
+ * out on the slot itself would relayout those pages to match a node drawn for this one. So the Home page
+ * passes a single element into the slot and arranges things inside it: one flex child in a wrapping flex
+ * parent is the parent's whole job done, and nothing else moves.
  *
- * 8px, so the gap above comes to the drawn 40: `.heroContent`'s 24 gap, `.heroProof`'s 8 padding, and
- * this. The number is in three places because three different things own the space.
+ * One spacing step, 8px, between every element in here — the score and its stars, the badges beside
+ * them, the caption under them, the chips under that. This row is a set of small objects at four
+ * different heights, and a single gap is what keeps it reading as one block rather than as things that
+ * happen to be near each other.
+ *
+ * The `padding-top` is 8 for an unrelated reason: it brings the space above the row to the drawn 40,
+ * together with `.heroContent`'s 24 gap and `.heroProof`'s own 8 padding.
  */
 .heroProofMain {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  /* Room for the labels to sit beside the rating before the row gives up and wraps them under it. */
-  gap: 16px 24px;
+  gap: 8px;
   width: 100%;
   padding-top: 8px;
 }
@@ -5335,18 +5340,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /*
  * The verdicts: the score and its stars, the two badges, and the sentence that sources them.
  *
- * `0 1 auto` — never grows, shrinks only when the line is genuinely over-full. It does not grow because
- * the certifications are what should take the slack when there is room; it must be allowed to shrink
- * because the caption is the widest thing in here at 358px, and on a phone the column is 271. Pinned at
- * `flex: none` it kept that 358 and pushed 35px of sentence off the right of the viewport — which
- * `tests/layout.spec.ts` catches at 375. Shrinking wraps the caption onto a second line instead, and
- * nothing above it moves: the score, the stars and the badges are all smaller than the column.
+ * `0 1 auto` — sizes to its content, and shrinks when there is less room than that.
+ *
+ * The shrinking is the part that matters. The caption is the widest thing in here at 358px, and on a
+ * phone the column is 271. Pinned at `flex: none` it kept the 358 and pushed 35px of sentence off the
+ * right of the viewport, which `tests/layout.spec.ts` catches at 375. Allowed to shrink it wraps the
+ * caption onto a second line instead, and nothing above it moves — the score, the stars and the badges
+ * are each smaller than the narrowest column this page has.
  */
 .heroProofRating {
   display: flex;
   flex-direction: column;
-  /* `Content Text` gap 4 — the caption belongs to the figure above it, not beside it. */
-  gap: 4px;
+  gap: 8px;
   flex: 0 1 auto;
   min-width: 0;
 }
@@ -5362,7 +5367,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 /*
@@ -5375,7 +5380,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 .heroProofScore .heroBadges {
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .heroProofScore .heroBadges img {
@@ -5395,59 +5400,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
- * `Container` — the certifications. Below the two-column breakpoint they sit under the rating, full
- * width and left-aligned with everything above them; beside it once the hero is two columns. See the
- * `min-width: 1200px` block at the end of this section for the beside case and the arithmetic.
+ * `Container` — the certifications, under the rating and left-aligned with everything above them.
+ *
+ * The node draws these at the far end of the rating's row, and they were there for a commit. They are
+ * back underneath by choice — but the constraint that shaped the attempt is worth keeping on record,
+ * because it is what the drawn arrangement would have cost. The hero's content column is 565px and does
+ * not grow: `.heroInner` caps at 1280 and splits it. One line of four chips is 355 of that and the score
+ * line is 256, so the drawn single line needs 611 before any gap and cannot fit at any viewport. Beside
+ * the rating they could only ever have been a two-by-two block, buying the position with height. Under
+ * it they keep one clean line.
  */
 .heroProofMarks {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  /* The drawn `gap-[4px_8px]`: 4 between rows, 8 between chips. */
-  gap: 4px 8px;
-}
-
-/* ------------------------------------------- the chips beside the rating, on the two-column hero
- *
- * The node puts the certifications at the far end of the rating's row. Getting them there is a matter
- * of arithmetic, and the arithmetic rules out doing it exactly as drawn.
- *
- * The hero's content column is 565px and does not grow: `.heroInner` caps at 1280 and splits it, so it
- * is 565 at 1440 and at 2560 alike. One line of four chips is 355 of that, and the score line — 40px
- * numeral, five 20px stars, two 40px badges — is 256 on its own. 256 + 355 is 611 before a single pixel
- * of gap. **A single line of chips beside the rating does not fit, at any viewport.** Only a wider
- * column or shorter chips would change that, and both are decisions outside this rule.
- *
- * What does fit is the block wrapping among itself: two rows of two is 220 wide (`SOC 2 Type 2` +
- * `ISO/IEC 27001`, then `HIPAA` + `CSTAR`), and 256 + 24 + 220 is 500 in a 565 column. So the chips take
- * the far end as drawn and pay for it in height rather than in the rating's width.
- *
- * The two `flex` values are what make the line hold, and neither is arbitrary:
- *
- * `max-width` on the chips rather than a `flex-basis`, because flex decides *whether a line wraps* from
- * hypothetical main sizes — the content-based size clamped by min/max — and only then shrinks what is on
- * it. Left at `auto` the block's hypothetical size is its 355px single line, the row wraps on that
- * before any shrinking happens, and the chips land back underneath. Clamping to 240 is what puts a
- * number flex can fit on the line in the first place.
- *
- * The rating needs the same treatment for the same reason: its widest child is the caption, so its
- * hypothetical size is the caption's 358px max-content, and 358 + 240 wraps too. A 260px basis — the
- * score line's own width — is the honest measure of what this column cannot go below. It grows from
- * there to take whatever the chips leave, so the caption gets 301 and wraps to two lines instead of
- * three.
- */
-@container sds-hero (min-width: 1200px) {
-  .heroProofRating {
-    flex: 1 1 260px;
-  }
-
-  .heroProofMarks {
-    flex: 0 0 auto;
-    /* Two chips a row. 220 is what the widest pair needs; the 20 over it is slack, not a third column. */
-    max-width: 240px;
-    /* Hard against the far edge, as drawn — the rating's growth already took the slack between them. */
-    justify-content: flex-end;
-  }
+  gap: 8px;
 }
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
