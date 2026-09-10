@@ -425,7 +425,14 @@ export function HomePage({
             <div className={classes.heroProofMain}>
               <div className={classes.heroProofRating}>
                 <div className={classes.heroProofScore}>
-                  <Text fz={40} fw={700} lh={1.25}>
+                  {/*
+                   * `Surfaces/Text/Primary`, not the row's inherited secondary.
+                   *
+                   * `.heroProof` sets secondary on the whole slot, which is right for the sentence under
+                   * the figure and wrong for the figure: 4.6 is the claim, and it was rendering two
+                   * steps down from the copy above it. The node draws it white.
+                   */}
+                  <Text fz={40} fw={700} lh={1.25} c="var(--sds-surfaces-text-primary)">
                     {content.hero.rating}
                   </Text>
                   {/*

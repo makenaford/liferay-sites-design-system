@@ -5395,22 +5395,9 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
- * `Container` — the certifications, at the far end of the row where there is room for them.
- *
- * **At today's hero width there is not, and the row wraps.** Worth writing down, because it is a
- * measurement and not a preference. The node is drawn in a 602px frame; the hero's content column is
- * 565, and it does not grow — `.heroInner` caps at 1280 and splits it, so the column is 565 at 1440 and
- * at 2560 alike. The rating side comes to 358 of that, because the caption is the widest thing in it,
- * and one line of four chips is 355. 358 + 355 does not fit in 565 at any gap.
- *
- * Shrinking the chips into two rows beside the rating does not rescue it either: flex wraps on
- * hypothetical sizes *before* it shrinks, so pinning a smaller basis to keep them on the line leaves
- * them 183px and three rows deep, which is worse than being under the rating in one clean line.
- *
- * So the outer row wraps and this sits below, left-aligned with everything above it. The rest of the
- * node — the badges inline with the score, the caption bound to it, the 40px figure — is unaffected.
- * The drawn single line needs a wider content column or a smaller caption; both are decisions above
- * this rule's pay grade, and it will take the line the moment either arrives.
+ * `Container` — the certifications. Below the two-column breakpoint they sit under the rating, full
+ * width and left-aligned with everything above them; beside it once the hero is two columns. See the
+ * `min-width: 1200px` block at the end of this section for the beside case and the arithmetic.
  */
 .heroProofMarks {
   display: flex;
@@ -5418,6 +5405,49 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   align-items: flex-start;
   /* The drawn `gap-[4px_8px]`: 4 between rows, 8 between chips. */
   gap: 4px 8px;
+}
+
+/* ------------------------------------------- the chips beside the rating, on the two-column hero
+ *
+ * The node puts the certifications at the far end of the rating's row. Getting them there is a matter
+ * of arithmetic, and the arithmetic rules out doing it exactly as drawn.
+ *
+ * The hero's content column is 565px and does not grow: `.heroInner` caps at 1280 and splits it, so it
+ * is 565 at 1440 and at 2560 alike. One line of four chips is 355 of that, and the score line — 40px
+ * numeral, five 20px stars, two 40px badges — is 256 on its own. 256 + 355 is 611 before a single pixel
+ * of gap. **A single line of chips beside the rating does not fit, at any viewport.** Only a wider
+ * column or shorter chips would change that, and both are decisions outside this rule.
+ *
+ * What does fit is the block wrapping among itself: two rows of two is 220 wide (`SOC 2 Type 2` +
+ * `ISO/IEC 27001`, then `HIPAA` + `CSTAR`), and 256 + 24 + 220 is 500 in a 565 column. So the chips take
+ * the far end as drawn and pay for it in height rather than in the rating's width.
+ *
+ * The two `flex` values are what make the line hold, and neither is arbitrary:
+ *
+ * `max-width` on the chips rather than a `flex-basis`, because flex decides *whether a line wraps* from
+ * hypothetical main sizes — the content-based size clamped by min/max — and only then shrinks what is on
+ * it. Left at `auto` the block's hypothetical size is its 355px single line, the row wraps on that
+ * before any shrinking happens, and the chips land back underneath. Clamping to 240 is what puts a
+ * number flex can fit on the line in the first place.
+ *
+ * The rating needs the same treatment for the same reason: its widest child is the caption, so its
+ * hypothetical size is the caption's 358px max-content, and 358 + 240 wraps too. A 260px basis — the
+ * score line's own width — is the honest measure of what this column cannot go below. It grows from
+ * there to take whatever the chips leave, so the caption gets 301 and wraps to two lines instead of
+ * three.
+ */
+@container sds-hero (min-width: 1200px) {
+  .heroProofRating {
+    flex: 1 1 260px;
+  }
+
+  .heroProofMarks {
+    flex: 0 0 auto;
+    /* Two chips a row. 220 is what the widest pair needs; the 20 over it is slack, not a third column. */
+    max-width: 240px;
+    /* Hard against the far edge, as drawn — the rating's growth already took the slack between them. */
+    justify-content: flex-end;
+  }
 }
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
@@ -10284,4 +10314,30 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 :where([data-mantine-color-scheme='light']) .glassLight {
   display: revert;
+}
+
+/* ============================================================================== StarRating
+ *
+ * The Gartner rating's stars. Filled from the glass icons' ramp — see the gradient in `shared.tsx` for
+ * which part of it and why — with the two ends published here as variables, because the right answer
+ * differs by canvas and a `stopColor` cannot hold a media query.
+ *
+ * **Dark: the icons' own bright span.** `Brand/Primary/Lighten/2` out to `Accent/Aqua`, which puts every
+ * star between luminance 0.37 and 0.74 against a bubble that runs 0.02 to 0.17.
+ *
+ * **Light: the same family, two steps down.** Aqua on the light canvas is `#00e0dc`, and against a
+ * `#fbfcfe` page that is 1.61:1 — the stars would be a pale smear on white, which is worse than the
+ * purple ramp this replaced (6.4:1 at its dark end). The glass icons get away with bright cyan in light
+ * mode because they sit on a tinted glass tile; a star sits on the page itself, with nothing behind it.
+ * So the light canvas runs `Brand/Primary` into `Accent/Cyan` — 5.0:1 and 3.4:1, the cyan family kept
+ * and the contrast with it.
+ */
+.starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-lighten-2);
+  --sds-star-fill-to: var(--sds-accent-aqua);
+}
+
+:where([data-mantine-color-scheme='light']) .starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-primary);
+  --sds-star-fill-to: var(--sds-accent-cyan);
 }

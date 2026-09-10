@@ -203,6 +203,8 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
   return (
     <svg
       ref={ref}
+      /* Carries the two fill stops, which differ by canvas. See `.starRating`. */
+      className={classes.starRating}
       width={width}
       height={size}
       viewBox={`0 0 ${max * 24} 24`}
@@ -213,10 +215,50 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
       style={{ display: 'block', flex: 'none' }}
     >
       <defs>
-        <linearGradient id="sds-star-fill" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="var(--sds-brand-primary-lighten-3)" />
-          <stop offset="100%" stopColor="var(--sds-accent-product-accent)" />
+        {/*
+         * The glass icons' ramp — `Brand/Primary` blues running out to `Accent/Aqua`, the same family
+         * `glass.generated.tsx` fills its marks with, so the stars and the icons read as one system.
+         *
+         * **Which part of that ramp, and why not all of it.** The icons run indigo `#1514A4` -> blue
+         * `#0B5FFF` -> aqua `#47FFFC`. The indigo is what gives a mark weight on a frosted card, where
+         * there is a pale ground behind it for the dark end to read against. These stars sit on the hero
+         * bubble, which is deep blue into violet — so that stop is the background's own colour and a
+         * star wearing it disappears. Measured: the ramp's indigo end is luminance 0.03 and the bubble
+         * runs 0.02 to 0.17.
+         *
+         * So this takes the ramp's bright span, and which span that is depends on the canvas — the two
+         * ends are `--sds-star-fill-from` / `--sds-star-fill-to`, set in `components.module.css` where a
+         * colour scheme can be asked about. On the dark canvas every star now sits between luminance
+         * 0.37 and 0.74 where the old purple ramp ran 0.42 down to 0.11: the dimmest star is three times
+         * brighter than it was, and the fifth is no longer the invisible one.
+         *
+         * Tokens rather than the icons' literals, and not only for tidiness: the icons' raw `#47FFFC`
+         * would be a near-white star on a white page.
+         *
+         * The node itself draws these flat aqua, `#14fffb` on all four. A ramp is what was asked for and
+         * it is the more considered thing on a five-wide row; flattening it to the drawn colour is one
+         * stop away if the file should win.
+         *
+         * Diagonal, like the icons' own gradients. Across a row five times wider than it is tall the
+         * tilt is slight, but it keeps the ramp from reading as five flat colour steps.
+         */}
+        <linearGradient id="sds-star-fill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="var(--sds-star-fill-from)" />
+          <stop offset="100%" stopColor="var(--sds-star-fill-to)" />
         </linearGradient>
+
+        {/*
+         * The lift off the bubble.
+         *
+         * The bubble is not a flat ground — it moves, and it carries its own blues and violets — so even
+         * a bright star loses its edge wherever the artwork is bright behind it. This is the drop shadow
+         * the glass icons carry, scaled from their 64px box to a 24px star: their `dy=4, blur=2, black
+         * at 25%` becomes 1 and 1 here, and a little more opacity because there is no frosted card in
+         * between doing part of the job.
+         */}
+        <filter id="sds-star-lift" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#000000" floodOpacity="0.35" />
+        </filter>
         <clipPath id="sds-star-clip">
           {/*
            * The width is the whole animation. A `transition` on an SVG geometry attribute is not
@@ -238,12 +280,18 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
         </clipPath>
       </defs>
 
-      {/* The track: every star, dim, so an unfilled one is still a star rather than a gap. */}
-      <g fill="var(--sds-surfaces-text-secondary)" opacity={0.35}>
+      {/*
+       * The track: every star, dim, so an unfilled one is still a star rather than a gap.
+       *
+       * 0.5 rather than 0.35. On a flat page 0.35 was enough to read as a star; over the bubble it was
+       * closer to a smudge, and the fifth star of a 4.6 is doing real work — it is the difference
+       * between "four and a bit" and "five".
+       */}
+      <g fill="var(--sds-surfaces-text-secondary)" opacity={0.5} filter="url(#sds-star-lift)">
         {stars}
       </g>
 
-      <g fill="url(#sds-star-fill)" clipPath="url(#sds-star-clip)">
+      <g fill="url(#sds-star-fill)" clipPath="url(#sds-star-clip)" filter="url(#sds-star-lift)">
         {stars}
       </g>
     </svg>
