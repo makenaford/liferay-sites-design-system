@@ -5469,14 +5469,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 
   /*
-   * The clearance moves with the content.
+   * The clearance moves with the content — and a headline needs more of it than a card did.
    *
    * A fixed header reserves no space and the banner used to be what cleared the bar. Now the content
-   * column is first, so it takes the bar's 64px, and the banner drops back to its own 40px gap — which is
+   * column is first, so it takes the clearance, and the banner drops back to its own 40px gap — which is
    * what it is for once there is something above it to be separated from.
+   *
+   * **64 + 24, not 64.** 64 is the bar's own height, which is clearance and nothing else: at exactly 64
+   * the H1's cap line sat on the bar's bottom edge with a pixel to spare, which reads as the header
+   * resting on the headline rather than floating over it. A glass card can take that — its own padding
+   * holds the content off its edge, which is why the banner is allowed 64 flat above and the note there
+   * explains why 104 was too much for it. Type cannot: there is nothing between the letterform and the
+   * bar. 24 is `.heroContent`'s own gap, so the space above the first line matches the spacing between
+   * the lines below it.
+   *
+   * This was invisible in Storybook until the page stories dropped `StoryFrame`'s 32px canvas padding,
+   * which had been standing in for it.
    */
   body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroInner {
-    padding-block-start: 64px;
+    padding-block-start: calc(64px + 24px);
   }
 
   body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroBanner {
