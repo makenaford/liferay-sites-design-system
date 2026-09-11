@@ -569,7 +569,38 @@ export function HomePage({
         bleed
         title={<SectionTitle align="center" title={<Split title={content.stories.title} spaced={spaced} />} />}
       >
-        <Carousel label={content.stories.label} gutter={80} indicators="none" arrows>
+        {/*
+         * `gutter` is `--sds-section-gutter`'s own formula, not the 80 it used to be.
+         *
+         * 80 is the desktop figure, and a bleeding row does need the page's gutter to line up with the
+         * column above it. Passed as a constant it was also the *phone's* gutter: 160px of padding out
+         * of 311, 51% of the width, leaving a 151px content box that `.carouselSlide`'s `max-width: 100%`
+         * clamped every card to. Everything else followed from that — a 151px card is 871px tall, taller
+         * than the 812px screen it is on, and two of them half-showing reads as a broken grid rather
+         * than a row that scrolls.
+         *
+         * The clamp is the same two-point interpolation every `Section` uses, so it resolves to exactly
+         * 80 at 1440 and 20 at 390: desktop is untouched and the phone gets the phone's gutter. `100cqi`
+         * is the section's own inline size, since `Section` is the container.
+         *
+         * `slideSize` at 88% for the peek. With the gutter fixed the track fits 1.07 cards, and that
+         * spare 7% is a 20px sliver of the next card — which reads as a rendering artifact rather than a
+         * cue. 88% is one card and a deliberate slice of the next, which is what tells a thumb there is
+         * more to the right. It only binds on narrow widths: 88% of a 1280 column is far wider than the
+         * 310px `slideSize` default, so `.carouselSlide`'s basis still wins on desktop.
+         *
+         * `indicators` from `none` to `lines`. Eight stories with only a pair of arrows gave no sense of
+         * how far along the row you were or how much was left; the component counts reachable positions
+         * rather than slides, so the bar is correct at any slide size. `lines` over `dots` because eight
+         * dot cells at 32px each is a 256px row of dots under a 311px track.
+         */}
+        <Carousel
+          label={content.stories.label}
+          gutter="clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px)"
+          slideSize="min(88%, 310px)"
+          indicators="lines"
+          arrows
+        >
           {content.stories.items.map((story) => (
             <Card
               key={story.customer}

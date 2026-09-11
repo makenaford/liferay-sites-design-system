@@ -6005,6 +6005,22 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   /*
+   * The gutter, told to the snap as well as to the layout.
+   *
+   * `padding-inline` above indents the row so a bleeding list lines up with the page's content column.
+   * Snap positions do not know about it: the first slide is `scroll-snap-align: start`, the browser
+   * snaps its leading edge to the scrollport's leading edge, and the gutter sits *outside* that — so the
+   * track came to rest at `scrollLeft: 80` on the Home page rather than 0. Two visible consequences,
+   * both of which read as bugs: the Previous arrow was enabled before anyone had scrolled, and stepping
+   * back revealed 80px of empty padding; and `data-fade-start` keys off the same `canPrev`, so the
+   * leading card was masked at rest — the exact thing the fade comment below says this deviates from
+   * Figma in order to avoid.
+   *
+   * `scroll-padding-inline` moves the scrollport's own snap edges in by the gutter, so the first slide's
+   * snap position *is* 0 and the last one is the true end.
+   */
+  scroll-padding-inline: var(--sds-carousel-gutter);
+  /*
    * `auto`, and it matters: the component animates arrow and indicator presses itself, writing
    * `scrollLeft` every frame on this library's own curve. With `scroll-behavior: smooth` the browser
    * would ease *toward each of those frames*, so the track would chase a target that keeps moving and
@@ -6097,6 +6113,31 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    * on Figma's 44 exactly. Measured.
    */
   padding-inline: 11px;
+  position: relative;
+  /*
+   * Never narrower than drawn. The controls are one flex row, so an indicator row wider than the space
+   * left over used to take it out of the arrows: with `lines` under a 311px track they shrank to 30px,
+   * which is a smaller target than the 44 they exist to be. The indicators give way instead — see the
+   * narrow block at the end of this section.
+   */
+  flex: none;
+}
+
+/*
+ * 44x40 drawn, 44x44 to the finger.
+ *
+ * The drawn cell is 4px under the 44 minimum on its short axis, and these two buttons are the only
+ * controls in the section — on a phone they are how anyone who does not think to swipe reaches stories
+ * two through eight. Growing the box to 44 would put the button 4px off Figma's cell, so the hit area
+ * grows instead and the drawing stays where the file puts it.
+ *
+ * 2px each way, which the controls' own 10px gap absorbs without the two targets ever meeting.
+ */
+.carouselControls .carouselArrow::after {
+  content: '';
+  position: absolute;
+  inset-block: -2px;
+  inset-inline: 0;
 }
 
 /*
@@ -6204,6 +6245,36 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /* The line's active state is its width: 64px against 24px. */
 .carouselIndicators[data-style='lines'] .carouselIndicator[data-active] .carouselIndicatorMark {
   width: 64px;
+}
+
+/* ------------------------------------------------------ the indicator scale on a narrow track
+ *
+ * Figma draws one size for these, and one size does not survive a phone.
+ *
+ * The controls are a single centred row: two 44px arrows and 10px either side of the indicators is 108,
+ * so a 311px track leaves 203 for the bar. Eight stories at roughly one card a view is seven reachable
+ * positions, and seven at the drawn scale — six 24px lines, one 64px active, 4px gaps — is 232. Over by
+ * 29, which the arrows were paying for until the rule above stopped them.
+ *
+ * So the bar gets a narrow scale: 16 and 40 at a 3px gap comes to 154, inside the 203 with room to
+ * spare. Every mark stays a 24px-tall button, which is what makes it aimable; only the drawn width of
+ * the mark inside it changes, and the active one is still two and a half times the others.
+ *
+ * `sds-section` rather than the viewport, like everything else here — and rather than the carousel's own
+ * width, which would mean giving `.carouselRoot` a containment context it has no other use for.
+ */
+@container sds-section (max-width: 480px) {
+  .carouselIndicators[data-style='lines'] {
+    gap: 3px;
+  }
+
+  .carouselIndicators[data-style='lines'] .carouselIndicatorMark {
+    width: 16px;
+  }
+
+  .carouselIndicators[data-style='lines'] .carouselIndicator[data-active] .carouselIndicatorMark {
+    width: 40px;
+  }
 }
 
 /* Hover is not drawn. The mark lifts a little rather than changing colour, which the active state owns. */
