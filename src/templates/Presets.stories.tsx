@@ -8,7 +8,17 @@ const meta = {
   title: 'Templates/Presets',
   parameters: {
     layout: 'fullscreen',
-    frame: { fullBleed: true },
+    /*
+     * `padding: 0`, so the canvas shows the page's own gutter and nothing else.
+     *
+     * `StoryFrame`'s default for a full-bleed story is `xl` — 32px — and its own note says why a page
+     * should not take it: "a page is not sitting on anything: a full-bleed hero drawn to the frame's
+     * edge and then inset by 32px reads as a mistake, because the thing being judged is precisely
+     * whether it reaches the edge." These stories had simply never opted out, so every page rendered
+     * 32px in from the canvas. On a phone that read as 52px of container padding — the frame's 32 plus
+     * `--sds-section-gutter`'s real 20 — and made the page look twice as inset as it ships.
+     */
+    frame: { fullBleed: true, padding: 0 },
     docs: {
       description: {
         component: [
