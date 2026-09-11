@@ -1877,7 +1877,14 @@
  */
 .tabsRoot:not([data-pills]) .tabsList {
   overflow-x: auto;
-  scroll-snap-type: x proximity;
+  /*
+   * `mandatory`, not `proximity`. `proximity` leaves it to the browser whether a flick landed close
+   * enough to a snap point to honour, so a quick swipe routinely came to rest mid-label — and on a bar
+   * whose labels are the only thing identifying an option, mid-label is the one place not to stop. Every
+   * tab is a snap point, so mandatory cannot strand the bar somewhere useless, and the `scrollLeft`
+   * `Tabs.tsx` writes is a tab's own centre — a snap position, not something to be corrected after.
+   */
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 
@@ -1888,6 +1895,36 @@
 .tabsRoot:not([data-pills]) .tabsList .tabsTab {
   flex: 0 0 auto;
   scroll-snap-align: center;
+}
+
+/* ------------------------------------------------- the scroll affordance, on both variants
+ *
+ * A tab bar with more labels than fit needs to *say* so. Without this the row clipped at the container's
+ * edge — on the pills variant a 1000px radius, so a label ended on a curve, which reads as a rendering
+ * fault rather than as an invitation. Nothing else marked the overflow: no scrollbar (hidden, by design),
+ * no arrows, no fade.
+ *
+ * Per edge, and only on an edge with something behind it. `Tabs.tsx` sets `data-overflow-start` /
+ * `data-overflow-end` from `scrollLeft` on every scroll, which is the same contract `Carousel` uses and
+ * for the same reason: a bar faded at both ends before it has been touched makes its first tab look
+ * disabled. 32px is enough to read as a soft edge at a 13px label size without eating a whole pill.
+ */
+.tabsList[data-overflow-end]:not([data-overflow-start]) {
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+
+.tabsList[data-overflow-start]:not([data-overflow-end]) {
+  mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 100%);
+}
+
+.tabsList[data-overflow-start][data-overflow-end] {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 32px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
 }
 
 /* -------------------------------------------------------------- Size=Desktop (>= 1200px) */
@@ -7364,7 +7401,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    * The Mobile cell already scrolled; this makes it true at both sizes. See README.
    */
   overflow-x: auto;
-  scroll-snap-type: x proximity;
+  /*
+   * `mandatory`, not `proximity`. `proximity` leaves it to the browser whether a flick landed close
+   * enough to a snap point to honour, so a quick swipe routinely came to rest mid-label — and on a bar
+   * whose labels are the only thing identifying an option, mid-label is the one place not to stop. Every
+   * tab is a snap point, so mandatory cannot strand the bar somewhere useless, and the `scrollLeft`
+   * `Tabs.tsx` writes is a tab's own centre — a snap position, not something to be corrected after.
+   */
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 
@@ -7587,7 +7631,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
   .tabsRoot[data-pills] .tabsList[role='tablist'] {
     overflow-x: auto;
-    scroll-snap-type: x proximity;
+    /*
+     * `mandatory` here too, and this is the copy that decides it: the mobile cell re-declares the
+     * scroll properties, so the desktop rule's value never reached a phone — which is the one width
+     * where coming to rest mid-label actually happens. See the note on the desktop declaration.
+     */
+    scroll-snap-type: x mandatory;
     scrollbar-width: none;
     /* The mobile cell's fill is a radial of the glass steps rather than the flat desktop tint. */
     background-color: transparent;

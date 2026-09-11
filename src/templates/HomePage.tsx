@@ -49,7 +49,6 @@ import {
   IconGlassCustomerPortals,
   IconGlassDXP,
   IconGlassEnterpriseWebsite4,
-  IconGlassFinancialServices,
   IconGlassIntranets,
   IconGlassPartnerPortals,
   IconGlassSupplierPortals,
@@ -744,7 +743,7 @@ export function HomePage({
         </Stack>
       </Section>
 
-      {/* 6. Designed for Your Industry — one full card, with the industry tabs under it. */}
+      {/* 6. Designed for Your Industry — a two-up of words and picture, with the industry tabs under it. */}
       <Section
         reveal
         gap={24}
@@ -770,21 +769,38 @@ export function HomePage({
           </Tabs>
         }
       >
-        <Card
-          align="horizontal"
-          /*
-           * Its links do the work — the same call `PageRenderer` already makes for this section.
-           *
-           * A `glass` card is a target by default, which is right where the whole surface goes one
-           * place. This one carries two links and a stat row, so a card-wide target would be a control
-           * wrapped around two other controls with no single destination of its own to offer.
-           */
-          interactive={false}
-          titleSize="full"
-          hero={<IconGlassFinancialServices width={48} height={48} />}
+        {/*
+         * `ContentMedia`, not a `Card`.
+         *
+         * The section used to be one full-bleed glass card with the picture inside it. Two reasons it is
+         * not any more. A card is a container for something separable — one of several, a thing you could
+         * pick up — and this is the only object in its section, so the container was drawing a boundary
+         * around the whole section and calling it an object. And a card's own vertical rhythm stacks its
+         * parts: hero, title, description, main, secondary, image, each after the last. That is why the
+         * picture sat below a column of text it belongs beside.
+         *
+         * `ContentMedia` is the page's own two-up for exactly this — the `Different Teams` section above
+         * is the same component — and its row is `align-items: center`, so the picture and the words are
+         * centred against each other rather than one trailing the other. Below 900px of section width it
+         * stacks, and a right-image block leads with its words, which is the reading order this section
+         * wants on a phone: the industry and its numbers first, the photograph after.
+         */}
+        <ContentMedia
+          mediaSide="right"
+          /* Text column is heading, description, two links and a stat row — taller than a 3:2 box. */
+          mediaRatio="auto"
+          order={3}
           title={industry}
           description={industryPanel.description}
-          main={
+          media={
+            <Image
+              src={industryMedia}
+              alt={content.industries.mediaAlt}
+              ratio="3:2"
+              radius="md"
+            />
+          }
+          actions={
             <Stack gap={12} align="flex-start">
               <Link href="#" size="md" rightSection={<IconArrowRight />}>
                 {content.industries.solutionsCta.replace('{industry}', industry)}
@@ -794,35 +810,31 @@ export function HomePage({
               </Link>
             </Stack>
           }
-          secondary={
-            <StatBar>
-              {industryPanel.metrics.map((metric) => {
-                const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
-                return (
-                  <Stat
-                    key={metric.label}
-                    value={
-                      <>
-                        {figure}
-                        {rest.length ? unit(rest.join('')) : null}
-                      </>
-                    }
-                    label={metric.label}
-                    leftSection={metric.down ? <IconArrowDown /> : undefined}
-                  />
-                )
-              })}
-            </StatBar>
-          }
-          image={
-            <Image
-              src={industryMedia}
-              alt={content.industries.mediaAlt}
-              ratio="3:2"
-              radius="md"
-            />
-          }
-        />
+        >
+          {/*
+             The figures stay with the words rather than going in the media column: they are what the
+             description is claiming, and a stat that has drifted away from its sentence is a number
+             nobody can source.
+           */}
+          <StatBar>
+            {industryPanel.metrics.map((metric) => {
+              const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
+              return (
+                <Stat
+                  key={metric.label}
+                  value={
+                    <>
+                      {figure}
+                      {rest.length ? unit(rest.join('')) : null}
+                    </>
+                  }
+                  label={metric.label}
+                  leftSection={metric.down ? <IconArrowDown /> : undefined}
+                />
+              )
+            })}
+          </StatBar>
+        </ContentMedia>
       </Section>
 
       {/*
