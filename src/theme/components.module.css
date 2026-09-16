@@ -917,6 +917,28 @@
   color: var(--sds-surfaces-text-primary);
 }
 
+/*
+ * The phone steps the title down a size, and the bled-image padding in with it.
+ *
+ * The Mobile frame draws these cards two across in a 374px column, so a card is 179 wide — and at that
+ * width `Paragraph/Large` is a title that wraps to five lines over a picture 118 tall, which makes the
+ * caption the tallest part of the card. The frame sets them in `Paragraph/Small/Semi Bold` (16/1.25)
+ * inside a 12px inset instead, and the numbers land: 12 + three lines of 20 + 12 is the 84 of content it
+ * draws under a 119 image, for the 203 the whole card measures.
+ *
+ * A section-container query, so it follows the column the cards are actually in rather than the window.
+ */
+@container sds-section (max-width: 767px) {
+  .cardTitle {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .cardRoot[data-align='vertical'][data-padding='content'] > .cardBody {
+    padding: 12px;
+  }
+}
+
 .cardText[data-size='full'] .cardTitle {
   font-size: 32px;
   line-height: 40px;
