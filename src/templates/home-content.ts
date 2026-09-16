@@ -98,7 +98,8 @@ export interface HomeContent {
     trialCta: string
     demoCta: string
     rating: string
-    ratingSource: string
+    /** The attribution. `link` is the source's name, drawn as a link in the node. */
+    ratingSource: { lead: string; link: string }
     /**
      * The analyst badges, zipped by position with the artwork in `HomePage.tsx`. Alt text only —
      * the files are the same in every locale, because a trademark badge is not translated.
@@ -186,7 +187,10 @@ export const HOME_CONTENT: HomeContent = {
      * disclaimer in the footer, and dropping it from an attribution is a legal call rather than a
      * design one.
      */
-    ratingSource: 'by 64 verified users as of May 2026, Source: Gartner Peer Insights™',
+    ratingSource: {
+      lead: 'by 64 verified users as of May 2026, Source: ',
+      link: 'Gartner Peer Insights™',
+    },
     badges: [
       { alt: 'Gartner Peer Insights Customers’ Choice 2026' },
       { alt: 'G2 Fall 2026 Leader, Enterprise' },

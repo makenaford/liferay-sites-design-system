@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ComponentProps, ReactNode } from 'react'
-import { Box, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
+import { Anchor, Box, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Bubble } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
@@ -423,37 +423,52 @@ export function HomePage({
              * other hero gets. See `.heroProofMain`.
              */
             <div className={classes.heroProofMain}>
-              <div className={classes.heroProofRating}>
-                <div className={classes.heroProofScore}>
-                  <Text fz={40} fw={700} lh={1.25}>
-                    {content.hero.rating}
-                  </Text>
-                  {/*
-                   * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
-                   * and the figure beside it already says so. The node draws four and a grey fifth,
-                   * which is a mockup's shorthand; five-star widgets round and this one does not.
-                   *
-                   * 20px is the drawn size, up from the 16 the slot defaults to.
-                   */}
-                  <StarRating value={Number(content.hero.rating)} size={20} />
-                  {/*
-                   * The awarded badges, inline with the rating they qualify. Gartner first, as drawn —
-                   * it is the mark the sentence below cites, so the eye should reach it first.
-                   */}
-                  <div className={classes.heroBadges}>
-                    {content.hero.badges.map((badge, i) => (
-                      <span
-                        key={badge.alt}
-                        className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
-                      >
-                        <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
-                      </span>
-                    ))}
+              <div className={classes.heroProofTop}>
+                <div className={classes.heroProofRating}>
+                  <div className={classes.heroProofScore}>
+                    <Text fz={36} fw={700} lh={1}>
+                      {content.hero.rating}
+                    </Text>
+                    {/*
+                     * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
+                     * and the figure beside it already says so. The node draws four and a grey fifth,
+                     * which is a mockup's shorthand; five-star widgets round and this one does not.
+                     *
+                     * 20px is the drawn size, up from the 16 the slot defaults to.
+                     */}
+                    <StarRating value={Number(content.hero.rating)} size={20} />
                   </div>
+                  <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
+                    {content.hero.ratingSource.lead}
+                    {/*
+                     * The attribution names its source, so the node draws it as a link. There is no URL in
+                     * the file and inventing one would be a guess, so it is `#` — the same placeholder the
+                     * hero's own actions carry until the real destinations arrive.
+                     */}
+                    <Anchor href="#" inherit c="var(--sds-action-link-default-link)" underline="always">
+                      {content.hero.ratingSource.link}
+                    </Anchor>
+                  </Text>
                 </div>
-                <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
-                  {content.hero.ratingSource}
-                </Text>
+
+                {/*
+                 * The awarded badges, at the far end of the row from the score.
+                 *
+                 * They used to sit inline beside the stars. The node now gives them their own group,
+                 * right-aligned against the end of the row: the score and its caption are one claim read
+                 * left to right, and the badges are two more of the same kind, so putting them at the
+                 * opposite end lets the eye take the row as two groups rather than one long line.
+                 */}
+                <div className={classes.heroBadges}>
+                  {content.hero.badges.map((badge, i) => (
+                    <span
+                      key={badge.alt}
+                      className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
+                    >
+                      <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className={classes.heroProofMarks}>
@@ -540,7 +555,15 @@ export function HomePage({
           />
         }
       >
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing={24}>
+        {/*
+         * Two across on a phone, not one.
+         *
+         * The Mobile frame draws these at 179px in a 374px column — two columns with a 16px gutter —
+         * where one full-width card per row turned four short titles into four screens of scrolling.
+         * These cards are a thumbnail and a line of text; at 179 they are still legible, and seeing
+         * four at once is the point of a grid of four.
+         */}
+        <SimpleGrid cols={{ base: 2, md: 4 }} spacing={{ base: 16, md: 24 }}>
           {content.goals.items[goalTab].map((goal, i) => (
             <Card
               key={goal.title}
