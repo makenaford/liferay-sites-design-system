@@ -5574,23 +5574,26 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 }
 
-/* -------------------------------------------------------------- the banner goes under, on a phone
+/* ----------------------------------------------------------- the finder is not on the phone at all
  *
  * Beside the heading the solution finder is an offer. Stacked above it, it is a gate.
  *
- * The desktop frame draws the finder as a band over *both* columns, so on a wide screen a reader takes in
- * the headline and the finder in one look and the order between them barely exists. Collapse that to one
+ * The desktop frame draws it as a band over *both* columns, so on a wide screen a reader takes in the
+ * headline and the finder in one look and the order between them barely exists. Collapse that to one
  * column and it becomes a reading order: the first screen asks which industry you are in and which use
- * case you have, 300px before it has said what Liferay is. Anyone who cannot answer yet has been handed a
- * form and no reason to fill it.
+ * case you have, 300px before it has said what Liferay is. Anyone who cannot answer yet has been handed
+ * a form and no reason to fill it.
  *
- * So below 768 the hero reads headline, subhead, actions, *then* the finder — the same content, in the
- * order someone decides in. `order` rather than a second markup tree, because the hero is one story and
- * two DOM orders would be two stories to keep in step; the hero only becomes a flex column here, and the
- * bubble is `position: absolute`, so it is not a flex item in either case.
+ * This used to be answered by ordering it under the content, which fixed the reading order and kept the
+ * offer. The Mobile frame (`7745:13301`) goes further and does not draw the finder at all: its hero is
+ * headline, subhead, the three CTAs, the Gartner row, the mockup. So it is dropped here rather than
+ * moved, and 264px of phone that was asking a question before making a case goes with it.
  *
- * 768 and not the 1199 above it: at tablet widths the columns have already stacked but the finder is
- * still a band a reader sees whole, which is the desktop reading. This is the phone case only.
+ * `display: none` rather than not rendering it: the hero is one story and two markup trees would be two
+ * stories to keep in step. It also leaves the tablet case — where the columns have already stacked but
+ * the finder is still a band a reader sees whole — untouched, which is the desktop reading.
+ *
+ * 768 and not the 1199 above it, for that reason. This is the phone case only.
  */
 @container sds-hero (max-width: 767px) {
   /*
@@ -5611,20 +5614,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
     flex: none;
   }
 
-  .hero[data-with-banner] > .heroInner {
-    order: 1;
-  }
-
   .hero[data-with-banner] > .heroBanner {
-    order: 2;
+    display: none;
   }
 
   /*
    * The clearance moves with the content — and a headline needs more of it than a card did.
    *
-   * A fixed header reserves no space and the banner used to be what cleared the bar. Now the content
-   * column is first, so it takes the clearance, and the banner drops back to its own 40px gap — which is
-   * what it is for once there is something above it to be separated from.
+   * A fixed header reserves no space and the banner used to be what cleared the bar. With the banner
+   * gone from the phone the content column is what the bar overlaps, so it takes the clearance itself.
    *
    * **64 + 24, not 64.** 64 is the bar's own height, which is clearance and nothing else: at exactly 64
    * the H1's cap line sat on the bar's bottom edge with a pixel to spare, which reads as the header
@@ -5639,10 +5637,6 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    */
   body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroInner {
     padding-block-start: calc(64px + 24px);
-  }
-
-  body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroBanner {
-    padding-block-start: 40px;
   }
 }
 
