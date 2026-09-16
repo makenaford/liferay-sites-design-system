@@ -1877,7 +1877,14 @@
  */
 .tabsRoot:not([data-pills]) .tabsList {
   overflow-x: auto;
-  scroll-snap-type: x proximity;
+  /*
+   * `mandatory`, not `proximity`. `proximity` leaves it to the browser whether a flick landed close
+   * enough to a snap point to honour, so a quick swipe routinely came to rest mid-label — and on a bar
+   * whose labels are the only thing identifying an option, mid-label is the one place not to stop. Every
+   * tab is a snap point, so mandatory cannot strand the bar somewhere useless, and the `scrollLeft`
+   * `Tabs.tsx` writes is a tab's own centre — a snap position, not something to be corrected after.
+   */
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 
@@ -1888,6 +1895,36 @@
 .tabsRoot:not([data-pills]) .tabsList .tabsTab {
   flex: 0 0 auto;
   scroll-snap-align: center;
+}
+
+/* ------------------------------------------------- the scroll affordance, on both variants
+ *
+ * A tab bar with more labels than fit needs to *say* so. Without this the row clipped at the container's
+ * edge — on the pills variant a 1000px radius, so a label ended on a curve, which reads as a rendering
+ * fault rather than as an invitation. Nothing else marked the overflow: no scrollbar (hidden, by design),
+ * no arrows, no fade.
+ *
+ * Per edge, and only on an edge with something behind it. `Tabs.tsx` sets `data-overflow-start` /
+ * `data-overflow-end` from `scrollLeft` on every scroll, which is the same contract `Carousel` uses and
+ * for the same reason: a bar faded at both ends before it has been touched makes its first tab look
+ * disabled. 32px is enough to read as a soft edge at a 13px label size without eating a whole pill.
+ */
+.tabsList[data-overflow-end]:not([data-overflow-start]) {
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+
+.tabsList[data-overflow-start]:not([data-overflow-end]) {
+  mask-image: linear-gradient(to right, transparent 0, #000 32px, #000 100%);
+}
+
+.tabsList[data-overflow-start][data-overflow-end] {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 32px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
 }
 
 /* -------------------------------------------------------------- Size=Desktop (>= 1200px) */
@@ -5363,17 +5400,23 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 /* ------------------------------------------------------ the Home hero's proof row (`card-main`)
  *
- * Figma node `7655:14935`. One row with the verdicts at one end and the certifications at the other,
- * rather than the four stacked blocks `.heroProof` flows on its own.
+ * Figma node `7655:14935`. The verdicts as one block — the score, its stars, the two awarded badges and
+ * the sentence that sources them — with the certifications on their own line beneath, where the slot's
+ * own flow used to put four separate stacked blocks.
  *
  * **Its own classes, and deliberately.** `.heroProof` is the slot every hero renders — the Industry and
- * Detail pages reach it through `renderProof`, which draws a rating and marks and no badges. Putting
- * `space-between` on the slot would relayout those pages to match a node drawn for this one. So the
- * Home page passes a single element into the slot and lays out inside it: one flex child in a wrapping
- * flex parent is the parent's whole job done, and nothing else moves.
+ * Detail pages reach it through `renderProof`, which draws a rating and marks and no badges. Laying this
+ * out on the slot itself would relayout those pages to match a node drawn for this one. So the Home page
+ * passes a single element into the slot and arranges things inside it: one flex child in a wrapping flex
+ * parent is the parent's whole job done, and nothing else moves.
  *
- * 8px, so the gap above comes to the drawn 40: `.heroContent`'s 24 gap, `.heroProof`'s 8 padding, and
- * this. The number is in three places because three different things own the space.
+ * One spacing step, 8px, between every element in here — the score and its stars, the caption under
+ * them, the badges at the far end. This row is a set of small objects at four different heights, and a
+ * single gap is what keeps it reading as one block rather than as things that happen to be near each
+ * other. The 16 between the two rows is the exception, and drawn.
+ *
+ * The `padding-top` is 8 for an unrelated reason: it brings the space above the row to the drawn 40,
+ * together with `.heroContent`'s 24 gap and `.heroProof`'s own 8 padding.
  */
 .heroProofMain {
   display: flex;
@@ -5388,37 +5431,37 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /*
  * The verdict row: the score and its caption at one end, the awarded badges at the other.
  *
- * A column rather than the one wrapping row this used to be. The node now draws the certifications as
- * their own row under the whole thing rather than as the far end of the rating's row, and the badges
- * take the place they used to hold — so what was one row that wrapped in practice is two rows that are
- * two rows on purpose, and the wrap is no longer load-bearing.
+ * This is the row `.heroProofMain` used to be. It held the chips at its far end and wrapped them under
+ * itself at every real width; now the chips are a row of their own and the badges take the place they
+ * used to hold, so what wrapped by accident is two rows on purpose.
  *
- * `wrap` survives here for the phone: at 375 the badges drop under the score rather than squeezing it.
+ * `wrap` is kept for the widths between: a tablet that cannot fit the badges beside the caption drops
+ * them under it rather than squeezing the score. The phone case takes the wrap away again — see below.
  */
 .heroProofTop {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px 8px;
+  gap: 8px;
   width: 100%;
 }
 
 /*
  * The verdicts: the score and its stars, the two badges, and the sentence that sources them.
  *
- * `0 1 auto` — never grows, shrinks only when the line is genuinely over-full. It does not grow because
- * the certifications are what should take the slack when there is room; it must be allowed to shrink
- * because the caption is the widest thing in here at 358px, and on a phone the column is 271. Pinned at
- * `flex: none` it kept that 358 and pushed 35px of sentence off the right of the viewport — which
- * `tests/layout.spec.ts` catches at 375. Shrinking wraps the caption onto a second line instead, and
- * nothing above it moves: the score, the stars and the badges are all smaller than the column.
+ * `0 1 auto` — sizes to its content, and shrinks when there is less room than that.
+ *
+ * The shrinking is the part that matters. The caption is the widest thing in here at 358px, and on a
+ * phone the column is 271. Pinned at `flex: none` it kept the 358 and pushed 35px of sentence off the
+ * right of the viewport, which `tests/layout.spec.ts` catches at 375. Allowed to shrink it wraps the
+ * caption onto a second line instead, and nothing above it moves — the score, the stars and the badges
+ * are each smaller than the narrowest column this page has.
  */
 .heroProofRating {
   display: flex;
   flex-direction: column;
-  /* `Content Text` gap 4 — the caption belongs to the figure above it, not beside it. */
-  gap: 4px;
+  gap: 8px;
   flex: 0 1 auto;
   min-width: 0;
 }
@@ -5433,7 +5476,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 /*
@@ -5469,18 +5512,20 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /*
  * `Container` — the certifications, on their own row under the verdicts.
  *
- * Drawn that way now. It used to be the far end of the rating's row and wrapped under it in practice at
- * every real hero width — the node is drawn in a 602px frame, the hero's content column is 565, and the
- * rating side plus one line of four chips came to 713 — so the layout on screen is unchanged. What
- * changed is that it is no longer an accident of wrapping, and the row above is free to put the badges
- * where the chips used to sit.
+ * The node draws these at the far end of the rating's row, and they were there for a commit. They are
+ * a row of their own by choice — but the constraint that shaped the attempt is worth keeping on record,
+ * because it is what the drawn arrangement would have cost. The hero's content column is 565px and does
+ * not grow: `.heroInner` caps at 1280 and splits it. One line of four chips is 355 of that and the score
+ * line is 256, so the drawn single line needs 611 before any gap and cannot fit at any viewport. Beside
+ * the rating they could only ever have been a two-by-two block, buying the position with height. Under
+ * it they keep one clean line — and it frees the row above to give the badges the end of it, which is
+ * where `8538:43357` puts them.
  */
 .heroProofMarks {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  /* The drawn `gap-[4px_8px]`: 4 between rows, 8 between chips. */
-  gap: 4px 8px;
+  gap: 8px;
 }
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
@@ -5553,14 +5598,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 
   /*
-   * The clearance moves with the content.
+   * The clearance moves with the content — and a headline needs more of it than a card did.
    *
    * A fixed header reserves no space and the banner used to be what cleared the bar. Now the content
-   * column is first, so it takes the bar's 64px, and the banner drops back to its own 40px gap — which is
+   * column is first, so it takes the clearance, and the banner drops back to its own 40px gap — which is
    * what it is for once there is something above it to be separated from.
+   *
+   * **64 + 24, not 64.** 64 is the bar's own height, which is clearance and nothing else: at exactly 64
+   * the H1's cap line sat on the bar's bottom edge with a pixel to spare, which reads as the header
+   * resting on the headline rather than floating over it. A glass card can take that — its own padding
+   * holds the content off its edge, which is why the banner is allowed 64 flat above and the note there
+   * explains why 104 was too much for it. Type cannot: there is nothing between the letterform and the
+   * bar. 24 is `.heroContent`'s own gap, so the space above the first line matches the spacing between
+   * the lines below it.
+   *
+   * This was invisible in Storybook until the page stories dropped `StoryFrame`'s 32px canvas padding,
+   * which had been standing in for it.
    */
   body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroInner {
-    padding-block-start: 64px;
+    padding-block-start: calc(64px + 24px);
   }
 
   body:has(.headerShell[data-position='fixed']) .hero[data-with-banner] > .heroBanner {
@@ -6089,6 +6145,22 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   /*
+   * The gutter, told to the snap as well as to the layout.
+   *
+   * `padding-inline` above indents the row so a bleeding list lines up with the page's content column.
+   * Snap positions do not know about it: the first slide is `scroll-snap-align: start`, the browser
+   * snaps its leading edge to the scrollport's leading edge, and the gutter sits *outside* that — so the
+   * track came to rest at `scrollLeft: 80` on the Home page rather than 0. Two visible consequences,
+   * both of which read as bugs: the Previous arrow was enabled before anyone had scrolled, and stepping
+   * back revealed 80px of empty padding; and `data-fade-start` keys off the same `canPrev`, so the
+   * leading card was masked at rest — the exact thing the fade comment below says this deviates from
+   * Figma in order to avoid.
+   *
+   * `scroll-padding-inline` moves the scrollport's own snap edges in by the gutter, so the first slide's
+   * snap position *is* 0 and the last one is the true end.
+   */
+  scroll-padding-inline: var(--sds-carousel-gutter);
+  /*
    * `auto`, and it matters: the component animates arrow and indicator presses itself, writing
    * `scrollLeft` every frame on this library's own curve. With `scroll-behavior: smooth` the browser
    * would ease *toward each of those frames*, so the track would chase a target that keeps moving and
@@ -6181,6 +6253,31 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    * on Figma's 44 exactly. Measured.
    */
   padding-inline: 11px;
+  position: relative;
+  /*
+   * Never narrower than drawn. The controls are one flex row, so an indicator row wider than the space
+   * left over used to take it out of the arrows: with `lines` under a 311px track they shrank to 30px,
+   * which is a smaller target than the 44 they exist to be. The indicators give way instead — see the
+   * narrow block at the end of this section.
+   */
+  flex: none;
+}
+
+/*
+ * 44x40 drawn, 44x44 to the finger.
+ *
+ * The drawn cell is 4px under the 44 minimum on its short axis, and these two buttons are the only
+ * controls in the section — on a phone they are how anyone who does not think to swipe reaches stories
+ * two through eight. Growing the box to 44 would put the button 4px off Figma's cell, so the hit area
+ * grows instead and the drawing stays where the file puts it.
+ *
+ * 2px each way, which the controls' own 10px gap absorbs without the two targets ever meeting.
+ */
+.carouselControls .carouselArrow::after {
+  content: '';
+  position: absolute;
+  inset-block: -2px;
+  inset-inline: 0;
 }
 
 /*
@@ -6288,6 +6385,36 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 /* The line's active state is its width: 64px against 24px. */
 .carouselIndicators[data-style='lines'] .carouselIndicator[data-active] .carouselIndicatorMark {
   width: 64px;
+}
+
+/* ------------------------------------------------------ the indicator scale on a narrow track
+ *
+ * Figma draws one size for these, and one size does not survive a phone.
+ *
+ * The controls are a single centred row: two 44px arrows and 10px either side of the indicators is 108,
+ * so a 311px track leaves 203 for the bar. Eight stories at roughly one card a view is seven reachable
+ * positions, and seven at the drawn scale — six 24px lines, one 64px active, 4px gaps — is 232. Over by
+ * 29, which the arrows were paying for until the rule above stopped them.
+ *
+ * So the bar gets a narrow scale: 16 and 40 at a 3px gap comes to 154, inside the 203 with room to
+ * spare. Every mark stays a 24px-tall button, which is what makes it aimable; only the drawn width of
+ * the mark inside it changes, and the active one is still two and a half times the others.
+ *
+ * `sds-section` rather than the viewport, like everything else here — and rather than the carousel's own
+ * width, which would mean giving `.carouselRoot` a containment context it has no other use for.
+ */
+@container sds-section (max-width: 480px) {
+  .carouselIndicators[data-style='lines'] {
+    gap: 3px;
+  }
+
+  .carouselIndicators[data-style='lines'] .carouselIndicatorMark {
+    width: 16px;
+  }
+
+  .carouselIndicators[data-style='lines'] .carouselIndicator[data-active] .carouselIndicatorMark {
+    width: 40px;
+  }
 }
 
 /* Hover is not drawn. The mark lifts a little rather than changing colour, which the active state owns. */
@@ -7366,7 +7493,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    * The Mobile cell already scrolled; this makes it true at both sizes. See README.
    */
   overflow-x: auto;
-  scroll-snap-type: x proximity;
+  /*
+   * `mandatory`, not `proximity`. `proximity` leaves it to the browser whether a flick landed close
+   * enough to a snap point to honour, so a quick swipe routinely came to rest mid-label — and on a bar
+   * whose labels are the only thing identifying an option, mid-label is the one place not to stop. Every
+   * tab is a snap point, so mandatory cannot strand the bar somewhere useless, and the `scrollLeft`
+   * `Tabs.tsx` writes is a tab's own centre — a snap position, not something to be corrected after.
+   */
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 
@@ -7589,7 +7723,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
   .tabsRoot[data-pills] .tabsList[role='tablist'] {
     overflow-x: auto;
-    scroll-snap-type: x proximity;
+    /*
+     * `mandatory` here too, and this is the copy that decides it: the mobile cell re-declares the
+     * scroll properties, so the desktop rule's value never reached a phone — which is the one width
+     * where coming to rest mid-label actually happens. See the note on the desktop declaration.
+     */
+    scroll-snap-type: x mandatory;
     scrollbar-width: none;
     /* The mobile cell's fill is a radial of the glass steps rather than the flat desktop tint. */
     background-color: transparent;
@@ -10365,4 +10504,30 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 :where([data-mantine-color-scheme='light']) .glassLight {
   display: revert;
+}
+
+/* ============================================================================== StarRating
+ *
+ * The Gartner rating's stars. Filled from the glass icons' ramp — see the gradient in `shared.tsx` for
+ * which part of it and why — with the two ends published here as variables, because the right answer
+ * differs by canvas and a `stopColor` cannot hold a media query.
+ *
+ * **Dark: the icons' own bright span.** `Brand/Primary/Lighten/2` out to `Accent/Aqua`, which puts every
+ * star between luminance 0.37 and 0.74 against a bubble that runs 0.02 to 0.17.
+ *
+ * **Light: the same family, two steps down.** Aqua on the light canvas is `#00e0dc`, and against a
+ * `#fbfcfe` page that is 1.61:1 — the stars would be a pale smear on white, which is worse than the
+ * purple ramp this replaced (6.4:1 at its dark end). The glass icons get away with bright cyan in light
+ * mode because they sit on a tinted glass tile; a star sits on the page itself, with nothing behind it.
+ * So the light canvas runs `Brand/Primary` into `Accent/Cyan` — 5.0:1 and 3.4:1, the cyan family kept
+ * and the contrast with it.
+ */
+.starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-lighten-2);
+  --sds-star-fill-to: var(--sds-accent-aqua);
+}
+
+:where([data-mantine-color-scheme='light']) .starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-primary);
+  --sds-star-fill-to: var(--sds-accent-cyan);
 }

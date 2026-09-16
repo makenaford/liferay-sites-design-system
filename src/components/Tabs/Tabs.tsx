@@ -27,12 +27,60 @@ function useTabIndicator(enabled: boolean) {
       return
     }
 
-    /* Offsets against the list's padding box, so the pill sits where the tab sits. */
+    /*
+     * Offsets against the list's **scrolled content**, so the pill sits where the tab sits.
+     *
+     * `box.left - listBox.left` is a viewport delta, and the indicator it feeds is an `::after`
+     * positioned inside the list's padding box — which scrolls. The two frames of reference differ by
+     * exactly `scrollLeft`, and at rest that is 0, which is why this read correctly for so long. On a
+     * phone the bar is always scrolled: tapping a tab there put the highlight `scrollLeft` px away from
+     * the tab it belongs to — 488px, measured on the Home page's six-capability bar.
+     *
+     * `+ list.scrollLeft` converts the delta into content space. `offsetLeft` would say the same thing,
+     * but only while the tab's `offsetParent` is the list, which is Mantine's business rather than ours.
+     */
     const listBox = list.getBoundingClientRect()
     const box = active.getBoundingClientRect()
-    list.style.setProperty('--sds-pill-x', `${box.left - listBox.left}px`)
+    list.style.setProperty('--sds-pill-x', `${box.left - listBox.left + list.scrollLeft}px`)
     list.style.setProperty('--sds-pill-w', `${box.width}px`)
     list.style.setProperty('--sds-pill-opacity', '1')
+
+    /*
+     * Which edges have more behind them, for the fade in the stylesheet.
+     *
+     * A clipped label on a 1000px-radius container reads as a rendering fault rather than as an
+     * invitation to scroll. The fade is per edge and only on an edge with something behind it, the same
+     * contract `Carousel` uses — a bar faded at both ends before it has been touched is the thing that
+     * makes the first tab look disabled.
+     */
+    const max = list.scrollWidth - list.clientWidth
+    list.toggleAttribute('data-overflow-start', list.scrollLeft > 2)
+    list.toggleAttribute('data-overflow-end', list.scrollLeft < max - 2)
+  }, [])
+
+  /*
+   * The selected tab, brought into view.
+   *
+   * The Home page opens its capability bar on the fourth of six options, 555px along a 335px track — so
+   * the panel below rendered Enterprise Websites content while every pill a phone could see read
+   * unselected. A control has to show its own state; one that cannot be seen is not showing anything.
+   *
+   * `scrollLeft` directly rather than `scrollIntoView`, which walks up the ancestors and would scroll
+   * the *page* to the tab bar on load. This cannot move anything but the bar.
+   */
+  const reveal = useCallback((behavior: ScrollBehavior) => {
+    const list = rootRef.current?.querySelector<HTMLElement>('[role="tablist"]')
+    if (!list) return
+    const active = list.querySelector<HTMLElement>('[role="tab"][data-active]')
+    if (!active) return
+    const max = list.scrollWidth - list.clientWidth
+    if (max <= 0) return
+
+    const listBox = list.getBoundingClientRect()
+    const box = active.getBoundingClientRect()
+    /* Centred where there is room to centre it, and hard against whichever end it belongs to. */
+    const target = box.left - listBox.left + list.scrollLeft - (list.clientWidth - box.width) / 2
+    list.scrollTo({ left: Math.max(0, Math.min(max, target)), behavior })
   }, [])
 
   useEffect(() => {
@@ -41,22 +89,50 @@ function useTabIndicator(enabled: boolean) {
     if (!root) return undefined
 
     measure()
+    /* No animation for the opening position: it is where the bar starts, not a move it makes. */
+    reveal('auto')
 
     /* `data-active` moving from one tab to another is the selection changing. */
-    const mutations = new MutationObserver(measure)
+    const mutations = new MutationObserver(() => {
+      measure()
+      /*
+       * A tap on a half-visible tab is a tap on a tab, so the bar brings it the rest of the way in.
+       * Smooth here where the opening position was instant — this one *is* a move the bar makes, and it
+       * is also the cue that the row goes further than what is on screen.
+       */
+      reveal('smooth')
+    })
     mutations.observe(root, { attributes: true, attributeFilter: ['data-active'], subtree: true })
 
     /* Labels reflowing, the container resizing, a font arriving late. */
     const resizes = new ResizeObserver(measure)
     resizes.observe(root)
-    const list = root.querySelector('[role="tablist"]')
+    const list = root.querySelector<HTMLElement>('[role="tablist"]')
     if (list) for (const tab of list.children) resizes.observe(tab)
+
+    /* The fade follows the thumb, so the flags have to be recomputed as the bar moves. */
+    list?.addEventListener('scroll', measure, { passive: true })
+
+    /*
+     * And once more when the webfont lands.
+     *
+     * A bar measured in the fallback face can be wider than the same bar in Source Sans 3 — so a row
+     * that ends up fitting was briefly overflowing, set `data-overflow-end` on that first pass, and kept
+     * it: a list that does not scroll never fires a scroll event to correct itself. The visible cost was
+     * a permanent fade over the last tab of the two-tab bar, which reads as a disabled tab.
+     *
+     * The `ResizeObserver` above catches a *tab* changing width, which is why this is not already
+     * handled — the tabs here did not change width, the text inside them did, and the row's total came
+     * out under the container either way.
+     */
+    document.fonts?.ready.then(measure).catch(() => {})
 
     return () => {
       mutations.disconnect()
       resizes.disconnect()
+      list?.removeEventListener('scroll', measure)
     }
-  }, [enabled, measure])
+  }, [enabled, measure, reveal])
 
   return rootRef
 }
