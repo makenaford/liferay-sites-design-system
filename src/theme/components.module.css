@@ -7069,6 +7069,28 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
+ * 40 on a phone, where the rule above holds 120 at every width.
+ *
+ * That rule's reasoning is on the record just above: the separation between one idea and the next is
+ * worth the same amount whatever the screen is, and at 20 a phone ran its sections together. This does
+ * not overturn it — it answers a different question. 120 was chosen against a 1440 canvas where it is
+ * 8% of the fold; on a 414 phone the same 120 top and bottom is 240px of empty screen between sections,
+ * more than a quarter of the viewport spent twice per section, and the page reads as a series of gaps
+ * with content between them rather than the reverse.
+ *
+ * 40 is what the Mobile frame draws, and it is double the 20 the note above judged too tight, so the
+ * objection it raises is still answered. If this reads as too little air, it is one number.
+ *
+ * `data-spacing` opts out of both: `none` is the logo strip that sits flush under the hero, and `tight`
+ * already has its own phone-aware ramp.
+ */
+@container sds-section (max-width: 767px) {
+  .sectionRoot:not([data-spacing='none'], [data-spacing='tight']) > .sectionInner {
+    padding-block: 40px;
+  }
+}
+
+/*
  * The content column. `max-width` carries the gutter as well as the 1280, so the *content* tops out at
  * 1280 while the section itself still fills the page — the standard container pattern, and what Figma's
  * 1280-in-1440 actually means.
