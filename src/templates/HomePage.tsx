@@ -86,8 +86,8 @@ import gartnerBadge from '../../assets/home/badges/gartner-peer-insights-custome
  * names put all five on Marketers, which is wrong twice over: `cms` belongs to IT/Developers, and
  * Marketers' fifth row has no clip at all and keeps the still.
  */
-import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
-import cmpClip from '../../assets/home/teams/cmp.mp4'
+import aiHubClip from '../../assets/home/teams/ai-hub.webm'
+import cmpClip from '../../assets/home/teams/cmp.webm'
 import personalizationClip from '../../assets/home/teams/personalization.mp4'
 import cmsClip from '../../assets/home/teams/cms.mp4'
 import sitesClip from '../../assets/home/teams/sites.mp4'
@@ -119,10 +119,10 @@ const GOAL_TAB_ICONS: Record<string, ReactNode> = {
  */
 const TEAM_MEDIA: Record<string, Record<number, { src: string; alt: string }>> = {
   marketers: {
-    0: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
+    0: { src: aiHubClip, alt: 'An agent being assembled from an input trigger in Agent Builder' },
     1: { src: sitesClip, alt: 'A page being built and published from shared components' },
     2: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
-    3: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
+    3: { src: cmpClip, alt: 'A team planning a campaign against a content calendar' },
     4: { src: b2bStill, alt: 'A B2B order moving through a two-step approval workflow' },
   },
   it: {
