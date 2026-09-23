@@ -117,6 +117,9 @@ const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
  *
  * ## How it behaves, and why
  *
+ * **The header's items, exactly.** Each is the header's own `.headerItem` — the same 12/8 padding with
+ * no gap between them, the same caret, underline, hover and focus — rather than a copy that could drift.
+ *
  * **The header's disclosure, again.** Click to open, not hover; each trigger is a
  * `<button aria-expanded aria-controls>` over a region of ordinary links, so Tab moves through them the
  * way it does everywhere else. Escape closes and returns focus to the trigger, a click outside closes,
@@ -399,7 +402,7 @@ export function SecondaryNav({
                 <a
                   key={item.value}
                   href={item.href}
-                  className={classes.secondaryNavItem}
+                  className={classes.headerItem}
                   data-active={isCurrent || undefined}
                   aria-current={
                     isCurrent ? (isFragment(item.href) ? 'location' : 'page') : undefined
@@ -420,14 +423,14 @@ export function SecondaryNav({
                 ref={(node: HTMLButtonElement | null) => {
                   triggers.current.set(item.value, node)
                 }}
-                className={classes.secondaryNavItem}
+                className={classes.headerItem}
                 data-open={isOpen || undefined}
                 aria-expanded={isOpen}
                 aria-controls={`${baseId}-${item.value}`}
                 onClick={() => toggle(isOpen ? null : item.value)}
               >
                 {item.label}
-                <span className={classes.secondaryNavCaret} aria-hidden>
+                <span className={classes.headerCaret} aria-hidden>
                   <IconDown />
                 </span>
               </UnstyledButton>

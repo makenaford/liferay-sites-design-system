@@ -2881,7 +2881,8 @@
  * A section in the bar. The underline is a scaled pseudo-element rather than a border so it wipes out
  * from the centre instead of appearing all at once, and the caret turns over when the panel opens.
  */
-.headerNav .headerItem {
+.headerNav .headerItem,
+.secondaryNavList .headerItem {
   position: relative;
   display: flex;
   align-items: center;
@@ -2900,7 +2901,8 @@
     background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.headerNav .headerItem::after {
+.headerNav .headerItem::after,
+.secondaryNavList .headerItem::after {
   content: '';
   position: absolute;
   inset-inline: 8px;
@@ -2912,11 +2914,13 @@
   transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
-.headerNav .headerItem[data-open] {
+.headerNav .headerItem[data-open],
+.secondaryNavList .headerItem[data-open] {
   color: var(--sds-action-link-active-link);
 }
 
-.headerNav .headerItem[data-open]::after {
+.headerNav .headerItem[data-open]::after,
+.secondaryNavList .headerItem[data-open]::after {
   transform: scaleX(1);
 }
 
@@ -2939,20 +2943,23 @@
   height: 14px;
 }
 
-.headerNav .headerItem[data-open] .headerCaret {
+.headerNav .headerItem[data-open] .headerCaret,
+.secondaryNavList .headerItem[data-open] .headerCaret {
   /* The open section's caret goes with its label rather than staying grey. */
   color: inherit;
   transform: rotate(180deg);
 }
 
 @media (hover: hover) {
-  .headerNav .headerItem:hover:not([data-open]) {
+  .headerNav .headerItem:hover:not([data-open]),
+  .secondaryNavList .headerItem:hover:not([data-open]) {
     color: var(--sds-neutral-10);
     background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
   }
 }
 
-.headerNav .headerItem:focus-visible {
+.headerNav .headerItem:focus-visible,
+.secondaryNavList .headerItem:focus-visible {
   outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: 2px;
 }
@@ -4303,7 +4310,8 @@
     animation: none;
   }
 
-  .headerNav .headerItem::after {
+  .headerNav .headerItem::after,
+  .secondaryNavList .headerItem::after {
     transition: none;
   }
 
@@ -10702,8 +10710,6 @@ a.secondaryNavTitle:focus-visible {
   display: flex;
   flex: 1;
   align-items: center;
-  /* 8px between items, on top of each item's own 8px of inline padding. */
-  gap: 8px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -10726,90 +10732,22 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * `Mega Menu Nav Item`, the component the header's sections are: 16/24 SemiBold in
- * `Surfaces/Text/Primary`, 12/8 padding, a 4px gap to the caret. Open or current, it takes the header's
- * `Action/Link/Active Link` and the underline that wipes out from the centre.
+ * The items are the header's own — `.headerItem` and `.headerCaret`, widened in the header's rules to
+ * cover this list — so the two bars cannot drift: same 12/8 padding and no gap, so 16px between labels,
+ * the same caret, underline, hover and focus. Two things are this bar's alone: an item must not shrink
+ * in a list that scrolls sideways, and a plain link can be the *current* one, which the header's never
+ * is — drawn as the header draws an open section.
  */
-.secondaryNavItem {
-  position: relative;
-  display: flex;
+.secondaryNavList .headerItem {
   flex: none;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
-  border-radius: 6px;
-  color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  white-space: nowrap;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    color var(--sds-motion-fast) var(--sds-motion-ease),
-    background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.secondaryNavItem::after {
-  content: '';
-  position: absolute;
-  inset-inline: 8px;
-  bottom: 0;
-  height: 2px;
-  background-color: var(--sds-action-link-active-link);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
-}
-
-.secondaryNavItem[data-open],
-.secondaryNavItem[data-active] {
+.secondaryNavList .headerItem[data-active] {
   color: var(--sds-action-link-active-link);
 }
 
-.secondaryNavItem[data-open]::after,
-.secondaryNavItem[data-active]::after {
+.secondaryNavList .headerItem[data-active]::after {
   transform: scaleX(1);
-}
-
-/* The file's caret: 16px at 70% opacity, turning over while its dropdown is open. */
-.secondaryNavCaret {
-  display: flex;
-  opacity: 0.7;
-  transition:
-    opacity var(--sds-motion-fast) var(--sds-motion-ease),
-    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
-}
-
-.secondaryNavCaret > svg {
-  width: 16px;
-  height: 16px;
-}
-
-.secondaryNavItem[data-open] .secondaryNavCaret {
-  opacity: 1;
-  transform: rotate(180deg);
-}
-
-@media (hover: hover) {
-  .secondaryNavItem:hover:not([data-open], [data-active]) {
-    color: var(--sds-neutral-10);
-    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
-  }
-}
-
-/* Inset, so the scrolling list does not clip the ring. */
-.secondaryNavItem:focus-visible {
-  outline: 2px solid var(--sds-action-link-active-link);
-  outline-offset: -2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .secondaryNavItem,
-  .secondaryNavItem::after,
-  .secondaryNavCaret {
-    transition: none;
-  }
 }
 
 .secondaryNavAction {
