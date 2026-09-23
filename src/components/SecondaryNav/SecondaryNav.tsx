@@ -237,19 +237,40 @@ export function SecondaryNav({
    * the end of the bar. Measured before paint so it never flashes at the wrong place.
    */
   useLayoutEffect(() => {
-    if (!open) return
+    if (!open) return undefined
     const nav = navRef.current
     const trigger = triggers.current.get(open)
     const panel = panels.current.get(open)
-    if (!nav || !trigger || !panel) return
+    if (!nav || !trigger || !panel) return undefined
 
-    const navBox = nav.getBoundingClientRect()
-    /* The inner row's padding, resolved — the custom property itself reads back as its `clamp()`. */
-    const inner = nav.firstElementChild as HTMLElement | null
-    const gutter = inner ? parseFloat(getComputedStyle(inner).paddingLeft) : 20
-    const left = trigger.getBoundingClientRect().left - navBox.left
-    const max = navBox.width - panel.offsetWidth - gutter
-    setPanelX(Math.max(gutter, Math.min(left, max)))
+    const place = () => {
+      const navBox = nav.getBoundingClientRect()
+      /* The inner row's padding, resolved — the custom property itself reads back as its `clamp()`. */
+      const inner = nav.firstElementChild as HTMLElement | null
+      const gutter = inner ? parseFloat(getComputedStyle(inner).paddingLeft) : 20
+      const left = trigger.getBoundingClientRect().left - navBox.left
+      const max = navBox.width - panel.offsetWidth - gutter
+      setPanelX(Math.max(gutter, Math.min(left, max)))
+    }
+
+    place()
+
+    /*
+     * And again whenever the row moves under it. Measuring once, on open, left the panel where the
+     * trigger *was*: the labels reflow when the web font arrives — `Customer Stories` is 15px narrower
+     * in Source Sans than in the fallback — so a dropdown opened on load, or opened early, hung off to
+     * the side of its trigger until it was closed and opened again. Every trigger is watched, since a
+     * label before this one changing width moves this one too.
+     */
+    const observer = new ResizeObserver(place)
+    observer.observe(nav)
+    observer.observe(panel)
+    triggers.current.forEach((node) => node && observer.observe(node))
+    document.fonts?.addEventListener('loadingdone', place)
+    return () => {
+      observer.disconnect()
+      document.fonts?.removeEventListener('loadingdone', place)
+    }
   }, [open])
 
   /** Escape closes the panel and hands focus back to the trigger; so does a click outside. */

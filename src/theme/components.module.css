@@ -2771,10 +2771,28 @@
  * rather than as a flat scrim, and the hairline plus the drop shadow are what separate it from content
  * scrolling past.
  */
+/*
+ * The fill both bars share — the header's band and `SecondaryNav` — so the site's bar and the product's
+ * read as one surface: black at 80% on the dark canvas. On light, each keeps the page background it had,
+ * because black under `Surfaces/Text/Primary`'s dark ink would be unreadable.
+ */
+.headerShell,
+.secondaryNav {
+  --sds-nav-fill: rgba(0, 0, 0, 0.8);
+}
+
+:where([data-mantine-color-scheme='light']) .headerShell {
+  --sds-nav-fill: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+}
+
+:where([data-mantine-color-scheme='light']) .secondaryNav {
+  --sds-nav-fill: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+}
+
 .headerBand {
   position: relative;
   z-index: 2;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  background-color: var(--sds-nav-fill);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--sds-glass-line-to);
@@ -2809,7 +2827,7 @@
  */
 .headerShell[data-condense][data-scrolled] .headerBand,
 .headerShell[data-condense][data-menu-open] .headerBand {
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  background-color: var(--sds-nav-fill);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom-color: var(--sds-glass-line-to);
@@ -10626,8 +10644,8 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * hanging from a `nav` that blurred would blur only the `nav` — the page under the panel came through
  * pin-sharp. With the glass down here the `nav` is not a backdrop root, and the panel blurs the page.
  *
- * `rgba(7, 11, 19, 0.8)` is the dark page background at 80%, so it is written as the token and inverts
- * on light; the blur is the inner frame's 50. The rule is the file's `rgba(255, 255, 255, 0.2)`, inset
+ * The fill is `--sds-nav-fill`, shared with the header — black at 80% on dark; the blur is the inner
+ * frame's 50. The rule is the file's `rgba(255, 255, 255, 0.2)`, inset
  * so it draws inside the 64px.
  */
 .secondaryNav::before {
@@ -10635,7 +10653,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+  background-color: var(--sds-nav-fill);
   backdrop-filter: blur(50px);
   -webkit-backdrop-filter: blur(50px);
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
@@ -10938,11 +10956,10 @@ a.secondaryNavTitle:focus-visible {
   }
 
   /*
-   * The phone bar is the page background at full strength under a 50px blur, ruled with
-   * `Glass Line/01`. With the sheet down the rule goes: the sheet carries its own, at its foot.
+   * The phone bar keeps the shared fill under its 50px blur, ruled with `Glass Line/01`. With the sheet
+   * down the rule goes: the sheet carries its own, at its foot.
    */
   .secondaryNav::before {
-    background-color: var(--sds-surfaces-page-bg-base-default);
     box-shadow: inset 0 -1px 0 var(--sds-glass-line-from);
   }
 
