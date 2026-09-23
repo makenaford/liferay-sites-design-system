@@ -2931,7 +2931,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 12px 8px;
+  /* 12 on every side — the `Mega Menu Nav Item` the secondary nav's `Opened- 2 Columns` frame draws. */
+  padding: 12px;
   border-radius: 6px;
   color: var(--sds-surfaces-text-primary);
   font-size: 16px;
@@ -2949,7 +2950,8 @@
 .secondaryNavList .headerItem::after {
   content: '';
   position: absolute;
-  inset-inline: 8px;
+  /* The item's inline padding, so the line runs the width of the label. */
+  inset-inline: 12px;
   bottom: -1px;
   height: 2px;
   background-color: var(--sds-action-link-active-link);
@@ -10979,9 +10981,9 @@ a.secondaryNavTitle:focus-visible {
   }
 
   /*
-   * `Frame 1000006000` below the bar: the page background under a 25px blur, a white 20% rule at the
-   * foot and a `0 4px 2px` shadow. It scrolls on its own if the sections outgrow the screen, rather
-   * than running off the bottom of it.
+   * `Frame 1000006000` below the bar: the bar's own fill, so the bar and the sheet read as one surface,
+   * under a 25px blur, with a white 20% rule at the foot and a `0 4px 2px` shadow. It scrolls on its own
+   * if the sections outgrow the screen, rather than running off the bottom of it.
    */
   .secondaryNavSheet {
     position: absolute;
@@ -10992,7 +10994,7 @@ a.secondaryNavTitle:focus-visible {
     max-height: calc(100dvh - var(--sds-header-offset, 0px) - 56px);
     overflow-y: auto;
     overscroll-behavior: contain;
-    background-color: var(--sds-surfaces-page-bg-base-default);
+    background-color: var(--sds-nav-fill);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);

@@ -146,7 +146,7 @@ const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
  *
  * ## How it behaves, and why
  *
- * **The header's items, exactly.** Each is the header's own `.headerItem` — the same 12/8 padding with
+ * **The header's items, exactly.** Each is the header's own `.headerItem` — the same 12px padding with
  * no gap between them, the same caret, underline, hover and focus — rather than a copy that could drift.
  *
  * **The header's disclosure, again.** Click to open, not hover; each trigger is a
