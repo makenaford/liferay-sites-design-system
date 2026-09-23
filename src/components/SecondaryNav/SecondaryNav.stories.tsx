@@ -251,11 +251,42 @@ export const OnAPageCustomerStoriesOpen: Story = {
   args: { sticky: true, defaultOpen: 'customer-stories' },
 }
 
+/** The file's `Mobile` frames are 414 wide — Storybook's `mobile2`. */
+const PHONE = { viewport: { value: 'mobile2', isRotated: false } }
+
 /**
- * A phone. The header becomes its burger and call to action, the product name steps aside, the
- * sections scroll sideways, and a dropdown spans the gutters.
+ * **Mobile** — the file's `Mobile- Default`. The site header becomes its logo, call to action and
+ * burger; under it the product's bar keeps the product's name and trades its sections for a chevron.
+ * Tap it for the menu. Scroll, and the bar replaces the header here too.
  */
-export const OnAPageMobile: Story = {
+export const Mobile: Story = {
   ...OnAPage,
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
+  globals: PHONE,
+}
+
+/**
+ * **Mobile, menu open** — `Mobile- Opened`. The chevron turns over, a sheet drops from the bar with a
+ * row per section, and the page behind goes to black at 80%. Tap the scrim or press Escape to close.
+ */
+export const MobileMenuOpen: Story = {
+  ...OnAPage,
+  args: { sticky: true, defaultMenuOpen: true },
+  globals: PHONE,
+}
+
+/**
+ * **Mobile, a section expanded** — `Mobile- Opened 2`. **Features** expands its links in place, the
+ * same rows the desktop dropdown holds; tap another section to expand it instead.
+ */
+export const MobileFeaturesExpanded: Story = {
+  ...OnAPage,
+  args: { sticky: true, defaultOpen: 'features' },
+  globals: PHONE,
+}
+
+/** **Mobile, Customer Stories expanded** — not drawn on a phone; the thumbnail rows, 20px in. */
+export const MobileCustomerStoriesExpanded: Story = {
+  ...OnAPage,
+  args: { sticky: true, defaultOpen: 'customer-stories' },
+  globals: PHONE,
 }

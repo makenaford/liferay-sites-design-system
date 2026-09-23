@@ -60,8 +60,12 @@ export interface SecondaryNavProps
   titleHref?: string
   /** The items in the bar, each optionally opening a dropdown. */
   items?: SecondaryNavItem[]
-  /** Which dropdown is open on mount. */
+  /**
+   * Which dropdown is open on mount. On a phone, the menu opens on mount with this section expanded.
+   */
   defaultOpen?: string | null
+  /** Open the phone menu on mount, every section collapsed — the file's `Mobile- Opened`. */
+  defaultMenuOpen?: boolean
   /** Notified whenever a dropdown opens or closes, with the open item's `value` or `null`. */
   onOpenChange?: (value: string | null) => void
   /** The current item, controlled — for a bar of plain links. `null` for none. */
@@ -151,9 +155,11 @@ const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
  * `data-sds-header-hidden`, the fixed header slides up out of view, and the bar moves to the top. Back
  * above that line the header returns. `replaceHeader={false}` keeps both.
  *
- * **The panel hangs from its trigger**, and sits outside the scrolling list of items so a phone's
- * sideways-scrolling bar cannot clip it. It is kept inside the gutter at either end, and on a phone it
- * spans the gutter-to-gutter width.
+ * **The panel hangs from its trigger**, kept inside the gutter at either end.
+ *
+ * **On a phone it is a menu** — the file's `Mobile` frames. Below 768px the bar keeps the product's
+ * name and trades its items for a chevron; that opens a sheet with a row per section over a dimmed
+ * page, and each section expands its links in place. Escape, the scrim, or following a link closes it.
  *
  * **Plain links are still allowed.** An item with an `href` and no panel is a link, marked
  * `aria-current` when it is the current item, and a `#fragment` one is followed by the scroll spy.
@@ -164,6 +170,7 @@ export function SecondaryNav({
   titleHref,
   items = [],
   defaultOpen = null,
+  defaultMenuOpen = false,
   onOpenChange,
   value,
   defaultValue = null,
@@ -179,6 +186,15 @@ export function SecondaryNav({
   ...props
 }: SecondaryNavProps) {
   const [open, setOpen] = useState<string | null>(defaultOpen)
+  /*
+   * The phone menu — whether the sheet is down, and which section is expanded inside it. Separate from
+   * `open`, because a dropdown hanging from a trigger and a section expanding in a sheet are different
+   * interactions, and sharing the state would open one behind the other on a resize.
+   */
+  const [menuOpen, setMenuOpen] = useState(defaultMenuOpen || defaultOpen !== null)
+  const [expanded, setExpanded] = useState<string | null>(defaultOpen)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const sheetId = `${useId()}-sheet`
   const [uncontrolled, setUncontrolled] = useState<string | null>(defaultValue)
   const current = value !== undefined ? value : uncontrolled
   const [stuck, setStuck] = useState(false)
@@ -264,6 +280,18 @@ export function SecondaryNav({
       window.removeEventListener('resize', onMove)
     }
   }, [open, toggle])
+
+  /** Escape closes the phone menu and hands focus back to its toggle. */
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      toggleRef.current?.focus()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
 
   /*
    * One passive scroll listener, batched to a frame, does both jobs: whether the bar is stuck, and which
@@ -405,6 +433,33 @@ export function SecondaryNav({
     target.focus({ preventScroll: true })
   }
 
+  /** One link in a dropdown or an expanded section: the file's `Nav Item 01`, or `Nav Item 5` with a thumbnail. */
+  const renderLink = (link: SecondaryNavLink, index: number, media: boolean) => (
+    <a
+      key={index}
+      href={link.href}
+      className={classes.secondaryNavLink}
+      {...(link.external ? { target: '_blank', rel: 'noreferrer noopener' } : null)}
+    >
+      {media ? (
+        <span className={classes.secondaryNavThumb}>
+          {link.thumbnail ? <img src={link.thumbnail} alt={link.thumbnailAlt ?? ''} /> : null}
+        </span>
+      ) : link.icon ? (
+        <span className={classes.secondaryNavLinkIcon} aria-hidden>
+          {link.icon}
+        </span>
+      ) : null}
+      <span className={classes.secondaryNavLinkBody}>
+        <span className={classes.secondaryNavLinkTitle}>{link.label}</span>
+        {link.description && !media ? (
+          <span className={classes.secondaryNavLinkDescription}>{link.description}</span>
+        ) : null}
+      </span>
+      {link.external ? <span className={classes.visuallyHidden}> (opens in a new tab)</span> : null}
+    </a>
+  )
+
   const brand = (
     <>
       {icon ? (
@@ -426,6 +481,7 @@ export function SecondaryNav({
       data-stuck={stuck || undefined}
       data-replacing={replacing || undefined}
       data-open={open ? true : undefined}
+      data-menu-open={menuOpen || undefined}
       style={[
         {
           ...(offset !== undefined ? { '--sds-secondary-nav-offset': `${offset}px` } : null),
@@ -491,7 +547,92 @@ export function SecondaryNav({
         </div>
 
         {action ? <div className={classes.secondaryNavAction}>{action}</div> : null}
+
+        {/* The phone's way in: the file's 40px chevron, pointing up while the sheet is down. */}
+        <UnstyledButton
+          ref={toggleRef}
+          component="button"
+          type="button"
+          className={classes.secondaryNavToggle}
+          aria-expanded={menuOpen}
+          aria-controls={sheetId}
+          aria-label={`${menuOpen ? 'Close' : 'Open'} ${typeof title === 'string' ? title : 'product'} menu`}
+          onClick={() => setMenuOpen((value) => !value)}
+        >
+          <IconDown aria-hidden />
+        </UnstyledButton>
       </div>
+
+      {/*
+       * The phone menu — `Mobile- Opened`. A sheet under the bar with a row per section; a section with
+       * links expands them in place, an accordion rather than a drill-down, because there is one level
+       * and the file draws it opening where it is. A section that is only a link is a row with no
+       * chevron, as the CMS frames draw it.
+       */}
+      <div id={sheetId} className={classes.secondaryNavSheet} hidden={!menuOpen}>
+        {items.map((item) => {
+          if (!hasPanel(item)) {
+            const isCurrent = item.value === current
+            return (
+              <a
+                key={item.value}
+                href={item.href}
+                className={classes.secondaryNavSheetRow}
+                aria-current={
+                  isCurrent ? (isFragment(item.href) ? 'location' : 'page') : undefined
+                }
+                onClick={(event) => {
+                  setMenuOpen(false)
+                  onLinkClick(event, item)
+                }}
+              >
+                {item.label}
+              </a>
+            )
+          }
+
+          const isExpanded = expanded === item.value
+          const regionId = `${sheetId}-${item.value}`
+          const media = !!item.links?.some((link) => link.thumbnail)
+          return (
+            <div key={item.value}>
+              <UnstyledButton
+                component="button"
+                type="button"
+                className={classes.secondaryNavSheetRow}
+                data-expanded={isExpanded || undefined}
+                aria-expanded={isExpanded}
+                aria-controls={regionId}
+                onClick={() => setExpanded(isExpanded ? null : item.value)}
+              >
+                {item.label}
+                <span className={classes.secondaryNavSheetChevron} aria-hidden>
+                  <IconDown />
+                </span>
+              </UnstyledButton>
+              <div
+                id={regionId}
+                className={classes.secondaryNavSheetItems}
+                data-variant={item.menu ? undefined : media ? 'media' : 'links'}
+                hidden={!isExpanded}
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
+                }}
+              >
+                {item.menu ?? item.links!.map((link, index) => renderLink(link, index, media))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/*
+       * The file's `Rectangle 1`: black at 80% over the page while the sheet is down. Inside the bar's
+       * stacking context and behind its surface, so it dims the page but never the bar or the header.
+       */}
+      {menuOpen ? (
+        <span className={classes.secondaryNavScrim} aria-hidden onClick={() => setMenuOpen(false)} />
+      ) : null}
 
       {/*
        * The panels, outside the list: it scrolls sideways on a phone, and a scrolling box clips
@@ -516,34 +657,7 @@ export function SecondaryNav({
               if ((event.target as HTMLElement).closest('a')) toggle(null)
             }}
           >
-            {item.menu ??
-              item.links!.map((link, index) => (
-                <a
-                  key={index}
-                  href={link.href}
-                  className={classes.secondaryNavLink}
-                  {...(link.external ? { target: '_blank', rel: 'noreferrer noopener' } : null)}
-                >
-                  {media ? (
-                    <span className={classes.secondaryNavThumb}>
-                      {link.thumbnail ? <img src={link.thumbnail} alt={link.thumbnailAlt ?? ''} /> : null}
-                    </span>
-                  ) : link.icon ? (
-                    <span className={classes.secondaryNavLinkIcon} aria-hidden>
-                      {link.icon}
-                    </span>
-                  ) : null}
-                  <span className={classes.secondaryNavLinkBody}>
-                    <span className={classes.secondaryNavLinkTitle}>{link.label}</span>
-                    {link.description && !media ? (
-                      <span className={classes.secondaryNavLinkDescription}>{link.description}</span>
-                    ) : null}
-                  </span>
-                  {link.external ? (
-                    <span className={classes.visuallyHidden}> (opens in a new tab)</span>
-                  ) : null}
-                </a>
-              ))}
+            {item.menu ?? item.links!.map((link, index) => renderLink(link, index, media))}
           </div>
         )
       })}

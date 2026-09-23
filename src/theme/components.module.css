@@ -10827,7 +10827,8 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* `Nav Item 5`: a 64x43 thumbnail, 12px, and a title centred against it. */
-.secondaryNavPanel[data-variant='media'] .secondaryNavLink {
+.secondaryNavPanel[data-variant='media'] .secondaryNavLink,
+.secondaryNavSheetItems[data-variant='media'] .secondaryNavLink {
   gap: 12px;
   align-items: center;
 }
@@ -10882,7 +10883,8 @@ a.secondaryNavTitle:focus-visible {
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.secondaryNavPanel[data-variant='media'] .secondaryNavLinkTitle {
+.secondaryNavPanel[data-variant='media'] .secondaryNavLinkTitle,
+.secondaryNavSheetItems[data-variant='media'] .secondaryNavLinkTitle {
   line-height: 1.25;
 }
 
@@ -10909,23 +10911,180 @@ a.secondaryNavTitle:focus-visible {
   outline-offset: 4px;
 }
 
-/*
- * On a phone the name gives up its room to the items, and the dropdown spans the gutters rather than
- * hanging from a trigger that may be half off-screen.
+/* ------------------------------------------------------------------------------ the phone menu
+ *
+ * The file's `Mobile` frames, below 768px. None of it exists above that width: the toggle, the sheet
+ * and the scrim are display-none, and the row of items and the dropdowns are the bar.
  */
+.secondaryNavToggle,
+.secondaryNavSheet,
+.secondaryNavScrim {
+  display: none;
+}
+
 @media (max-width: 767px) {
-  .secondaryNavTitle {
+  .secondaryNavList,
+  .secondaryNavAction,
+  .secondaryNavPanel {
     display: none;
   }
 
+  /* `Navigation bar`: 56 high, 24px either side, the name at the start and the toggle at the end. */
   .secondaryNavInner {
+    justify-content: space-between;
     gap: 16px;
+    min-height: 56px;
+    padding-inline: 24px;
   }
 
-  .secondaryNavPanel,
-  .secondaryNavPanel[data-variant='media'] {
-    inset-inline: var(--sds-secondary-nav-gutter);
-    width: auto;
-    max-width: none;
+  /*
+   * The phone bar is the page background at full strength under a 50px blur, ruled with
+   * `Glass Line/01`. With the sheet down the rule goes: the sheet carries its own, at its foot.
+   */
+  .secondaryNav::before {
+    background-color: var(--sds-surfaces-page-bg-base-default);
+    box-shadow: inset 0 -1px 0 var(--sds-glass-line-from);
+  }
+
+  .secondaryNav[data-menu-open]::before {
+    box-shadow: none;
+  }
+
+  /* The 40px toggle: a 24px chevron closed, turned over and drawn at 32 while the sheet is down. */
+  .secondaryNavToggle {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    color: var(--sds-surfaces-text-primary);
+  }
+
+  .secondaryNavToggle > svg {
+    width: 24px;
+    height: 24px;
+    transition:
+      transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+      width var(--sds-motion-fast) var(--sds-motion-ease),
+      height var(--sds-motion-fast) var(--sds-motion-ease);
+  }
+
+  .secondaryNavToggle[aria-expanded='true'] > svg {
+    width: 32px;
+    height: 32px;
+    transform: rotate(180deg);
+  }
+
+  /*
+   * `Frame 1000006000` below the bar: the page background under a 25px blur, a white 20% rule at the
+   * foot and a `0 4px 2px` shadow. It scrolls on its own if the sections outgrow the screen, rather
+   * than running off the bottom of it.
+   */
+  .secondaryNavSheet {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - var(--sds-header-offset, 0px) - 56px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--sds-surfaces-page-bg-base-default);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .secondaryNav[data-replacing] .secondaryNavSheet {
+    max-height: calc(100dvh - 56px);
+  }
+
+  .secondaryNavSheet[hidden] {
+    display: none;
+  }
+
+  :where([data-mantine-color-scheme='light']) .secondaryNavSheet {
+    border-bottom-color: var(--sds-glass-line-to);
+  }
+
+  /*
+   * `Mega Menu Nav Item`, mobile: 68 high, 16/24 padding, `Action/Link/Large` — 21/28 SemiBold. Scoped
+   * under the sheet so it outranks Mantine's `UnstyledButton` reset, which zeroes padding and font.
+   */
+  .secondaryNavSheet .secondaryNavSheetRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    min-height: 68px;
+    padding: 16px 24px;
+    border-radius: 4px;
+    color: var(--sds-surfaces-text-primary);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 28px;
+    text-align: start;
+    text-decoration: none;
+  }
+
+  /* The 40-wide chevron box with a 28px glyph, turned over while its section is expanded. */
+  .secondaryNavSheetChevron {
+    display: flex;
+    flex: none;
+    margin-inline-start: auto;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    padding: 4px;
+    transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+  }
+
+  .secondaryNavSheetChevron > svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .secondaryNavSheetRow[data-expanded] .secondaryNavSheetChevron {
+    transform: rotate(180deg);
+  }
+
+  /* `Items`: the section's links, 20px in, 24px apart — the same rows the desktop dropdowns hold. */
+  .secondaryNavSheetItems {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 20px 20px;
+  }
+
+  .secondaryNavSheetItems[hidden] {
+    display: none;
+  }
+
+  .secondaryNavToggle:focus-visible,
+  .secondaryNavSheetRow:focus-visible {
+    outline: 2px solid var(--sds-action-link-active-link);
+    outline-offset: -2px;
+  }
+
+  /*
+   * `Rectangle 1`: black at 80% over the page. Fixed to the viewport but inside the bar's stacking
+   * context, behind its surface — so it dims the page and neither the bar nor the header above it.
+   */
+  .secondaryNavScrim {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    display: block;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .secondaryNavToggle > svg,
+  .secondaryNavSheetChevron {
+    transition: none;
   }
 }
