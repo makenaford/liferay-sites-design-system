@@ -1,3 +1,20 @@
+<!--
+  The typeface. Every text style in the Figma library is Source Sans 3, and `theme.ts` names it first
+  in the stack — but the library does not ship the font, so without this Storybook rendered in the
+  system fallback, which sets wider and made every measured label disagree with the file.
+
+  Source Sans 3, not Source Sans Pro: the 2021 successor, and the name the CSS asks for, so an installed
+  Source Sans Pro would not match it. The variable axis at 400..700 covers every weight the library
+  uses (400, 600 and 700, and the builder's one 500) in one file. `display=swap` so a story is never
+  blank while it loads, and offline the stack falls back exactly as before.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400..700&display=swap"
+/>
+
 <style>
   /*
    * Let the story root shrink.
