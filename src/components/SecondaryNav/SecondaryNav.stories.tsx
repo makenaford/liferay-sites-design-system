@@ -1,8 +1,14 @@
+import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Box, Stack, Text, Title } from '@mantine/core'
+import { Box, SimpleGrid, Text } from '@mantine/core'
 import { SecondaryNav, type SecondaryNavItem } from './SecondaryNav'
-import { Header } from '../Header'
-import { SITE_ACTIONS, SITE_DRAWER_CONTROLS, SITE_NAV_ITEMS } from '../../templates/site-nav-render'
+import { Button } from '../Button'
+import { Card } from '../Card'
+import { Hero } from '../Hero'
+import { Section, SectionTitle } from '../Section'
+import { SiteFooter, SiteHeader } from '../../templates/shared'
+import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
+import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.webm'
 import {
   IconBook2,
   IconBox3,
@@ -79,34 +85,76 @@ const COMMERCE_ITEMS: SecondaryNavItem[] = [
   },
 ]
 
-const gutter = 'clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px)'
+/** The header's bar and this one, stacked — what the hero reaches up behind. */
+const CHROME = 64 + 52
 
-/** A hero-height block above the bar, so there is something to scroll past before it sticks. */
-function Intro() {
+/** Stands in for the hero shot, a 3:2 frame as the file's `Aspect Ratio` draws it: stories render offline. */
+function Shot() {
   return (
-    <Stack gap="16" pt={160} pb="80" px={gutter}>
-      <Title order={1} fz="var(--sds-size-heading-f2)">
-        Liferay Commerce
-      </Title>
-      <Text c="var(--sds-surfaces-text-secondary)" maw={640}>
-        A product page: the site header at the top and the product&apos;s own bar under the hero. Scroll
-        and it sticks under the header; open a section for its links.
-      </Text>
-    </Stack>
+    <Box
+      style={{ aspectRatio: '3 / 2', borderRadius: 10, display: 'grid', placeItems: 'center' }}
+      bg="linear-gradient(135deg, var(--sds-brand-primary-lighten-4), var(--sds-accent-product-accent))"
+      c="var(--sds-action-neutral-inverted)"
+      fw={700}
+    >
+      Product shot
+    </Box>
   )
 }
 
-function PageBelow() {
+/**
+ * The file's Commerce page (node `24826:49318`): the site header, the product's bar straight under it,
+ * then the hero — with the bubble running up behind both bars, as the file draws it.
+ *
+ * The bar sits 64px down, which is the fixed header's height, and sticks there; the hero pulls up by
+ * both bars' height and pads back down by the same, so its artwork starts at the very top of the page
+ * while its content starts under the chrome.
+ */
+function CommercePage({ nav }: { nav: ReactNode }) {
   return (
-    <Stack gap="16" px={gutter} py="80">
-      <Title order={2} fz="var(--sds-size-heading-f3)">
-        Page content
-      </Title>
-      <Text c="var(--sds-surfaces-text-secondary)" maw={640}>
-        Placeholder content, long enough to scroll the bar into its stuck state.
-      </Text>
-      <Box h={1600} />
-    </Stack>
+    <>
+      <SiteHeader />
+      {nav}
+      <Hero
+        background="corner"
+        video={bubbleCorner}
+        videoLight={bubbleCornerLight}
+        mt={-CHROME}
+        pt={CHROME}
+        title={<h1>Hero Title</h1>}
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non lacinia mi. Etiam nec mauris fringilla, tincidunt tellus sed, feugiat nulla. Curabitur justo urna, rutrum sit amet lectus malesuada, porttitor laoreet elit."
+        actions={
+          <>
+            <Button>Book a Demo</Button>
+            <Button variant="outline">Contact Sales</Button>
+          </>
+        }
+        media={<Shot />}
+      />
+      <Section
+        title={
+          <SectionTitle
+            title="Placeholder section"
+            description="Scroll: the product bar stays under the site header all the way down the page."
+          />
+        }
+      >
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="24">
+          {['Catalog', 'Storefronts', 'Orders'].map((name) => (
+            <Card key={name} surface="glass">
+              <Text fw={700} fz="20">
+                {name}
+              </Text>
+              <Text c="var(--sds-surfaces-text-secondary)">Placeholder card content.</Text>
+            </Card>
+          ))}
+        </SimpleGrid>
+      </Section>
+      <Section title={<SectionTitle title="Another section" />}>
+        <Box h={600} />
+      </Section>
+      <SiteFooter />
+    </>
   )
 }
 
@@ -166,26 +214,29 @@ export const ResourcesOpen: Story = {
 }
 
 /**
- * The whole arrangement: the fixed `Header`, a hero, and the bar below it. Scroll and it sticks under
- * the condensed header; open a section and its dropdown hangs over the page.
+ * **On a page** — the file's Commerce page. The site header at the top, the product's bar directly
+ * under it, and the hero below both, its bubble reaching up behind the two bars.
+ *
+ * Scroll and the bar stays under the header all the way down. Open a section and the bar takes the
+ * `Opened Background` while its dropdown hangs over the page; open one of the header's menus instead
+ * and the mega menu drops over the bar — clicking one closes the other.
  */
 export const OnAPage: Story = {
   args: { sticky: true },
-  render: (args) => (
-    <>
-      <Header items={SITE_NAV_ITEMS} actions={SITE_ACTIONS} drawerControls={SITE_DRAWER_CONTROLS} />
-      <Intro />
-      <SecondaryNav {...args} />
-      <PageBelow />
-    </>
-  ),
+  render: (args) => <CommercePage nav={<SecondaryNav {...args} mt="var(--sds-header-offset, 64px)" />} />,
+}
+
+/** On a page, with **Features** open over the hero. */
+export const OnAPageFeaturesOpen: Story = {
+  ...OnAPage,
+  args: { sticky: true, defaultOpen: 'features' },
 }
 
 /**
- * A phone. The name steps aside, the sections scroll sideways, and a dropdown spans the gutters rather
- * than hanging from a trigger that may be half off-screen.
+ * A phone. The header becomes its burger and call to action, the product name steps aside, the
+ * sections scroll sideways, and a dropdown spans the gutters.
  */
-export const Mobile: Story = {
+export const OnAPageMobile: Story = {
   ...OnAPage,
   globals: { viewport: { value: 'mobile1', isRotated: false } },
 }

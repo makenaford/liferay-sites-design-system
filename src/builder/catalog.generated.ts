@@ -413,7 +413,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "spy", kind: "boolean", default: "true", doc: "Follow the page: as each `#fragment` section reaches the bar, its item becomes current." },
       { name: "action", kind: "slot", doc: "The end of the bar: a single call to action. Not in the file; there if a page needs one." },
       { name: "sticky", kind: "boolean", default: "true", doc: "Stick below the header once the page scrolls to it." },
-      { name: "offset", kind: "number", default: "56", doc: "How far from the top of the viewport it sticks, in px — the height of whatever is fixed above it." },
+      { name: "offset", kind: "number", doc: "How far from the top of the viewport it sticks, in px." },
       { name: "items", kind: "slot", source: "story" },
     ],
     unsupported: ["onChange", "onOpenChange"],

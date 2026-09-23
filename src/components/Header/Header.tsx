@@ -235,6 +235,21 @@ export function Header({
     }
   }, [position, condense])
 
+  /*
+   * The fixed bar's height, published on the root as `--sds-header-offset` so whatever sticks under the
+   * header — `SecondaryNav` — sticks exactly at its foot, and follows it from 64 to 56 as it condenses.
+   * On the root rather than the shell because the thing reading it is a sibling, not a child. The two
+   * numbers are `.headerBar`'s `min-height` at rest and condensed.
+   */
+  useEffect(() => {
+    if (position !== 'fixed') return undefined
+    const root = document.documentElement
+    root.style.setProperty('--sds-header-offset', `${condense && scrolled ? 56 : 64}px`)
+    return () => {
+      root.style.removeProperty('--sds-header-offset')
+    }
+  }, [position, condense, scrolled])
+
   const openItem = items.find((item) => item.value === open && item.menu)
 
   return (

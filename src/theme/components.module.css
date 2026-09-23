@@ -10573,8 +10573,9 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 /* ================================================================== SecondaryNav
  *
- * The file's `Secondary Nav` (node `24826:50238`): a 64px bar with 8px of block padding round a 48px
- * row, the header's 80px gutter and 1280 column, and the product's name ahead of its nav items.
+ * The file's `Secondary Nav` (node `24826:50238`), as the Commerce page (node `24826:49318`) places it
+ * under the primary nav: a 52px bar round a 48px row, the header's 80px gutter and 1280 column, and the
+ * product's name ahead of its nav items.
  */
 .secondaryNav {
   position: relative;
@@ -10582,27 +10583,52 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   z-index: 150;
   width: 100%;
   --sds-secondary-nav-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
-  /* `rgba(7, 11, 19, 0.8)` in the file — the page background at 80%, so it inverts on light. */
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+  transition: inset-block-start var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The bar's surface, on a layer of its own rather than on the `nav`.
+ *
+ * An element with a `backdrop-filter` becomes the backdrop root for everything inside it, so a panel
+ * hanging from a `nav` that blurred would blur only the `nav` — the page under the panel came through
+ * pin-sharp. With the glass down here the `nav` is not a backdrop root, and the panel blurs the page.
+ */
+.secondaryNav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /*
+   * `rgba(5, 18, 42, 0.6)` — a navy a step bluer than the page, so the product's bar reads as its own
+   * band under the site's. Not a token; the light canvas takes the page background instead, below.
+   */
+  background-color: rgba(5, 18, 42, 0.6);
   backdrop-filter: blur(50px);
   -webkit-backdrop-filter: blur(50px);
+  /* The file's `rgba(255, 255, 255, 0.2)` rule along the foot, inset so it stays inside the 52px. */
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
   transition:
     background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
     box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
+:where([data-mantine-color-scheme='light']) .secondaryNav::before {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+  box-shadow: inset 0 -1px 0 var(--sds-glass-line-to);
+}
+
 .secondaryNav[data-sticky] {
   position: sticky;
-  inset-block-start: var(--sds-secondary-nav-offset, 56px);
+  /* An explicit `offset`, else the fixed header's height, else the top of the viewport. */
+  inset-block-start: var(--sds-secondary-nav-offset, var(--sds-header-offset, 0px));
 }
 
 /*
  * The file's `Opened Background`, which the bar takes while a dropdown hangs off it: the page at 70%
  * under a faint radial light from the top right, a `Glass Line/01` hairline along the foot and the
- * `Glass Card/shadow` glow. Stuck, it takes the same, so it separates from the page scrolling under it.
+ * `Glass Card/shadow` glow.
  */
-.secondaryNav[data-open],
-.secondaryNav[data-stuck] {
+.secondaryNav[data-open]::before {
   background-color: transparent;
   background-image:
     radial-gradient(
@@ -10616,14 +10642,15 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
     );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  /* The hairline as an inset shadow, so it draws inside the 64px rather than adding to it. */
+  /* The hairline as an inset shadow, so it draws inside the 52px rather than adding to it. */
   box-shadow:
     inset 0 -0.5px 0 var(--sds-glass-line-from),
     0 0 4px 0 var(--sds-glass-shadow);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .secondaryNav {
+  .secondaryNav,
+  .secondaryNav::before {
     transition: none;
   }
 }
@@ -10633,9 +10660,9 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   align-items: center;
   gap: 24px;
   max-width: calc(1280px + 2 * var(--sds-secondary-nav-gutter));
-  min-height: 64px;
+  min-height: 52px;
   margin: 0 auto;
-  padding: 8px var(--sds-secondary-nav-gutter);
+  padding: 2px var(--sds-secondary-nav-gutter);
 }
 
 /* `Commerce`: Source Sans 3 Regular 24, tracked -1.2, behind a 24px `UI Icon` with a 4px gap. */
@@ -10675,6 +10702,8 @@ a.secondaryNavTitle:focus-visible {
   display: flex;
   flex: 1;
   align-items: center;
+  /* 8px between items, on top of each item's own 8px of inline padding. */
+  gap: 8px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;

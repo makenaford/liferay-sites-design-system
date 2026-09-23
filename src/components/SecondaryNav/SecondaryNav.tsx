@@ -79,11 +79,11 @@ export interface SecondaryNavProps
    */
   sticky?: boolean
   /**
-   * How far from the top of the viewport it sticks, in px — the height of whatever is fixed above it.
+   * How far from the top of the viewport it sticks, in px.
    *
-   * 56 is the `Header`'s condensed bar, which is the height it has whenever this one is stuck under it.
-   *
-   * @default 56
+   * Leave it out under this library's `Header`: a fixed header publishes its height as
+   * `--sds-header-offset`, and the bar sticks at its foot — 64, or 56 once a condensing header has
+   * condensed. Without a header it sticks at the top.
    */
   offset?: number
 }
@@ -92,6 +92,9 @@ const isFragment = (href?: string): href is `#${string}` =>
   !!href && href.startsWith('#') && href.length > 1
 
 const hasPanel = (item: SecondaryNavItem) => !!item.menu || !!item.links?.length
+
+/** Where the bar sticks, read back from the stylesheet — which is where the header's height arrives. */
+const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
 
 /**
  * SecondaryNav — a product's own bar, under the `Header`: its name, and a dropdown per section.
@@ -139,7 +142,7 @@ export function SecondaryNav({
   spy = true,
   action,
   sticky = true,
-  offset = 56,
+  offset,
   className,
   style,
   'aria-label': ariaLabel,
@@ -192,8 +195,9 @@ export function SecondaryNav({
     if (!nav || !trigger || !panel) return
 
     const navBox = nav.getBoundingClientRect()
-    const gutter =
-      parseFloat(getComputedStyle(nav).getPropertyValue('--sds-secondary-nav-gutter')) || 20
+    /* The inner row's padding, resolved — the custom property itself reads back as its `clamp()`. */
+    const inner = nav.firstElementChild as HTMLElement | null
+    const gutter = inner ? parseFloat(getComputedStyle(inner).paddingLeft) : 20
     const left = trigger.getBoundingClientRect().left - navBox.left
     const max = navBox.width - panel.offsetWidth - gutter
     setPanelX(Math.max(gutter, Math.min(left, max)))
@@ -245,7 +249,7 @@ export function SecondaryNav({
       if (!nav) return
       const box = nav.getBoundingClientRect()
 
-      if (sticky) setStuck(box.top <= offset + 0.5 && window.scrollY > 0)
+      if (sticky) setStuck(box.top <= stickAt(nav) + 0.5 && window.scrollY > 0)
 
       const first = initial
       initial = false
@@ -279,7 +283,7 @@ export function SecondaryNav({
       window.removeEventListener('resize', onScroll)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [items, spy, sticky, offset, change])
+  }, [items, spy, sticky, change])
 
   /*
    * The edge fades on a bar that scrolls sideways — only on an edge with something behind it, the
@@ -326,8 +330,10 @@ export function SecondaryNav({
     change(item.value)
 
     /* The bar and the offset it sticks at both come off, so the heading lands just below the bar. */
-    const barHeight = navRef.current?.offsetHeight ?? 0
-    const top = target.getBoundingClientRect().top + window.scrollY - offset - barHeight
+    const nav = navRef.current
+    const barHeight = nav?.offsetHeight ?? 0
+    const top =
+      target.getBoundingClientRect().top + window.scrollY - (nav ? stickAt(nav) : 0) - barHeight
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     settling.current = true
@@ -367,7 +373,7 @@ export function SecondaryNav({
       data-open={open ? true : undefined}
       style={[
         {
-          '--sds-secondary-nav-offset': `${offset}px`,
+          ...(offset !== undefined ? { '--sds-secondary-nav-offset': `${offset}px` } : null),
           '--sds-secondary-panel-x': `${panelX}px`,
         } as CSSProperties,
         style,
