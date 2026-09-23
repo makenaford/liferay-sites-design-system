@@ -2741,6 +2741,32 @@
 }
 
 /*
+ * Stepping aside for a `SecondaryNav` that has taken the top of the page — the root's
+ * `data-sds-header-hidden`, which that bar sets while it replaces this one on scroll. The band slides up
+ * out of view; `visibility` follows once it has gone, so nothing off-screen stays in the tab order.
+ */
+.headerShell[data-position='fixed'] {
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    visibility 0s linear 0s;
+}
+
+:root[data-sds-header-hidden] .headerShell[data-position='fixed'] {
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    visibility 0s linear var(--sds-motion-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerShell[data-position='fixed'],
+  :root[data-sds-header-hidden] .headerShell[data-position='fixed'] {
+    transition: none;
+  }
+}
+
+/*
  * The band. 20px of blur with the saturation lifted is what makes the page underneath read as glass
  * rather than as a flat scrim, and the hairline plus the drop shadow are what separate it from content
  * scrolling past.
@@ -10581,9 +10607,8 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 /* ================================================================== SecondaryNav
  *
- * The file's `Secondary Nav` (node `24826:50238`), as the Commerce page (node `24826:49318`) places it
- * under the primary nav: a 52px bar round a 48px row, the header's 80px gutter and 1280 column, and the
- * product's name ahead of its nav items.
+ * `LRDC- Secondary Nav` (node `1:11476`). The `Secondary` frame is a 64px band — a 63px row and a 1px
+ * rule — straight under the primary nav, on the header's 80px gutter and 1280 column.
  */
 .secondaryNav {
   position: relative;
@@ -10600,28 +10625,24 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  * An element with a `backdrop-filter` becomes the backdrop root for everything inside it, so a panel
  * hanging from a `nav` that blurred would blur only the `nav` — the page under the panel came through
  * pin-sharp. With the glass down here the `nav` is not a backdrop root, and the panel blurs the page.
+ *
+ * `rgba(7, 11, 19, 0.8)` is the dark page background at 80%, so it is written as the token and inverts
+ * on light; the blur is the inner frame's 50. The rule is the file's `rgba(255, 255, 255, 0.2)`, inset
+ * so it draws inside the 64px.
  */
 .secondaryNav::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  /*
-   * `rgba(5, 18, 42, 0.6)` — a navy a step bluer than the page, so the product's bar reads as its own
-   * band under the site's. Not a token; the light canvas takes the page background instead, below.
-   */
-  background-color: rgba(5, 18, 42, 0.6);
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
   backdrop-filter: blur(50px);
   -webkit-backdrop-filter: blur(50px);
-  /* The file's `rgba(255, 255, 255, 0.2)` rule along the foot, inset so it stays inside the 52px. */
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
-  transition:
-    background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
-    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+  transition: box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 :where([data-mantine-color-scheme='light']) .secondaryNav::before {
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
   box-shadow: inset 0 -1px 0 var(--sds-glass-line-to);
 }
 
@@ -10631,29 +10652,21 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   inset-block-start: var(--sds-secondary-nav-offset, var(--sds-header-offset, 0px));
 }
 
-/*
- * The file's `Opened Background`, which the bar takes while a dropdown hangs off it: the page at 70%
- * under a faint radial light from the top right, a `Glass Line/01` hairline along the foot and the
- * `Glass Card/shadow` glow.
- */
-.secondaryNav[data-open]::before {
-  background-color: transparent;
-  background-image:
-    radial-gradient(
-      ellipse 1000px 70px at 100% 0%,
-      rgba(255, 255, 255, 0.05),
-      rgba(121, 121, 121, 0.025)
-    ),
-    linear-gradient(
-      color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 70%, transparent),
-      color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 70%, transparent)
-    );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* The hairline as an inset shadow, so it draws inside the 52px rather than adding to it. */
+/* `On Scroll`: the header is gone, the bar takes the top, and gains the file's `0 4px 4px` shadow. */
+.secondaryNav[data-sticky][data-replacing] {
+  inset-block-start: 0;
+}
+
+.secondaryNav[data-replacing]::before {
   box-shadow:
-    inset 0 -0.5px 0 var(--sds-glass-line-from),
-    0 0 4px 0 var(--sds-glass-shadow);
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+:where([data-mantine-color-scheme='light']) .secondaryNav[data-replacing]::before {
+  box-shadow:
+    inset 0 -1px 0 var(--sds-glass-line-to),
+    0 4px 4px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -10668,12 +10681,12 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   align-items: center;
   gap: 24px;
   max-width: calc(1280px + 2 * var(--sds-secondary-nav-gutter));
-  min-height: 52px;
+  min-height: 64px;
   margin: 0 auto;
-  padding: 2px var(--sds-secondary-nav-gutter);
+  padding-inline: var(--sds-secondary-nav-gutter);
 }
 
-/* `Commerce`: Source Sans 3 Regular 24, tracked -1.2, behind a 24px `UI Icon` with a 4px gap. */
+/* `Commerce`: Source Sans 3 Regular 24, tracked -1.2, behind the 32px glass icon with a 4px gap. */
 .secondaryNavTitle {
   display: flex;
   flex: none;
@@ -10694,16 +10707,14 @@ a.secondaryNavTitle:focus-visible {
   border-radius: 4px;
 }
 
-/* The file's cart is `Brand/Primary` blue on the dark bar. */
 .secondaryNavIcon {
   display: flex;
-  color: var(--sds-brand-primary-primary);
-  font-size: 24px;
+  flex: none;
 }
 
 .secondaryNavIcon > svg {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 
 .secondaryNavList {
@@ -10733,10 +10744,9 @@ a.secondaryNavTitle:focus-visible {
 
 /*
  * The items are the header's own — `.headerItem` and `.headerCaret`, widened in the header's rules to
- * cover this list — so the two bars cannot drift: same 12/8 padding and no gap, so 16px between labels,
- * the same caret, underline, hover and focus. Two things are this bar's alone: an item must not shrink
- * in a list that scrolls sideways, and a plain link can be the *current* one, which the header's never
- * is — drawn as the header draws an open section.
+ * cover this list — so the two bars cannot drift. Two things are this bar's alone: an item must not
+ * shrink in a list that scrolls sideways, and a plain link can be the *current* one, which the header's
+ * never is — drawn as the header draws an open section.
  */
 .secondaryNavList .headerItem {
   flex: none;
@@ -10757,41 +10767,146 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The dropdown. Not drawn in the file, so it is the header panel's glass — the same fill, blur, hairline
- * and shadow — as a card hanging from its trigger rather than a full-width sheet, because a product's
- * sections are a handful of links, not four columns.
+ * The dropdown — `Frame 1000005997` in both `Opened` frames. Hung flush from the bar, overlapping its
+ * 1px rule, with square top corners and 8px bottom ones: black at 80% under a 25px blur, a white 20%
+ * border, 16px of padding and a faint blue drop shadow. `Features` is 296 wide with 12px between rows;
+ * `Customer Stories` is 381 with 24.
  */
 .secondaryNavPanel {
   position: absolute;
-  inset-block-start: calc(100% + 8px);
+  inset-block-start: calc(100% - 1px);
   inset-inline-start: var(--sds-secondary-panel-x, 0px);
-  width: max-content;
-  min-width: 280px;
-  max-width: min(400px, calc(100vw - 2 * var(--sds-secondary-nav-gutter)));
-  padding: 16px 24px;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid var(--sds-glass-line-to);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 296px;
+  max-width: calc(100vw - 2 * var(--sds-secondary-nav-gutter));
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 10px 5px rgba(116, 164, 255, 0.1);
   animation: header-panel-in var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.secondaryNavPanel[data-variant='media'] {
+  gap: 24px;
+  width: 381px;
+}
+
+/* A panel of the caller's own takes its content's width. */
+.secondaryNavPanel:not([data-variant]) {
+  width: max-content;
 }
 
 .secondaryNavPanel[hidden] {
   display: none;
 }
 
-.secondaryNavLinks {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+:where([data-mantine-color-scheme='light']) .secondaryNavPanel {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 90%, transparent);
+  border-color: var(--sds-glass-line-to);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .secondaryNavPanel {
     animation: none;
   }
+}
+
+/* `Nav Item 01`: a 20px icon box, 4px, then the title and its description 4px apart. */
+.secondaryNavLink {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  border-radius: 4px;
+  color: var(--sds-surfaces-text-primary);
+  text-decoration: none;
+}
+
+/* `Nav Item 5`: a 64x43 thumbnail, 12px, and a title centred against it. */
+.secondaryNavPanel[data-variant='media'] .secondaryNavLink {
+  gap: 12px;
+  align-items: center;
+}
+
+/* The `nav icon` box: 20 wide with 2px above and below, so the glyph sits on the title's 24px line. */
+.secondaryNavLinkIcon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  padding-block: 2px;
+  color: var(--sds-neutral-08);
+  font-size: 20px;
+}
+
+.secondaryNavLinkIcon > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.secondaryNavThumb {
+  display: flex;
+  flex: none;
+  width: 64px;
+  height: 43px;
+  overflow: hidden;
+  border: 1px solid var(--sds-neutral-02);
+  border-radius: 4px;
+}
+
+.secondaryNavThumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.secondaryNavLinkBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* `Action/Link/Small` — 16/24 SemiBold. The thumbnail rows set theirs at 1.25, `Paragraph/Small`. */
+.secondaryNavLinkTitle {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.secondaryNavPanel[data-variant='media'] .secondaryNavLinkTitle {
+  line-height: 1.25;
+}
+
+/* `Paragraph/X-Small/Regular` in `Surfaces/Text/Secondary`. */
+.secondaryNavLinkDescription {
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/*
+ * Not drawn in the file. The title takes the header's open-section colour on hover, which is the one
+ * link-state colour this bar already uses, and focus is the header's ring.
+ */
+@media (hover: hover) {
+  .secondaryNavLink:hover .secondaryNavLinkTitle {
+    color: var(--sds-action-link-active-link);
+  }
+}
+
+.secondaryNavLink:focus-visible {
+  outline: 2px solid var(--sds-action-link-active-link);
+  outline-offset: 4px;
 }
 
 /*
@@ -10807,10 +10922,10 @@ a.secondaryNavTitle:focus-visible {
     gap: 16px;
   }
 
-  .secondaryNavPanel {
+  .secondaryNavPanel,
+  .secondaryNavPanel[data-variant='media'] {
     inset-inline: var(--sds-secondary-nav-gutter);
     width: auto;
-    min-width: 0;
     max-width: none;
   }
 }

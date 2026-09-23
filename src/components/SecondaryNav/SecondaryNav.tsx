@@ -12,7 +12,6 @@ import {
 import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
-import { MegaMenu } from '../Header'
 import { IconDown } from '../../icons'
 
 export interface SecondaryNavLink {
@@ -23,6 +22,13 @@ export interface SecondaryNavLink {
   description?: ReactNode
   /** A `UI Icon` glyph beside the label. */
   icon?: ReactNode
+  /**
+   * A 3:2 image in place of the icon — the file's customer-story rows. Any link in a dropdown with one
+   * makes the whole dropdown the thumbnail layout.
+   */
+  thumbnail?: string
+  /** The thumbnail's alt. Empty by default: the title beside it already names the story. */
+  thumbnailAlt?: string
   /** Marks a link that leaves the site. */
   external?: boolean
 }
@@ -79,10 +85,20 @@ export interface SecondaryNavProps
    */
   sticky?: boolean
   /**
+   * Take the header's place on scroll — the file's `On Scroll` frame. Once the bar's own resting place
+   * has scrolled past, the fixed header slides away and this bar moves up to the top of the viewport;
+   * back above that line, the header returns.
+   *
+   * Only meaningful while `sticky`, and under this library's fixed `Header`.
+   *
+   * @default true
+   */
+  replaceHeader?: boolean
+  /**
    * How far from the top of the viewport it sticks, in px.
    *
    * Leave it out under this library's `Header`: a fixed header publishes its height as
-   * `--sds-header-offset`, and the bar sticks at its foot — 64, or 56 once a condensing header has
+   * `--sds-header-offset`, and the bar sticks at its foot — 65, or 57 once a condensing header has
    * condensed. Without a header it sticks at the top.
    */
   offset?: number
@@ -93,24 +109,30 @@ const isFragment = (href?: string): href is `#${string}` =>
 
 const hasPanel = (item: SecondaryNavItem) => !!item.menu || !!item.links?.length
 
+/** The attribute on the root that tells a fixed `Header` to step aside. */
+const HEADER_HIDDEN = 'data-sds-header-hidden'
+
 /** Where the bar sticks, read back from the stylesheet — which is where the header's height arrives. */
 const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
 
 /**
  * SecondaryNav — a product's own bar, under the `Header`: its name, and a dropdown per section.
  *
- * Built from the file's `Secondary Nav` (node `24826:50238`): the product's icon and name in 24px
- * Regular, then the same `Mega Menu Nav Item` the header uses, each with its caret. The file draws the
- * closed bar and the `Opened Background` it takes while a dropdown is open, but not the dropdown
- * itself — so the panel is this library's own glass surface holding `MegaMenu.Item` rows, the links
- * the header's panels are already made of.
+ * Built from `LRDC- Secondary Nav` (node `1:11476`): the product's glass icon and name in 24px Regular,
+ * then the header's own nav items. Two dropdowns are drawn — icon rows with a line of description
+ * (`Features`) and thumbnail rows (`Customer Stories`) — both hung flush from the bar's foot under their
+ * trigger. `On Scroll` is the bar alone at the top of the viewport, the site header gone.
  *
  * ```tsx
  * <SecondaryNav
- *   icon={<IconShoppingCart2 />}
+ *   icon={<IconGlassCommerce size={32} />}
  *   title="Commerce"
  *   items={[
- *     { value: 'features', label: 'Features', links: [{ label: 'Catalog', href: '/commerce/catalog' }] },
+ *     {
+ *       value: 'features',
+ *       label: 'Features',
+ *       links: [{ label: 'Commerce Overview', href: '/commerce', icon: <IconShoppingCart1 /> }],
+ *     },
  *   ]}
  * />
  * ```
@@ -124,6 +146,10 @@ const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
  * `<button aria-expanded aria-controls>` over a region of ordinary links, so Tab moves through them the
  * way it does everywhere else. Escape closes and returns focus to the trigger, a click outside closes,
  * and following a link closes. One dropdown at a time.
+ *
+ * **It replaces the header on scroll.** Once the bar's resting place scrolls past, the root takes
+ * `data-sds-header-hidden`, the fixed header slides up out of view, and the bar moves to the top. Back
+ * above that line the header returns. `replaceHeader={false}` keeps both.
  *
  * **The panel hangs from its trigger**, and sits outside the scrolling list of items so a phone's
  * sideways-scrolling bar cannot clip it. It is kept inside the gutter at either end, and on a phone it
@@ -145,6 +171,7 @@ export function SecondaryNav({
   spy = true,
   action,
   sticky = true,
+  replaceHeader = true,
   offset,
   className,
   style,
@@ -155,7 +182,10 @@ export function SecondaryNav({
   const [uncontrolled, setUncontrolled] = useState<string | null>(defaultValue)
   const current = value !== undefined ? value : uncontrolled
   const [stuck, setStuck] = useState(false)
+  const [replacing, setReplacing] = useState(false)
   const [panelX, setPanelX] = useState(0)
+  /* Where the bar rests in the document, before any sticking — the line past which it replaces the header. */
+  const restingTop = useRef<number | null>(null)
 
   const navRef = useRef<HTMLElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -251,8 +281,17 @@ export function SecondaryNav({
       const nav = navRef.current
       if (!nav) return
       const box = nav.getBoundingClientRect()
+      const at = stickAt(nav)
+      const isStuck = box.top <= at + 0.5
 
-      if (sticky) setStuck(box.top <= stickAt(nav) + 0.5 && window.scrollY > 0)
+      /*
+       * The resting place is only readable while the bar is not stuck — or on the first read, when a bar
+       * placed directly under the header is "stuck" at exactly where it rests.
+       */
+      if (!isStuck || restingTop.current === null) restingTop.current = box.top + window.scrollY
+
+      if (sticky) setStuck(isStuck && window.scrollY > 0)
+      setReplacing(sticky && replaceHeader && window.scrollY > restingTop.current)
 
       const first = initial
       initial = false
@@ -286,7 +325,19 @@ export function SecondaryNav({
       window.removeEventListener('resize', onScroll)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [items, spy, sticky, change])
+  }, [items, spy, sticky, replaceHeader, change])
+
+  /*
+   * The header steps aside while this bar has its place. An attribute on the root rather than a prop,
+   * because the two are siblings and the page should not have to wire them together — the same channel
+   * the header uses in the other direction, publishing its height as `--sds-header-offset`.
+   */
+  useEffect(() => {
+    if (!replacing) return undefined
+    const root = document.documentElement
+    root.setAttribute(HEADER_HIDDEN, '')
+    return () => root.removeAttribute(HEADER_HIDDEN)
+  }, [replacing])
 
   /*
    * The edge fades on a bar that scrolls sideways — only on an edge with something behind it, the
@@ -373,6 +424,7 @@ export function SecondaryNav({
       className={[classes.secondaryNav, className].filter(Boolean).join(' ')}
       data-sticky={sticky || undefined}
       data-stuck={stuck || undefined}
+      data-replacing={replacing || undefined}
       data-open={open ? true : undefined}
       style={[
         {
@@ -445,38 +497,56 @@ export function SecondaryNav({
        * The panels, outside the list: it scrolls sideways on a phone, and a scrolling box clips
        * everything positioned inside it. `hidden` keeps the closed ones out of the tab order.
        */}
-      {items.filter(hasPanel).map((item) => (
-        <div
-          key={item.value}
-          id={`${baseId}-${item.value}`}
-          ref={(node) => {
-            panels.current.set(item.value, node)
-          }}
-          className={classes.secondaryNavPanel}
-          role="region"
-          aria-label={typeof item.label === 'string' ? item.label : undefined}
-          hidden={open !== item.value}
-          /* Following a link closes the panel; the page it leads to may be this one. */
-          onClick={(event) => {
-            if ((event.target as HTMLElement).closest('a')) toggle(null)
-          }}
-        >
-          {item.menu ?? (
-            <div className={classes.secondaryNavLinks}>
-              {item.links!.map((link, index) => (
-                <MegaMenu.Item
+      {items.filter(hasPanel).map((item) => {
+        const media = !!item.links?.some((link) => link.thumbnail)
+        return (
+          <div
+            key={item.value}
+            id={`${baseId}-${item.value}`}
+            ref={(node) => {
+              panels.current.set(item.value, node)
+            }}
+            className={classes.secondaryNavPanel}
+            data-variant={item.menu ? undefined : media ? 'media' : 'links'}
+            role="region"
+            aria-label={typeof item.label === 'string' ? item.label : undefined}
+            hidden={open !== item.value}
+            /* Following a link closes the panel; the page it leads to may be this one. */
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest('a')) toggle(null)
+            }}
+          >
+            {item.menu ??
+              item.links!.map((link, index) => (
+                <a
                   key={index}
                   href={link.href}
-                  icon={link.icon}
-                  title={link.label}
-                  description={link.description}
-                  external={link.external}
-                />
+                  className={classes.secondaryNavLink}
+                  {...(link.external ? { target: '_blank', rel: 'noreferrer noopener' } : null)}
+                >
+                  {media ? (
+                    <span className={classes.secondaryNavThumb}>
+                      {link.thumbnail ? <img src={link.thumbnail} alt={link.thumbnailAlt ?? ''} /> : null}
+                    </span>
+                  ) : link.icon ? (
+                    <span className={classes.secondaryNavLinkIcon} aria-hidden>
+                      {link.icon}
+                    </span>
+                  ) : null}
+                  <span className={classes.secondaryNavLinkBody}>
+                    <span className={classes.secondaryNavLinkTitle}>{link.label}</span>
+                    {link.description && !media ? (
+                      <span className={classes.secondaryNavLinkDescription}>{link.description}</span>
+                    ) : null}
+                  </span>
+                  {link.external ? (
+                    <span className={classes.visuallyHidden}> (opens in a new tab)</span>
+                  ) : null}
+                </a>
               ))}
-            </div>
-          )}
-        </div>
-      ))}
+          </div>
+        )
+      })}
     </Box>
   )
 }

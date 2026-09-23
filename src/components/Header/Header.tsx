@@ -239,12 +239,13 @@ export function Header({
    * The fixed bar's height, published on the root as `--sds-header-offset` so whatever sticks under the
    * header — `SecondaryNav` — sticks exactly at its foot, and follows it from 64 to 56 as it condenses.
    * On the root rather than the shell because the thing reading it is a sibling, not a child. The two
-   * numbers are `.headerBar`'s `min-height` at rest and condensed.
+   * numbers are `.headerBar`'s `min-height` at rest and condensed, plus the band's 1px bottom rule — 65
+   * is what the file's `LRDC Primary Nav` measures, and where it starts the secondary bar.
    */
   useEffect(() => {
     if (position !== 'fixed') return undefined
     const root = document.documentElement
-    root.style.setProperty('--sds-header-offset', `${condense && scrolled ? 56 : 64}px`)
+    root.style.setProperty('--sds-header-offset', `${condense && scrolled ? 57 : 65}px`)
     return () => {
       root.style.removeProperty('--sds-header-offset')
     }

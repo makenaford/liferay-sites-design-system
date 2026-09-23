@@ -9,50 +9,52 @@ import { Section, SectionTitle } from '../Section'
 import { SiteFooter, SiteHeader } from '../../templates/shared'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
 import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.webm'
+import { IconGlassCommerce } from '../../icons/glass.generated'
 import {
   IconBook2,
-  IconBox3,
-  IconBuilding2,
   IconChartLine,
   IconDocument2,
   IconGroup,
   IconPresentation1,
-  IconSearch,
   IconSettings5,
   IconShop,
   IconShoppingBag1,
-  IconShoppingCart2,
+  IconShoppingCart1,
 } from '../../icons'
+import vodafoneIdea from '../../../assets/secondary-nav/vodafone-idea.jpg'
+import sapphireGroup from '../../../assets/secondary-nav/sapphire-group.jpg'
+import tag from '../../../assets/secondary-nav/tag.jpg'
+import bre from '../../../assets/secondary-nav/bre.jpg'
 
-/** The file's four sections, each opening onto a handful of placeholder links. */
+/** Not drawn in the file: `Capabilities` and `Resources` stand in, in the `Features` layout. */
+const PLACEHOLDER = 'Placeholder — not drawn in the file.'
+
+/**
+ * The file's four sections. `Features` and `Customer Stories` are the two dropdowns `LRDC- Secondary
+ * Nav` draws, copy and all; `Capabilities` and `Resources` are not drawn, so they are placeholders.
+ */
 const COMMERCE_ITEMS: SecondaryNavItem[] = [
   {
     value: 'features',
     label: 'Features',
     links: [
       {
-        label: 'Product Catalog',
-        href: '#catalog',
-        icon: <IconBox3 />,
-        description: 'Manage products, variants and pricing in one place.',
+        label: 'Commerce Overview',
+        href: '#commerce-overview',
+        icon: <IconShoppingCart1 />,
+        description: 'End-to-end commerce, built into your DXP.',
       },
       {
-        label: 'Storefronts',
+        label: 'B2B Commerce Platform',
+        href: '#b2b-commerce',
+        icon: <IconShoppingBag1 />,
+        description: 'Simplify complex B2B buying journeys.',
+      },
+      {
+        label: 'Digital Storefronts',
         href: '#storefronts',
         icon: <IconShop />,
-        description: 'Launch B2B and B2C storefronts on one platform.',
-      },
-      {
-        label: 'Search & Discovery',
-        href: '#search',
-        icon: <IconSearch />,
-        description: 'Help buyers find the right product faster.',
-      },
-      {
-        label: 'Order Management',
-        href: '#orders',
-        icon: <IconShoppingBag1 />,
-        description: 'Quotes, approvals and fulfilment, end to end.',
+        description: 'Launch storefronts that convert.',
       },
     ],
   },
@@ -60,33 +62,42 @@ const COMMERCE_ITEMS: SecondaryNavItem[] = [
     value: 'capabilities',
     label: 'Capabilities',
     links: [
-      { label: 'Account Management', href: '#accounts', icon: <IconGroup /> },
-      { label: 'Pricing & Promotions', href: '#pricing', icon: <IconChartLine /> },
-      { label: 'Integrations', href: '#integrations', icon: <IconSettings5 /> },
+      { label: 'Account Management', href: '#accounts', icon: <IconGroup />, description: PLACEHOLDER },
+      { label: 'Pricing & Promotions', href: '#pricing', icon: <IconChartLine />, description: PLACEHOLDER },
+      { label: 'Integrations', href: '#integrations', icon: <IconSettings5 />, description: PLACEHOLDER },
     ],
   },
   {
     value: 'customer-stories',
     label: 'Customer Stories',
     links: [
-      { label: 'Manufacturing', href: '#manufacturing', icon: <IconBuilding2 /> },
-      { label: 'Distribution', href: '#distribution', icon: <IconBox3 /> },
-      { label: 'All Customer Stories', href: '#stories' },
+      {
+        label: 'Vodafone Idea Unifies Partner and Customer Experiences with Liferay PaaS',
+        href: '#vodafone-idea',
+        thumbnail: vodafoneIdea,
+      },
+      {
+        label: 'Sapphire Group builds fast, easy, and intuitive ordering system',
+        href: '#sapphire-group',
+        thumbnail: sapphireGroup,
+      },
+      { label: 'Tag Makes B2B Ordering Easier with Self-Service', href: '#tag', thumbnail: tag },
+      { label: 'BRE Reduces Digital Footprint by 88%', href: '#bre', thumbnail: bre },
     ],
   },
   {
     value: 'resources',
     label: 'Resources',
     links: [
-      { label: 'Documentation', href: '#docs', icon: <IconBook2 /> },
-      { label: 'Webinars', href: '#webinars', icon: <IconPresentation1 /> },
-      { label: 'Analyst Reports', href: '#reports', icon: <IconDocument2 /> },
+      { label: 'Documentation', href: '#docs', icon: <IconBook2 />, description: PLACEHOLDER },
+      { label: 'Webinars', href: '#webinars', icon: <IconPresentation1 />, description: PLACEHOLDER },
+      { label: 'Analyst Reports', href: '#reports', icon: <IconDocument2 />, description: PLACEHOLDER },
     ],
   },
 ]
 
-/** The header's bar and this one, stacked — what the hero reaches up behind. */
-const CHROME = 64 + 52
+/** The primary nav (65, with its rule) and this bar (64), stacked — what the hero reaches up behind. */
+const CHROME = 65 + 64
 
 /** Stands in for the hero shot, a 3:2 frame as the file's `Aspect Ratio` draws it: stories render offline. */
 function Shot() {
@@ -103,12 +114,12 @@ function Shot() {
 }
 
 /**
- * The file's Commerce page (node `24826:49318`): the site header, the product's bar straight under it,
+ * The file's `Solution` frame (node `1:6988`): the site header, the product's bar straight under it,
  * then the hero — with the bubble running up behind both bars, as the file draws it.
  *
- * The bar sits 64px down, which is the fixed header's height, and sticks there; the hero pulls up by
- * both bars' height and pads back down by the same, so its artwork starts at the very top of the page
- * while its content starts under the chrome.
+ * The bar sits at the fixed header's foot and sticks there; the hero pulls up by both bars' height and
+ * pads back down by the same, so its artwork starts at the very top of the page while its content starts
+ * under the chrome. Scroll past the bar's resting place and it replaces the header — `On Scroll`.
  */
 function CommercePage({ nav }: { nav: ReactNode }) {
   return (
@@ -121,8 +132,8 @@ function CommercePage({ nav }: { nav: ReactNode }) {
         videoLight={bubbleCornerLight}
         mt={-CHROME}
         pt={CHROME}
-        title={<h1>Hero Title</h1>}
-        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non lacinia mi. Etiam nec mauris fringilla, tincidunt tellus sed, feugiat nulla. Curabitur justo urna, rutrum sit amet lectus malesuada, porttitor laoreet elit."
+        title={<h1>Streamline ordering processes to accelerate order fulfillment</h1>}
+        description="Fulfill orders faster with increased accuracy using native product, ordering, and inventory management capabilities."
         actions={
           <>
             <Button>Book a Demo</Button>
@@ -134,8 +145,8 @@ function CommercePage({ nav }: { nav: ReactNode }) {
       <Section
         title={
           <SectionTitle
-            title="Placeholder section"
-            description="Scroll: the product bar stays under the site header all the way down the page."
+            title="Customer Story Title"
+            description="Scroll: once the product bar's resting place has passed, it takes the header's place at the top of the page."
           />
         }
       >
@@ -150,7 +161,7 @@ function CommercePage({ nav }: { nav: ReactNode }) {
           ))}
         </SimpleGrid>
       </Section>
-      <Section title={<SectionTitle title="Another section" />}>
+      <Section title={<SectionTitle title="Card Title" description="Lorem ipsum dolor sit amet, consectetur adipiscing elit." />}>
         <Box h={600} />
       </Section>
       <SiteFooter />
@@ -162,7 +173,7 @@ const meta = {
   title: 'Components/SecondaryNav',
   component: SecondaryNav,
   args: {
-    icon: <IconShoppingCart2 />,
+    icon: <IconGlassCommerce size={32} />,
     title: 'Commerce',
     items: COMMERCE_ITEMS,
     sticky: false,
@@ -180,9 +191,9 @@ const meta = {
     docs: {
       description: {
         component: [
-          'A product’s own bar under the `Header`, from the file’s `Secondary Nav` (node `24826:50238`): the product’s icon and name, then a dropdown per section.',
+          'A product’s own bar under the `Header`, from `LRDC- Secondary Nav` (node `1:11476`): the product’s glass icon and name, then the header’s own nav items, each opening a dropdown.',
           '',
-          'The file draws the closed bar and the **Opened Background** it takes while a dropdown is open, but not the dropdown itself — the panel is the header panel’s glass holding `MegaMenu.Item` rows. **Click to open**, Escape or a click outside to close, one at a time, exactly as the header does.',
+          'Two dropdowns are drawn — icon rows with a description (**Features**) and thumbnail rows (**Customer Stories**) — hung flush from the bar under their trigger. **Click to open**, Escape or a click outside to close, one at a time, as the header does. **On scroll it replaces the header**: the site header slides away and this bar takes the top of the page.',
         ].join('\n'),
       },
     },
@@ -207,29 +218,37 @@ export const FeaturesOpen: Story = {
   render: Default.render,
 }
 
-/** **Resources** open: a shorter list, with no descriptions. */
-export const ResourcesOpen: Story = {
-  args: { defaultOpen: 'resources' },
+/** **Customer Stories** open — the file's second `Opened` frame: thumbnail rows, 381 wide. */
+export const CustomerStoriesOpen: Story = {
+  args: { defaultOpen: 'customer-stories' },
   render: Default.render,
 }
 
 /**
- * **On a page** — the file's Commerce page. The site header at the top, the product's bar directly
+ * **On a page** — the file's `Solution` frame. The site header at the top, the product's bar directly
  * under it, and the hero below both, its bubble reaching up behind the two bars.
  *
- * Scroll and the bar stays under the header all the way down. Open a section and the bar takes the
- * `Opened Background` while its dropdown hangs over the page; open one of the header's menus instead
- * and the mega menu drops over the bar — clicking one closes the other.
+ * **Scroll** — the file's `On Scroll` frame. Once the bar's resting place has passed, the site header
+ * slides up out of view and the bar moves to the top of the page, gaining a soft shadow. Scroll back
+ * above that line and the header returns. Open a section and its dropdown hangs from the bar over the
+ * page; open one of the header's menus instead and the mega menu drops over the bar — opening one closes
+ * the other.
  */
 export const OnAPage: Story = {
   args: { sticky: true },
-  render: (args) => <CommercePage nav={<SecondaryNav {...args} mt="var(--sds-header-offset, 64px)" />} />,
+  render: (args) => <CommercePage nav={<SecondaryNav {...args} mt="var(--sds-header-offset, 65px)" />} />,
 }
 
-/** On a page, with **Features** open over the hero. */
+/** On a page, with **Features** open over the hero — the file's first `Opened` frame. */
 export const OnAPageFeaturesOpen: Story = {
   ...OnAPage,
   args: { sticky: true, defaultOpen: 'features' },
+}
+
+/** On a page, with **Customer Stories** open — the file's second `Opened` frame. */
+export const OnAPageCustomerStoriesOpen: Story = {
+  ...OnAPage,
+  args: { sticky: true, defaultOpen: 'customer-stories' },
 }
 
 /**
