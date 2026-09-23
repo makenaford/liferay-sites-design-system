@@ -1,1 +1,6 @@
-export { SecondaryNav, type SecondaryNavProps, type SecondaryNavItem } from './SecondaryNav'
+export {
+  SecondaryNav,
+  type SecondaryNavProps,
+  type SecondaryNavItem,
+  type SecondaryNavLink,
+} from './SecondaryNav'

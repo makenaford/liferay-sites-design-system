@@ -10570,17 +10570,22 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   --sds-star-fill-to: var(--sds-accent-cyan);
 }
 
+
 /* ================================================================== SecondaryNav
  *
- * The in-page bar under the `Header`. Not in the Solutions Library yet, so every value here is borrowed
- * from a component that is: the header's gutter and glass, the tabs' label sizes and gradient.
+ * The file's `Secondary Nav` (node `24826:50238`): a 64px bar with 8px of block padding round a 48px
+ * row, the header's 80px gutter and 1280 column, and the product's name ahead of its nav items.
  */
 .secondaryNav {
   position: relative;
-  /* Under the header's 200, so an open mega menu still hangs over it. */
+  /* Under the header's 200, so an open mega menu still hangs over this bar. */
   z-index: 150;
   width: 100%;
-  border-bottom: 1px solid var(--sds-glass-line-to);
+  --sds-secondary-nav-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
+  /* `rgba(7, 11, 19, 0.8)` in the file — the page background at 80%, so it inverts on light. */
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
   transition:
     background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
     box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
@@ -10591,12 +10596,30 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   inset-block-start: var(--sds-secondary-nav-offset, 56px);
 }
 
-/* Stuck, it takes the header's glass, so the two read as one band over the page. */
+/*
+ * The file's `Opened Background`, which the bar takes while a dropdown hangs off it: the page at 70%
+ * under a faint radial light from the top right, a `Glass Line/01` hairline along the foot and the
+ * `Glass Card/shadow` glow. Stuck, it takes the same, so it separates from the page scrolling under it.
+ */
+.secondaryNav[data-open],
 .secondaryNav[data-stuck] {
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  background-color: transparent;
+  background-image:
+    radial-gradient(
+      ellipse 1000px 70px at 100% 0%,
+      rgba(255, 255, 255, 0.05),
+      rgba(121, 121, 121, 0.025)
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 70%, transparent),
+      color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 70%, transparent)
+    );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  /* The hairline as an inset shadow, so it draws inside the 64px rather than adding to it. */
+  box-shadow:
+    inset 0 -0.5px 0 var(--sds-glass-line-from),
+    0 0 4px 0 var(--sds-glass-shadow);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -10605,41 +10628,54 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 }
 
-/* The header's gutter exactly, so the title sits under the logo and the action under Contact Sales. */
 .secondaryNavInner {
-  --sds-secondary-nav-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
   display: flex;
   align-items: center;
   gap: 24px;
   max-width: calc(1280px + 2 * var(--sds-secondary-nav-gutter));
-  min-height: 56px;
+  min-height: 64px;
   margin: 0 auto;
-  padding-inline: var(--sds-secondary-nav-gutter);
+  padding: 8px var(--sds-secondary-nav-gutter);
 }
 
+/* `Commerce`: Source Sans 3 Regular 24, tracked -1.2, behind a 24px `UI Icon` with a 4px gap. */
 .secondaryNavTitle {
+  display: flex;
   flex: none;
-  padding-inline-end: 24px;
-  border-inline-end: 1px solid var(--sds-glass-line-to);
+  align-items: center;
+  gap: 4px;
   color: var(--sds-surfaces-text-primary);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 24px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -1.2px;
   white-space: nowrap;
   text-decoration: none;
 }
 
 a.secondaryNavTitle:focus-visible {
-  outline: 2px solid var(--sds-action-primary-hover);
+  outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* The file's cart is `Brand/Primary` blue on the dark bar. */
+.secondaryNavIcon {
+  display: flex;
+  color: var(--sds-brand-primary-primary);
+  font-size: 24px;
+}
+
+.secondaryNavIcon > svg {
+  width: 24px;
+  height: 24px;
 }
 
 .secondaryNavList {
   display: flex;
   flex: 1;
+  align-items: center;
   min-width: 0;
-  align-self: stretch;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -10648,7 +10684,6 @@ a.secondaryNavTitle:focus-visible {
   display: none;
 }
 
-/* A fade only on an edge with something behind it — the contract `Tabs` and `Carousel` keep. */
 .secondaryNavList[data-overflow-end]:not([data-overflow-start]) {
   mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
 }
@@ -10661,74 +10696,89 @@ a.secondaryNavTitle:focus-visible {
   mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 
-/* The tabs' label: 14/20 SemiBold in `Surfaces/Text/Secondary`, primary and Bold when current. */
+/*
+ * `Mega Menu Nav Item`, the component the header's sections are: 16/24 SemiBold in
+ * `Surfaces/Text/Primary`, 12/8 padding, a 4px gap to the caret. Open or current, it takes the header's
+ * `Action/Link/Active Link` and the underline that wipes out from the centre.
+ */
 .secondaryNavItem {
   position: relative;
   display: flex;
-  align-items: center;
   flex: none;
-  padding: 0 14px;
-  color: var(--sds-surfaces-text-secondary);
-  font-size: 14px;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 6px;
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
   font-weight: 600;
-  line-height: 20px;
+  line-height: 24px;
   white-space: nowrap;
   text-decoration: none;
-  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+  cursor: pointer;
+  transition:
+    color var(--sds-motion-fast) var(--sds-motion-ease),
+    background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.secondaryNavItem:first-child {
-  padding-inline-start: 0;
-}
-
-/* The line sits on the bar's hairline, and wipes out from the centre like the header's underline. */
 .secondaryNavItem::after {
   content: '';
   position: absolute;
-  inset-inline: 14px;
-  bottom: -1px;
-  height: 3px;
-  border-radius: 999px;
-  background-image: linear-gradient(
-    to right,
-    var(--sds-action-primary-active) 50%,
-    var(--sds-accent-product-accent) 100%
-  );
+  inset-inline: 8px;
+  bottom: 0;
+  height: 2px;
+  background-color: var(--sds-action-link-active-link);
   transform: scaleX(0);
   transform-origin: center;
   transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
-  pointer-events: none;
 }
 
-.secondaryNavItem:first-child::after {
-  inset-inline-start: 0;
-}
-
+.secondaryNavItem[data-open],
 .secondaryNavItem[data-active] {
-  color: var(--sds-surfaces-text-primary);
-  font-weight: 700;
+  color: var(--sds-action-link-active-link);
 }
 
+.secondaryNavItem[data-open]::after,
 .secondaryNavItem[data-active]::after {
   transform: scaleX(1);
 }
 
+/* The file's caret: 16px at 70% opacity, turning over while its dropdown is open. */
+.secondaryNavCaret {
+  display: flex;
+  opacity: 0.7;
+  transition:
+    opacity var(--sds-motion-fast) var(--sds-motion-ease),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.secondaryNavCaret > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.secondaryNavItem[data-open] .secondaryNavCaret {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
 @media (hover: hover) {
-  .secondaryNavItem:hover:not([data-active]) {
-    color: var(--sds-action-link-hover-link);
+  .secondaryNavItem:hover:not([data-open], [data-active]) {
+    color: var(--sds-neutral-10);
+    background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
   }
 }
 
-/* Inset, so a scrolling list does not clip the ring. */
+/* Inset, so the scrolling list does not clip the ring. */
 .secondaryNavItem:focus-visible {
-  outline: 2px solid var(--sds-action-primary-hover);
+  outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: -2px;
-  border-radius: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .secondaryNavItem,
-  .secondaryNavItem::after {
+  .secondaryNavItem::after,
+  .secondaryNavCaret {
     transition: none;
   }
 }
@@ -10739,7 +10789,48 @@ a.secondaryNavTitle:focus-visible {
   align-items: center;
 }
 
-/* On a phone the title gives up its room to the links; the header already says whose site this is. */
+/*
+ * The dropdown. Not drawn in the file, so it is the header panel's glass — the same fill, blur, hairline
+ * and shadow — as a card hanging from its trigger rather than a full-width sheet, because a product's
+ * sections are a handful of links, not four columns.
+ */
+.secondaryNavPanel {
+  position: absolute;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: var(--sds-secondary-panel-x, 0px);
+  width: max-content;
+  min-width: 280px;
+  max-width: min(400px, calc(100vw - 2 * var(--sds-secondary-nav-gutter)));
+  padding: 16px 24px;
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--sds-glass-line-to);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: header-panel-in var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.secondaryNavPanel[hidden] {
+  display: none;
+}
+
+.secondaryNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondaryNavPanel {
+    animation: none;
+  }
+}
+
+/*
+ * On a phone the name gives up its room to the items, and the dropdown spans the gutters rather than
+ * hanging from a trigger that may be half off-screen.
+ */
 @media (max-width: 767px) {
   .secondaryNavTitle {
     display: none;
@@ -10747,5 +10838,12 @@ a.secondaryNavTitle:focus-visible {
 
   .secondaryNavInner {
     gap: 16px;
+  }
+
+  .secondaryNavPanel {
+    inset-inline: var(--sds-secondary-nav-gutter);
+    width: auto;
+    min-width: 0;
+    max-width: none;
   }
 }

@@ -1067,6 +1067,23 @@ export function IconShoppingCart1(props: IconProps) {
   )
 }
 
+/** MingCute `shopping_cart_2` (regular, business). */
+export function IconShoppingCart2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.5 18H8.796a1 1 0 0 1-.975-.775l-.52-2.25-2.137-9.263a2 2 0 0 0-.748-1.15L3 3.5M6 6h12.867a1 1 0 0 1 .992 1.124l-.456 3.656a4 4 0 0 1-3.637 3.49l-8.464.705M9 21h.002M16 21h.002"/>
+    </svg>
+  )
+}
+
 /** MingCute `social_x` (regular, brands). */
 export function IconSocialX(props: IconProps) {
   return (

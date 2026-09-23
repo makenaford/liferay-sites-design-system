@@ -85,6 +85,7 @@ export {
   SecondaryNav,
   type SecondaryNavProps,
   type SecondaryNavItem,
+  type SecondaryNavLink,
 } from './components/SecondaryNav'
 export {
   Marquee,

@@ -1,16 +1,44 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
-import { Box } from '@mantine/core'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from 'react'
+import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
+import { MegaMenu } from '../Header'
+import { IconDown } from '../../icons'
+
+export interface SecondaryNavLink {
+  /** The link's own text. */
+  label: ReactNode
+  href: string
+  /** A line under the label. */
+  description?: ReactNode
+  /** A `UI Icon` glyph beside the label. */
+  icon?: ReactNode
+  /** Marks a link that leaves the site. */
+  external?: boolean
+}
 
 export interface SecondaryNavItem {
-  /** Identifies the item. Also what `value` and `onChange` speak in. */
+  /** Identifies the item, and ties a trigger to its panel through `aria-controls`. */
   value: string
   /** The label in the bar. */
   label: ReactNode
+  /** The links the dropdown opens onto. */
+  links?: SecondaryNavLink[]
+  /** A panel of your own instead of `links` — a `MegaMenu` composition, say. */
+  menu?: ReactNode
   /**
-   * Where it goes. A `#fragment` is a section on this page, and is what the scroll spy tracks; anything
-   * else is an ordinary link to another page.
+   * For an item that navigates rather than opening a panel. A `#fragment` is a section of this page,
+   * and is what the scroll spy tracks.
    */
   href?: string
 }
@@ -18,13 +46,19 @@ export interface SecondaryNavItem {
 export interface SecondaryNavProps
   extends BoxProps,
     Omit<ElementProps<'nav'>, 'title' | 'onChange' | 'defaultValue'> {
-  /** The product or section name, at the start of the bar. */
+  /** The product name, at the start of the bar — `Commerce` in the file. */
   title?: ReactNode
-  /** Makes the title a link — to the top of the product's overview, usually. */
+  /** The product's `UI Icon`, before the name. */
+  icon?: ReactNode
+  /** Makes the name a link — to the product's overview, usually. */
   titleHref?: string
-  /** The links in the bar. */
+  /** The items in the bar, each optionally opening a dropdown. */
   items?: SecondaryNavItem[]
-  /** The current item, controlled. `null` for none. */
+  /** Which dropdown is open on mount. */
+  defaultOpen?: string | null
+  /** Notified whenever a dropdown opens or closes, with the open item's `value` or `null`. */
+  onOpenChange?: (value: string | null) => void
+  /** The current item, controlled — for a bar of plain links. `null` for none. */
   value?: string | null
   /** The current item on mount, uncontrolled. */
   defaultValue?: string | null
@@ -36,7 +70,7 @@ export interface SecondaryNavProps
    * @default true
    */
   spy?: boolean
-  /** The end of the bar: a single call to action. */
+  /** The end of the bar: a single call to action. Not in the file; there if a page needs one. */
   action?: ReactNode
   /**
    * Stick below the header once the page scrolls to it.
@@ -54,46 +88,51 @@ export interface SecondaryNavProps
   offset?: number
 }
 
-const isFragment = (href?: string): href is `#${string}` => !!href && href.startsWith('#') && href.length > 1
+const isFragment = (href?: string): href is `#${string}` =>
+  !!href && href.startsWith('#') && href.length > 1
+
+const hasPanel = (item: SecondaryNavItem) => !!item.menu || !!item.links?.length
 
 /**
- * SecondaryNav — the in-page bar for a product or a long page, sitting under the `Header`.
+ * SecondaryNav — a product's own bar, under the `Header`: its name, and a dropdown per section.
  *
- * Not in the Solutions Library yet, so it is built from the conventions the `Header` and the `Tabs`
- * already set rather than from a Figma component set: the same gutter as the header so the two line up,
- * the same glass once it is stuck, and the `Tabs` gradient for the current item.
+ * Built from the file's `Secondary Nav` (node `24826:50238`): the product's icon and name in 24px
+ * Regular, then the same `Mega Menu Nav Item` the header uses, each with its caret. The file draws the
+ * closed bar and the `Opened Background` it takes while a dropdown is open, but not the dropdown
+ * itself — so the panel is this library's own glass surface holding `MegaMenu.Item` rows, the links
+ * the header's panels are already made of.
  *
  * ```tsx
  * <SecondaryNav
- *   title="Liferay DXP"
+ *   icon={<IconShoppingCart2 />}
+ *   title="Commerce"
  *   items={[
- *     { value: 'overview', label: 'Overview', href: '#overview' },
- *     { value: 'features', label: 'Features', href: '#features' },
+ *     { value: 'features', label: 'Features', links: [{ label: 'Catalog', href: '/commerce/catalog' }] },
  *   ]}
- *   action={<Button size="sm">Request a demo</Button>}
  * />
  * ```
  *
  * ## How it behaves, and why
  *
- * **Links, not tabs.** Every item is an `<a>` in a `<nav>`, and the current one carries
- * `aria-current` — `location` for a section of this page, `page` for another page. `role="tablist"`
- * would promise arrow-key switching between panels, and there are no panels here: it is a page of
- * sections, and Tab is what people expect.
+ * **The header's disclosure, again.** Click to open, not hover; each trigger is a
+ * `<button aria-expanded aria-controls>` over a region of ordinary links, so Tab moves through them the
+ * way it does everywhere else. Escape closes and returns focus to the trigger, a click outside closes,
+ * and following a link closes. One dropdown at a time.
  *
- * **The scroll spy follows the page.** An item whose `href` is a `#fragment` becomes current once its
- * section's top passes the foot of the bar. Clicking one scrolls to the section with the bar's own
- * height taken off, so the heading lands below the bar rather than under it, and the spy stands down
- * until the scroll finishes so the highlight does not tick through every section on the way.
+ * **The panel hangs from its trigger**, and sits outside the scrolling list of items so a phone's
+ * sideways-scrolling bar cannot clip it. It is kept inside the gutter at either end, and on a phone it
+ * spans the gutter-to-gutter width.
  *
- * **On a phone the links scroll sideways** rather than wrapping or collapsing into a menu. The current
- * one is kept in view, the edges fade only where there is more behind them, and the title gives up its
- * space — the header above already says whose site it is.
+ * **Plain links are still allowed.** An item with an `href` and no panel is a link, marked
+ * `aria-current` when it is the current item, and a `#fragment` one is followed by the scroll spy.
  */
 export function SecondaryNav({
   title,
+  icon,
   titleHref,
   items = [],
+  defaultOpen = null,
+  onOpenChange,
   value,
   defaultValue = null,
   onChange,
@@ -106,17 +145,30 @@ export function SecondaryNav({
   'aria-label': ariaLabel,
   ...props
 }: SecondaryNavProps) {
+  const [open, setOpen] = useState<string | null>(defaultOpen)
   const [uncontrolled, setUncontrolled] = useState<string | null>(defaultValue)
   const current = value !== undefined ? value : uncontrolled
   const [stuck, setStuck] = useState(false)
+  const [panelX, setPanelX] = useState(0)
 
   const navRef = useRef<HTMLElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const triggers = useRef(new Map<string, HTMLButtonElement | null>())
+  const panels = useRef(new Map<string, HTMLDivElement | null>())
+  const baseId = useId()
   /* True while a click's smooth scroll is in flight, so the spy does not fight it. */
   const settling = useRef(false)
   /* The latest `current`, readable from the scroll handler without resubscribing on every change. */
   const currentRef = useRef(current)
   currentRef.current = current
+
+  const toggle = useCallback(
+    (next: string | null) => {
+      setOpen(next)
+      onOpenChange?.(next)
+    },
+    [onOpenChange],
+  )
 
   const change = useCallback(
     (next: string | null) => {
@@ -129,15 +181,63 @@ export function SecondaryNav({
   )
 
   /*
+   * Where the open panel hangs: under its trigger, pulled back inside the gutter if it would run past
+   * the end of the bar. Measured before paint so it never flashes at the wrong place.
+   */
+  useLayoutEffect(() => {
+    if (!open) return
+    const nav = navRef.current
+    const trigger = triggers.current.get(open)
+    const panel = panels.current.get(open)
+    if (!nav || !trigger || !panel) return
+
+    const navBox = nav.getBoundingClientRect()
+    const gutter =
+      parseFloat(getComputedStyle(nav).getPropertyValue('--sds-secondary-nav-gutter')) || 20
+    const left = trigger.getBoundingClientRect().left - navBox.left
+    const max = navBox.width - panel.offsetWidth - gutter
+    setPanelX(Math.max(gutter, Math.min(left, max)))
+  }, [open])
+
+  /** Escape closes the panel and hands focus back to the trigger; so does a click outside. */
+  useEffect(() => {
+    if (!open) return undefined
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      const trigger = triggers.current.get(open)
+      toggle(null)
+      trigger?.focus()
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      if (!navRef.current?.contains(event.target as Node)) toggle(null)
+    }
+    /* The panel is placed against its trigger; once the list scrolls under it, that is stale. */
+    const list = listRef.current
+    const onMove = () => toggle(null)
+
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    list?.addEventListener('scroll', onMove, { passive: true })
+    window.addEventListener('resize', onMove)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+      list?.removeEventListener('scroll', onMove)
+      window.removeEventListener('resize', onMove)
+    }
+  }, [open, toggle])
+
+  /*
    * One passive scroll listener, batched to a frame, does both jobs: whether the bar is stuck, and which
-   * section it is over. An IntersectionObserver per section would answer the second, but "which one has
-   * most recently passed a line" is a question about order, and observers report crossings one at a
-   * time — a fast scroll can skip one entirely.
+   * section it is over. "Which one most recently passed a line" is a question about order, which
+   * IntersectionObservers — reporting crossings one at a time — answer badly on a fast scroll.
    */
   useEffect(() => {
     let frame = 0
     /* The first read on mount may add a current item, but never clears one — that is `defaultValue`'s. */
     let initial = true
+    const tracked = items.filter((item) => !hasPanel(item) && isFragment(item.href))
 
     const read = () => {
       frame = 0
@@ -149,13 +249,12 @@ export function SecondaryNav({
 
       const first = initial
       initial = false
-      if (!spy || settling.current) return
+      if (!spy || settling.current || !tracked.length) return
 
       const line = box.bottom + 1
       let next: string | null = null
-      for (const item of items) {
-        if (!isFragment(item.href)) continue
-        const target = document.getElementById(decodeURIComponent(item.href.slice(1)))
+      for (const item of tracked) {
+        const target = document.getElementById(decodeURIComponent(item.href!.slice(1)))
         if (target && target.getBoundingClientRect().top <= line) next = item.value
       }
 
@@ -163,13 +262,9 @@ export function SecondaryNav({
       const atEnd =
         window.scrollY > 0 &&
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
-      if (atEnd) {
-        const last = [...items].reverse().find((item) => isFragment(item.href))
-        if (last && document.getElementById(decodeURIComponent(last.href!.slice(1)))) next = last.value
-      }
+      if (atEnd) next = tracked[tracked.length - 1].value
 
-      /* Above the first section nothing is current — unless the page is using links, not fragments. */
-      if (next !== null || (!first && items.some((item) => isFragment(item.href)))) change(next)
+      if (next !== null || !first) change(next)
     }
 
     const onScroll = () => {
@@ -187,10 +282,8 @@ export function SecondaryNav({
   }, [items, spy, sticky, offset, change])
 
   /*
-   * The current item, kept in view along the bar, and the edge fades.
-   *
-   * `scrollLeft` directly rather than `scrollIntoView`, which walks the ancestors and would scroll the
-   * page as well — the same reasoning, and the same arithmetic, as `Tabs`.
+   * The edge fades on a bar that scrolls sideways — only on an edge with something behind it, the
+   * contract `Tabs` and `Carousel` keep.
    */
   useEffect(() => {
     const list = listRef.current
@@ -202,17 +295,6 @@ export function SecondaryNav({
       list.toggleAttribute('data-overflow-end', list.scrollLeft < max - 2)
     }
 
-    const active = list.querySelector<HTMLElement>('[aria-current]')
-    const max = list.scrollWidth - list.clientWidth
-    if (active && max > 0) {
-      const listBox = list.getBoundingClientRect()
-      const box = active.getBoundingClientRect()
-      const left = box.left - listBox.left + list.scrollLeft
-      const target = Math.min(max, Math.max(0, left - (list.clientWidth - box.width) / 2))
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      list.scrollTo({ left: target, behavior: reduce ? 'auto' : 'smooth' })
-    }
-
     edges()
     list.addEventListener('scroll', edges, { passive: true })
     const observer = new ResizeObserver(edges)
@@ -221,14 +303,20 @@ export function SecondaryNav({
       list.removeEventListener('scroll', edges)
       observer.disconnect()
     }
-  }, [current, items])
+  }, [items])
 
-  const onItemClick = (event: MouseEvent<HTMLAnchorElement>, item: SecondaryNavItem) => {
+  const onLinkClick = (event: MouseEvent<HTMLAnchorElement>, item: SecondaryNavItem) => {
     if (!isFragment(item.href)) {
       change(item.value)
       return
     }
-    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+    if (
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.button !== 0
+    ) {
       return
     }
 
@@ -237,10 +325,7 @@ export function SecondaryNav({
     event.preventDefault()
     change(item.value)
 
-    /*
-     * The bar's own height comes off the destination, and so does the offset it sticks at, so the
-     * heading lands just below the bar. A plain fragment jump would put it underneath.
-     */
+    /* The bar and the offset it sticks at both come off, so the heading lands just below the bar. */
     const barHeight = navRef.current?.offsetHeight ?? 0
     const top = target.getBoundingClientRect().top + window.scrollY - offset - barHeight
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -256,53 +341,133 @@ export function SecondaryNav({
 
     window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' })
     history.replaceState(null, '', item.href)
-    /* Move focus with the reader, so the next Tab continues from the section rather than the bar. */
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
     target.focus({ preventScroll: true })
   }
+
+  const brand = (
+    <>
+      {icon ? (
+        <span className={classes.secondaryNavIcon} aria-hidden>
+          {icon}
+        </span>
+      ) : null}
+      {title}
+    </>
+  )
 
   return (
     <Box
       component="nav"
       ref={navRef}
-      aria-label={ariaLabel ?? (typeof title === 'string' ? title : 'Section')}
+      aria-label={ariaLabel ?? (typeof title === 'string' ? title : 'Product')}
       className={[classes.secondaryNav, className].filter(Boolean).join(' ')}
       data-sticky={sticky || undefined}
       data-stuck={stuck || undefined}
-      style={[{ '--sds-secondary-nav-offset': `${offset}px` } as CSSProperties, style]}
+      data-open={open ? true : undefined}
+      style={[
+        {
+          '--sds-secondary-nav-offset': `${offset}px`,
+          '--sds-secondary-panel-x': `${panelX}px`,
+        } as CSSProperties,
+        style,
+      ]}
       {...props}
     >
       <div className={classes.secondaryNavInner}>
         {title ? (
           titleHref ? (
             <a className={classes.secondaryNavTitle} href={titleHref}>
-              {title}
+              {brand}
             </a>
           ) : (
-            <span className={classes.secondaryNavTitle}>{title}</span>
+            <span className={classes.secondaryNavTitle}>{brand}</span>
           )
         ) : null}
 
         <div ref={listRef} className={classes.secondaryNavList}>
           {items.map((item) => {
-            const isCurrent = item.value === current
+            if (!hasPanel(item)) {
+              const isCurrent = item.value === current
+              return (
+                <a
+                  key={item.value}
+                  href={item.href}
+                  className={classes.secondaryNavItem}
+                  data-active={isCurrent || undefined}
+                  aria-current={
+                    isCurrent ? (isFragment(item.href) ? 'location' : 'page') : undefined
+                  }
+                  onClick={(event) => onLinkClick(event, item)}
+                >
+                  {item.label}
+                </a>
+              )
+            }
+
+            const isOpen = open === item.value
             return (
-              <a
+              <UnstyledButton
                 key={item.value}
-                href={item.href}
+                component="button"
+                type="button"
+                ref={(node: HTMLButtonElement | null) => {
+                  triggers.current.set(item.value, node)
+                }}
                 className={classes.secondaryNavItem}
-                aria-current={isCurrent ? (isFragment(item.href) ? 'location' : 'page') : undefined}
-                data-active={isCurrent || undefined}
-                onClick={(event) => onItemClick(event, item)}
+                data-open={isOpen || undefined}
+                aria-expanded={isOpen}
+                aria-controls={`${baseId}-${item.value}`}
+                onClick={() => toggle(isOpen ? null : item.value)}
               >
                 {item.label}
-              </a>
+                <span className={classes.secondaryNavCaret} aria-hidden>
+                  <IconDown />
+                </span>
+              </UnstyledButton>
             )
           })}
         </div>
 
         {action ? <div className={classes.secondaryNavAction}>{action}</div> : null}
       </div>
+
+      {/*
+       * The panels, outside the list: it scrolls sideways on a phone, and a scrolling box clips
+       * everything positioned inside it. `hidden` keeps the closed ones out of the tab order.
+       */}
+      {items.filter(hasPanel).map((item) => (
+        <div
+          key={item.value}
+          id={`${baseId}-${item.value}`}
+          ref={(node) => {
+            panels.current.set(item.value, node)
+          }}
+          className={classes.secondaryNavPanel}
+          role="region"
+          aria-label={typeof item.label === 'string' ? item.label : undefined}
+          hidden={open !== item.value}
+          /* Following a link closes the panel; the page it leads to may be this one. */
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest('a')) toggle(null)
+          }}
+        >
+          {item.menu ?? (
+            <div className={classes.secondaryNavLinks}>
+              {item.links!.map((link, index) => (
+                <MegaMenu.Item
+                  key={index}
+                  href={link.href}
+                  icon={link.icon}
+                  title={link.label}
+                  description={link.description}
+                  external={link.external}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
     </Box>
   )
 }
