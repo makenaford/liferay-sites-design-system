@@ -10569,3 +10569,183 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   --sds-star-fill-from: var(--sds-brand-primary-primary);
   --sds-star-fill-to: var(--sds-accent-cyan);
 }
+
+/* ================================================================== SecondaryNav
+ *
+ * The in-page bar under the `Header`. Not in the Solutions Library yet, so every value here is borrowed
+ * from a component that is: the header's gutter and glass, the tabs' label sizes and gradient.
+ */
+.secondaryNav {
+  position: relative;
+  /* Under the header's 200, so an open mega menu still hangs over it. */
+  z-index: 150;
+  width: 100%;
+  border-bottom: 1px solid var(--sds-glass-line-to);
+  transition:
+    background-color var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.secondaryNav[data-sticky] {
+  position: sticky;
+  inset-block-start: var(--sds-secondary-nav-offset, 56px);
+}
+
+/* Stuck, it takes the header's glass, so the two read as one band over the page. */
+.secondaryNav[data-stuck] {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondaryNav {
+    transition: none;
+  }
+}
+
+/* The header's gutter exactly, so the title sits under the logo and the action under Contact Sales. */
+.secondaryNavInner {
+  --sds-secondary-nav-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: calc(1280px + 2 * var(--sds-secondary-nav-gutter));
+  min-height: 56px;
+  margin: 0 auto;
+  padding-inline: var(--sds-secondary-nav-gutter);
+}
+
+.secondaryNavTitle {
+  flex: none;
+  padding-inline-end: 24px;
+  border-inline-end: 1px solid var(--sds-glass-line-to);
+  color: var(--sds-surfaces-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+a.secondaryNavTitle:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.secondaryNavList {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.secondaryNavList::-webkit-scrollbar {
+  display: none;
+}
+
+/* A fade only on an edge with something behind it — the contract `Tabs` and `Carousel` keep. */
+.secondaryNavList[data-overflow-end]:not([data-overflow-start]) {
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+
+.secondaryNavList[data-overflow-start]:not([data-overflow-end]) {
+  mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+}
+
+.secondaryNavList[data-overflow-start][data-overflow-end] {
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+/* The tabs' label: 14/20 SemiBold in `Surfaces/Text/Secondary`, primary and Bold when current. */
+.secondaryNavItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 0 14px;
+  color: var(--sds-surfaces-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.secondaryNavItem:first-child {
+  padding-inline-start: 0;
+}
+
+/* The line sits on the bar's hairline, and wipes out from the centre like the header's underline. */
+.secondaryNavItem::after {
+  content: '';
+  position: absolute;
+  inset-inline: 14px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 999px;
+  background-image: linear-gradient(
+    to right,
+    var(--sds-action-primary-active) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
+}
+
+.secondaryNavItem:first-child::after {
+  inset-inline-start: 0;
+}
+
+.secondaryNavItem[data-active] {
+  color: var(--sds-surfaces-text-primary);
+  font-weight: 700;
+}
+
+.secondaryNavItem[data-active]::after {
+  transform: scaleX(1);
+}
+
+@media (hover: hover) {
+  .secondaryNavItem:hover:not([data-active]) {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+/* Inset, so a scrolling list does not clip the ring. */
+.secondaryNavItem:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondaryNavItem,
+  .secondaryNavItem::after {
+    transition: none;
+  }
+}
+
+.secondaryNavAction {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+/* On a phone the title gives up its room to the links; the header already says whose site this is. */
+@media (max-width: 767px) {
+  .secondaryNavTitle {
+    display: none;
+  }
+
+  .secondaryNavInner {
+    gap: 16px;
+  }
+}

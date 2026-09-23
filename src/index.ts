@@ -82,6 +82,11 @@ export {
   type ContentMediaRatio,
 } from './components/Section'
 export {
+  SecondaryNav,
+  type SecondaryNavProps,
+  type SecondaryNavItem,
+} from './components/SecondaryNav'
+export {
   Marquee,
   type MarqueeProps,
   type MarqueeSize,

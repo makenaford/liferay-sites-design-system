@@ -401,6 +401,22 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "SecondaryNav",
+    doc: "SecondaryNav — the in-page bar for a product or a long page, sitting under the `Header`.",
+    props: [
+      { name: "title", kind: "slot", default: "Liferay DXP", doc: "The product or section name, at the start of the bar." },
+      { name: "titleHref", kind: "text", doc: "Makes the title a link — to the top of the product's overview, usually." },
+      { name: "value", kind: "text", doc: "The current item, controlled. `null` for none." },
+      { name: "defaultValue", kind: "text", doc: "The current item on mount, uncontrolled." },
+      { name: "spy", kind: "boolean", default: "true", doc: "Follow the page: as each `#fragment` section reaches the bar, its item becomes current." },
+      { name: "action", kind: "slot", doc: "The end of the bar: a single call to action." },
+      { name: "sticky", kind: "boolean", default: "true", doc: "Stick below the header once the page scrolls to it." },
+      { name: "offset", kind: "number", default: "56", doc: "How far from the top of the viewport it sticks, in px — the height of whatever is fixed above it." },
+      { name: "items", kind: "slot", source: "story" },
+    ],
+    unsupported: ["onChange"],
+  },
+  {
     name: "Section",
     doc: "Section — the shell every block in Figma's `Section` set (node `17892:146518`) is built on.",
     props: [
