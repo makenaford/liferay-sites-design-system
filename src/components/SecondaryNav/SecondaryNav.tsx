@@ -22,13 +22,6 @@ export interface SecondaryNavLink {
   description?: ReactNode
   /** A `UI Icon` glyph beside the label. */
   icon?: ReactNode
-  /**
-   * A 3:2 image in place of the icon — the file's customer-story rows. Any link in a dropdown with one
-   * makes the whole dropdown the thumbnail layout.
-   */
-  thumbnail?: string
-  /** The thumbnail's alt. Empty by default: the title beside it already names the story. */
-  thumbnailAlt?: string
   /** Marks a link that leaves the site. */
   external?: boolean
 }
@@ -40,6 +33,16 @@ export interface SecondaryNavItem {
   label: ReactNode
   /** The links the dropdown opens onto. */
   links?: SecondaryNavLink[]
+  /**
+   * Lay the dropdown's links out in this many columns, filled top to bottom — the file's `Opened- 2
+   * Columns`, where each column is 271 wide and 24px from the next. A phone stacks them in one list.
+   *
+   * A dropdown of titles alone — no icons, no descriptions — takes this layout at any count, so a
+   * one-column list of titles is one of those columns.
+   *
+   * @default 1
+   */
+  columns?: number
   /** A panel of your own instead of `links` — a `MegaMenu` composition, say. */
   menu?: ReactNode
   /**
@@ -123,9 +126,9 @@ const stickAt = (nav: HTMLElement) => parseFloat(getComputedStyle(nav).top) || 0
  * SecondaryNav — a product's own bar, under the `Header`: its name, and a dropdown per section.
  *
  * Built from `LRDC- Secondary Nav` (node `1:11476`): the product's glass icon and name in 24px Regular,
- * then the header's own nav items. Two dropdowns are drawn — icon rows with a line of description
- * (`Features`) and thumbnail rows (`Customer Stories`) — both hung flush from the bar's foot under their
- * trigger. `On Scroll` is the bar alone at the top of the viewport, the site header gone.
+ * then the header's own nav items. Its dropdowns hang flush from the bar's foot under their trigger:
+ * icon rows with a line of description (`Features`), or titles alone in one column or two (`Opened- 2
+ * Columns`). `On Scroll` is the bar alone at the top of the viewport, the site header gone.
  *
  * ```tsx
  * <SecondaryNav
@@ -454,26 +457,22 @@ export function SecondaryNav({
     target.focus({ preventScroll: true })
   }
 
-  /** One link in a dropdown or an expanded section: the file's `Nav Item 01`, or `Nav Item 5` with a thumbnail. */
-  const renderLink = (link: SecondaryNavLink, index: number, media: boolean) => (
+  /** One link in a dropdown or an expanded section: the file's `Nav Item 01`, or a title alone. */
+  const renderLink = (link: SecondaryNavLink, index: number) => (
     <a
       key={index}
       href={link.href}
       className={classes.secondaryNavLink}
       {...(link.external ? { target: '_blank', rel: 'noreferrer noopener' } : null)}
     >
-      {media ? (
-        <span className={classes.secondaryNavThumb}>
-          {link.thumbnail ? <img src={link.thumbnail} alt={link.thumbnailAlt ?? ''} /> : null}
-        </span>
-      ) : link.icon ? (
+      {link.icon ? (
         <span className={classes.secondaryNavLinkIcon} aria-hidden>
           {link.icon}
         </span>
       ) : null}
       <span className={classes.secondaryNavLinkBody}>
         <span className={classes.secondaryNavLinkTitle}>{link.label}</span>
-        {link.description && !media ? (
+        {link.description ? (
           <span className={classes.secondaryNavLinkDescription}>{link.description}</span>
         ) : null}
       </span>
@@ -614,7 +613,6 @@ export function SecondaryNav({
 
           const isExpanded = expanded === item.value
           const regionId = `${sheetId}-${item.value}`
-          const media = !!item.links?.some((link) => link.thumbnail)
           return (
             <div key={item.value}>
               <UnstyledButton
@@ -634,13 +632,13 @@ export function SecondaryNav({
               <div
                 id={regionId}
                 className={classes.secondaryNavSheetItems}
-                data-variant={item.menu ? undefined : media ? 'media' : 'links'}
+                data-variant={item.menu ? undefined : 'links'}
                 hidden={!isExpanded}
                 onClick={(event) => {
                   if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
                 }}
               >
-                {item.menu ?? item.links!.map((link, index) => renderLink(link, index, media))}
+                {item.menu ?? item.links!.map(renderLink)}
               </div>
             </div>
           )
@@ -660,7 +658,9 @@ export function SecondaryNav({
        * everything positioned inside it. `hidden` keeps the closed ones out of the tab order.
        */}
       {items.filter(hasPanel).map((item) => {
-        const media = !!item.links?.some((link) => link.thumbnail)
+        const columns = Math.max(1, item.columns ?? 1)
+        const titlesOnly = !!item.links?.every((link) => !link.icon && !link.description)
+        const columnLayout = !item.menu && (titlesOnly || columns > 1)
         return (
           <div
             key={item.value}
@@ -669,7 +669,9 @@ export function SecondaryNav({
               panels.current.set(item.value, node)
             }}
             className={classes.secondaryNavPanel}
-            data-variant={item.menu ? undefined : media ? 'media' : 'links'}
+            data-variant={
+              item.menu ? undefined : columnLayout ? 'columns' : 'links'
+            }
             role="region"
             aria-label={typeof item.label === 'string' ? item.label : undefined}
             hidden={open !== item.value}
@@ -678,7 +680,23 @@ export function SecondaryNav({
               if ((event.target as HTMLElement).closest('a')) toggle(null)
             }}
           >
-            {item.menu ?? item.links!.map((link, index) => renderLink(link, index, media))}
+            {item.menu ??
+              (columnLayout
+                ? /*
+                   * Filled top to bottom, as the file reads: the first half of the links down the
+                   * first column, the rest down the second.
+                   */
+                  Array.from({ length: columns }, (_, column) => {
+                    const size = Math.ceil(item.links!.length / columns)
+                    return (
+                      <div key={column} className={classes.secondaryNavColumn}>
+                        {item.links!
+                          .slice(column * size, (column + 1) * size)
+                          .map((link, index) => renderLink(link, column * size + index))}
+                      </div>
+                    )
+                  })
+                : item.links!.map(renderLink))}
           </div>
         )
       })}

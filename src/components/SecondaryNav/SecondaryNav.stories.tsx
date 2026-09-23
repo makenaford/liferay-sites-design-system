@@ -9,29 +9,23 @@ import { Section, SectionTitle } from '../Section'
 import { SiteFooter, SiteHeader } from '../../templates/shared'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
 import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.webm'
-import { IconGlassCommerce } from '../../icons/glass.generated'
+import { IconGlassCommerce, IconGlassContentManagement } from '../../icons/glass.generated'
 import {
-  IconBook2,
   IconChartLine,
-  IconDocument2,
   IconGroup,
-  IconPresentation1,
   IconSettings5,
   IconShop,
   IconShoppingBag1,
   IconShoppingCart1,
 } from '../../icons'
-import vodafoneIdea from '../../../assets/secondary-nav/vodafone-idea.jpg'
-import sapphireGroup from '../../../assets/secondary-nav/sapphire-group.jpg'
-import tag from '../../../assets/secondary-nav/tag.jpg'
-import bre from '../../../assets/secondary-nav/bre.jpg'
 
-/** Not drawn in the file: `Capabilities` and `Resources` stand in, in the `Features` layout. */
+/** Not drawn in the file: `Capabilities` stands in, in the `Features` layout. */
 const PLACEHOLDER = 'Placeholder — not drawn in the file.'
 
 /**
- * The file's four sections. `Features` and `Customer Stories` are the two dropdowns `LRDC- Secondary
- * Nav` draws, copy and all; `Capabilities` and `Resources` are not drawn, so they are placeholders.
+ * The file's four sections. `Features` is the dropdown `LRDC- Secondary Nav` draws, copy and all.
+ * `Customer Stories` and `Resources` are titles alone — the story titles are the file's, the resource
+ * titles placeholders — and `Capabilities` is not drawn, so it is a placeholder too.
  */
 const COMMERCE_ITEMS: SecondaryNavItem[] = [
   {
@@ -74,27 +68,75 @@ const COMMERCE_ITEMS: SecondaryNavItem[] = [
       {
         label: 'Vodafone Idea Unifies Partner and Customer Experiences with Liferay PaaS',
         href: '#vodafone-idea',
-        thumbnail: vodafoneIdea,
       },
       {
         label: 'Sapphire Group builds fast, easy, and intuitive ordering system',
         href: '#sapphire-group',
-        thumbnail: sapphireGroup,
       },
-      { label: 'Tag Makes B2B Ordering Easier with Self-Service', href: '#tag', thumbnail: tag },
-      { label: 'BRE Reduces Digital Footprint by 88%', href: '#bre', thumbnail: bre },
+      { label: 'Tag Makes B2B Ordering Easier with Self-Service', href: '#tag' },
+      { label: 'BRE Reduces Digital Footprint by 88%', href: '#bre' },
     ],
   },
   {
     value: 'resources',
     label: 'Resources',
     links: [
-      { label: 'Documentation', href: '#docs', icon: <IconBook2 />, description: PLACEHOLDER },
-      { label: 'Webinars', href: '#webinars', icon: <IconPresentation1 />, description: PLACEHOLDER },
-      { label: 'Analyst Reports', href: '#reports', icon: <IconDocument2 />, description: PLACEHOLDER },
+      { label: 'What Is B2B Commerce?', href: '#what-is-b2b-commerce' },
+      { label: 'B2B vs B2C Commerce: What You Need to Know', href: '#b2b-vs-b2c' },
+      { label: 'A Guide to Headless Commerce', href: '#headless-commerce' },
     ],
   },
 ]
+
+/**
+ * `Opened- 2 Columns` (node `28:1450`): CMS, with five sections that are plain links and two dropdowns.
+ * `Resources` is the two-column panel the file draws, titles and all; `Customer Stories` is not drawn,
+ * so its titles are placeholders.
+ */
+const CMS_ITEMS: SecondaryNavItem[] = [
+  { value: 'enterprise', label: 'Enterprise', href: '#enterprise' },
+  { value: 'headless', label: 'Headless', href: '#headless' },
+  { value: 'seo', label: 'SEO', href: '#seo' },
+  { value: 'intranet', label: 'Intranet', href: '#intranet' },
+  { value: 'open-source', label: 'Open Source', href: '#open-source' },
+  {
+    value: 'resources',
+    label: 'Resources',
+    columns: 2,
+    links: [
+      { label: 'What is a CMS?', href: '#what-is-a-cms' },
+      { label: 'DXP vs CMS: What You Need to Know', href: '#dxp-vs-cms' },
+      { label: 'CMS 101: Architecture, Components, and Core Concepts', href: '#cms-101' },
+      {
+        label: 'From CMS to HTML: A Guide to Computing Acronyms and Definitions',
+        href: '#cms-to-html',
+      },
+      {
+        label: "A Beginner's Guide to Learning the Differences Between CMS and HTML",
+        href: '#cms-vs-html',
+      },
+      { label: 'An Overview of CMS Types and Benefits', href: '#cms-types' },
+      { label: 'A Guide to Headless CMS', href: '#headless-cms' },
+      { label: "What's the Difference Between a CMS, Portal, and DXP?", href: '#cms-portal-dxp' },
+    ],
+  },
+  {
+    value: 'customer-stories',
+    label: 'Customer Stories',
+    links: [
+      { label: 'Customer story title — placeholder', href: '#story-1' },
+      { label: 'Customer story title — placeholder', href: '#story-2' },
+      { label: 'Customer story title — placeholder', href: '#story-3' },
+    ],
+  },
+]
+
+/** The CMS bar's own props — the product swapped in over the Commerce defaults. */
+const CMS = {
+  icon: <IconGlassContentManagement size={32} />,
+  title: 'CMS',
+  items: CMS_ITEMS,
+}
 
 /** The primary nav (65, with its rule) and this bar (64), stacked — what the hero reaches up behind. */
 const CHROME = 65 + 64
@@ -193,7 +235,7 @@ const meta = {
         component: [
           'A product’s own bar under the `Header`, from `LRDC- Secondary Nav` (node `1:11476`): the product’s glass icon and name, then the header’s own nav items, each opening a dropdown.',
           '',
-          'Two dropdowns are drawn — icon rows with a description (**Features**) and thumbnail rows (**Customer Stories**) — hung flush from the bar under their trigger. **Click to open**, Escape or a click outside to close, one at a time, as the header does. **On scroll it replaces the header**: the site header slides away and this bar takes the top of the page.',
+          'Dropdowns hang flush from the bar under their trigger: icon rows with a description (**Features**), or titles alone in one column or two (**Customer Stories**, **Resources**, and CMS’s two-column **Resources**). **Click to open**, Escape or a click outside to close, one at a time, as the header does. **On scroll it replaces the header**: the site header slides away and this bar takes the top of the page.',
         ].join('\n'),
       },
     },
@@ -218,7 +260,7 @@ export const FeaturesOpen: Story = {
   render: Default.render,
 }
 
-/** **Customer Stories** open — the file's second `Opened` frame: thumbnail rows, 381 wide. */
+/** **Customer Stories** open — the story titles alone, one column. */
 export const CustomerStoriesOpen: Story = {
   args: { defaultOpen: 'customer-stories' },
   render: Default.render,
@@ -284,9 +326,35 @@ export const MobileFeaturesExpanded: Story = {
   globals: PHONE,
 }
 
-/** **Mobile, Customer Stories expanded** — not drawn on a phone; the thumbnail rows, 20px in. */
+/** **Mobile, Customer Stories expanded** — the story titles, 20px in and 24px apart. */
 export const MobileCustomerStoriesExpanded: Story = {
   ...OnAPage,
   args: { sticky: true, defaultOpen: 'customer-stories' },
   globals: PHONE,
 }
+
+/**
+ * **Two columns** — `Opened- 2 Columns`. CMS, whose first five sections are plain links (no caret),
+ * with **Resources** open: eight titles in two 271px columns, 24px apart.
+ */
+export const TwoColumns: Story = {
+  args: { ...CMS, defaultOpen: 'resources' },
+  render: Default.render,
+}
+
+/** Two columns on a page — the file's frame, with the site header above and the hero below. */
+export const OnAPageTwoColumns: Story = {
+  ...OnAPage,
+  args: { ...CMS, sticky: true, defaultOpen: 'resources' },
+}
+
+/**
+ * **Mobile, CMS** — `Mobile- CMS Group Features`. The plain-link sections are rows with no chevron;
+ * **Resources** expands its eight titles in one list.
+ */
+export const MobileCms: Story = {
+  ...OnAPage,
+  args: { ...CMS, sticky: true, defaultMenuOpen: true },
+  globals: PHONE,
+}
+

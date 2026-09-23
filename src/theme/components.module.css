@@ -10785,7 +10785,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The dropdown — `Frame 1000005997` in both `Opened` frames. Hung flush from the bar, overlapping its
+ * The dropdown — `Frame 1000005997` in the `Opened` frames. Hung flush from the bar, overlapping its
  * 1px rule, with square top corners and 8px bottom ones: black at 80% under a 25px blur, a white 20%
  * border, 16px of padding and a faint blue drop shadow. `Features` is 296 wide with 12px between rows;
  * `Customer Stories` is 381 with 24.
@@ -10809,9 +10809,22 @@ a.secondaryNavTitle:focus-visible {
   animation: header-panel-in var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
-.secondaryNavPanel[data-variant='media'] {
+/*
+ * `Opened- 2 Columns`: titles side by side in 271px columns, 24px apart — 600 across with the padding
+ * and border — each column a stack of titles 24px apart. A one-column list of titles is one column.
+ */
+.secondaryNavPanel[data-variant='columns'] {
+  flex-direction: row;
+  align-items: flex-start;
   gap: 24px;
-  width: 381px;
+  width: max-content;
+}
+
+.secondaryNavColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 271px;
 }
 
 /* A panel of the caller's own takes its content's width. */
@@ -10844,13 +10857,6 @@ a.secondaryNavTitle:focus-visible {
   text-decoration: none;
 }
 
-/* `Nav Item 5`: a 64x43 thumbnail, 12px, and a title centred against it. */
-.secondaryNavPanel[data-variant='media'] .secondaryNavLink,
-.secondaryNavSheetItems[data-variant='media'] .secondaryNavLink {
-  gap: 12px;
-  align-items: center;
-}
-
 /* The `nav icon` box: 20 wide with 2px above and below, so the glyph sits on the title's 24px line. */
 .secondaryNavLinkIcon {
   display: flex;
@@ -10868,23 +10874,6 @@ a.secondaryNavTitle:focus-visible {
   height: 20px;
 }
 
-.secondaryNavThumb {
-  display: flex;
-  flex: none;
-  width: 64px;
-  height: 43px;
-  overflow: hidden;
-  border: 1px solid var(--sds-neutral-02);
-  border-radius: 4px;
-}
-
-.secondaryNavThumb > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
 .secondaryNavLinkBody {
   display: flex;
   flex: 1;
@@ -10893,17 +10882,12 @@ a.secondaryNavTitle:focus-visible {
   min-width: 0;
 }
 
-/* `Action/Link/Small` — 16/24 SemiBold. The thumbnail rows set theirs at 1.25, `Paragraph/Small`. */
+/* `Action/Link/Small` — 16/24 SemiBold. */
 .secondaryNavLinkTitle {
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   transition: color var(--sds-motion-fast) var(--sds-motion-ease);
-}
-
-.secondaryNavPanel[data-variant='media'] .secondaryNavLinkTitle,
-.secondaryNavSheetItems[data-variant='media'] .secondaryNavLinkTitle {
-  line-height: 1.25;
 }
 
 /* `Paragraph/X-Small/Regular` in `Surfaces/Text/Secondary`. */
