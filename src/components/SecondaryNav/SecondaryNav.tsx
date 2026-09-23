@@ -388,7 +388,9 @@ export function SecondaryNav({
     if (!replacing) return undefined
     const root = document.documentElement
     root.setAttribute(HEADER_HIDDEN, '')
-    return () => root.removeAttribute(HEADER_HIDDEN)
+    return () => {
+      root.removeAttribute(HEADER_HIDDEN)
+    }
   }, [replacing])
 
   /*
