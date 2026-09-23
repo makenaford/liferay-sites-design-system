@@ -55,7 +55,10 @@ export const HOME_CONTENT_JA: HomeContent = {
      * this row, so this string is the one thing on the page a Japanese reader should check. The figure
      * and the date are the global page's, since they describe the same Gartner listing.
      */
-    ratingSource: '2026年5月時点、認証済みユーザー64名の評価　出典：Gartner Peer Insights™',
+    ratingSource: {
+      lead: '2026年5月時点、認証済みユーザー64名の評価　出典：',
+      link: 'Gartner Peer Insights™',
+    },
     /* The badges are Gartner's and G2's own marks, so the artwork is not localized — only the alt text. */
     badges: [
       { alt: 'Gartner Peer Insights カスタマーズチョイス 2026' },

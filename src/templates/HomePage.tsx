@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ComponentProps, ReactNode } from 'react'
-import { Box, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
+import { Anchor, Box, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Bubble } from '../components/Bubble'
 import type { BubbleProps } from '../components/Bubble'
@@ -49,7 +49,6 @@ import {
   IconGlassCustomerPortals,
   IconGlassDXP,
   IconGlassEnterpriseWebsite4,
-  IconGlassFinancialServices,
   IconGlassIntranets,
   IconGlassPartnerPortals,
   IconGlassSupplierPortals,
@@ -87,8 +86,8 @@ import gartnerBadge from '../../assets/home/badges/gartner-peer-insights-custome
  * names put all five on Marketers, which is wrong twice over: `cms` belongs to IT/Developers, and
  * Marketers' fifth row has no clip at all and keeps the still.
  */
-import aiHubClip from '../../assets/home/teams/ai-hub.mp4'
-import cmpClip from '../../assets/home/teams/cmp.mp4'
+import aiHubClip from '../../assets/home/teams/ai-hub.webm'
+import cmpClip from '../../assets/home/teams/cmp.webm'
 import personalizationClip from '../../assets/home/teams/personalization.mp4'
 import cmsClip from '../../assets/home/teams/cms.mp4'
 import sitesClip from '../../assets/home/teams/sites.mp4'
@@ -120,10 +119,10 @@ const GOAL_TAB_ICONS: Record<string, ReactNode> = {
  */
 const TEAM_MEDIA: Record<string, Record<number, { src: string; alt: string }>> = {
   marketers: {
-    0: { src: aiHubClip, alt: 'AI Hub tagging and translating content' },
+    0: { src: aiHubClip, alt: 'An agent being assembled from an input trigger in Agent Builder' },
     1: { src: sitesClip, alt: 'A page being built and published from shared components' },
     2: { src: personalizationClip, alt: 'A page fragment personalised against a visitor segment' },
-    3: { src: cmpClip, alt: 'One content tree and asset library feeding several channels' },
+    3: { src: cmpClip, alt: 'A team planning a campaign against a content calendar' },
     4: { src: b2bStill, alt: 'A B2B order moving through a two-step approval workflow' },
   },
   it: {
@@ -423,37 +422,59 @@ export function HomePage({
              * other hero gets. See `.heroProofMain`.
              */
             <div className={classes.heroProofMain}>
-              <div className={classes.heroProofRating}>
-                <div className={classes.heroProofScore}>
-                  <Text fz={40} fw={700} lh={1.25}>
-                    {content.hero.rating}
-                  </Text>
-                  {/*
-                   * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
-                   * and the figure beside it already says so. The node draws four and a grey fifth,
-                   * which is a mockup's shorthand; five-star widgets round and this one does not.
-                   *
-                   * 20px is the drawn size, up from the 16 the slot defaults to.
-                   */}
-                  <StarRating value={Number(content.hero.rating)} size={20} />
-                  {/*
-                   * The awarded badges, inline with the rating they qualify. Gartner first, as drawn —
-                   * it is the mark the sentence below cites, so the eye should reach it first.
-                   */}
-                  <div className={classes.heroBadges}>
-                    {content.hero.badges.map((badge, i) => (
-                      <span
-                        key={badge.alt}
-                        className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
-                      >
-                        <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
-                      </span>
-                    ))}
+              <div className={classes.heroProofTop}>
+                <div className={classes.heroProofRating}>
+                  <div className={classes.heroProofScore}>
+                    {/*
+                     * `Surfaces/Text/Primary`, not the row's inherited secondary.
+                     *
+                     * `.heroProof` sets secondary on the whole slot, which is right for the sentence under
+                     * the figure and wrong for the figure: 4.6 is the claim, and it was rendering two
+                     * steps down from the copy above it. The node draws it white.
+                     */}
+                    <Text fz={36} fw={700} lh={1} c="var(--sds-surfaces-text-primary)">
+                      {content.hero.rating}
+                    </Text>
+                    {/*
+                     * The real rating, not four solid stars and a grey one — 4.6 is four and three fifths,
+                     * and the figure beside it already says so. The node draws four and a grey fifth,
+                     * which is a mockup's shorthand; five-star widgets round and this one does not.
+                     *
+                     * 20px is the drawn size, up from the 16 the slot defaults to.
+                     */}
+                    <StarRating value={Number(content.hero.rating)} size={20} />
                   </div>
+                  <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
+                    {content.hero.ratingSource.lead}
+                    {/*
+                     * The attribution names its source, so the node draws it as a link. There is no URL in
+                     * the file and inventing one would be a guess, so it is `#` — the same placeholder the
+                     * hero's own actions carry until the real destinations arrive.
+                     */}
+                    <Anchor href="#" inherit c="var(--sds-action-link-default-link)" underline="always">
+                      {content.hero.ratingSource.link}
+                    </Anchor>
+                  </Text>
                 </div>
-                <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
-                  {content.hero.ratingSource}
-                </Text>
+
+                {/*
+                 * The awarded badges, at the far end of the row from the score.
+                 *
+                 * They used to sit inline beside the stars. The node now gives them their own group,
+                 * right-aligned against the end of the row: the score and its caption are one claim read
+                 * left to right, and the badges are two more of the same kind, so putting them at the
+                 * opposite end lets the eye take the row as two groups rather than one long line.
+                 */}
+                <div className={classes.heroBadges}>
+                  {content.hero.badges.map((badge, i) => (
+                    <span
+                      key={badge.alt}
+                      className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
+                    >
+                      <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className={classes.heroProofMarks}>
@@ -540,7 +561,15 @@ export function HomePage({
           />
         }
       >
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing={24}>
+        {/*
+         * Two across on a phone, not one.
+         *
+         * The Mobile frame draws these at 179px in a 374px column — two columns with a 16px gutter —
+         * where one full-width card per row turned four short titles into four screens of scrolling.
+         * These cards are a thumbnail and a line of text; at 179 they are still legible, and seeing
+         * four at once is the point of a grid of four.
+         */}
+        <SimpleGrid cols={{ base: 2, md: 4 }} spacing={{ base: 16, md: 24 }}>
           {content.goals.items[goalTab].map((goal, i) => (
             <Card
               key={goal.title}
@@ -562,7 +591,38 @@ export function HomePage({
         bleed
         title={<SectionTitle align="center" title={<Split title={content.stories.title} spaced={spaced} />} />}
       >
-        <Carousel label={content.stories.label} gutter={80} indicators="none" arrows>
+        {/*
+         * `gutter` is `--sds-section-gutter`'s own formula, not the 80 it used to be.
+         *
+         * 80 is the desktop figure, and a bleeding row does need the page's gutter to line up with the
+         * column above it. Passed as a constant it was also the *phone's* gutter: 160px of padding out
+         * of 311, 51% of the width, leaving a 151px content box that `.carouselSlide`'s `max-width: 100%`
+         * clamped every card to. Everything else followed from that — a 151px card is 871px tall, taller
+         * than the 812px screen it is on, and two of them half-showing reads as a broken grid rather
+         * than a row that scrolls.
+         *
+         * The clamp is the same two-point interpolation every `Section` uses, so it resolves to exactly
+         * 80 at 1440 and 20 at 390: desktop is untouched and the phone gets the phone's gutter. `100cqi`
+         * is the section's own inline size, since `Section` is the container.
+         *
+         * `slideSize` at 88% for the peek. With the gutter fixed the track fits 1.07 cards, and that
+         * spare 7% is a 20px sliver of the next card — which reads as a rendering artifact rather than a
+         * cue. 88% is one card and a deliberate slice of the next, which is what tells a thumb there is
+         * more to the right. It only binds on narrow widths: 88% of a 1280 column is far wider than the
+         * 310px `slideSize` default, so `.carouselSlide`'s basis still wins on desktop.
+         *
+         * `indicators` from `none` to `lines`. Eight stories with only a pair of arrows gave no sense of
+         * how far along the row you were or how much was left; the component counts reachable positions
+         * rather than slides, so the bar is correct at any slide size. `lines` over `dots` because eight
+         * dot cells at 32px each is a 256px row of dots under a 311px track.
+         */}
+        <Carousel
+          label={content.stories.label}
+          gutter="clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px)"
+          slideSize="min(88%, 310px)"
+          indicators="lines"
+          arrows
+        >
           {content.stories.items.map((story) => (
             <Card
               key={story.customer}
@@ -706,7 +766,7 @@ export function HomePage({
         </Stack>
       </Section>
 
-      {/* 6. Designed for Your Industry — one full card, with the industry tabs under it. */}
+      {/* 6. Designed for Your Industry — a two-up of words and picture, with the industry tabs under it. */}
       <Section
         reveal
         gap={24}
@@ -732,21 +792,38 @@ export function HomePage({
           </Tabs>
         }
       >
-        <Card
-          align="horizontal"
-          /*
-           * Its links do the work — the same call `PageRenderer` already makes for this section.
-           *
-           * A `glass` card is a target by default, which is right where the whole surface goes one
-           * place. This one carries two links and a stat row, so a card-wide target would be a control
-           * wrapped around two other controls with no single destination of its own to offer.
-           */
-          interactive={false}
-          titleSize="full"
-          hero={<IconGlassFinancialServices width={48} height={48} />}
+        {/*
+         * `ContentMedia`, not a `Card`.
+         *
+         * The section used to be one full-bleed glass card with the picture inside it. Two reasons it is
+         * not any more. A card is a container for something separable — one of several, a thing you could
+         * pick up — and this is the only object in its section, so the container was drawing a boundary
+         * around the whole section and calling it an object. And a card's own vertical rhythm stacks its
+         * parts: hero, title, description, main, secondary, image, each after the last. That is why the
+         * picture sat below a column of text it belongs beside.
+         *
+         * `ContentMedia` is the page's own two-up for exactly this — the `Different Teams` section above
+         * is the same component — and its row is `align-items: center`, so the picture and the words are
+         * centred against each other rather than one trailing the other. Below 900px of section width it
+         * stacks, and a right-image block leads with its words, which is the reading order this section
+         * wants on a phone: the industry and its numbers first, the photograph after.
+         */}
+        <ContentMedia
+          mediaSide="right"
+          /* Text column is heading, description, two links and a stat row — taller than a 3:2 box. */
+          mediaRatio="auto"
+          order={3}
           title={industry}
           description={industryPanel.description}
-          main={
+          media={
+            <Image
+              src={industryMedia}
+              alt={content.industries.mediaAlt}
+              ratio="3:2"
+              radius="md"
+            />
+          }
+          actions={
             <Stack gap={12} align="flex-start">
               <Link href="#" size="md" rightSection={<IconArrowRight />}>
                 {content.industries.solutionsCta.replace('{industry}', industry)}
@@ -756,35 +833,31 @@ export function HomePage({
               </Link>
             </Stack>
           }
-          secondary={
-            <StatBar>
-              {industryPanel.metrics.map((metric) => {
-                const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
-                return (
-                  <Stat
-                    key={metric.label}
-                    value={
-                      <>
-                        {figure}
-                        {rest.length ? unit(rest.join('')) : null}
-                      </>
-                    }
-                    label={metric.label}
-                    leftSection={metric.down ? <IconArrowDown /> : undefined}
-                  />
-                )
-              })}
-            </StatBar>
-          }
-          image={
-            <Image
-              src={industryMedia}
-              alt={content.industries.mediaAlt}
-              ratio="3:2"
-              radius="md"
-            />
-          }
-        />
+        >
+          {/*
+             The figures stay with the words rather than going in the media column: they are what the
+             description is claiming, and a stat that has drifted away from its sentence is a number
+             nobody can source.
+           */}
+          <StatBar>
+            {industryPanel.metrics.map((metric) => {
+              const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
+              return (
+                <Stat
+                  key={metric.label}
+                  value={
+                    <>
+                      {figure}
+                      {rest.length ? unit(rest.join('')) : null}
+                    </>
+                  }
+                  label={metric.label}
+                  leftSection={metric.down ? <IconArrowDown /> : undefined}
+                />
+              )
+            })}
+          </StatBar>
+        </ContentMedia>
       </Section>
 
       {/*
