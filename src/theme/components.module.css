@@ -10787,6 +10787,43 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
+ * `On Scroll`'s calls to action: `Request a Demo` and `Contact Sales`, small buttons 16px apart at the
+ * end of the bar. They keep their room while hidden, so the row never jumps, and fade and drop in once
+ * the bar takes the header's place.
+ */
+.secondaryNavScrollActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--sds-motion-medium) var(--sds-motion-ease-out),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    visibility 0s linear var(--sds-motion-medium);
+}
+
+.secondaryNav[data-replacing] .secondaryNavScrollActions {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--sds-motion-medium) var(--sds-motion-ease-out),
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondaryNavScrollActions,
+  .secondaryNav[data-replacing] .secondaryNavScrollActions {
+    transform: none;
+    transition: none;
+  }
+}
+
+/*
  * The dropdown — `Frame 1000005997` in the `Opened` frames. Hung flush from the bar, overlapping its
  * 1px rule, with square top corners and 8px bottom ones: black at 80% under a 25px blur, a white 20%
  * border, 16px of padding and a faint blue drop shadow. `Features` is 296 wide with 12px between rows;
@@ -10929,6 +10966,7 @@ a.secondaryNavTitle:focus-visible {
 @media (max-width: 767px) {
   .secondaryNavList,
   .secondaryNavAction,
+  .secondaryNavScrollActions,
   .secondaryNavPanel {
     display: none;
   }

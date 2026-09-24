@@ -413,6 +413,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "defaultValue", kind: "text", doc: "The current item on mount, uncontrolled." },
       { name: "spy", kind: "boolean", default: "true", doc: "Follow the page: as each `#fragment` section reaches the bar, its item becomes current." },
       { name: "action", kind: "slot", doc: "The end of the bar: a single call to action. Not in the file; there if a page needs one." },
+      { name: "scrollActions", kind: "slot", doc: "Calls to action that appear only once the bar has replaced the header — the file's `On Scroll` frame, which ends the bar with `Request a Demo` (outline) and `Contact Sales` (solid), both small and 16px apart. Pass the buttons; they are laid out in a row. Hidden, and out of the tab order, until the page scrolls past the bar's resting place; never shown on a phone." },
       { name: "sticky", kind: "boolean", default: "true", doc: "Stick below the header once the page scrolls to it." },
       { name: "replaceHeader", kind: "boolean", default: "true", doc: "Take the header's place on scroll — the file's `On Scroll` frame. Once the bar's own resting place has scrolled past, the fixed header slides away and this bar moves up to the top of the viewport; back above that line, the header returns." },
       { name: "offset", kind: "number", doc: "How far from the top of the viewport it sticks, in px." },

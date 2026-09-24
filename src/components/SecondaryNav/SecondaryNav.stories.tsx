@@ -138,6 +138,16 @@ const CMS = {
   items: CMS_ITEMS,
 }
 
+/** `On Scroll`'s calls to action: small buttons, outline then solid, as the file ends the bar. */
+const SCROLL_ACTIONS = (
+  <>
+    <Button size="sm" variant="outline">
+      Request a Demo
+    </Button>
+    <Button size="sm">Contact Sales</Button>
+  </>
+)
+
 /** The primary nav (65, with its rule) and this bar (64), stacked — what the hero reaches up behind. */
 const CHROME = 65 + 64
 
@@ -218,12 +228,14 @@ const meta = {
     icon: <IconGlassCommerce size={32} />,
     title: 'Commerce',
     items: COMMERCE_ITEMS,
-    sticky: false,
+    scrollActions: SCROLL_ACTIONS,
+    sticky: true,
   },
   argTypes: {
     items: { control: false },
     icon: { control: false },
     action: { control: false },
+    scrollActions: { control: false },
     title: { control: 'text' },
     offset: { control: { type: 'number', min: 0, step: 4 } },
   },
@@ -235,7 +247,7 @@ const meta = {
         component: [
           'A product’s own bar under the `Header`, from `LRDC- Secondary Nav` (node `1:11476`): the product’s glass icon and name, then the header’s own nav items, each opening a dropdown.',
           '',
-          'Dropdowns hang flush from the bar under their trigger: icon rows with a description (**Features**), or titles alone in one column or two (**Customer Stories**, **Resources**, and CMS’s two-column **Resources**). **Click to open**, Escape or a click outside to close, one at a time, as the header does. **On scroll it replaces the header**: the site header slides away and this bar takes the top of the page.',
+          'Dropdowns hang flush from the bar under their trigger: icon rows with a description (**Features**), or titles alone in one column or two (**Customer Stories**, **Resources**, and CMS’s two-column **Resources**). **Click to open**, Escape or a click outside to close, one at a time, as the header does. **On scroll it replaces the header**: the site header slides away and this bar takes the top of the page, with **Request a Demo** and **Contact Sales** fading in at its end.',
         ].join('\n'),
       },
     },
@@ -245,92 +257,27 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** As the file draws it: closed, on the dark bar. Click a section to open its dropdown. */
-export const Default: Story = {
-  render: (args) => (
-    <Box mih={420}>
-      <SecondaryNav {...args} />
-    </Box>
-  ),
-}
-
-/** **Features** open on load — the bar takes the `Opened Background`, and the panel hangs from its trigger. */
-export const FeaturesOpen: Story = {
-  args: { defaultOpen: 'features' },
-  render: Default.render,
-}
-
-/** **Customer Stories** open — the story titles alone, one column. */
-export const CustomerStoriesOpen: Story = {
-  args: { defaultOpen: 'customer-stories' },
-  render: Default.render,
-}
-
 /**
  * **On a page** — the file's `Solution` frame. The site header at the top, the product's bar directly
- * under it, and the hero below both, its bubble reaching up behind the two bars.
+ * under it, and the hero below both, its bubble reaching up behind the two bars. Click a section to open
+ * its dropdown.
  *
  * **Scroll** — the file's `On Scroll` frame. Once the bar's resting place has passed, the site header
- * slides up out of view and the bar moves to the top of the page, gaining a soft shadow. Scroll back
- * above that line and the header returns. Open a section and its dropdown hangs from the bar over the
- * page; open one of the header's menus instead and the mega menu drops over the bar — opening one closes
- * the other.
+ * slides up out of view and the bar moves to the top of the page, gaining a soft shadow, and **Request a
+ * Demo** and **Contact Sales** fade in at its end. Scroll back above that line and the header returns.
  */
 export const OnAPage: Story = {
-  args: { sticky: true },
   render: (args) => <CommercePage nav={<SecondaryNav {...args} mt="var(--sds-header-offset, 65px)" />} />,
 }
 
-/** On a page, with **Features** open over the hero — the file's first `Opened` frame. */
-export const OnAPageFeaturesOpen: Story = {
-  ...OnAPage,
-  args: { sticky: true, defaultOpen: 'features' },
-}
-
-/** On a page, with **Customer Stories** open — the file's second `Opened` frame. */
-export const OnAPageCustomerStoriesOpen: Story = {
-  ...OnAPage,
-  args: { sticky: true, defaultOpen: 'customer-stories' },
-}
-
-/** The file's `Mobile` frames are 414 wide — Storybook's `mobile2`. */
-const PHONE = { viewport: { value: 'mobile2', isRotated: false } }
-
 /**
- * **Mobile** — the file's `Mobile- Default`. The site header becomes its logo, call to action and
- * burger; under it the product's bar keeps the product's name and trades its sections for a chevron.
- * Tap it for the menu. Scroll, and the bar replaces the header here too.
+ * **Mobile** — the file's `Mobile` frames, 414 wide. The bar keeps the product's name and trades its
+ * sections for a chevron; tap it for a sheet with a row per section, each expanding its links in place.
+ * The scroll buttons stay off on a phone.
  */
 export const Mobile: Story = {
   ...OnAPage,
-  globals: PHONE,
-}
-
-/**
- * **Mobile, menu open** — `Mobile- Opened`. The chevron turns over, a sheet drops from the bar with a
- * row per section, and the page behind goes to black at 80%. Tap the scrim or press Escape to close.
- */
-export const MobileMenuOpen: Story = {
-  ...OnAPage,
-  args: { sticky: true, defaultMenuOpen: true },
-  globals: PHONE,
-}
-
-/**
- * **Mobile, a section expanded** — `Mobile- Opened 2`. **Features** expands its links in place, the
- * same rows the desktop dropdown holds; tap another section to expand it instead.
- */
-export const MobileFeaturesExpanded: Story = {
-  ...OnAPage,
-  args: { sticky: true, defaultOpen: 'features' },
-  globals: PHONE,
-}
-
-/** **Mobile, Customer Stories expanded** — the story titles, 20px in and 24px apart. */
-export const MobileCustomerStoriesExpanded: Story = {
-  ...OnAPage,
-  args: { sticky: true, defaultOpen: 'customer-stories' },
-  globals: PHONE,
+  globals: { viewport: { value: 'mobile2', isRotated: false } },
 }
 
 /**
@@ -338,23 +285,6 @@ export const MobileCustomerStoriesExpanded: Story = {
  * with **Resources** open: eight titles in two 271px columns, 24px apart.
  */
 export const TwoColumns: Story = {
+  ...OnAPage,
   args: { ...CMS, defaultOpen: 'resources' },
-  render: Default.render,
 }
-
-/** Two columns on a page — the file's frame, with the site header above and the hero below. */
-export const OnAPageTwoColumns: Story = {
-  ...OnAPage,
-  args: { ...CMS, sticky: true, defaultOpen: 'resources' },
-}
-
-/**
- * **Mobile, CMS** — `Mobile- CMS Group Features`. The plain-link sections are rows with no chevron;
- * **Resources** expands its eight titles in one list.
- */
-export const MobileCms: Story = {
-  ...OnAPage,
-  args: { ...CMS, sticky: true, defaultMenuOpen: true },
-  globals: PHONE,
-}
-

@@ -2565,7 +2565,7 @@ a centred 1280 column, a `Section Title`, a body, sometimes a footer — and dif
 body. `Card Grid` is a Section holding a grid of `Card`s; `FAQ` is a Section
 holding an `Accordion`; `Integrations Section` is a Section holding a `Marquee`. Fourteen wrappers that
 forward slots would add API surface and no capability, so the fourteen live as **stories** under
-`Blocks/Sections`, each one copy-pasteable.
+`Templates/Sections`, each one copy-pasteable.
 
 | Figma | Prop |
 | --- | --- |

@@ -95,7 +95,7 @@ export function VendorTile({ name }: { name: string }) {
  * **Nothing turns this on by default.** It was on the integrations band and is not any more: a lit
  * ground behind a section is a decision about a page, not a property of the section type, and every
  * page using that type inherited it. `SectionSpec` carries a `backdrop` field for the pages that want
- * one — see `Blocks/Sections`, where the option is drawn.
+ * one — see `Templates/Sections`, where the option is drawn.
  *
  * Decoration, and marked as such: `aria-hidden`, no content, and it stops drifting under
  * `prefers-reduced-motion` rather than disappearing — it is a ground, not a message.
