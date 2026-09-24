@@ -2834,6 +2834,20 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
+/*
+ * On light the band casts no shadow until the page moves. At the top a dark 30px shadow on a pale page
+ * reads as a smudge under a bar that has nothing to separate from yet; once content scrolls under the
+ * bar, the shadow comes in. Dark keeps it throughout, where it barely reads against the canvas anyway.
+ */
+/* A condensing band already transitions its shadow, with the rest of its glass. */
+:where([data-mantine-color-scheme='light']) .headerShell[data-position='fixed']:not([data-condense]) .headerBand {
+  transition: box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+:where([data-mantine-color-scheme='light']) .headerShell[data-position='fixed']:not([data-scrolled]) .headerBand {
+  box-shadow: none;
+}
+
 /* 64 -> 56. Small enough to feel like settling rather than a jump, and it is the only thing that moves. */
 .headerShell[data-condense] .headerBar {
   transition: min-height var(--sds-motion-medium) var(--sds-motion-ease-out);
@@ -2853,7 +2867,8 @@
  */
 @media (prefers-reduced-motion: reduce) {
   .headerShell[data-condense] .headerBand,
-  .headerShell[data-condense] .headerBar {
+  .headerShell[data-condense] .headerBar,
+  :where([data-mantine-color-scheme='light']) .headerShell[data-position='fixed']:not([data-condense]) .headerBand {
     transition: none;
   }
 }
@@ -3001,6 +3016,12 @@
   .secondaryNavList .headerItem:hover:not([data-open]) {
     color: var(--sds-neutral-10);
     background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
+  }
+
+  /* On the light bar the hover takes the brand's palest blue, `Brand Primary/Lighten 5`. */
+  :where([data-mantine-color-scheme='light']) .headerNav .headerItem:hover:not([data-open]),
+  :where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem:hover:not([data-open]) {
+    background-color: var(--sds-brand-primary-lighten-5);
   }
 }
 

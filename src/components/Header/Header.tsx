@@ -202,7 +202,8 @@ export function Header({
   }, [open, change])
 
   /*
-   * Whether the page has moved.
+   * Whether the page has moved — for any fixed header, condensing or not: a condensing one takes its
+   * glass from it, and on light every fixed one takes its shadow from it.
    *
    * A passive scroll listener batched into one `requestAnimationFrame`, rather than an
    * IntersectionObserver on a sentinel: the sentinel would have to live outside the header, in page
@@ -212,7 +213,7 @@ export function Header({
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    if (position !== 'fixed' || !condense) {
+    if (position !== 'fixed') {
       setScrolled(false)
       return undefined
     }
@@ -233,7 +234,7 @@ export function Header({
       window.removeEventListener('scroll', onScroll)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [position, condense])
+  }, [position])
 
   /*
    * The fixed bar's height, published on the root as `--sds-header-offset` so whatever sticks under the
