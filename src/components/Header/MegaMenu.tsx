@@ -1,5 +1,5 @@
 import { Children } from 'react'
-import type { AnchorHTMLAttributes, ReactNode } from 'react'
+import type { AnchorHTMLAttributes, PointerEvent, ReactNode } from 'react'
 import classes from '../../theme/components.module.css'
 import { Link } from '../Link'
 import { IconArrowRight, IconExternalLink } from '../../icons'
@@ -101,10 +101,28 @@ function Heading({ children }: { children: ReactNode }) {
  * A column's head, where the group is a destination of its own: a bordered, glass-filled tile that is
  * itself a link. Pass it to `MegaMenu.Column` as `tile`, in place of a `heading`.
  */
-function Tile({ icon, children, className, ...props }: MegaTileProps) {
+function Tile({ icon, children, className, onPointerMove, ...props }: MegaTileProps) {
+  /*
+   * Where the pointer is, for the ring and the spotlight to light from — the glass `Card`'s hover, which
+   * the tile takes whole. Written to the element rather than held in state, as `Card` does, and only for
+   * a mouse: a finger does not hover.
+   */
+  const track = (event: PointerEvent<HTMLAnchorElement>) => {
+    onPointerMove?.(event)
+    if (event.pointerType !== 'mouse') return
+    const box = event.currentTarget.getBoundingClientRect()
+    event.currentTarget.style.setProperty('--sds-card-x', `${event.clientX - box.left}px`)
+    event.currentTarget.style.setProperty('--sds-card-y', `${event.clientY - box.top}px`)
+  }
+
   return (
     /* Merged, not replaced: a caller's class marks *which* tile this is, it does not restyle it. */
-    <a className={[classes.megaTile, className].filter(Boolean).join(' ')} {...props}>
+    <a
+      className={[classes.megaTile, className].filter(Boolean).join(' ')}
+      onPointerMove={track}
+      {...props}
+    >
+      <span className={classes.cardSpotlight} aria-hidden />
       {icon ? <span className={classes.megaTileIcon}>{icon}</span> : null}
       <span>{children}</span>
     </a>

@@ -64,7 +64,7 @@ import goal2 from '../../assets/home/goal-2.png'
 import goal3 from '../../assets/home/goal-3.png'
 import goal4 from '../../assets/home/goal-4.png'
 import heroAnimation from '../../assets/home/hero-animation.webm'
-import heroAnimationLight from '../../assets/home/hero-animation-light.webm'
+import heroMediaLight from '../../assets/home/hero-media-light.webp'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import industryMedia from '../../assets/home/industry-media.png'
@@ -78,6 +78,7 @@ import teamsMedia from '../../assets/home/teams-media.png'
  */
 import g2Badge from '../../assets/home/badges/g2-leader-enterprise-fall-2026.png'
 import gartnerBadge from '../../assets/home/badges/gartner-peer-insights-customers-choice-2026-white.png'
+import gartnerBadgeLight from '../../assets/home/badges/gartner-peer-insights-customers-choice-2026.png'
 /*
  * The teams panel's footage.
  *
@@ -165,20 +166,20 @@ const CAPABILITY_ICONS: Record<string, { glass: ReactNode; icon: ReactNode }> = 
 /**
  * The hero's analyst badges, in the order the two are written in the content.
  *
- * `plate` marks a badge whose artwork is white-only and so needs a dark ground under it on the light
- * canvas — see `.heroBadgePlate`. Gartner supplies a dark variant of this mark; when that file replaces
- * this one, the flag comes off.
- */
-/*
  * Zipped by position with `content.hero.badges`, so the two arrays are one order in two files.
  *
  * Gartner leads, as `card-main` draws it: the sentence under the row cites Gartner Peer Insights, and a
- * caption should name what the eye reached first. `plate` travels with the Gartner artwork — it is the
- * white-only file that needs a ground under it on the light canvas.
+ * caption should name what the eye reached first.
+ *
+ * `srcLight` is the artwork for the light canvas. Gartner supplies the Customers' Choice mark in two
+ * variants — white, for a dark ground, and the dark-and-gold outline the light `card-main` (node
+ * `24843:58125`) draws — and the badge is their trademark, so the light page takes their own variant
+ * rather than a recoloured or plated copy of the white one. G2's mark carries its own ground and is the
+ * same file on both.
  */
-const HERO_BADGES = [
-  { src: gartnerBadge, plate: true },
-  { src: g2Badge, plate: false },
+const HERO_BADGES: { src: string; srcLight?: string }[] = [
+  { src: gartnerBadge, srcLight: gartnerBadgeLight },
+  { src: g2Badge },
 ]
 
 /** The six Trending thumbnails, in the order the six cards are written. */
@@ -259,8 +260,7 @@ export function HomePage({
    * Which hero animation the canvas gets. See the `video` in the hero's `media` slot below for why
    * there are two, and `Hero` for the same pick made for the bubble behind it.
    */
-  const heroCanvas =
-    useComputedColorScheme('dark') === 'light' ? heroAnimationLight : heroAnimation
+  const light = useComputedColorScheme('dark') === 'light'
   /* Japanese sets no inter-clause space; see `Split`. */
   const spaced = !content.locale.startsWith('ja')
   const bubbleBackground = heroBackground === 'bubble'
@@ -426,13 +426,11 @@ export function HomePage({
                 <div className={classes.heroProofRating}>
                   <div className={classes.heroProofScore}>
                     {/*
-                     * `Surfaces/Text/Primary`, not the row's inherited secondary.
-                     *
-                     * `.heroProof` sets secondary on the whole slot, which is right for the sentence under
-                     * the figure and wrong for the figure: 4.6 is the claim, and it was rendering two
-                     * steps down from the copy above it. The node draws it white.
+                     * Its own colour, not the row's inherited secondary: 4.6 is the claim. White on the
+                     * dark canvas, `Brand/Primary` on the light one, as the two `card-main` nodes draw
+                     * it — see `.heroProofFigure`.
                      */}
-                    <Text fz={36} fw={700} lh={1} c="var(--sds-surfaces-text-primary)">
+                    <Text fz={36} fw={700} lh={1} className={classes.heroProofFigure}>
                       {content.hero.rating}
                     </Text>
                     {/*
@@ -467,19 +465,23 @@ export function HomePage({
                  */}
                 <div className={classes.heroBadges}>
                   {content.hero.badges.map((badge, i) => (
-                    <span
+                    <img
                       key={badge.alt}
-                      className={HERO_BADGES[i].plate ? classes.heroBadgePlate : undefined}
-                    >
-                      <img src={HERO_BADGES[i].src} alt={badge.alt} loading="lazy" />
-                    </span>
+                      src={(light && HERO_BADGES[i].srcLight) || HERO_BADGES[i].src}
+                      alt={badge.alt}
+                      loading="lazy"
+                    />
                   ))}
                 </div>
               </div>
 
               <div className={classes.heroProofMarks}>
+                {/*
+                 * Glass on the dark canvas; on the light one the file's `Label CTA` is `Style=Filled`,
+                 * the flat tonal chip, which reads on a pale page where glass washes out.
+                 */}
                 {content.hero.marks.map((mark) => (
-                  <Label key={mark} variant="glass" size="sm" radius="sm">
+                  <Label key={mark} variant={light ? 'filled' : 'glass'} size="sm" radius="sm">
                     {mark}
                   </Label>
                 ))}
@@ -487,34 +489,39 @@ export function HomePage({
             </div>
           }
           media={
-            /*
-             * The animation carries an alpha channel, so it is not a picture in a frame — the corners
-             * are transparent and the middle is about 70% opaque. `.heroMedia` blurs the bubble behind
-             * it; see components.module.css.
-             *
-             * That translucency is why there are two files. The dark export was drawn against a near
-             * black page, and on the light canvas the white ground bleeds up through its chrome: the
-             * mockup arrives as flat grey with navigation nobody can read. `hero-animation-light.webm`
-             * is the same 28.5s animation exported opaque for that canvas. Same pick `Hero` makes for
-             * its bubble, and `keyed` on the source because a `src` swap on a playing video is not
-             * reliably picked up — the previous canvas's footage would stay on screen.
-             *
-             * Under `prefers-reduced-motion` it still renders, paused on its first frame: the content is
-             * the point and removing it would leave the hero half empty. `preload="auto"` so there *is*
-             * a first frame to show — a posterless video that has not buffered draws nothing.
-             */
-            <video
-              key={heroCanvas}
-              src={heroCanvas}
-              poster={heroMedia}
-              autoPlay={!reducedMotion}
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-hidden
-              tabIndex={-1}
-            />
+            light ? (
+              /*
+               * The light canvas takes a still: the Saletto product page, the Digital Twin catalogue
+               * under the editor's `Headline` chrome. Decorative, as the animation is — the hero's copy
+               * says what the page is; this shows it — so an empty `alt` rather than a caption a screen
+               * reader would read twice.
+               */
+              <img src={heroMediaLight} alt="" />
+            ) : (
+              /*
+               * The animation carries an alpha channel, so it is not a picture in a frame — the
+               * corners are transparent and the middle is about 70% opaque. `.heroMedia` blurs the
+               * bubble behind it; see components.module.css.
+               *
+               * Dark canvas only. It was drawn against a near-black page, and the light canvas has its
+               * own still above.
+               *
+               * Under `prefers-reduced-motion` it still renders, paused on its first frame: the content
+               * is the point and removing it would leave the hero half empty. `preload="auto"` so there
+               * *is* a first frame to show — a posterless video that has not buffered draws nothing.
+               */
+              <video
+                src={heroAnimation}
+                poster={heroMedia}
+                autoPlay={!reducedMotion}
+                muted
+                loop
+                playsInline
+                preload="auto"
+                aria-hidden
+                tabIndex={-1}
+              />
+            )
           }
         />
       </Box>

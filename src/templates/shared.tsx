@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
-import { Box, Group, Stack, Text } from '@mantine/core'
+import { Box, Group, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Button } from '../components/Button'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
@@ -19,6 +19,7 @@ import {
 } from '../icons'
 import classes from '../theme/components.module.css'
 import { logoTile } from './logo-tile'
+import footerBubbleLight from '../../assets/footer/footer-bubble-light.webp'
 
 /* Re-exported: it used to live here, and the templates import it from here. */
 export { logoTile }
@@ -287,11 +288,21 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
        * closer to a smudge, and the fifth star of a 4.6 is doing real work — it is the difference
        * between "four and a bit" and "five".
        */}
-      <g fill="var(--sds-surfaces-text-secondary)" opacity={0.5} filter="url(#sds-star-lift)">
+      <g
+        className={classes.starTrack}
+        fill="var(--sds-surfaces-text-secondary)"
+        opacity={0.5}
+        filter="url(#sds-star-lift)"
+      >
         {stars}
       </g>
 
-      <g fill="url(#sds-star-fill)" clipPath="url(#sds-star-clip)" filter="url(#sds-star-lift)">
+      <g
+        className={classes.starFill}
+        fill="url(#sds-star-fill)"
+        clipPath="url(#sds-star-clip)"
+        filter="url(#sds-star-lift)"
+      >
         {stars}
       </g>
     </svg>
@@ -371,8 +382,16 @@ export function SiteHeader({
 
 /** `LRDC footer` — the action band, the disclaimers, the numbers and the link grid. */
 export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterContent } = {}) {
+  /*
+   * The light canvas draws the link band pale, with the bubble rising out of its lower left — node
+   * `24859:64519`. The artwork goes in through `backdrop`, as the Footer asks of anything it draws, and
+   * only on light: the dark band keeps its mesh. `.footerBubble` places and softens it.
+   */
+  const light = useComputedColorScheme('dark') === 'light'
+
   return (
   <Footer
+    backdrop={light ? <img className={classes.footerBubble} src={footerBubbleLight} alt="" /> : undefined}
     cta={
       <Stack gap={40} maw={1280} mx="auto">
         <Stack gap={32} align="center">

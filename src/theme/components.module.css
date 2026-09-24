@@ -3018,11 +3018,44 @@
     background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 6%, transparent);
   }
 
-  /* On the light bar the hover takes the brand's palest blue, `Brand Primary/Lighten 5`. */
+  /*
+   * Light: the Solutions Library's `Mega Menu Nav Item`, `State=Hover` — a square `Brand Primary/Lighten
+   * 5` fill at 80% with the label and caret in `Action/Link/Default Link`.
+   */
   :where([data-mantine-color-scheme='light']) .headerNav .headerItem:hover:not([data-open]),
   :where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem:hover:not([data-open]) {
-    background-color: var(--sds-brand-primary-lighten-5);
+    color: var(--sds-action-link-default-link);
+    background-color: color-mix(in srgb, var(--sds-brand-primary-lighten-5) 80%, transparent);
+    border-radius: 0;
   }
+
+  :where([data-mantine-color-scheme='light']) .headerNav .headerItem:hover:not([data-open]) .headerCaret,
+  :where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem:hover:not([data-open]) .headerCaret {
+    color: inherit;
+  }
+}
+
+/*
+ * Light: `State=Current` — the open section, or the secondary nav's current link. The label goes to
+ * `Action/Link/Default Link`, and the underline is the file's 3px round-capped line, the item's full
+ * width, from `Brand Primary` to `Accent/Purple` over its second half.
+ */
+:where([data-mantine-color-scheme='light']) .headerNav .headerItem[data-open],
+:where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem[data-open],
+:where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem[data-active] {
+  color: var(--sds-action-link-default-link);
+}
+
+:where([data-mantine-color-scheme='light']) .headerNav .headerItem::after,
+:where([data-mantine-color-scheme='light']) .secondaryNavList .headerItem::after {
+  inset-inline: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--sds-brand-primary-primary) 50%,
+    var(--sds-accent-purple)
+  );
 }
 
 .headerNav .headerItem:focus-visible,
@@ -3100,7 +3133,8 @@
    */
   max-width: 1440px;
   margin: 0 auto;
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 72%, transparent);
+  /* 80%, the open fill every nav panel shares — the secondary nav's dropdown takes the same. */
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid var(--sds-glass-line-to);
@@ -3375,16 +3409,40 @@
   }
 }
 
+/*
+ * Light: the Solutions Library's `Nav Item`, `State=Hover` — a `Brand Primary/Lighten 5` fill at 80%, 4px
+ * corners, the title and its glyph in `Action/Link/Hover Link`, the description up to the primary ink.
+ */
+@media (hover: hover) {
+  :where([data-mantine-color-scheme='light']) .megaItem:hover {
+    background-color: color-mix(in srgb, var(--sds-brand-primary-lighten-5) 80%, transparent);
+    border-radius: 4px;
+  }
+
+  :where([data-mantine-color-scheme='light']) .megaItem:hover .megaItemIcon,
+  :where([data-mantine-color-scheme='light']) .megaItem:hover .megaItemTitle {
+    color: var(--sds-action-link-hover-link);
+  }
+
+  :where([data-mantine-color-scheme='light']) .megaItem:hover .megaItemDescription {
+    color: var(--sds-surfaces-text-primary);
+  }
+}
+
 .megaItem:active {
   background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 12%, transparent);
 }
 
 .megaItem:focus-visible,
-.megaTile:focus-visible,
 .megaFeaturedCard:focus-visible,
 .megaMore:focus-visible {
   outline: 2px solid var(--sds-action-link-active-link);
   outline-offset: 2px;
+}
+
+/* A tile's focus is its ring, at 2px, as the glass card's is. */
+.megaTile:focus-visible {
+  outline: none;
 }
 
 /*
@@ -3423,9 +3481,47 @@
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
+  position: relative;
   transition:
-    border-color var(--sds-motion-fast) var(--sds-motion-ease),
-    background-image var(--sds-motion-fast) var(--sds-motion-ease);
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    box-shadow var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+/*
+ * The glass `Card`'s interaction, whole: a ring in `card-Focus Ring`'s gradient lit from the pointer, the
+ * pointer's spotlight on the face, a 2px lift with the brand-blue cast shadow, settling back on press,
+ * and the ring at 2px for keyboard focus. The same values as `.cardRoot[data-interactive]`, so a tile
+ * and a card beside it answer the pointer identically. `Tile` writes `--sds-card-x/y`.
+ */
+.megaTile::after {
+  content: '';
+  position: absolute;
+  /* Over the 1px border, so the ring sits where the resting edge is. */
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background-image: radial-gradient(
+    140% 140% at var(--sds-card-x, 50%) var(--sds-card-y, 50%),
+    var(--sds-action-primary-hover) 0%,
+    var(--sds-accent-product-accent) 100%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
+  pointer-events: none;
+}
+
+/* The spotlight under the label rather than over it. */
+.megaTile > .cardSpotlight {
+  z-index: 0;
+}
+
+.megaTile > :not(.cardSpotlight) {
+  position: relative;
+  z-index: 1;
 }
 
 .megaTileIcon {
@@ -3444,16 +3540,41 @@
 
 @media (hover: hover) {
   .megaTile:hover {
-    border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 50%, transparent);
-    background-image: radial-gradient(
-      120% 260% at 88% 0%,
-      color-mix(in srgb, var(--sds-surfaces-text-primary) 10%, transparent) 0%,
-      var(--sds-glass-step-02) 100%
-    );
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -12px
+      color-mix(in srgb, var(--sds-action-primary-hover) 34%, transparent);
   }
 
-  .megaTile:hover .megaTileIcon {
-    color: var(--sds-action-link-active-link);
+  .megaTile:hover::after,
+  .megaTile:hover > .cardSpotlight {
+    opacity: 1;
+  }
+}
+
+.megaTile:active {
+  transform: translateY(0);
+  transition-duration: var(--sds-motion-press);
+}
+
+.megaTile:focus-visible::after {
+  opacity: 1;
+  padding: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .megaTile,
+  .megaTile::after {
+    transition: none;
+  }
+
+  .megaTile:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .megaTile::after {
+    display: none;
   }
 }
 
@@ -4331,7 +4452,11 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .headerBurger,
+  /*
+   * Qualified like the burger's own rule, `.headerBar .headerBurger`, which would otherwise outrank this
+   * one and keep the burger on the desktop bar beside the nav it stands in for.
+   */
+  .headerBar .headerBurger,
   .headerBarCta,
   .headerDrawer {
     display: none;
@@ -5000,7 +5125,9 @@
  * and it never stretches past the width it is given.
  */
 /*
- * Under a fixed header the banner clears the bar and no more: 64px, the bar's own height.
+ * Under a fixed header the banner clears the bar, then keeps 24px from it: 65px, the bar's 64 and its 1px
+ * rule, plus 24 — the same 24 the phone's headline keeps below, and the gap the Home page asks for
+ * between the nav and the solution finder. At 64 flat the finder touched the bar, overlapping its rule.
  *
  * `:has()` rather than a prop: the hero cannot be told what is above it without every page having to
  * pass that down, and the one thing that reliably knows is the document. A fixed header reserves no
@@ -5011,7 +5138,7 @@
  * own band; a fixed bar the artwork already runs behind does not want it twice.
  */
 body:has(.headerShell[data-position='fixed']) .heroBanner {
-  padding-block-start: 64px;
+  padding-block-start: calc(65px + 24px);
 }
 
 /*
@@ -5030,8 +5157,22 @@ html:has(.headerShell[data-position='fixed']) {
   scroll-padding-top: 64px;
 }
 
+/*
+ * A hero with no banner keeps its own padding below the bar: the bar's 65, then the hero's fluid
+ * block padding, down to 20 on a phone — so the content sits as far under the nav as it would under
+ * the top of the page. At 64 flat the heading, or media taller than the copy, started on the bar's rule.
+ *
+ * On desktop, from the header's 1200 breakpoint, it is 80 flat. The fluid value only reaches 80 at a
+ * 1440 container, and a scrollbar alone leaves a 1440 window a pixel short of that.
+ */
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
-  padding-block-start: 64px;
+  padding-block-start: calc(65px + clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+}
+
+@media (min-width: 1200px) {
+  body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
+    padding-block-start: calc(65px + 80px);
+  }
 }
 
 .heroBanner {
@@ -5473,28 +5614,6 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   height: 72px;
 }
 
-/*
- * The plate behind a white-only badge.
- *
- * Gartner supplies the Customers' Choice mark in two variants, and the file committed here is the
- * **white** one — every opaque pixel in it is white, so on the light canvas it is invisible. Recolouring
- * it is not an option: the badge is Gartner's trademark and their usage terms do not permit altering it,
- * which rules out the `filter: invert()` this would otherwise be a one-liner for.
- *
- * So the artwork is left exactly as supplied and the ground under it changes instead. In dark mode this
- * is nothing at all; in light mode it is a dark chip, which is the placement Gartner's own guidelines
- * describe for the reversed variant. Swap in the dark-variant PNG and this rule can go.
- */
-.heroBadgePlate {
-  display: inline-flex;
-  border-radius: 8px;
-}
-
-:where([data-mantine-color-scheme='light']) .heroBadgePlate {
-  padding: 8px 12px;
-  background-color: var(--sds-neutral-10);
-}
-
 /* ------------------------------------------------------ the Home hero's proof row (`card-main`)
  *
  * Figma node `7655:14935`. The verdicts as one block — the score, its stars, the two awarded badges and
@@ -5576,6 +5695,36 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   gap: 8px;
 }
 
+/* The figure: white on the dark canvas; `Brand/Primary` on the light one, as its `card-main` draws it. */
+.heroProofFigure {
+  color: var(--sds-surfaces-text-primary);
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofFigure {
+  color: var(--sds-brand-primary-primary);
+}
+
+/*
+ * The stars on the light canvas, as the light `card-main` (node `24843:58125`) draws them: each filled
+ * star `Brand/Primary` into `Accent/Purple`, the empty one `#70A2FF` at 20% — the blue accent's dark-mode
+ * step, which has no light-mode token — and no lift, which was for the dark bubble and on a pale page
+ * only muddies the edge. Here alone: other pages' ratings keep the shared light ramp in `.starRating`.
+ */
+:where([data-mantine-color-scheme='light']) .heroProofScore .starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-primary);
+  --sds-star-fill-to: var(--sds-accent-purple);
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofScore .starTrack {
+  fill: #70a2ff;
+  opacity: 0.2;
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofScore .starTrack,
+:where([data-mantine-color-scheme='light']) .heroProofScore .starFill {
+  filter: none;
+}
+
 /*
 /*
  * `8538:43357` — the badges as their own end-aligned group.
@@ -5592,18 +5741,6 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 .heroProofTop .heroBadges img {
   height: 48px;
-}
-
-/*
- * The plate keeps the badge 40px tall including its padding, or the one badge that has a chip under it
- * stands taller than the one that does not and the line stops being level. Light mode only — see above.
- */
-:where([data-mantine-color-scheme='light']) .heroProofTop .heroBadgePlate {
-  padding: 4px 8px;
-}
-
-:where([data-mantine-color-scheme='light']) .heroProofTop .heroBadgePlate img {
-  height: 40px;
 }
 
 /*
@@ -8636,6 +8773,85 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   }
 }
 
+/* ------------------------------------------------------------------- light
+ *
+ * The light canvas's `LRDC footer`, node `24859:64519`. The band stops being dark in both modes: on
+ * light it is the page's own ground with dark ink, the Solutions Library draws it so, and every rule
+ * above that pins white to this band is answered here.
+ *
+ *   Number Footer    `#e8eefb` under a 2px `Brand/Primary/Lighten 1` rule, where dark keeps its
+ *                    gradient hairline over `Surfaces/Card BG Blue`
+ *   Footer Effects   a 1px `rgba(111, 160, 255, 0.8)` rule at the top, and a 10% radial tint from the
+ *                    page white to `#70A2FF` at 80% of its reach
+ *   Bubble           the light bubble, turned over so it rises from the lower left, under the effect
+ *                    layer's 50px backdrop blur — drawn as a blur on the image, which is the same thing
+ *                    with nothing else behind it
+ *   Type             headings `Surfaces/Text/Secondary`, links and address `Surfaces/Text/Primary`
+ */
+:where([data-mantine-color-scheme='light']) .footerStats {
+  background-color: #e8eefb;
+}
+
+:where([data-mantine-color-scheme='light']) .footerStats::before {
+  height: 2px;
+  background-image: none;
+  background-color: var(--sds-brand-primary-lighten-1);
+}
+
+:where([data-mantine-color-scheme='light']) .footerBase {
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  color: var(--sds-surfaces-text-primary);
+  box-shadow: inset 0 1px 0 rgba(111, 160, 255, 0.8);
+}
+
+/* The dark band's drifting mesh has no place on a pale one; the bubble is the light. */
+:where([data-mantine-color-scheme='light']) .footerBase::after {
+  display: none;
+}
+
+/* The effect layer's tint, where the dark band has its vignette. */
+:where([data-mantine-color-scheme='light']) .footerBase::before {
+  background-image: radial-gradient(
+    60% 90% at 50% 33%,
+    rgba(251, 252, 254, 0.1) 0%,
+    rgba(112, 162, 255, 0.1) 80%
+  );
+}
+
+/*
+ * Where the file puts it: 136% of the band's width from 22.6% off its left edge, and 63.5% of its height
+ * from 42.5% down, running off the bottom — the band's `overflow: hidden` trims it. Stretched to that
+ * box rather than covered, since the box is the artwork's own proportion at 1440.
+ */
+.footerBackdrop > .footerBubble {
+  position: absolute;
+  inset-inline-start: -22.6%;
+  inset-block-start: 42.5%;
+  width: 136.1%;
+  height: 63.5%;
+  object-fit: fill;
+  filter: blur(50px);
+}
+
+:where([data-mantine-color-scheme='light']) .footerBase a[data-variant] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+@media (hover: hover) {
+  :where([data-mantine-color-scheme='light']) .footerBase a[data-variant]:hover {
+    color: var(--sds-action-link-hover-link);
+  }
+}
+
+:where([data-mantine-color-scheme='light']) .footerColumnTitle {
+  color: var(--sds-surfaces-text-secondary);
+}
+
+:where([data-mantine-color-scheme='light']) .footerAddress,
+:where([data-mantine-color-scheme='light']) .footerSocial :where(a, button) {
+  color: var(--sds-surfaces-text-primary);
+}
+
 @media (forced-colors: active) {
   /* A vignette is invisible in forced colours and the artwork only competes with the text. */
   .footerBase::before,
@@ -10897,7 +11113,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 :where([data-mantine-color-scheme='light']) .secondaryNavPanel {
-  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 90%, transparent);
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
   border-color: var(--sds-glass-line-to);
 }
 
@@ -10965,6 +11181,42 @@ a.secondaryNavTitle:focus-visible {
 @media (hover: hover) {
   .secondaryNavLink:hover .secondaryNavLinkTitle {
     color: var(--sds-action-link-active-link);
+  }
+}
+
+/*
+ * Light: the Solutions Library's `Nav Item`, `State=Hover` — a `Brand Primary/Lighten 5` fill at 80%, bleeding
+ * 4px past the row at 4px corners, drawn on a pseudo-element so the row's layout does not move; the
+ * title and icon in `Action/Link/Hover Link`, the description up to the primary ink.
+ */
+:where([data-mantine-color-scheme='light']) .secondaryNavLink {
+  position: relative;
+  isolation: isolate;
+}
+
+:where([data-mantine-color-scheme='light']) .secondaryNavLink::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--sds-brand-primary-lighten-5) 80%, transparent);
+  opacity: 0;
+  transition: opacity var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+@media (hover: hover) {
+  :where([data-mantine-color-scheme='light']) .secondaryNavLink:hover::before {
+    opacity: 1;
+  }
+
+  :where([data-mantine-color-scheme='light']) .secondaryNavLink:hover .secondaryNavLinkTitle,
+  :where([data-mantine-color-scheme='light']) .secondaryNavLink:hover .secondaryNavLinkIcon {
+    color: var(--sds-action-link-hover-link);
+  }
+
+  :where([data-mantine-color-scheme='light']) .secondaryNavLink:hover .secondaryNavLinkDescription {
+    color: var(--sds-surfaces-text-primary);
   }
 }
 
