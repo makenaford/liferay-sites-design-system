@@ -14,6 +14,7 @@ import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
 import { List } from '../components/List'
+import { Progress } from '../components/Progress'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
 import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
@@ -34,8 +35,16 @@ import {
   IconGroup,
   IconMonitor,
   IconPresentation1,
+  IconGlassCertifications,
   IconGlassCommerce,
+  IconGlassCourses,
   IconGlassCustomerPortals,
+  IconGlassDAM,
+  IconGlassDatabase,
+  IconGlassDocumentation,
+  IconGlassGlobalServices,
+  IconGlassLearningPaths,
+  IconGlassSupport,
   IconGlassEnterpriseWebsite4,
   IconGlassFinancialServices,
   IconGlassIntranets,
@@ -139,6 +148,14 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   security: (s) => <IconGlassPremiumSecurity width={s} height={s} />,
   'low-code': (s) => <IconGlassLowCode width={s} height={s} />,
   integration: (s) => <IconGlassIntegration width={s} height={s} />,
+  documentation: (s) => <IconGlassDocumentation width={s} height={s} />,
+  courses: (s) => <IconGlassCourses width={s} height={s} />,
+  'learning-paths': (s) => <IconGlassLearningPaths width={s} height={s} />,
+  certifications: (s) => <IconGlassCertifications width={s} height={s} />,
+  support: (s) => <IconGlassSupport width={s} height={s} />,
+  'global-services': (s) => <IconGlassGlobalServices width={s} height={s} />,
+  dam: (s) => <IconGlassDAM width={s} height={s} />,
+  database: (s) => <IconGlassDatabase width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -425,6 +442,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        * a page's business.
        */
       background={background}
+      align={hero.align}
       drawn={bubble?.css || undefined}
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
@@ -472,6 +490,8 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
               </Button>
             }
           />
+        ) : hero.search ? (
+          <HeroSearch search={hero.search} />
         ) : undefined
       }
       actions={
@@ -512,6 +532,43 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
         ) : undefined
       }
     />
+  )
+}
+
+/**
+ * The site search a hero carries in place of an email field — the Learn home page's.
+ *
+ * A real `search` input, not a lookalike: it takes the field's glass treatment from `.heroForm` like
+ * the email field does, and it is a form so Enter submits. Nothing is wired behind it — the action is
+ * `#`, the same as every link a template draws.
+ *
+ * The topics are links rather than `Chip`s. A chip toggles and carries a close glyph; these go
+ * somewhere, so each is an anchor around a `Label`, which is the read-only pill in this library.
+ */
+function HeroSearch({ search }: { search: NonNullable<HeroSpec['search']> }) {
+  return (
+    <form role="search" action="#" className={classes.heroSearch} onSubmit={(e) => e.preventDefault()}>
+      <TextInput
+        type="search"
+        aria-label="Search Liferay Learn"
+        placeholder={search.placeholder}
+        leftSection={<IconSearch />}
+      />
+      {search.popular?.length ? (
+        <Group gap={8} justify="center">
+          <Text span size="sm" c="var(--sds-surfaces-text-secondary)">
+            Popular:
+          </Text>
+          {search.popular.map((topic) => (
+            <a key={topic.label} href={topic.href} className={classes.heroTopic}>
+              <Label variant="glass" size="sm">
+                {topic.label}
+              </Label>
+            </a>
+          ))}
+        </Group>
+      ) : null}
+    </form>
   )
 }
 
@@ -638,6 +695,11 @@ function GridCard({ card }: { card: CardSpec }) {
       }
       title={card.title}
       description={card.description}
+      bottom={
+        card.progress !== undefined ? (
+          <Progress value={card.progress} label={`${card.title} progress`} />
+        ) : undefined
+      }
     />
   )
 }
@@ -1318,7 +1380,24 @@ function QuickLinksSection({ spec }: { spec: Extract<SectionSpec, { type: 'quick
   return (
     <Section
       gap={24}
-      title={<SectionTitle title={highlightPhrase(spec.title, spec.titleHighlight, true)} />}
+      title={
+        <SectionTitle
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          actions={
+            spec.action ? (
+              <MantineButton
+                component="a"
+                href={spec.action.href}
+                variant="outline"
+                size="md"
+                rightSection={<IconArrowRight />}
+              >
+                {spec.action.label}
+              </MantineButton>
+            ) : undefined
+          }
+        />
+      }
     >
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={16}>
         {spec.links.map((link) => (
@@ -1363,6 +1442,24 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
         hero={spec.icon ? GLASS[spec.icon](40) : undefined}
         title={spec.title}
         description={spec.body}
+        bottom={
+          spec.action ? (
+            spec.action.style === 'button' ? (
+              <MantineButton
+                component="a"
+                href={spec.action.href}
+                size="md"
+                rightSection={<IconArrowRight />}
+              >
+                {spec.action.label}
+              </MantineButton>
+            ) : (
+              <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
+                {spec.action.label}
+              </Link>
+            )
+          ) : undefined
+        }
       />
     </Section>
   )

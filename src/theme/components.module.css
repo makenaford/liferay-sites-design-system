@@ -5362,6 +5362,93 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
+ * A site search is wider than an email field — a query runs longer than an address — so the slot
+ * widens when it holds one. The Learn hero draws its field at 700.
+ */
+.heroForm:has(> .heroSearch) {
+  width: min(700px, 100%);
+}
+
+.heroSearch {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/*
+ * The Learn search is Figma's `Search` at `Size=XL` (node `7748:21585`), not the email field: a 70px
+ * pill, 24px type, and a heavier glass than `.heroForm` gives every other hero field.
+ *
+ * The heavier glass is the point of it. The email field sits over the brightest part of the corner
+ * bubble, where a 12px blur over 20% black is plainly visible; this one sits in the middle of the full
+ * bubble, which is mostly dark, and the same treatment disappears there. So it takes the file's own
+ * values — a 40px blur, 60% black under a white radial sheen, a gradient hairline and a soft shadow —
+ * which read as glass over dark ground as well as over light.
+ *
+ * Qualified with `.heroForm`, because `.heroForm .fieldWrapper` comes later in this file at the same
+ * weight and would otherwise put the 12px blur back. The hairline is the field's own `::after` ring —
+ * the mask that draws every field's border — recoloured while unfocused, so the focus ring still wins.
+ */
+.heroForm .heroSearch .fieldWrapper {
+  border-radius: 1000px;
+  background:
+    radial-gradient(120% 140% at 85% 0%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 70%),
+    rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  box-shadow: -3px 3px 30px rgba(0, 0, 0, 0.16);
+}
+
+.heroForm .heroSearch .fieldWrapper:not(:focus-within)::after {
+  background-image: linear-gradient(90deg, var(--sds-neutral-08), var(--sds-neutral-05));
+}
+
+.heroForm .heroSearch .fieldInput {
+  height: 70px;
+  min-height: 70px;
+  padding-inline-start: 60px;
+  font-size: var(--sds-size-heading-f4);
+  line-height: 32px;
+}
+
+.heroForm .heroSearch .fieldSection[data-position='left'] {
+  width: 60px;
+  padding-inline-start: 24px;
+}
+
+.heroForm .heroSearch .fieldSection > svg {
+  width: 20px;
+  height: 20px;
+}
+
+/*
+ * On light the sheen stays and the scrim turns white, for the reason the light rule below gives. `.hero`
+ * in front so it outranks that rule, which is later in the file and would otherwise take the 12px back.
+ */
+:where([data-mantine-color-scheme='light']) .hero .heroForm .heroSearch .fieldWrapper {
+  background:
+    radial-gradient(120% 140% at 85% 0%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 70%),
+    rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+}
+
+:where([data-mantine-color-scheme='light']) .hero .heroForm .heroSearch .fieldWrapper:not(:focus-within)::after {
+  background-image: linear-gradient(90deg, var(--sds-neutral-03), var(--sds-neutral-05));
+}
+
+.heroTopic {
+  display: inline-flex;
+  border-radius: var(--mantine-radius-xl);
+  text-decoration: none;
+}
+
+.heroTopic:focus-visible {
+  outline: 2px solid var(--sds-action-primary-hover);
+  outline-offset: 2px;
+}
+
+/*
  * The hero's field is glass, because of what is behind it.
  *
  * Everywhere else an input sits on the page's own surface, so the resting fill can be nothing at all
@@ -5450,8 +5537,14 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  *
  * 0.05s, then 0.1 apart, on an 0.8s curve — the demo's numbers. The parts overlap heavily: the heading
  * begins before the label has finished, which is what makes it read as one movement arriving rather
- * than as five things queuing. `both`, so a part holds at `from` through its own delay instead of
+ * than as five things queuing. `backwards`, so a part holds at `from` through its own delay instead of
  * flashing at full opacity before its turn.
+ *
+ * **`backwards`, not `both`.** `to` is the element's own resting style, so holding it after the end
+ * looks identical — but an animation still applying opacity and transform makes the element a
+ * backdrop root, and every `backdrop-filter` inside it then blurs only that element's own (empty)
+ * contents instead of the bubble behind the hero. The hero's glass fields showed the artwork's edges
+ * straight through them. Releasing the animation when it ends gives them the page back.
  *
  * The banner leads at 0.05 because it sits above everything, and the media column comes in at 0.35 —
  * with the actions, not after the proof line. It is beside the text rather than below it, so pinning it
@@ -5465,7 +5558,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   .hero[data-entrance] .heroBanner,
   .hero[data-entrance] .heroContent > *,
   .hero[data-entrance] .heroMedia {
-    animation: sds-hero-rise 0.8s cubic-bezier(0.16, 0.8, 0.3, 1) both;
+    animation: sds-hero-rise 0.8s cubic-bezier(0.16, 0.8, 0.3, 1) backwards;
   }
 
   .hero[data-entrance] .heroBanner { animation-delay: 0.05s; }
@@ -11401,4 +11494,54 @@ a.secondaryNavTitle:focus-visible {
   .secondaryNavSheetChevron {
     transition: none;
   }
+}
+
+/*
+ * `Progress` — Figma `Progress Bar`, as the Learn `Course Card` draws it.
+ *
+ * The track and the figure share a row at an 8px gap. The track is `Surfaces/card-bg-blue`; the fill
+ * is the state's: blue into aqua while loading, warning while stalled, success once complete.
+ */
+.progress {
+  display: flex;
+  /* Full width of whatever holds it — a card's footer is a flex row that would otherwise hug it. */
+  flex: 1 1 100%;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Qualified, because Mantine's own root rule sets the track colour at the same weight. */
+.progress .progressTrack {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--sds-surfaces-card-bg-blue);
+}
+
+.progress .progressFill {
+  background: linear-gradient(90deg, var(--sds-brand-primary-primary), var(--sds-accent-aqua));
+}
+
+.progress[data-state='warning'] .progressFill {
+  background: var(--sds-status-warning-warning);
+}
+
+.progress[data-state='completed'] .progressFill {
+  background: var(--sds-status-success-darken-1);
+}
+
+.progressValue {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* The file draws the check in white on dark — the primary text colour, so it inverts on light. */
+.progress[data-state='completed'] .progressValue {
+  color: var(--sds-surfaces-text-primary);
 }

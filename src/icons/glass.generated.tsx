@@ -479,6 +479,67 @@ export function IconGlassAnalyticsPerformance({ size = 48, ...props }: GlassIcon
   )
 }
 
+/** Glass icon `Key Capabilities/Certifications`. Dark artwork only — see the note above. */
+export function IconGlassCertifications({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="-2 -8 74 74"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <g clipPath={`url(#${uid}-d-clip0_65_15048)`}>
+<g clipPath={`url(#${uid}-d-clip1_65_15048)`}>
+<path fillRule="evenodd" clipRule="evenodd" d="M0.5 26.474C0.5 12.7519 11.5865 1.6377 25.2742 1.6377C38.9619 1.6377 50.0484 12.7519 50.0484 26.474C50.0484 34.018 46.6419 41.1584 40.7581 45.8463V60.1582C40.7581 62.052 39.2406 63.5732 37.3516 63.5732C36.949 63.5732 36.5464 63.5111 36.1439 63.3559L25.2742 59.2579L14.4045 63.3559C12.6394 64.0078 10.6884 63.1075 10.0071 61.369C9.85226 60.9964 9.79032 60.5928 9.79032 60.1582V45.8463C3.90645 41.1274 0.5 33.987 0.5 26.4429" fill={`url(#${uid}-d-paint0_linear_65_15048)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_65_15048)`}>
+<path fillRule="evenodd" clipRule="evenodd" d="M43.6121 3.98385L45.9579 11.1288C46.637 13.223 48.6124 14.6397 50.8348 14.6397H58.3663C63.3049 14.6397 65.4038 20.984 61.3912 23.8789L55.2796 28.3137C53.4893 29.6072 52.7485 31.9478 53.4276 34.042L55.7735 41.187C57.3168 45.9298 51.8843 49.8102 47.8716 46.9153L41.7601 42.4805C39.9698 41.187 37.5005 41.187 35.7102 42.4805L29.5986 46.9153C25.586 49.8102 20.1535 45.9298 21.6968 41.187L24.0427 34.042C24.7217 31.9478 23.9809 29.6072 22.1907 28.3137L16.0791 23.8789C12.0665 20.984 14.1037 14.6397 19.104 14.6397H26.6355C28.8579 14.6397 30.8333 13.223 31.5124 11.1288L33.8582 3.98385C35.4016 -0.758938 42.0687 -0.758938 43.6121 3.98385Z" fill="#70A1FF" fillOpacity="0.3" shapeRendering="crispEdges"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id={`${uid}-d-filter0_dii_65_15048`} x="7.95312" y="-5.57324" width="61.5469" height="61.4839" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_65_15048"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_65_15048" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_65_15048"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_65_15048" result="effect3_innerShadow_65_15048"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_65_15048`} x1="42.5768" y1="1.63769" x2="6.57623" y2="49.5132" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.605769" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+<clipPath id={`${uid}-d-clip0_65_15048`}>
+<rect width="64" height="64" fill="white"/>
+</clipPath>
+<clipPath id={`${uid}-d-clip1_65_15048`}>
+<rect width="68" height="64" fill="white" transform="translate(-2)"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+}
+
 /** Glass icon `Product Modules/Cloud Native Experience`. */
 export function IconGlassCloudNativeExperience({ size = 48, ...props }: GlassIconProps) {
   const uid = useId().replace(/:/g, '')
@@ -1163,6 +1224,67 @@ export function IconGlassContentPerformance({ size = 48, ...props }: GlassIconPr
 </linearGradient>
 </defs>
       </g>
+    </svg>
+  )
+}
+
+/** Glass icon `Education/Courses`. Dark artwork only — see the note above. */
+export function IconGlassCourses({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="-2 -8 74 74"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <g clipPath={`url(#${uid}-d-clip0_65_14464)`}>
+<g clipPath={`url(#${uid}-d-clip1_65_14464)`}>
+<path fillRule="evenodd" clipRule="evenodd" d="M30.08 59.6319L30.0576 59.6157C29.7741 59.4134 29.4849 59.2194 29.1904 59.034C28.3101 58.4859 27.3975 57.9927 26.4576 57.5571C24.112 56.4615 20.9824 55.4305 17.6 55.4305C13.5072 55.4305 9.7984 56.943 7.424 58.2163C6.67462 58.6126 5.83933 58.8143 4.9935 58.803C4.14768 58.7917 3.31795 58.5679 2.5792 58.1517C1.80333 57.7292 1.15441 57.1036 0.700575 56.3404C0.246742 55.5773 0.00474675 54.7048 0 53.8146V13.4165C0 11.4095 0.944 9.33466 2.8736 8.15181C5.3504 6.63284 10.9248 3.72095 17.6 3.72095C22.2176 3.72095 26.288 5.11064 29.1424 6.44216C30.2752 6.97219 31.2416 7.50221 32 7.95467C32.7584 7.50221 33.7248 6.97219 34.8576 6.44216C37.712 5.11387 41.7824 3.72095 46.4 3.72095C53.0752 3.72095 58.6496 6.62961 61.1264 8.15181C63.056 9.33466 64 11.4095 64 13.4165V53.8146C64 55.8603 62.7872 57.389 61.4208 58.1517C60.6817 58.5684 59.8513 58.7926 59.0049 58.8038C58.1585 58.8151 57.3226 58.6132 56.5728 58.2163C54.2016 56.943 50.4928 55.4305 46.4 55.4305C43.0176 55.4305 39.888 56.4647 37.5424 57.5571C36.3487 58.1137 35.1997 58.7631 34.1056 59.4994L33.9456 59.6157L33.92 59.6319C33.3674 60.0509 32.6953 60.2779 32.0043 60.2791C31.3132 60.2802 30.6404 60.0555 30.0864 59.6384" fill={`url(#${uid}-d-paint0_linear_65_14464)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_65_14464)`}>
+<path d="M32.7109 9.87506C32.7109 8.24289 33.329 6.67757 34.4292 5.52345C35.5293 4.36933 37.0215 3.72095 38.5773 3.72095H58.132C59.6879 3.72095 61.18 4.36933 62.2802 5.52345C63.3804 6.67757 63.9984 8.24289 63.9984 9.87506V42.7544C63.9984 45.2571 61.2999 46.7136 59.3601 45.2592L48.3547 37.0127L37.3493 45.2592C35.4075 46.7156 32.7109 45.2592 32.7109 42.7565V9.87506Z" fill="#70A1FF" fillOpacity="0.3" shapeRendering="crispEdges"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id={`${uid}-d-filter0_dii_65_14464`} x="26.7109" y="-2.27905" width="43.2891" height="56.1177" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_65_14464"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_65_14464" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_65_14464"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_65_14464" result="effect3_innerShadow_65_14464"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_65_14464`} x1="54.3492" y1="3.72094" x2="25.9824" y2="57.0801" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.605769" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+<clipPath id={`${uid}-d-clip0_65_14464`}>
+<rect width="64" height="64" fill="white"/>
+</clipPath>
+<clipPath id={`${uid}-d-clip1_65_14464`}>
+<rect width="64" height="64" fill="white"/>
+</clipPath>
+</defs>
     </svg>
   )
 }
@@ -2891,6 +3013,67 @@ export function IconGlassIntranets({ size = 48, ...props }: GlassIconProps) {
 </linearGradient>
 </defs>
       </g>
+    </svg>
+  )
+}
+
+/** Glass icon `Education/Learning Paths`. Dark artwork only — see the note above. */
+export function IconGlassLearningPaths({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="-2 -1 75 75"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <g clipPath={`url(#${uid}-d-clip0_65_14512)`}>
+<g clipPath={`url(#${uid}-d-clip1_65_14512)`}>
+<path fillRule="evenodd" clipRule="evenodd" d="M36.9164 4.73211C37.3912 4.1979 38.0571 3.87558 38.7678 3.83603C39.4785 3.79648 40.1756 4.04294 40.7059 4.52121C43.5232 7.0547 45.7766 10.1599 47.3182 13.6328C48.8599 17.1058 49.6549 20.868 49.6511 24.6724C49.6511 38.6942 39.0581 50.2231 25.4967 51.575V54.414H33.5482C34.26 54.414 34.9426 54.6988 35.4459 55.2059C35.9492 55.7129 36.232 56.4006 36.232 57.1177C36.232 57.8348 35.9492 58.5225 35.4459 59.0296C34.9426 59.5366 34.26 59.8215 33.5482 59.8215H12.0776C11.3658 59.8215 10.6831 59.5366 10.1798 59.0296C9.6765 58.5225 9.39374 57.8348 9.39374 57.1177C9.39374 56.4006 9.6765 55.7129 10.1798 55.2059C10.6831 54.6988 11.3658 54.414 12.0776 54.414H20.129V51.575C16.1749 51.1757 12.3581 49.8964 8.95455 47.8297C5.55101 45.7629 2.6457 42.9603 0.448547 39.6243C0.0545687 39.027 -0.0877353 38.2964 0.0529413 37.5934C0.193618 36.8904 0.605752 36.2724 1.19868 35.8755C1.7916 35.4786 2.51675 35.3353 3.2146 35.477C3.91244 35.6187 4.52582 36.0339 4.9198 36.6312C6.6066 39.1911 8.81538 41.3595 11.3991 42.9921C13.9827 44.6247 16.882 45.684 19.9039 46.0996C22.9257 46.5151 26.0007 46.2773 28.9242 45.402C31.8477 44.5267 34.5525 43.034 36.8586 41.0233C39.1647 39.0125 41.0191 36.5299 42.2983 33.7407C43.5775 30.9515 44.2523 27.9198 44.2775 24.8474C44.3028 21.775 43.6781 18.7324 42.4449 15.9222C41.2117 13.112 39.3984 10.5988 37.1257 8.54983C36.5955 8.07152 36.2755 7.4006 36.2363 6.68465C36.197 5.96869 36.4416 5.26635 36.9164 4.73211ZM4.02609 24.6724C4.02609 22.187 4.51202 19.7259 5.45615 17.4296C6.40027 15.1334 7.7841 13.0469 9.52861 11.2894C11.2731 9.53196 13.3442 8.13785 15.6235 7.18671C17.9028 6.23557 20.3458 5.74602 22.8129 5.74602C25.28 5.74602 27.7229 6.23557 30.0023 7.18671C32.2816 8.13785 34.3526 9.53196 36.0971 11.2894C37.8416 13.0469 39.2255 15.1334 40.1696 17.4296C41.1137 19.7259 41.5997 22.187 41.5997 24.6724C41.5997 29.692 39.6203 34.506 36.0971 38.0554C32.5739 41.6048 27.7954 43.5989 22.8129 43.5989C17.8303 43.5989 13.0518 41.6048 9.52861 38.0554C6.0054 34.506 4.02609 29.692 4.02609 24.6724Z" fill={`url(#${uid}-d-paint0_linear_65_14512)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_65_14512)`}>
+<path fillRule="evenodd" clipRule="evenodd" d="M44.7365 41.5005C45.4114 41.7528 46.1344 41.8534 46.8532 41.7948C47.572 41.7362 48.2687 41.5199 48.8931 41.1617L61.5605 33.9014C62.6803 33.2596 63.4974 32.2024 63.8321 30.9625C64.1668 29.7226 63.9916 28.4014 63.345 27.2898L57.2503 16.8108C56.6037 15.6992 55.5387 14.888 54.2897 14.5558C53.0406 14.2236 51.7098 14.3975 50.5899 15.0393L37.9226 22.2996C37.1745 22.7282 36.5546 23.3465 36.1263 24.091C35.6979 24.8356 35.4765 25.6797 35.4846 26.5371C35.2903 26.6178 35.1014 26.7107 34.9191 26.8154L24.3629 32.8656C23.6149 33.2943 22.995 33.9125 22.5666 34.6571C22.1383 35.4016 21.9169 36.2458 21.925 37.1032C21.7307 37.184 21.5418 37.2769 21.3594 37.3815L17.137 39.8016C16.0171 40.4434 15.2 41.5006 14.8654 42.7405C14.5307 43.9804 14.7059 45.3015 15.3524 46.4132L16.5714 48.509C17.218 49.6207 18.2829 50.4318 19.532 50.764C20.781 51.0963 22.1119 50.9223 23.2317 50.2805L27.4542 47.8604C27.6362 47.7564 27.8113 47.6408 27.9783 47.5144C28.7225 47.9502 29.57 48.1818 30.434 48.1857C31.298 48.1895 32.1475 47.9653 32.8956 47.5361L37.3253 44.9975L32.23 56.793C32.1039 57.0853 32.037 57.3995 32.0332 57.7176C32.0294 58.0356 32.0887 58.3513 32.2078 58.6466C32.4483 59.243 32.9175 59.7201 33.5124 59.9729C34.1072 60.2258 34.7789 60.2338 35.3797 59.9951C35.9804 59.7563 36.461 59.2905 36.7158 58.7L41.7866 46.9505L46.8575 58.7C47.1122 59.2905 47.5928 59.7563 48.1936 59.9951C48.7943 60.2338 49.466 60.2258 50.0609 59.9729C50.6557 59.7201 51.125 59.243 51.3655 58.6466C51.606 58.0502 51.598 57.3835 51.3432 56.793L44.7365 41.5005Z" fill="#70A1FF" fillOpacity="0.3" shapeRendering="crispEdges"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id={`${uid}-d-filter0_dii_65_14512`} x="8.69922" y="8.39087" width="61.3008" height="59.7776" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_65_14512"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_65_14512" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_65_14512"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_65_14512" result="effect3_innerShadow_65_14512"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_65_14512`} x1="42.1641" y1="3.8319" x2="10.6882" y2="50.2314" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.605769" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+<clipPath id={`${uid}-d-clip0_65_14512`}>
+<rect width="64" height="64" fill="white"/>
+</clipPath>
+<clipPath id={`${uid}-d-clip1_65_14512`}>
+<rect width="67" height="69" fill="white" transform="translate(-1.5 -2.5)"/>
+</clipPath>
+</defs>
     </svg>
   )
 }

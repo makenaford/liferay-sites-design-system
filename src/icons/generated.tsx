@@ -285,6 +285,23 @@ export function IconCheck(props: IconProps) {
   )
 }
 
+/** MingCute `check_circle` (filled, system). */
+export function IconCheckCircleFilled(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m4.95 6.38a1 1 0 0 0-1.415 0l-4.95 4.951-2.121-2.121a1 1 0 1 0-1.414 1.414l2.829 2.828a1 1 0 0 0 1.414 0l5.656-5.657a1 1 0 0 0 0-1.414"/>
+    </svg>
+  )
+}
+
 /** MingCute `clipboard` (regular, files). */
 export function IconClipboard(props: IconProps) {
   return (

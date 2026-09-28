@@ -401,6 +401,15 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "Progress",
+    doc: "Progress — Figma `Progress Bar` component set, from the `Course Card` in `LEARN - New Pages` (node `7575:24403`).",
+    props: [
+      { name: "value", kind: "number", default: "50", doc: "How far along, 0–100. Figma's `Value` axis draws 0/10/30/50/70/90/100; any value works here." },
+      { name: "state", kind: "enum", options: ["loading", "warning", "completed"], doc: "Figma's `State`. Omitted, it follows the value: `completed` at 100, `loading` below it. Pass `warning` for progress that has stalled or is running out of time — the page decides that, not the number." },
+      { name: "label", kind: "text", default: "Course progress", doc: "What is progressing, for a screen reader — the bar alone says how far, not of what." },
+    ],
+  },
+  {
     name: "SecondaryNav",
     doc: "SecondaryNav — a product's own bar, under the `Header`: its name, and a dropdown per section.",
     props: [
