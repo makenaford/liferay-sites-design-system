@@ -33,6 +33,44 @@ function isMotion(source?: HeroMediaSource) {
 }
 
 /**
+ * `isMotion`, for sources that cannot say so up front.
+ *
+ * An object URL **string** is the gap: Storybook's file control, and anything else that calls
+ * `URL.createObjectURL` itself, hands over `blob:…` with no extension and no file to ask. Judged by
+ * extension it reads as a still, and an uploaded webm went into an `img` — a hero with no bubble. So a
+ * `blob:` URL is asked directly: fetching it is a local read of what was already picked, and its
+ * `Content-Type` is the type the browser recorded for the file.
+ *
+ * Until that answer arrives a `blob:` URL counts as motion, because a video is what every upload slot
+ * on this component is for; a still is the exception, and it swaps a frame later.
+ */
+function useIsMotion(source?: HeroMediaSource) {
+  const value = first(source)
+  const blobUrl =
+    typeof value === 'string' && value.startsWith('blob:') && !isMotion(value) ? value : undefined
+  const [blobMotion, setBlobMotion] = useState<{ url: string; motion: boolean }>()
+
+  useEffect(() => {
+    if (!blobUrl) return undefined
+    let live = true
+    fetch(blobUrl)
+      .then((response) => {
+        const type = response.headers.get('content-type') ?? ''
+        if (live) setBlobMotion({ url: blobUrl, motion: type.startsWith('video/') })
+        /* The type is in the headers; the body is the whole file and nothing here needs it. */
+        response.body?.cancel()
+      })
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [blobUrl])
+
+  if (!blobUrl) return isMotion(value)
+  return blobMotion?.url === blobUrl ? blobMotion.motion : true
+}
+
+/**
  * A source as something `src` will take.
  *
  * A string passes through. A file becomes an object URL, revoked when it changes or the hero unmounts —
@@ -466,7 +504,8 @@ export function Hero({
    * preference asks for; suppressing it in favour of the gradient would be answering the preference by
    * throwing away the thing that already honours it.
    */
-  const still = Boolean(canvas) && !isMotion(canvas)
+  const canvasMotion = useIsMotion(canvas)
+  const still = Boolean(canvas) && !canvasMotion
   const showBubble = (drawn || Boolean(source)) && background !== 'none' && (still || !reducedMotion || drawn)
   const showVideo = showBubble && !still && !drawn
 
@@ -478,7 +517,7 @@ export function Hero({
    * enhancement, the poster is the page, and a file that 404s should leave the poster up rather than a
    * hole. Both reset when the source changes, which is what a scheme flip does.
    */
-  const motionPoster = isMotion(videoPoster)
+  const motionPoster = useIsMotion(videoPoster)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
 

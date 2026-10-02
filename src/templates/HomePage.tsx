@@ -20,6 +20,8 @@ import { CapabilityMap } from '../components/CapabilityMap'
 import { Carousel } from '../components/Carousel'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
+import bubbleCorner from '../../assets/bubbles/bubble_corner.webm'
+import bubbleCornerLight from '../../assets/bubbles/bubble_corner_light.webm'
 import { GradientText } from '../components/GradientText'
 import { Hero } from '../components/Hero'
 import { Image } from '../components/Image'
@@ -255,6 +257,25 @@ export interface HomePageProps {
    * passes `jphome.webm`, its own animation drawn for the light ground.
    */
   heroVideoLight?: string
+  /**
+   * Which bubble sits behind the hero — Figma's `Type`. `full` is the centre bubble the page is drawn
+   * with; `corner` is the one the landing and detail heroes use.
+   *
+   * @default 'full'
+   */
+  bubbleType?: 'full' | 'corner'
+  /**
+   * The bubble animation, in place of the one `bubbleType` picks — a test hook, for trying an export
+   * against the real hero. `bubbleVideoLight` is the light canvas's; each takes its own ground off
+   * differently (see `Hero`), so a dark export belongs in one and a light export in the other.
+   */
+  bubbleVideo?: string
+  bubbleVideoLight?: string
+  /**
+   * The header and the hero, and nothing under them. For a bench that is only about the hero: the rest
+   * of the page is eleven sections of scroll between a change and nothing else that it affects.
+   */
+  heroOnly?: boolean
 }
 
 export function HomePage({
@@ -268,6 +289,10 @@ export function HomePage({
   clusters = PRODUCT_CLUSTERS,
   heroVideo = heroAnimation,
   heroVideoLight,
+  bubbleType = 'full',
+  bubbleVideo,
+  bubbleVideoLight,
+  heroOnly = false,
 }: HomePageProps = {}) {
   const reducedMotion = useReducedMotion()
   /*
@@ -280,7 +305,11 @@ export function HomePage({
   const bubbleBackground = heroBackground === 'bubble'
   const heroBackgroundProps = bubbleBackground
     ? { background: 'none' as const, style: { backgroundColor: 'transparent' } }
-    : { background: 'full' as const, video: bubbleFull, videoLight: bubbleFullLight }
+    : {
+        background: bubbleType,
+        video: bubbleVideo ?? (bubbleType === 'corner' ? bubbleCorner : bubbleFull),
+        videoLight: bubbleVideoLight ?? (bubbleType === 'corner' ? bubbleCornerLight : bubbleFullLight),
+      }
 
   const goalTabs = content.goals.tabs
   const teamTabs = Object.keys(content.teams.panels)
@@ -543,548 +572,552 @@ export function HomePage({
         />
       </Box>
 
-      {/* 2. Logos scrolling section — a 64px logo row directly under the hero. */}
-      <Section reveal spacing="none" pt={24}>
-        <Marquee label={content.logos.label} monochrome size="lg">
-          {content.logos.names.map((name) => (
-            <Wordmark key={name} name={name} />
-          ))}
-        </Marquee>
-      </Section>
+      {heroOnly ? null : (
+        <>
+          {/* 2. Logos scrolling section — a 64px logo row directly under the hero. */}
+          <Section reveal spacing="none" pt={24}>
+            <Marquee label={content.logos.label} monochrome size="lg">
+              {content.logos.names.map((name) => (
+                <Wordmark key={name} name={name} />
+              ))}
+            </Marquee>
+          </Section>
 
-      {/* 3. Audience Specific Goals — the title and its pills share one row. */}
-      <Section
-        reveal
-        gap={32}
-        title={
-          <SectionTitle
-            title={content.goals.title}
-            actions={
-              /*
-               * The width is explicit because `variant="pills"` makes its own root an `inline-size`
-               * container — which is what lets the bar switch to the Mobile cell on its own width
-               * rather than the window's, but also means the root contributes nothing to a
-               * content-based measurement and collapses to 0 in a row. 520 is the drawn width. In
-               * the README.
-               */
+          {/* 3. Audience Specific Goals — the title and its pills share one row. */}
+          <Section
+            reveal
+            gap={32}
+            title={
+              <SectionTitle
+                title={content.goals.title}
+                actions={
+                  /*
+                   * The width is explicit because `variant="pills"` makes its own root an `inline-size`
+                   * container — which is what lets the bar switch to the Mobile cell on its own width
+                   * rather than the window's, but also means the root contributes nothing to a
+                   * content-based measurement and collapses to 0 in a row. 520 is the drawn width. In
+                   * the README.
+                   */
+                  <Tabs
+                    variant="pills"
+                    w={{ base: '100%', md: 520 }}
+                    value={goalTab}
+                    onChange={(v) => setGoalTab(v ?? goalTabs[0].value)}
+                  >
+                    <Tabs.List grow>
+                      {goalTabs.map((tab) => (
+                        <Tabs.Tab key={tab.value} value={tab.value} leftSection={GOAL_TAB_ICONS[tab.value]}>
+                          {tab.label}
+                        </Tabs.Tab>
+                      ))}
+                    </Tabs.List>
+                  </Tabs>
+                }
+              />
+            }
+          >
+            {/*
+             * Two across on a phone, not one.
+             *
+             * The Mobile frame draws these at 179px in a 374px column — two columns with a 16px gutter —
+             * where one full-width card per row turned four short titles into four screens of scrolling.
+             * These cards are a thumbnail and a line of text; at 179 they are still legible, and seeing
+             * four at once is the point of a grid of four.
+             */}
+            <SimpleGrid cols={{ base: 2, md: 4 }} spacing={{ base: 16, md: 24 }}>
+              {content.goals.items[goalTab].map((goal, i) => (
+                <Card
+                  key={goal.title}
+                  component="a"
+                  href="#"
+                  interactive
+                  /* `content` so the image reaches the card's edges; `all` framed every thumbnail in card. */
+                  padding="content"
+                  image={<Image src={GOAL_IMAGES[goalTab][i]} alt={goal.alt} ratio="3:2" />}
+                  title={goal.title}
+                />
+              ))}
+            </SimpleGrid>
+          </Section>
+
+          {/* 4. CAROUSEL — customer stories, arrows rather than dots, and the row bleeds off both edges. */}
+          <Section
+            reveal
+            bleed
+            title={<SectionTitle align="center" title={<Split title={content.stories.title} spaced={spaced} />} />}
+          >
+            {/*
+             * `gutter` is `--sds-section-gutter`'s own formula, not the 80 it used to be.
+             *
+             * 80 is the desktop figure, and a bleeding row does need the page's gutter to line up with the
+             * column above it. Passed as a constant it was also the *phone's* gutter: 160px of padding out
+             * of 311, 51% of the width, leaving a 151px content box that `.carouselSlide`'s `max-width: 100%`
+             * clamped every card to. Everything else followed from that — a 151px card is 871px tall, taller
+             * than the 812px screen it is on, and two of them half-showing reads as a broken grid rather
+             * than a row that scrolls.
+             *
+             * The clamp is the same two-point interpolation every `Section` uses, so it resolves to exactly
+             * 80 at 1440 and 20 at 390: desktop is untouched and the phone gets the phone's gutter. `100cqi`
+             * is the section's own inline size, since `Section` is the container.
+             *
+             * `slideSize` at 88% for the peek. With the gutter fixed the track fits 1.07 cards, and that
+             * spare 7% is a 20px sliver of the next card — which reads as a rendering artifact rather than a
+             * cue. 88% is one card and a deliberate slice of the next, which is what tells a thumb there is
+             * more to the right. It only binds on narrow widths: 88% of a 1280 column is far wider than the
+             * 310px `slideSize` default, so `.carouselSlide`'s basis still wins on desktop.
+             *
+             * `indicators` from `none` to `lines`. Eight stories with only a pair of arrows gave no sense of
+             * how far along the row you were or how much was left; the component counts reachable positions
+             * rather than slides, so the bar is correct at any slide size. `lines` over `dots` because eight
+             * dot cells at 32px each is a 256px row of dots under a 311px track.
+             */}
+            <Carousel
+              label={content.stories.label}
+              gutter="clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px)"
+              slideSize="min(88%, 310px)"
+              indicators="lines"
+              arrows
+            >
+              {content.stories.items.map((story) => (
+                <Card
+                  key={story.customer}
+                  image={
+                    <Image
+                      src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer, story.hue)}
+                      alt={
+                        CUSTOMER_THUMBNAILS[story.customer]
+                          ? customerThumbnailAlt(story.customer)
+                          : story.customer
+                      }
+                      ratio="3:2"
+                      radius="sm"
+                    />
+                  }
+                  top={
+                    <Stat
+                      value={
+                        <>
+                          {story.prefix ? unit(story.prefix) : null}
+                          {story.value}
+                          {story.suffix ? unit(story.suffix) : null}
+                        </>
+                      }
+                      label={story.label}
+                    />
+                  }
+                  description={`“${story.quote}”`}
+                  bottom={<Quotee name={story.name} title={story.title} />}
+                />
+              ))}
+            </Carousel>
+          </Section>
+
+          {/* 5. Different Teams. One Platform. — pills over an accordion, media and stats on the right. */}
+          <Section
+            reveal
+            title={
+              <SectionTitle
+                align="center"
+                title={<Split title={content.teams.title} spaced={spaced} />}
+                description={content.teams.description}
+              />
+            }
+          >
+            {/*
+              * 24, not 40. The file puts `Tabs Pill Menu` ending at 248 and `Content` starting at 272 in
+              * both tabbed sections; this one had 40 until porting the page to data caught the mismatch.
+              */}
+            <Stack gap={24} align="center" w="100%">
+              {/* Same explicit width as the goals row, and for the same reason. 776 is the drawn width. */}
               <Tabs
                 variant="pills"
-                w={{ base: '100%', md: 520 }}
-                value={goalTab}
-                onChange={(v) => setGoalTab(v ?? goalTabs[0].value)}
+                w={{ base: '100%', md: 776 }}
+                value={teamTab}
+                onChange={(v) => {
+                  setTeamTab(v ?? teamTabs[0])
+                  /* A new panel has different rows; the old one would match nothing. */
+                  setOpenRow(null)
+                }}
               >
                 <Tabs.List grow>
-                  {goalTabs.map((tab) => (
-                    <Tabs.Tab key={tab.value} value={tab.value} leftSection={GOAL_TAB_ICONS[tab.value]}>
-                      {tab.label}
+                  {teamTabs.map((value) => (
+                    <Tabs.Tab key={value} value={value} leftSection={TEAM_ICONS[value]}>
+                      {content.teams.panels[value].label}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs>
+
+              <ContentMedia
+                mediaSide="right"
+                /* Image plus a stat row: taller than 3:2, so the box takes its height from them. */
+                mediaRatio="auto"
+                /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
+                stickyMedia
+                order={3}
+                title={team.title}
+                description={team.description}
+                media={
+                  /* The picture and its figures as one panel — see `.mediaStats`. */
+                  <div className={classes.mediaStats}>
+                    {/*
+                     * `CrossfadeMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
+                     * the poster fallback for a missing file, and the held first frame under
+                     * `prefers-reduced-motion`, and fades between rows rather than cutting.
+                     */}
+                    <CrossfadeMedia
+                      media={
+                        teamMedia ?? {
+                          src: teamsMedia,
+                          alt: content.teams.mediaAlt,
+                          ratio: '3:2',
+                        }
+                      }
+                    />
+                    {/*
+                     * Keyed by the tab, so the figures count again when the panel changes.
+                     *
+                     * `CountUp` runs on mount and holds; a `key` is how you say "this is a different thing
+                     * now", which is exactly the condition a replay wants.
+                     */}
+                    <StatBar key={teamTab} align="center">
+                      {team.metrics.map((metric) => (
+                        <Stat
+                          key={metric.label}
+                          value={<CountUp value={metric.value} />}
+                          label={metric.label}
+                          align="center"
+                        />
+                      ))}
+                    </StatBar>
+                  </div>
+                }
+              >
+                {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
+                <Accordion
+                  size="lg"
+                  order={4}
+                  autoplay
+                  /* The panel is showing what the platform does; the open row is what it is saying. */
+                  spotlight
+                  defaultValue={team.items[0].q}
+                  onChange={(value) => setOpenRow(value)}
+                >
+                  {team.items.map((item) => (
+                    <Accordion.Item key={item.q} value={item.q}>
+                      <Accordion.Control>{item.q}</Accordion.Control>
+                      <Accordion.Panel>
+                        <p>{item.a}</p>
+                        {item.link ? (
+                          <Link href="#" size="md" rightSection={<IconArrowRight />}>
+                            {item.link}
+                          </Link>
+                        ) : null}
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  ))}
+                </Accordion>
+              </ContentMedia>
+            </Stack>
+          </Section>
+
+          {/* 6. Designed for Your Industry — a two-up of words and picture, with the industry tabs under it. */}
+          <Section
+            reveal
+            gap={24}
+            title={<SectionTitle title={<Split title={content.industries.title} spaced={spaced} />} />}
+            footer={
+              /*
+               * `w="100%"` so the bar fills the footer row rather than being centred at its own
+               * max-content width — which on a phone is 823px of tabs overflowing both gutters. At full
+               * width the list scrolls, which is what the component already does under 1200.
+               */
+              <Tabs
+                w="100%"
+                value={industry}
+                onChange={(v) => setIndustry(v ?? content.industries.panels[0].label)}
+              >
+                <Tabs.List grow>
+                  {content.industries.panels.map((p) => (
+                    <Tabs.Tab key={p.label} value={p.label}>
+                      {p.label}
                     </Tabs.Tab>
                   ))}
                 </Tabs.List>
               </Tabs>
             }
-          />
-        }
-      >
-        {/*
-         * Two across on a phone, not one.
-         *
-         * The Mobile frame draws these at 179px in a 374px column — two columns with a 16px gutter —
-         * where one full-width card per row turned four short titles into four screens of scrolling.
-         * These cards are a thumbnail and a line of text; at 179 they are still legible, and seeing
-         * four at once is the point of a grid of four.
-         */}
-        <SimpleGrid cols={{ base: 2, md: 4 }} spacing={{ base: 16, md: 24 }}>
-          {content.goals.items[goalTab].map((goal, i) => (
-            <Card
-              key={goal.title}
-              component="a"
-              href="#"
-              interactive
-              /* `content` so the image reaches the card's edges; `all` framed every thumbnail in card. */
-              padding="content"
-              image={<Image src={GOAL_IMAGES[goalTab][i]} alt={goal.alt} ratio="3:2" />}
-              title={goal.title}
-            />
-          ))}
-        </SimpleGrid>
-      </Section>
-
-      {/* 4. CAROUSEL — customer stories, arrows rather than dots, and the row bleeds off both edges. */}
-      <Section
-        reveal
-        bleed
-        title={<SectionTitle align="center" title={<Split title={content.stories.title} spaced={spaced} />} />}
-      >
-        {/*
-         * `gutter` is `--sds-section-gutter`'s own formula, not the 80 it used to be.
-         *
-         * 80 is the desktop figure, and a bleeding row does need the page's gutter to line up with the
-         * column above it. Passed as a constant it was also the *phone's* gutter: 160px of padding out
-         * of 311, 51% of the width, leaving a 151px content box that `.carouselSlide`'s `max-width: 100%`
-         * clamped every card to. Everything else followed from that — a 151px card is 871px tall, taller
-         * than the 812px screen it is on, and two of them half-showing reads as a broken grid rather
-         * than a row that scrolls.
-         *
-         * The clamp is the same two-point interpolation every `Section` uses, so it resolves to exactly
-         * 80 at 1440 and 20 at 390: desktop is untouched and the phone gets the phone's gutter. `100cqi`
-         * is the section's own inline size, since `Section` is the container.
-         *
-         * `slideSize` at 88% for the peek. With the gutter fixed the track fits 1.07 cards, and that
-         * spare 7% is a 20px sliver of the next card — which reads as a rendering artifact rather than a
-         * cue. 88% is one card and a deliberate slice of the next, which is what tells a thumb there is
-         * more to the right. It only binds on narrow widths: 88% of a 1280 column is far wider than the
-         * 310px `slideSize` default, so `.carouselSlide`'s basis still wins on desktop.
-         *
-         * `indicators` from `none` to `lines`. Eight stories with only a pair of arrows gave no sense of
-         * how far along the row you were or how much was left; the component counts reachable positions
-         * rather than slides, so the bar is correct at any slide size. `lines` over `dots` because eight
-         * dot cells at 32px each is a 256px row of dots under a 311px track.
-         */}
-        <Carousel
-          label={content.stories.label}
-          gutter="clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px)"
-          slideSize="min(88%, 310px)"
-          indicators="lines"
-          arrows
-        >
-          {content.stories.items.map((story) => (
-            <Card
-              key={story.customer}
-              image={
-                <Image
-                  src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer, story.hue)}
-                  alt={
-                    CUSTOMER_THUMBNAILS[story.customer]
-                      ? customerThumbnailAlt(story.customer)
-                      : story.customer
-                  }
-                  ratio="3:2"
-                  radius="sm"
-                />
-              }
-              top={
-                <Stat
-                  value={
-                    <>
-                      {story.prefix ? unit(story.prefix) : null}
-                      {story.value}
-                      {story.suffix ? unit(story.suffix) : null}
-                    </>
-                  }
-                  label={story.label}
-                />
-              }
-              description={`“${story.quote}”`}
-              bottom={<Quotee name={story.name} title={story.title} />}
-            />
-          ))}
-        </Carousel>
-      </Section>
-
-      {/* 5. Different Teams. One Platform. — pills over an accordion, media and stats on the right. */}
-      <Section
-        reveal
-        title={
-          <SectionTitle
-            align="center"
-            title={<Split title={content.teams.title} spaced={spaced} />}
-            description={content.teams.description}
-          />
-        }
-      >
-        {/*
-          * 24, not 40. The file puts `Tabs Pill Menu` ending at 248 and `Content` starting at 272 in
-          * both tabbed sections; this one had 40 until porting the page to data caught the mismatch.
-          */}
-        <Stack gap={24} align="center" w="100%">
-          {/* Same explicit width as the goals row, and for the same reason. 776 is the drawn width. */}
-          <Tabs
-            variant="pills"
-            w={{ base: '100%', md: 776 }}
-            value={teamTab}
-            onChange={(v) => {
-              setTeamTab(v ?? teamTabs[0])
-              /* A new panel has different rows; the old one would match nothing. */
-              setOpenRow(null)
-            }}
           >
-            <Tabs.List grow>
-              {teamTabs.map((value) => (
-                <Tabs.Tab key={value} value={value} leftSection={TEAM_ICONS[value]}>
-                  {content.teams.panels[value].label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
-
-          <ContentMedia
-            mediaSide="right"
-            /* Image plus a stat row: taller than 3:2, so the box takes its height from them. */
-            mediaRatio="auto"
-            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
-            stickyMedia
-            order={3}
-            title={team.title}
-            description={team.description}
-            media={
-              /* The picture and its figures as one panel — see `.mediaStats`. */
-              <div className={classes.mediaStats}>
-                {/*
-                 * `CrossfadeMedia` rather than `Image`: a row's media is a clip, so it needs the video path,
-                 * the poster fallback for a missing file, and the held first frame under
-                 * `prefers-reduced-motion`, and fades between rows rather than cutting.
-                 */}
-                <CrossfadeMedia
-                  media={
-                    teamMedia ?? {
-                      src: teamsMedia,
-                      alt: content.teams.mediaAlt,
-                      ratio: '3:2',
-                    }
-                  }
+            {/*
+             * `ContentMedia`, not a `Card`.
+             *
+             * The section used to be one full-bleed glass card with the picture inside it. Two reasons it is
+             * not any more. A card is a container for something separable — one of several, a thing you could
+             * pick up — and this is the only object in its section, so the container was drawing a boundary
+             * around the whole section and calling it an object. And a card's own vertical rhythm stacks its
+             * parts: hero, title, description, main, secondary, image, each after the last. That is why the
+             * picture sat below a column of text it belongs beside.
+             *
+             * `ContentMedia` is the page's own two-up for exactly this — the `Different Teams` section above
+             * is the same component — and its row is `align-items: center`, so the picture and the words are
+             * centred against each other rather than one trailing the other. Below 900px of section width it
+             * stacks, and a right-image block leads with its words, which is the reading order this section
+             * wants on a phone: the industry and its numbers first, the photograph after.
+             */}
+            <ContentMedia
+              mediaSide="right"
+              /* Text column is heading, description, two links and a stat row — taller than a 3:2 box. */
+              mediaRatio="auto"
+              order={3}
+              title={industry}
+              description={industryPanel.description}
+              media={
+                <Image
+                  src={industryMedia}
+                  alt={content.industries.mediaAlt}
+                  ratio="3:2"
+                  radius="md"
                 />
-                {/*
-                 * Keyed by the tab, so the figures count again when the panel changes.
-                 *
-                 * `CountUp` runs on mount and holds; a `key` is how you say "this is a different thing
-                 * now", which is exactly the condition a replay wants.
-                 */}
-                <StatBar key={teamTab} align="center">
-                  {team.metrics.map((metric) => (
+              }
+              actions={
+                <Stack gap={12} align="flex-start">
+                  <Link href="#" size="md" rightSection={<IconArrowRight />}>
+                    {content.industries.solutionsCta.replace('{industry}', industry)}
+                  </Link>
+                  <Link href="#" size="md" rightSection={<IconArrowRight />}>
+                    {content.industries.transformationCta.replace('{industry}', industry)}
+                  </Link>
+                </Stack>
+              }
+            >
+              {/*
+                 The figures stay with the words rather than going in the media column: they are what the
+                 description is claiming, and a stat that has drifted away from its sentence is a number
+                 nobody can source.
+               */}
+              <StatBar>
+                {industryPanel.metrics.map((metric) => {
+                  const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
+                  return (
                     <Stat
                       key={metric.label}
-                      value={<CountUp value={metric.value} />}
+                      value={
+                        <>
+                          {figure}
+                          {rest.length ? unit(rest.join('')) : null}
+                        </>
+                      }
                       label={metric.label}
-                      align="center"
+                      leftSection={metric.down ? <IconArrowDown /> : undefined}
                     />
-                  ))}
-                </StatBar>
-              </div>
-            }
-          >
-            {/* The panel opens itself, row by row — see the note in `PageRenderer`. */}
-            <Accordion
-              size="lg"
-              order={4}
-              autoplay
-              /* The panel is showing what the platform does; the open row is what it is saying. */
-              spotlight
-              defaultValue={team.items[0].q}
-              onChange={(value) => setOpenRow(value)}
-            >
-              {team.items.map((item) => (
-                <Accordion.Item key={item.q} value={item.q}>
-                  <Accordion.Control>{item.q}</Accordion.Control>
-                  <Accordion.Panel>
-                    <p>{item.a}</p>
-                    {item.link ? (
-                      <Link href="#" size="md" rightSection={<IconArrowRight />}>
-                        {item.link}
-                      </Link>
-                    ) : null}
-                  </Accordion.Panel>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          </ContentMedia>
-        </Stack>
-      </Section>
+                  )
+                })}
+              </StatBar>
+            </ContentMedia>
+          </Section>
 
-      {/* 6. Designed for Your Industry — a two-up of words and picture, with the industry tabs under it. */}
-      <Section
-        reveal
-        gap={24}
-        title={<SectionTitle title={<Split title={content.industries.title} spaced={spaced} />} />}
-        footer={
-          /*
-           * `w="100%"` so the bar fills the footer row rather than being centred at its own
-           * max-content width — which on a phone is 823px of tabs overflowing both gutters. At full
-           * width the list scrolls, which is what the component already does under 1200.
-           */
-          <Tabs
-            w="100%"
-            value={industry}
-            onChange={(v) => setIndustry(v ?? content.industries.panels[0].label)}
-          >
-            <Tabs.List grow>
-              {content.industries.panels.map((p) => (
-                <Tabs.Tab key={p.label} value={p.label}>
-                  {p.label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
-        }
-      >
-        {/*
-         * `ContentMedia`, not a `Card`.
-         *
-         * The section used to be one full-bleed glass card with the picture inside it. Two reasons it is
-         * not any more. A card is a container for something separable — one of several, a thing you could
-         * pick up — and this is the only object in its section, so the container was drawing a boundary
-         * around the whole section and calling it an object. And a card's own vertical rhythm stacks its
-         * parts: hero, title, description, main, secondary, image, each after the last. That is why the
-         * picture sat below a column of text it belongs beside.
-         *
-         * `ContentMedia` is the page's own two-up for exactly this — the `Different Teams` section above
-         * is the same component — and its row is `align-items: center`, so the picture and the words are
-         * centred against each other rather than one trailing the other. Below 900px of section width it
-         * stacks, and a right-image block leads with its words, which is the reading order this section
-         * wants on a phone: the industry and its numbers first, the photograph after.
-         */}
-        <ContentMedia
-          mediaSide="right"
-          /* Text column is heading, description, two links and a stat row — taller than a 3:2 box. */
-          mediaRatio="auto"
-          order={3}
-          title={industry}
-          description={industryPanel.description}
-          media={
-            <Image
-              src={industryMedia}
-              alt={content.industries.mediaAlt}
-              ratio="3:2"
-              radius="md"
-            />
-          }
-          actions={
-            <Stack gap={12} align="flex-start">
-              <Link href="#" size="md" rightSection={<IconArrowRight />}>
-                {content.industries.solutionsCta.replace('{industry}', industry)}
-              </Link>
-              <Link href="#" size="md" rightSection={<IconArrowRight />}>
-                {content.industries.transformationCta.replace('{industry}', industry)}
-              </Link>
-            </Stack>
-          }
-        >
           {/*
-             The figures stay with the words rather than going in the media column: they are what the
-             description is claiming, and a stat that has drifted away from its sentence is a number
-             nobody can source.
-           */}
-          <StatBar>
-            {industryPanel.metrics.map((metric) => {
-              const [figure, ...rest] = metric.value.split(/(?=[^\d,.])/)
-              return (
-                <Stat
-                  key={metric.label}
-                  value={
-                    <>
-                      {figure}
-                      {rest.length ? unit(rest.join('')) : null}
-                    </>
-                  }
-                  label={metric.label}
-                  leftSection={metric.down ? <IconArrowDown /> : undefined}
-                />
-              )
-            })}
-          </StatBar>
-        </ContentMedia>
-      </Section>
+            7. Everything You Need in One Platform — the product map.
 
-      {/*
-        7. Everything You Need in One Platform — the product map.
-
-        Drawn rather than exported: this was `platform-diagram.png` at 1000×806, and is now the
-        `CapabilityMap` component, so the sixteen products are real tiles with real links, real labels
-        and a keyboard path through them. The section names sit outside the tiles on their own leader
-        lines — `Homepage Redesign` node `8144:21713` — which is why this section bleeds: that
-        arrangement is 8.2 tiles across and a 1280 column would pay for the width in card size.
-        `maxHeight` is what keeps the whole figure inside the window.
-      */}
-      <Section
-        reveal
-        bleed
-        gap={40}
-        title={<SectionTitle align="center" title={<Split title={content.platformMap.title} spaced={spaced} />} />}
-      >
-        <CapabilityMap
-          clusters={clusters}
-          names="outside"
-          hubIcon={<IconGlassDXP />}
-          hubLabel={content.platformMap.hubLabel}
-          maxHeight={PRODUCT_MAP_MAX_HEIGHT}
-        />
-      </Section>
-
-      {/* 8. Every Capability Your Enterprise Needs — the six-cell segmented bar. */}
-      <Section
-        reveal
-        title={<SectionTitle align="center" title={content.capabilities.title} />}
-      >
-        <Stack gap={24} w="100%">
-          <Tabs
-            variant="pills"
-            value={capability}
-            onChange={(v) => setCapability(v ?? 'enterprise-websites')}
+            Drawn rather than exported: this was `platform-diagram.png` at 1000×806, and is now the
+            `CapabilityMap` component, so the sixteen products are real tiles with real links, real labels
+            and a keyboard path through them. The section names sit outside the tiles on their own leader
+            lines — `Homepage Redesign` node `8144:21713` — which is why this section bleeds: that
+            arrangement is 8.2 tiles across and a 1280 column would pay for the width in card size.
+            `maxHeight` is what keeps the whole figure inside the window.
+          */}
+          <Section
+            reveal
+            bleed
+            gap={40}
+            title={<SectionTitle align="center" title={<Split title={content.platformMap.title} spaced={spaced} />} />}
           >
-            <Tabs.List grow>
-              {content.capabilities.panels.map((c) => (
-                <Tabs.Tab key={c.value} value={c.value} leftSection={CAPABILITY_ICONS[c.value].icon}>
-                  {c.label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
+            <CapabilityMap
+              clusters={clusters}
+              names="outside"
+              hubIcon={<IconGlassDXP />}
+              hubLabel={content.platformMap.hubLabel}
+              maxHeight={PRODUCT_MAP_MAX_HEIGHT}
+            />
+          </Section>
 
-          <ContentMedia
-            mediaSide="right"
-            order={3}
-            eyebrow={CAPABILITY_ICONS[panel.value].glass}
-            title={panel.title}
-            description={panel.description}
-            actions={
-              <Link href="#" size="lg" rightSection={<IconArrowRight />}>
-                {panel.cta}
-              </Link>
-            }
-            media={
-              <Image
-                src={capabilityMedia}
-                alt={content.capabilities.mediaAlt}
-                ratio="3:2"
-                radius="md"
+          {/* 8. Every Capability Your Enterprise Needs — the six-cell segmented bar. */}
+          <Section
+            reveal
+            title={<SectionTitle align="center" title={content.capabilities.title} />}
+          >
+            <Stack gap={24} w="100%">
+              <Tabs
+                variant="pills"
+                value={capability}
+                onChange={(v) => setCapability(v ?? 'enterprise-websites')}
+              >
+                <Tabs.List grow>
+                  {content.capabilities.panels.map((c) => (
+                    <Tabs.Tab key={c.value} value={c.value} leftSection={CAPABILITY_ICONS[c.value].icon}>
+                      {c.label}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs>
+
+              <ContentMedia
+                mediaSide="right"
+                order={3}
+                eyebrow={CAPABILITY_ICONS[panel.value].glass}
+                title={panel.title}
+                description={panel.description}
+                actions={
+                  <Link href="#" size="lg" rightSection={<IconArrowRight />}>
+                    {panel.cta}
+                  </Link>
+                }
+                media={
+                  <Image
+                    src={capabilityMedia}
+                    alt={content.capabilities.mediaAlt}
+                    ratio="3:2"
+                    radius="md"
+                  />
+                }
+              />
+            </Stack>
+          </Section>
+
+          {/*
+           * 9. Integrations — a scrolling row of vendor lockups on a drifting mesh.
+           *
+           * **A deliberate divergence from the file.** Figma's `Type=Integrations Section` is a static
+           * `List` of 64px glass tiles at gap 16, not a marquee; the row here scrolls instead, because a
+           * fixed row can only ever show as many integrations as fit and the point of the section is that
+           * there are more than that. `Marquee` is the library's existing strip — measured speed, edge fade,
+           * and the pause button WCAG 2.2.2 asks for — so this is a composition rather than new motion.
+           *
+           * The logos are invented. Real vendor marks are other companies' trademarks and are not committed
+           * here, the same rule the customer marquee follows; `vendor-logos.tsx` says so at more length.
+           */}
+          <Section
+            reveal
+            bleed
+            gap={32}
+            title={
+              <SectionTitle
+                align="center"
+                title={<Split title={content.integrations.title} spaced={spaced} />}
+                description={content.integrations.description}
               />
             }
-          />
-        </Stack>
-      </Section>
+            /*
+             * The call to action goes in the section's own footer rather than the title's slot — Figma's
+             * `Call to Action` cell, which the Section already centres. Below the strip it reads as the
+             * thing to do *after* looking at the logos, which is the order the section actually asks for.
+             */
+            footer={
+              <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+                {content.integrations.cta}
+              </Button>
+            }
+          >
+            <Marquee
+              label={content.integrations.label}
+              gap={16}
+              logoWidth={64}
+              size="lg"
+              speed={38}
+              /*
+               * The strip carries its own fade, so the tiles dissolve at the same edges the mesh does rather
+               * than sliding out from under a hard cut.
+               */
+              fade
+              fadeWidth={120}
+            >
+              {/*
+               * The mark inside the glass tile, at half its width. The `alt` is the only thing announcing
+               * which vendor this is, since there is no text in the row.
+               */}
+              {VENDOR_LOGOS.map((vendor) => (
+                <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
+                  <Group justify="center" align="center" h="100%">
+                    <img
+                      src={vendor.src}
+                      alt={vendor.name}
+                      width={32}
+                      height={32}
+                      loading="lazy"
+                      draggable={false}
+                      style={{ display: 'block' }}
+                    />
+                  </Group>
+                </Card>
+              ))}
+            </Marquee>
+          </Section>
 
-      {/*
-       * 9. Integrations — a scrolling row of vendor lockups on a drifting mesh.
-       *
-       * **A deliberate divergence from the file.** Figma's `Type=Integrations Section` is a static
-       * `List` of 64px glass tiles at gap 16, not a marquee; the row here scrolls instead, because a
-       * fixed row can only ever show as many integrations as fit and the point of the section is that
-       * there are more than that. `Marquee` is the library's existing strip — measured speed, edge fade,
-       * and the pause button WCAG 2.2.2 asks for — so this is a composition rather than new motion.
-       *
-       * The logos are invented. Real vendor marks are other companies' trademarks and are not committed
-       * here, the same rule the customer marquee follows; `vendor-logos.tsx` says so at more length.
-       */}
-      <Section
-        reveal
-        bleed
-        gap={32}
-        title={
-          <SectionTitle
-            align="center"
-            title={<Split title={content.integrations.title} spaced={spaced} />}
-            description={content.integrations.description}
-          />
-        }
-        /*
-         * The call to action goes in the section's own footer rather than the title's slot — Figma's
-         * `Call to Action` cell, which the Section already centres. Below the strip it reads as the
-         * thing to do *after* looking at the logos, which is the order the section actually asks for.
-         */
-        footer={
-          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
-            {content.integrations.cta}
-          </Button>
-        }
-      >
-        <Marquee
-          label={content.integrations.label}
-          gap={16}
-          logoWidth={64}
-          size="lg"
-          speed={38}
-          /*
-           * The strip carries its own fade, so the tiles dissolve at the same edges the mesh does rather
-           * than sliding out from under a hard cut.
-           */
-          fade
-          fadeWidth={120}
-        >
           {/*
-           * The mark inside the glass tile, at half its width. The `alt` is the only thing announcing
-           * which vendor this is, since there is no text in the row.
+           * 10. Trending Now — node `7655:15414`. Six resource cards: `Type=Resources`, which is a link
+           * with no fill, so the image sits on the page's own ground rather than inside a panel and the
+           * label and title sit under it with no inset of their own.
            */}
-          {VENDOR_LOGOS.map((vendor) => (
-            <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
-              <Group justify="center" align="center" h="100%">
-                <img
-                  src={vendor.src}
-                  alt={vendor.name}
-                  width={32}
-                  height={32}
-                  loading="lazy"
-                  draggable={false}
-                  style={{ display: 'block' }}
+          <Section
+            reveal
+            title={
+              <SectionTitle title={content.trending.title} description={content.trending.description} />
+            }
+          >
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+              {content.trending.items.map((item, i) => (
+                <Card
+                  key={item.title}
+                  component="a"
+                  href="#"
+                  interactive
+                  surface="none"
+                  padding="none"
+                  image={<Image src={TRENDING_IMAGES[i]} alt={item.alt ?? ''} ratio="3:2" radius="sm" />}
+                  top={
+                    /*
+                     * Gradient, always: the tag is the one piece of colour on a card that is otherwise a
+                     * photograph and two lines of type, and `glass` on top of a photograph is whatever the
+                     * photograph happens to be underneath it.
+                     */
+                    <Label variant="gradient" size="sm">
+                      {item.tag}
+                    </Label>
+                  }
+                  title={item.title}
                 />
-              </Group>
-            </Card>
-          ))}
-        </Marquee>
-      </Section>
+              ))}
+            </SimpleGrid>
+          </Section>
 
-      {/*
-       * 10. Trending Now — node `7655:15414`. Six resource cards: `Type=Resources`, which is a link
-       * with no fill, so the image sits on the page's own ground rather than inside a panel and the
-       * label and title sit under it with no inset of their own.
-       */}
-      <Section
-        reveal
-        title={
-          <SectionTitle title={content.trending.title} description={content.trending.description} />
-        }
-      >
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-          {content.trending.items.map((item, i) => (
-            <Card
-              key={item.title}
-              component="a"
-              href="#"
-              interactive
-              surface="none"
-              padding="none"
-              image={<Image src={TRENDING_IMAGES[i]} alt={item.alt ?? ''} ratio="3:2" radius="sm" />}
-              top={
-                /*
-                 * Gradient, always: the tag is the one piece of colour on a card that is otherwise a
-                 * photograph and two lines of type, and `glass` on top of a photograph is whatever the
-                 * photograph happens to be underneath it.
-                 */
-                <Label variant="gradient" size="sm">
-                  {item.tag}
-                </Label>
-              }
-              title={item.title}
-            />
-          ))}
-        </SimpleGrid>
-      </Section>
+          {/* 11. Our Latest Research & Data — a tag over a title, and nothing else. */}
+          <Section
+            reveal
+            title={
+              <SectionTitle title={content.research.title} description={content.research.description} />
+            }
+          >
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+              {content.research.items.map((report) => (
+                <Card
+                  key={report.tag}
+                  component="a"
+                  href="#"
+                  interactive
+                  hero={
+                    <Label variant="gradient" size="md">
+                      {report.tag}
+                    </Label>
+                  }
+                  title={report.title}
+                />
+              ))}
+            </SimpleGrid>
+          </Section>
 
-      {/* 11. Our Latest Research & Data — a tag over a title, and nothing else. */}
-      <Section
-        reveal
-        title={
-          <SectionTitle title={content.research.title} description={content.research.description} />
-        }
-      >
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-          {content.research.items.map((report) => (
-            <Card
-              key={report.tag}
-              component="a"
-              href="#"
-              interactive
-              hero={
-                <Label variant="gradient" size="md">
-                  {report.tag}
-                </Label>
-              }
-              title={report.title}
-            />
-          ))}
-        </SimpleGrid>
-      </Section>
-
-      {/* 12. LRDC footer — the action band, the disclaimers, the numbers, and the link grid. */}
-      <SiteFooter content={footer} />
+          {/* 12. LRDC footer — the action band, the disclaimers, the numbers, and the link grid. */}
+          <SiteFooter content={footer} />
+        </>
+      )}
     </div>
   )
 }
