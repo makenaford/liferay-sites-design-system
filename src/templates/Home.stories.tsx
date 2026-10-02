@@ -210,9 +210,21 @@ export const Mobile: StoryObj<MobileArgs> = {
   ),
 }
 
+interface HeroTestingArgs extends BubbleProps {
+  /** An uploaded clip for the hero's right column — see `argTypes.heroAnimation`. */
+  heroAnimation?: string | string[]
+}
+
 /**
- * Exploration only — not what ships. The hero's production video (`bubble_center.webm`) is swapped for
- * `Bubble`, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in
+ * **Hero Testing** — a bench for trying things in the hero, on the real page. Exploration only; not
+ * what ships.
+ *
+ * Two levers. **Hero animation**, under **Hero** on the Controls panel, takes a video file from disk
+ * and plays it in the hero's right column in place of the production animation, in either scheme — so
+ * a new export can be judged against the copy, the proof row and the bubble it will sit beside.
+ *
+ * **The bubble** (every other control): the hero's production background (`bubble_center.webm`) is
+ * swapped for `Bubble`, sitting where Hero's own `drawn` SVG-wave prototype would otherwise go. Nothing in
  * `Hero.tsx` changes: it sits behind a `background="none"` Hero in a plain positioned wrapper here.
  *
  * One canvas, and no blending with the page at all. Everything outside the two bubbles is painted in
@@ -229,7 +241,8 @@ export const Mobile: StoryObj<MobileArgs> = {
  * the light one. The component picks between them from the luminance of the resolved `surfaceColor`, so
  * the story never has to know which scheme is on.
  */
-export const BubbleBackground: Story = {
+export const HeroTesting: StoryObj<HeroTestingArgs> = {
+  name: 'Hero Testing',
   parameters: { frame: { fullBleed: true, padding: 0 } },
   /*
    * Tuned for the hero rather than left on the component's defaults — though neither `bubbleScale` nor
@@ -274,6 +287,32 @@ export const BubbleBackground: Story = {
     glowOffset: 0.06,
     glowArc: 0.4,
   },
-  argTypes: BUBBLE_ARG_TYPES,
-  render: (args) => <HomePage heroBackground="bubble" bubbleProps={args as BubbleProps} />,
+  argTypes: {
+    /*
+     * A file from disk, not a URL — the same picker `Components/Hero` uses for its bubble, because what
+     * someone has when they want to try an animation is the file. One upload serves both schemes: this
+     * is for seeing a clip in place, and asking for a light and a dark export before anyone has seen
+     * either is a step that proves nothing.
+     */
+    heroAnimation: {
+      name: 'Hero animation',
+      control: { type: 'file', accept: 'video/*' },
+      table: { category: 'Hero' },
+      description:
+        'Replaces the animation on the right of the hero, in both colour schemes. Nothing picked shows the page’s own: the animation on dark, the still on light.',
+    },
+    ...BUBBLE_ARG_TYPES,
+  },
+  render: ({ heroAnimation, ...bubble }) => {
+    /* The file control hands over a list of object URLs, one per file picked; the hero takes one. */
+    const picked = Array.isArray(heroAnimation) ? heroAnimation[0] : heroAnimation
+    return (
+      <HomePage
+        heroBackground="bubble"
+        bubbleProps={bubble as BubbleProps}
+        heroVideo={picked || undefined}
+        heroVideoLight={picked || undefined}
+      />
+    )
+  },
 }
