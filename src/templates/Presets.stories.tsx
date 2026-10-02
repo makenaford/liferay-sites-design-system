@@ -5,7 +5,7 @@ import { presetFor } from './page-presets'
 import type { PageSpec } from './page-schema'
 
 const meta = {
-  title: 'Templates/Presets',
+  title: 'Templates/Page Templates',
   parameters: {
     layout: 'fullscreen',
     /*
@@ -24,7 +24,7 @@ const meta = {
         component: [
           'What a new mockup starts as. Each of these is exactly what the **New** menu in `Templates/Page builder` drops in — the same `create()` call, so a story going wrong is the preset going wrong.',
           '',
-          'A preset is a **starting point, not a template**: it is copied once, on creation, and the copy belongs to the mockup. Editing a preset never reaches back into pages already made from it. That is deliberate — nothing has to migrate, and a preset that turns out to be wrong costs one page of re-editing rather than a data migration.',
+          'A page template is a **starting point**: it is copied once, on creation, and the copy belongs to the mockup. Editing a preset never reaches back into pages already made from it. That is deliberate — nothing has to migrate, and a preset that turns out to be wrong costs one page of re-editing rather than a data migration.',
           '',
           '**They are short on purpose.** The Figma file draws component sets, not pages — its only two pages are `Cover` and `❖ Components` — so these section runs are inferred rather than copied. Adding a section is one click; noticing that a section was never meant to be there is not. So each preset carries what that kind of page cannot be without, and stops.',
           '',

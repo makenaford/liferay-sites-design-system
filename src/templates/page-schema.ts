@@ -119,6 +119,13 @@ export type HeroBanner = {
 
 export interface HeroSpec {
   background?: 'none' | 'full' | 'corner'
+  /**
+   * `center` for a hero with nothing in its media column — the Learn home page's, which is a heading,
+   * a line and a search field over the full bubble.
+   *
+   * @default 'left'
+   */
+  align?: 'left' | 'center'
   banner?: HeroBanner
   title: Headline
   /** The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. */
@@ -165,6 +172,14 @@ export interface HeroSpec {
    * both — a form with a link under it *and* a button row — though no cell in the file currently does.
    */
   buttons?: { label: string; href: string; variant?: 'solid' | 'outline' }[]
+  /**
+   * A site search in place of the email field — the Learn home page's. Wider than `form`, because a
+   * query is longer than an address, and with no button: Enter submits.
+   *
+   * `popular` is the row of topics under it, each a shortcut to a search someone has already made.
+   * A page has `form` or `search`, not both — they share the slot.
+   */
+  search?: { placeholder: string; popular?: LinkRef[] }
   /** The secondary call to action under the form. */
   action?: LinkRef
   /** The Gartner rating and the compliance marks. */
@@ -201,6 +216,18 @@ export type GlassIconName =
   | 'security'
   | 'low-code'
   | 'integration'
+  /*
+   * Liferay Learn's six ways in, and the two capabilities its grid names that the product map does not:
+   * DAM, and self-hosted installation, which the set draws as a database.
+   */
+  | 'documentation'
+  | 'courses'
+  | 'learning-paths'
+  | 'certifications'
+  | 'support'
+  | 'global-services'
+  | 'dam'
+  | 'database'
 
 export interface CardSpec {
   title: string
@@ -210,6 +237,11 @@ export interface CardSpec {
   icon?: GlassIconName
   tag?: string
   href?: string
+  /**
+   * How far the reader is through it, 0–100 — the Learn `Course Card`'s `Progress` cell, a bar at the
+   * card's foot. At 100 it reads as complete.
+   */
+  progress?: number
 }
 
 /** A figure and its unit — `140` + `%`, `+` + `100M`. */
@@ -443,6 +475,8 @@ export type SectionSpec =
       type: 'quickLinks'
       title: string
       titleHighlight?: string
+      /** The button on the heading's trailing edge — Learn's `Explore All` over its capability grid. */
+      action?: LinkRef
       links: { label: string; href: string; icon?: GlassIconName }[]
     }
   /**
@@ -454,6 +488,11 @@ export type SectionSpec =
       title: string
       body: string
       icon?: GlassIconName
+      /**
+       * One way on from the paragraph. `button` when it is the thing the card asks for — Learn's
+       * sign-in prompt — and `link` when it is somewhere to read more, which is the default.
+       */
+      action?: LinkRef & { style?: 'button' | 'link' }
     }
   /**
    * Figma's `Stats Bar` as a band of its own — the row of figures the `Contact Sales` page puts

@@ -164,7 +164,8 @@ export const siteActions = ({
 }: {
   language?: typeof SITE_DRAWER_CONTROLS.language
   loginLabel?: string
-  contactLabel?: string
+  /** `false` for a bar with no call to action — Liferay Learn's, which is language and log-in only. */
+  contactLabel?: string | false
 } = {}) => (
   <>
     {/*
@@ -196,7 +197,7 @@ export const siteActions = ({
     >
       {loginLabel}
     </Link>
-    <Button size="sm">{contactLabel}</Button>
+    {contactLabel ? <Button size="sm">{contactLabel}</Button> : null}
   </>
 )
 

@@ -55,7 +55,7 @@ const RESOURCES = [
 ] as const
 
 const meta = {
-  title: 'Blocks/Sections',
+  title: 'Templates/Sections',
   parameters: {
     layout: 'fullscreen',
     frame: { fullBleed: true },

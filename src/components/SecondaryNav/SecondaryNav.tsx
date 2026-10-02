@@ -86,6 +86,15 @@ export interface SecondaryNavProps
   /** The end of the bar: a single call to action. Not in the file; there if a page needs one. */
   action?: ReactNode
   /**
+   * Calls to action that appear only once the bar has replaced the header — the file's `On Scroll`
+   * frame, which ends the bar with `Request a Demo` (outline) and `Contact Sales` (solid), both small and
+   * 16px apart. Pass the buttons; they are laid out in a row. Hidden, and out of the tab order, until the
+   * page scrolls past the bar's resting place; never shown on a phone.
+   *
+   * Needs `sticky` and `replaceHeader`, since that is what the page scrolling past sets off.
+   */
+  scrollActions?: ReactNode
+  /**
    * Stick below the header once the page scrolls to it.
    *
    * @default true
@@ -180,6 +189,7 @@ export function SecondaryNav({
   onChange,
   spy = true,
   action,
+  scrollActions,
   sticky = true,
   replaceHeader = true,
   offset,
@@ -569,6 +579,17 @@ export function SecondaryNav({
         </div>
 
         {action ? <div className={classes.secondaryNavAction}>{action}</div> : null}
+
+        {/*
+         * `On Scroll`'s buttons: in the layout from the start, so nothing in the row moves when they
+         * fade in, but `inert` until the bar has the header's place — not clickable, not focusable, and
+         * not read out while they cannot be seen.
+         */}
+        {scrollActions ? (
+          <div className={classes.secondaryNavScrollActions} inert={!replacing}>
+            {scrollActions}
+          </div>
+        ) : null}
 
         {/* The phone's way in: the file's 40px chevron, pointing up while the sheet is down. */}
         <UnstyledButton
