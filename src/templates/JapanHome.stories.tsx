@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { HomePage } from './HomePage'
 import { HOME_CONTENT_JA } from './home-content.ja'
@@ -27,7 +28,7 @@ const JA_DRAWER = {
   cta: <Button size="md">{JA_CONTACT_LABEL}</Button>,
 }
 
-function JapanHome() {
+function JapanHome(props: Partial<ComponentProps<typeof HomePage>>) {
   return (
     <HomePage
       content={HOME_CONTENT_JA}
@@ -38,6 +39,7 @@ function JapanHome() {
       clusters={PRODUCT_CLUSTERS_JA}
       /* Japan's own hero animation, drawn for the light canvas the page opens on. */
       heroVideoLight={jpHeroAnimation}
+      {...props}
     />
   )
 }
@@ -142,6 +144,74 @@ export const UntranslatedNavLabels: Story = {
           </section>
         ))}
       </>
+    )
+  },
+}
+
+interface HeroTestingArgs {
+  heroAnimation?: string | string[]
+  bubbleVideo?: string | string[]
+  bubbleType: 'full' | 'corner'
+}
+
+/** The file control hands over a list of object URLs, one per file picked; each slot takes one. */
+const picked = (files?: string | string[]) => (Array.isArray(files) ? files[0] : files) || undefined
+
+/**
+ * **Hero Testing** — the Japan page's header and hero and nothing else, with its two animations open to
+ * replacement. Exploration only; not what ships.
+ *
+ * Three controls, and they are the whole bench:
+ *
+ * - **Hero animation** — a video from disk in the hero's right column, in place of `jphome.webm` on
+ *   light and the global animation on dark.
+ * - **Bubble video** — a video from disk behind the hero, in place of the production bubble. Upload an
+ *   export drawn for the scheme you are looking at: the dark canvas blends a black ground away and the
+ *   light one a white ground, so a clip on the wrong ground shows its box.
+ * - **Bubble type** — `full`, the centre bubble this page is drawn with, or `corner`, the one the landing
+ *   and detail heroes use. An uploaded bubble replaces whichever is picked.
+ *
+ * Clear a file control to go back to the page's own media. Light by default, like the page.
+ */
+export const HeroTesting: StoryObj<HeroTestingArgs> = {
+  name: 'Hero Testing',
+  globals: { colorScheme: 'light' },
+  args: { bubbleType: 'full' },
+  argTypes: {
+    /*
+     * Files, not URLs — the same picker `Components/Hero` uses, because what someone has when they want
+     * to try an animation is the file, and hosting it first to get a string proves nothing.
+     */
+    heroAnimation: {
+      name: 'Hero animation',
+      control: { type: 'file', accept: 'video/*' },
+      description: 'Replaces the animation on the right of the hero, in both colour schemes.',
+    },
+    bubbleVideo: {
+      name: 'Bubble video',
+      control: { type: 'file', accept: 'video/*' },
+      description:
+        'Replaces the bubble animation behind the hero. Upload the export drawn for the scheme on screen — black ground for dark, white for light.',
+    },
+    bubbleType: {
+      name: 'Bubble type',
+      control: 'inline-radio',
+      options: ['full', 'corner'],
+      description: 'Figma `Type`: Full Bubble or Corner Bubble.',
+    },
+  },
+  render: ({ heroAnimation, bubbleVideo, bubbleType }) => {
+    const hero = picked(heroAnimation)
+    const bubble = picked(bubbleVideo)
+    return (
+      <JapanHome
+        heroOnly
+        bubbleType={bubbleType}
+        heroVideo={hero}
+        heroVideoLight={hero ?? jpHeroAnimation}
+        bubbleVideo={bubble}
+        bubbleVideoLight={bubble}
+      />
     )
   },
 }

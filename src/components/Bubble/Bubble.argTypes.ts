@@ -4,8 +4,8 @@ import type { Bubble } from './Bubble'
 /**
  * The Controls-panel definition for every `BubbleProps` field, grouped by the two things the component
  * actually draws — the **Bubbles**, the **Mesh** inside them, the **Glow** on their inner edge and
- * the **Border** on their outline — rather than one flat alphabetical list. Shared with any other story that wants a fully controllable `<Bubble>`, e.g.
- * `Home.stories.tsx`'s `HeroTesting`, so the grouping and ranges stay in one place.
+ * the **Border** on their outline — rather than one flat alphabetical list. Shared with any other story
+ * that wants a fully controllable `<Bubble>`, so the grouping and ranges stay in one place.
  */
 export const BUBBLE_ARG_TYPES = {
   speed: {
