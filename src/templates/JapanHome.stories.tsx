@@ -12,6 +12,7 @@ import {
 import { siteActions } from './site-nav-render'
 import { PRODUCT_CLUSTERS_JA, UNTRANSLATED_MAP_LABELS } from './product-map.ja'
 import { Button } from '../components/Button'
+import jpHeroAnimation from '../../assets/home/jphome.webm'
 
 const JA_ACTIONS = siteActions({
   language: JA_DRAWER_LANGUAGE,
@@ -35,6 +36,8 @@ function JapanHome() {
       navDrawerControls={JA_DRAWER}
       footer={FOOTER_CONTENT_JA}
       clusters={PRODUCT_CLUSTERS_JA}
+      /* Japan's own hero animation, drawn for the light canvas the page opens on. */
+      heroVideoLight={jpHeroAnimation}
     />
   )
 }

@@ -243,6 +243,18 @@ export interface HomePageProps {
   footer?: FooterContent
   /** The product map's sixteen tiles, when this locale has its own labels for them. */
   clusters?: typeof PRODUCT_CLUSTERS
+  /**
+   * The hero animation on the dark canvas. Defaults to the global page's `hero-animation.webm`; a
+   * locale or a test that has its own passes it here.
+   */
+  heroVideo?: string
+  /**
+   * An animation for the light canvas, in place of its still.
+   *
+   * Without one the light hero shows `hero-media-light.webp` — the global page's design. The Japan page
+   * passes `jphome.webm`, its own animation drawn for the light ground.
+   */
+  heroVideoLight?: string
 }
 
 export function HomePage({
@@ -254,6 +266,8 @@ export function HomePage({
   navDrawerControls,
   footer,
   clusters = PRODUCT_CLUSTERS,
+  heroVideo = heroAnimation,
+  heroVideoLight,
 }: HomePageProps = {}) {
   const reducedMotion = useReducedMotion()
   /*
@@ -489,7 +503,7 @@ export function HomePage({
             </div>
           }
           media={
-            light ? (
+            light && !heroVideoLight ? (
               /*
                * The light canvas takes a still: the Saletto product page, the Digital Twin catalogue
                * under the editor's `Headline` chrome. Decorative, as the animation is — the hero's copy
@@ -503,16 +517,19 @@ export function HomePage({
                * corners are transparent and the middle is about 70% opaque. `.heroMedia` blurs the
                * bubble behind it; see components.module.css.
                *
-               * Dark canvas only. It was drawn against a near-black page, and the light canvas has its
-               * own still above.
+               * The global animation is dark-canvas only: it was drawn against a near-black page, and the
+               * light canvas has its own still above. A page with an animation drawn for the light ground
+               * — Japan's — passes `heroVideoLight` and gets it here instead.
                *
                * Under `prefers-reduced-motion` it still renders, paused on its first frame: the content
                * is the point and removing it would leave the hero half empty. `preload="auto"` so there
                * *is* a first frame to show — a posterless video that has not buffered draws nothing.
                */
               <video
-                src={heroAnimation}
-                poster={heroMedia}
+                /* `key`, so swapping the file restarts playback rather than keeping the old frame. */
+                key={light ? heroVideoLight : heroVideo}
+                src={light ? heroVideoLight : heroVideo}
+                poster={light ? heroMediaLight : heroMedia}
                 autoPlay={!reducedMotion}
                 muted
                 loop
