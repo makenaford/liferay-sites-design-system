@@ -10,7 +10,7 @@ import { VENDOR_NAMES } from './vendor-logos'
  */
 
 import heroAnimation from '../../assets/home/hero-animation.webm'
-import heroAnimationLight from '../../assets/home/hero-animation-light.webm'
+import heroAnimationLight from '../../assets/home/jphome.webm'
 import heroMedia from '../../assets/home/hero-media.png'
 import capabilityMedia from '../../assets/home/capability-media.png'
 import goal1 from '../../assets/home/goal-1.png'
