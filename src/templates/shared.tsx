@@ -10,6 +10,7 @@ import { SectionTitle } from '../components/Section'
 import { Stat, StatBar } from '../components/Stat'
 import { TextInput } from '../components/Input'
 import {
+  IconArrowRight,
   IconFacebook,
   IconGithub,
   IconInstagram,
@@ -399,62 +400,70 @@ export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterConte
             align="center"
             order={2}
             /*
-             * The gradient runs on the second clause only, which is how the file draws it: the question
-             * is asked in plain white and the answer is what lights up. Wrapping the whole line made it
-             * one long gradient with nothing to contrast against.
+             * On the dark canvas the gradient runs on the second clause only: the question is asked in
+             * plain white and the answer is what lights up. The light `LRDC footer` (node `8977:16454`)
+             * sets both clauses in `Surfaces/Text/Primary`, so on light the line is one colour.
              */
             title={
               <>
                 {content.cta.title.lead}
                 {/* Japanese sets no space between the clauses; see `Split` in `HomePage.tsx`. */}
                 {content.locale.startsWith('ja') ? '' : ' '}
-                <Text
-                  span
-                  inherit
-                  variant="gradient"
-                  gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
-                >
-                  {content.cta.title.accent}
-                </Text>
+                {light ? (
+                  content.cta.title.accent
+                ) : (
+                  <Text
+                    span
+                    inherit
+                    variant="gradient"
+                    gradient={{ from: 'brand.3', to: 'accent', deg: 90 }}
+                  >
+                    {content.cta.title.accent}
+                  </Text>
+                )}
               </>
             }
             description={content.cta.description}
           />
-          {/*
-            * A bare form row rather than `Form`: `Form` is Figma's glass *form card* — a 40px
-            * padded surface — and the action band draws the field and the button straight onto
-            * the page. Same submit semantics, none of the surface.
-            */}
-          <Box
-            component="form"
-            maw={600}
-            w="100%"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <Group gap={16} align="flex-start" wrap="nowrap">
+          {/* Field to buttons: 20, as node `8977:16457` spaces them. */}
+          <Stack gap={20} align="center" w="100%">
+            {/*
+              * A bare form rather than `Form`: `Form` is Figma's glass *form card* — a 40px padded
+              * surface — and the action band draws the field straight onto the page. The submit sits
+              * inside the field, as the hero's does: node `8977:16461` is one 596px input with a small
+              * solid button contained at its end.
+              */}
+            <Box
+              component="form"
+              maw={596}
+              w="100%"
+              onSubmit={(event) => event.preventDefault()}
+            >
               <TextInput
                 aria-label={content.cta.emailLabel}
                 type="email"
                 placeholder={content.cta.emailPlaceholder}
                 required
-                flex="1 1 auto"
+                containedButton={
+                  <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+                    {content.cta.trialCta}
+                  </Button>
+                }
               />
-              <Button type="submit" size="md" flex="0 0 auto">
+            </Box>
+            <Group gap={12} justify="center">
+              <Button variant="outline" size="md">
                 {content.cta.trialCta}
               </Button>
+              <Button variant="outline" size="md">
+                {content.cta.contactCta}
+              </Button>
             </Group>
-          </Box>
-          <Group gap={16} justify="center">
-            <Button variant="outline" size="md">
-              {content.cta.trialCta}
-            </Button>
-            <Button variant="outline" size="md">
-              {content.cta.contactCta}
-            </Button>
-          </Group>
+          </Stack>
         </Stack>
 
-        <Stack gap={16} c="var(--sds-surfaces-text-secondary)">
+        {/* `Paragraph/XX-Small` in `Surfaces/Text/Primary`, 10 apart — node `8977:16472`. */}
+        <Stack gap={10} c="var(--sds-surfaces-text-primary)">
           {content.disclaimers.map((text) => (
             /* The Gartner notice is two paragraphs in one string; the break is where it splits. */
             <Text key={text.slice(0, 40)} fz="xs" style={{ whiteSpace: 'pre-line' }}>
@@ -506,10 +515,13 @@ export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterConte
     ))}
 
     {/*
-     * The brand block starts the second row of the grid, which is where the file draws it — so it
-     * is the sixth child rather than the `brand` prop, which would put it first.
+     * The brand block starts the last row of the grid, which is where the file draws it — node
+     * `8977:16570`, after two full rows of five — so it is the eleventh child rather than the `brand`
+     * prop, which would put it first. It is two tracks wide there (`.siteFooterBrand`), leaving three
+     * for the columns beside it.
      */}
     <Footer.Brand
+      className={classes.siteFooterBrand}
       /* The file heads the brand block with the lockup; it was the one slot left empty. */
       logo={<Logo height={40} />}
       address={content.address}

@@ -5852,7 +5852,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 8px;
+  gap: 4px 8px;
 }
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
@@ -8672,12 +8672,27 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .footerColumns {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 40px 32px;
+  /* 64 between the rows, as the three `Footer Content` rows of node `8977:16496` are spaced. */
+  gap: 64px 32px;
+}
+
+/*
+ * The site footer's brand block is two tracks wide on the five-track grid — the file's `Company` frame is
+ * 460.8px, two columns and the gap between them — so the three columns beside it finish the row. Below
+ * five tracks it is one cell like any other, and the narrower rows close back up to 40.
+ */
+.siteFooterBrand {
+  grid-column: span 2;
 }
 
 @container sds-footer (max-width: 1100px) {
   .footerColumns {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 40px;
+  }
+
+  .siteFooterBrand {
+    grid-column: auto;
   }
 }
 

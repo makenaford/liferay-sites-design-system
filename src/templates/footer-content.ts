@@ -22,9 +22,9 @@ export interface FooterContent {
   disclaimers: string[]
   stats: { value: string; accent: string; label: string }[]
   legal: { built: string; copyright: string; links: string[] }
-  /** The first row of link columns, above the brand block. */
+  /** The link columns before the brand block — two rows of five. */
   columns: [string, string[]][]
-  /** The second row, below it. */
+  /** The columns after it, sharing its row. */
   columnsBelow: [string, string[]][]
   address: string
 }
@@ -57,18 +57,11 @@ export const FOOTER_CONTENT: FooterContent = {
     links: ['GDPR', 'Accessibility', 'Legal', 'Compliance', 'Privacy Policy'],
   },
 
+  /*
+   * `LRDC footer`, node `8977:16496`: two full rows of five, then the brand block and three more. The
+   * order is the file's, left to right and top to bottom.
+   */
   columns: [
-    [
-      'Getting Started',
-      [
-        'Request a Demo',
-        'Start Free Trial',
-        'Marketplace',
-        'Liferay SaaS/PaaS/Self-Hosted',
-        'Implementation Guide',
-      ],
-    ],
-    ['More Industries', ['Insurance', 'Transport & Logistics', 'Education', 'Wealth Management']],
     [
       'Compare',
       [
@@ -95,9 +88,6 @@ export const FOOTER_CONTENT: FooterContent = {
       'Digital Transformation',
       ['Financial Services', 'Public Sector', 'Healthcare', 'Manufacturing'],
     ],
-  ],
-
-  columnsBelow: [
     [
       'See What’s Possible',
       [
@@ -108,6 +98,72 @@ export const FOOTER_CONTENT: FooterContent = {
         '3 Real-World Examples of Self-Service in Manufacturing',
       ],
     ],
+    [
+      'Getting Started',
+      [
+        'Request a Demo',
+        'Start Free Trial',
+        'Liferay DXP for Marketers',
+        'Marketplace',
+        'Liferay SaaS/PaaS/Self-Hosted',
+        'Implementation Guide',
+      ],
+    ],
+    ['More Industries', ['Insurance', 'Transport & Logistics', 'Education', 'Wealth Management']],
+    [
+      'Documentation',
+      [
+        'AI',
+        'CMS',
+        'DAM',
+        'Commerce',
+        'Personalization',
+        'Search',
+        'Sites',
+        'Integration',
+        'Security',
+        'Low-Code',
+      ],
+    ],
+    [
+      'Digital Glossary',
+      [
+        'What is AI Transformation?',
+        'What is Digital Strategy?',
+        'What is Digital Business?',
+        'What Is an Enterprise Website?',
+        'What is Low-Code and No-Code?',
+        'What is B2B2C?',
+        'Data Sovereignty vs. Data Residency',
+      ],
+    ],
+    [
+      /*
+       * ⚠ The file's heading, verbatim. It reads as a working note rather than published copy, so it
+       * wants a real title before this ships.
+       */
+      '5 More High Opportunity pieces from Navin',
+      [
+        'What is a Content Management System?',
+        'What is Digital Customer Experience?',
+        '7 Intranet Examples That Boost Productivity',
+        'What is a Digital Experience?',
+      ],
+    ],
+    [
+      'How-to-Guides',
+      [
+        'Digital Transformation Strategy',
+        'Managing Enterprise AI at Scale',
+        'Composable Commerce Migration',
+        'Agentic AI in Marketing',
+        'Vibe Coding vs. Low-Code',
+        'Composable Commerce for B2B',
+      ],
+    ],
+  ],
+
+  columnsBelow: [
     [
       'Company',
       [

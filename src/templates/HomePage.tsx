@@ -520,11 +520,12 @@ export function HomePage({
 
               <div className={classes.heroProofMarks}>
                 {/*
-                 * Glass on the dark canvas; on the light one the file's `Label CTA` is `Style=Filled`,
-                 * the flat tonal chip, which reads on a pale page where glass washes out.
+                 * Glass on the dark canvas; on the light one the file's `Label CTA` is `Style=Gradient`
+                 * (node `8899:61461`), the gradient stroke on no fill, which reads on a pale page where
+                 * glass washes out.
                  */}
                 {content.hero.marks.map((mark) => (
-                  <Label key={mark} variant={light ? 'filled' : 'glass'} size="sm" radius="sm">
+                  <Label key={mark} variant={light ? 'gradient' : 'glass'} size="sm" radius="sm">
                     {mark}
                   </Label>
                 ))}

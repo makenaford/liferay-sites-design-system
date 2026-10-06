@@ -43,18 +43,12 @@ export const FOOTER_CONTENT_JA: FooterContent = {
     links: ['GDPR', 'アクセシビリティ', '法的事項', 'コンプライアンス', 'プライバシー・ポリシー'],
   },
 
+  /*
+   * The global grid's order — node `8977:16496`: two rows of five, then the brand block and three more.
+   * The four columns that grid added (ドキュメント, デジタル用語集, the unnamed one, ハウツーガイド) and
+   * マーケター向けLiferay DXP are translated here and are draft, like the rest of this grid.
+   */
   columns: [
-    [
-      'はじめる',
-      [
-        'デモを依頼する',
-        '無料トライアルを開始',
-        'マーケットプレイス',
-        'Liferay SaaS／PaaS／Self-Hosted',
-        '導入ガイド',
-      ],
-    ],
-    ['その他の業界', ['保険', '運輸・物流', '教育', 'ウェルスマネジメント']],
     [
       '他製品との比較',
       [
@@ -78,9 +72,6 @@ export const FOOTER_CONTENT_JA: FooterContent = {
       ],
     ],
     ['DX（デジタル変革）', ['金融サービス', '公共・自治体', '医療・ヘルスケア', '製造業']],
-  ],
-
-  columnsBelow: [
     [
       '事例で見るLiferay',
       [
@@ -91,6 +82,69 @@ export const FOOTER_CONTENT_JA: FooterContent = {
         '製造業のセルフサービス活用事例3選',
       ],
     ],
+    [
+      'はじめる',
+      [
+        'デモを依頼する',
+        '無料トライアルを開始',
+        'マーケター向けLiferay DXP',
+        'マーケットプレイス',
+        'Liferay SaaS／PaaS／Self-Hosted',
+        '導入ガイド',
+      ],
+    ],
+    ['その他の業界', ['保険', '運輸・物流', '教育', 'ウェルスマネジメント']],
+    [
+      'ドキュメント',
+      [
+        'AI',
+        'CMS',
+        'DAM',
+        'コマース',
+        'パーソナライゼーション',
+        '検索',
+        'サイト',
+        'インテグレーション',
+        'セキュリティ',
+        'ローコード',
+      ],
+    ],
+    [
+      'デジタル用語集',
+      [
+        'AIトランスフォーメーションとは？',
+        'デジタル戦略とは？',
+        'デジタルビジネスとは？',
+        'エンタープライズWebサイトとは？',
+        'ローコード・ノーコードとは？',
+        'B2B2Cとは？',
+        'データ主権とデータレジデンシーの違い',
+      ],
+    ],
+    [
+      /* ⚠ The global file's working heading, left untranslated until it has a real title. */
+      '5 More High Opportunity pieces from Navin',
+      [
+        'CMS（コンテンツ管理システム）とは？',
+        'デジタルカスタマーエクスペリエンスとは？',
+        '生産性を高める社内ポータルの事例7選',
+        'デジタルエクスペリエンスとは？',
+      ],
+    ],
+    [
+      'ハウツーガイド',
+      [
+        'DX戦略の立て方',
+        'エンタープライズAIを大規模に運用する',
+        'コンポーザブルコマースへの移行',
+        'マーケティングにおけるエージェント型AI',
+        'バイブコーディングとローコードの比較',
+        'B2B向けコンポーザブルコマース',
+      ],
+    ],
+  ],
+
+  columnsBelow: [
     [
       '会社情報',
       [
