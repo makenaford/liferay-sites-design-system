@@ -174,8 +174,8 @@ const CAPABILITY_ICONS: Record<string, { glass: ReactNode; icon: ReactNode }> = 
  * caption should name what the eye reached first.
  *
  * `srcLight` is the artwork for the light canvas. Gartner supplies the Customers' Choice mark in two
- * variants — white, for a dark ground, and the dark-and-gold outline the light `card-main` (node
- * `24843:58125`) draws — and the badge is their trademark, so the light page takes their own variant
+ * variants — white, for a dark ground, and black, for a light one — and the badge is their trademark,
+ * so the light page takes their own variant
  * rather than a recoloured or plated copy of the white one. G2's mark carries its own ground and is the
  * same file on both.
  */
