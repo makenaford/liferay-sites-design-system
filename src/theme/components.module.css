@@ -4855,6 +4855,20 @@
 }
 
 /*
+ * On a desktop hero the light centre bubble is cropped the way the mockup crops it — `Bubble`, node
+ * `8899:61407`: a 1440x767 frame hung 30px above the hero's top — rather than stretched to the hero's
+ * height. Sized off the width, so its lower curve clears the rating and tags and they sit on the plain
+ * page, instead of the artwork being pulled down behind them on a taller (e.g. Japanese) hero.
+ */
+@container sds-hero (min-width: 1200px) {
+  .hero[data-canvas='light'][data-background='full'] .heroVideo {
+    top: -30px;
+    height: auto;
+    aspect-ratio: 1440 / 767;
+  }
+}
+
+/*
  * Corner, 674x674: the artwork is flush to the top and to the **right** (the sphere's right side is cut
  * by the export), with 16 columns of ground on the left and nothing below y 511.
  *
@@ -5852,7 +5866,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 8px;
+  gap: 4px 8px;
+}
+
+/*
+ * The light canvas's gradient-stroke tags take a faint `#6FA0FF` wash at 5% and frost what is behind
+ * them, so the bubble passing under the row reads as glass rather than showing straight through the
+ * ring. The stroke is the `::before` ring, so neither touches it.
+ */
+.heroProofMarks > .labelRoot[data-variant='gradient'] {
+  background-color: rgb(111 160 255 / 0.05);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 /* ------------------------------------------------------------------- Size=Mobile (< 1200px)
@@ -8672,12 +8697,27 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 .footerColumns {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 40px 32px;
+  /* 64 between the rows, as the three `Footer Content` rows of node `8977:16496` are spaced. */
+  gap: 64px 32px;
+}
+
+/*
+ * The site footer's brand block is two tracks wide on the five-track grid — the file's `Company` frame is
+ * 460.8px, two columns and the gap between them — so the three columns beside it finish the row. Below
+ * five tracks it is one cell like any other, and the narrower rows close back up to 40.
+ */
+.siteFooterBrand {
+  grid-column: span 2;
 }
 
 @container sds-footer (max-width: 1100px) {
   .footerColumns {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 40px;
+  }
+
+  .siteFooterBrand {
+    grid-column: auto;
   }
 }
 

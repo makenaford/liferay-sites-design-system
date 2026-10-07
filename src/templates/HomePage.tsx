@@ -174,8 +174,8 @@ const CAPABILITY_ICONS: Record<string, { glass: ReactNode; icon: ReactNode }> = 
  * caption should name what the eye reached first.
  *
  * `srcLight` is the artwork for the light canvas. Gartner supplies the Customers' Choice mark in two
- * variants — white, for a dark ground, and the dark-and-gold outline the light `card-main` (node
- * `24843:58125`) draws — and the badge is their trademark, so the light page takes their own variant
+ * variants — white, for a dark ground, and black, for a light one — and the badge is their trademark,
+ * so the light page takes their own variant
  * rather than a recoloured or plated copy of the white one. G2's mark carries its own ground and is the
  * same file on both.
  */
@@ -520,11 +520,12 @@ export function HomePage({
 
               <div className={classes.heroProofMarks}>
                 {/*
-                 * Glass on the dark canvas; on the light one the file's `Label CTA` is `Style=Filled`,
-                 * the flat tonal chip, which reads on a pale page where glass washes out.
+                 * Glass on the dark canvas; on the light one the file's `Label CTA` is `Style=Gradient`
+                 * (node `8899:61461`), the gradient stroke on no fill, which reads on a pale page where
+                 * glass washes out.
                  */}
                 {content.hero.marks.map((mark) => (
-                  <Label key={mark} variant={light ? 'filled' : 'glass'} size="sm" radius="sm">
+                  <Label key={mark} variant={light ? 'gradient' : 'glass'} size="sm" radius="sm">
                     {mark}
                   </Label>
                 ))}
