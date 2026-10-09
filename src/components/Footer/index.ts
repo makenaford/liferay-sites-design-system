@@ -4,4 +4,5 @@ export {
   type FooterColumnProps,
   type FooterLinkProps,
   type FooterBrandProps,
+  type FooterMeshProps,
 } from './Footer'

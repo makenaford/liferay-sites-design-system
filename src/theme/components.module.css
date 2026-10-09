@@ -8952,18 +8952,127 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 }
 
 /*
- * Where the file puts it: 136% of the band's width from 22.6% off its left edge, and 63.5% of its height
- * from 42.5% down, running off the bottom — the band's `overflow: hidden` trims it. Stretched to that
- * box rather than covered, since the box is the artwork's own proportion at 1440.
+ * The light band's mesh: one blurred colour field along its foot, drifting slowly.
+ *
+ * The colour points are the ones the light footer pools at, sampled off the drawn band — aqua up the
+ * left edge, violet in the lower left corner, sky across the bottom and brand blue in the lower right.
+ *
+ * **One layer, blurred, is what makes it fluid.** The four colours are radial gradients on a *single*
+ * field, and a heavy blur melts their edges into each other, so what moves is one continuous wash
+ * rather than four shapes. (Separate blooms each keep their own edge however soft the ramp, and read as
+ * discs sliding about.) The field is larger than the band on every side, so the blur's own fade at the
+ * field's edge never shows, and the drift has room without exposing a corner.
+ *
+ * **Moved by `transform`, not `background-position`.** Animating the position repaints the gradients
+ * and re-runs a 40px blur on every frame. A transform moves the already-blurred layer on the compositor,
+ * so the blur is computed once and the motion costs nothing.
+ *
+ * The mask keeps the top of the band — the first two rows of links — on the plain page, and brings the
+ * colour in from just above the brand row down.
  */
-.footerBackdrop > .footerBubble {
+.footerMesh {
   position: absolute;
-  inset-inline-start: -22.6%;
-  inset-block-start: 42.5%;
-  width: 136.1%;
-  height: 63.5%;
-  object-fit: fill;
-  filter: blur(50px);
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 40%, #000 78%);
+  mask-image: linear-gradient(to bottom, transparent 40%, #000 78%);
+}
+
+/*
+ * 140% of the band each way, hung 20% off its top left, so each colour's spot on the field is
+ * `(band% + 20) / 140`: aqua at the band's left edge 72% down, violet in its bottom-left corner, sky
+ * across the bottom 45% in, blue in its bottom-right corner.
+ */
+.footerMeshField {
+  position: absolute;
+  left: -20%;
+  top: -20%;
+  width: 140%;
+  height: 140%;
+  /* The four colour points — light canvas. The dark band redefines them below. */
+  --sds-footer-mesh-aqua: #9ee6fb;
+  --sds-footer-mesh-violet: #a874f5;
+  --sds-footer-mesh-sky: #a8dffa;
+  --sds-footer-mesh-blue: #4f6fe6;
+  background-image:
+    radial-gradient(
+      34% 30% at 14% 66%,
+      var(--sds-footer-mesh-aqua) 0%,
+      var(--sds-footer-mesh-aqua) 30%,
+      transparent 100%
+    ),
+    radial-gradient(
+      28% 24% at 14% 88%,
+      var(--sds-footer-mesh-violet) 0%,
+      var(--sds-footer-mesh-violet) 30%,
+      transparent 100%
+    ),
+    radial-gradient(
+      42% 22% at 46% 88%,
+      var(--sds-footer-mesh-sky) 0%,
+      var(--sds-footer-mesh-sky) 30%,
+      transparent 100%
+    ),
+    radial-gradient(
+      30% 26% at 88% 88%,
+      var(--sds-footer-mesh-blue) 0%,
+      var(--sds-footer-mesh-blue) 25%,
+      transparent 100%
+    );
+  filter: blur(40px);
+  will-change: transform;
+  /*
+   * Round four points and back, with `alternate` so the return trip eases out of the last point instead
+   * of snapping to the first — the reference's own trick. Slow on purpose: the colour should be seen to
+   * flow, not to travel.
+   */
+  animation: sds-footer-mesh-flow 22s ease-in-out infinite alternate;
+}
+
+@keyframes sds-footer-mesh-flow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(4%, -3%) scale(1.05);
+  }
+  50% {
+    transform: translate(-3%, -5%) scale(0.98);
+  }
+  75% {
+    transform: translate(-5%, 2%) scale(1.04);
+  }
+  100% {
+    transform: translate(3%, 3%) scale(1);
+  }
+}
+
+/*
+ * The dark band's version: the same field and the same flow, in the hero bubble's own colours — sky
+ * up the left, violet in the corner, deep indigo across the bottom and brand blue on the right — so the
+ * footer's light is the light the hero is made of.
+ *
+ * Darker and dimmer than the light set, because on this band the *text* is light: the field sits at 85%
+ * so the white links over its strongest point keep their contrast. And the band's older drifting glow
+ * (`.footerBase::after`) steps aside when a mesh is passed, so there is one light source, not two.
+ */
+:where([data-mantine-color-scheme='dark']) .footerMeshField {
+  --sds-footer-mesh-aqua: #2b95f0;
+  --sds-footer-mesh-violet: #8a1ff0;
+  --sds-footer-mesh-sky: #2f3fd8;
+  --sds-footer-mesh-blue: #0b5fff;
+  opacity: 0.85;
+}
+
+.footerBase:has(> .footerBackdrop > .footerMesh)::after {
+  display: none;
+}
+
+/* Under reduced motion the mesh holds still, at the arrangement it starts from. */
+@media (prefers-reduced-motion: reduce) {
+  .footerMeshField {
+    animation: none;
+  }
 }
 
 :where([data-mantine-color-scheme='light']) .footerBase a[data-variant] {
