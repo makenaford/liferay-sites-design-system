@@ -176,6 +176,39 @@ export const WithBackdrop: Story = {
   ),
 }
 
+/**
+ * **Mesh Gradient** — `Footer.Mesh` in the backdrop: the light band's animated colour field.
+ *
+ * Aqua, violet, sky and brand blue on one blurred layer that drifts slowly along the foot of the band,
+ * so the colours flow into each other. The top rows of links stay on the plain page, and the field holds
+ * still under `prefers-reduced-motion`.
+ *
+ * Opens on the light canvas; **Mesh Gradient Dark** is the same field in the dark band's palette.
+ */
+export const MeshGradient: Story = {
+  name: 'Mesh Gradient',
+  globals: { colorScheme: 'light' },
+  render: () => (
+    <Footer brand={brand} legal={legal} backdrop={<Footer.Mesh />}>
+      {columns}
+    </Footer>
+  ),
+}
+
+/**
+ * **Mesh Gradient Dark** — the same `Footer.Mesh` on the dark band: sky, violet, deep indigo and brand
+ * blue, the hero bubble's own colours, dimmed so the light text keeps its contrast.
+ */
+export const MeshGradientDark: Story = {
+  name: 'Mesh Gradient Dark',
+  globals: { colorScheme: 'dark' },
+  render: () => (
+    <Footer brand={brand} legal={legal} backdrop={<Footer.Mesh />}>
+      {columns}
+    </Footer>
+  ),
+}
+
 /** Two columns and no brand — a small site's footer, from the same component. */
 export const Minimal: Story = {
   render: () => (

@@ -47,6 +47,32 @@ const FooterLink = forwardRef<HTMLAnchorElement, FooterLinkProps>(function Foote
   )
 })
 
+/* ------------------------------------------------------------------ mesh */
+
+export interface FooterMeshProps extends BoxProps {}
+
+/**
+ * The light band's animated mesh gradient, for the `backdrop` slot.
+ *
+ * Aqua up the left edge, violet in the lower left corner, sky across the bottom and brand blue in the
+ * lower right, on one blurred field that drifts slowly, so the colours flow into each other rather than
+ * moving as separate shapes. It is masked to the lower part of the band, so the top rows of links stay on
+ * the plain page, and it holds still under `prefers-reduced-motion`. See `.footerMesh`.
+ *
+ * Both colour schemes: on the dark band the same field runs in the hero bubble's deeper blues and
+ * violets, dimmed so the light text over it keeps its contrast, and it replaces the band's older glow.
+ */
+const FooterMesh = forwardRef<HTMLDivElement, FooterMeshProps>(function FooterMesh(
+  { className, ...props },
+  ref,
+) {
+  return (
+    <Box ref={ref} className={[classes.footerMesh, className].filter(Boolean).join(' ')} {...props}>
+      <div className={classes.footerMeshField} />
+    </Box>
+  )
+})
+
 /* ------------------------------------------------------------------ brand */
 
 export interface FooterBrandProps extends BoxProps {
@@ -151,7 +177,7 @@ const FooterBase = forwardRef<HTMLElement, FooterProps>(function Footer(
  * | `Page Action Section` | `cta` | A grey band with a heading and a signup field |
  * | `Number Footer` | `stats` | A blue strip of figures |
  * | `Footer LRDC Base` | `brand`, children, `legal` | The dark footer proper |
- * | Its bubble artwork | `backdrop` | Not bundled; pass the asset |
+ * | Its bubble artwork | `backdrop` | Not bundled; pass the asset, or `<Footer.Mesh />` |
  * | `Property 1` — Desktop / Mobile | **responsive**, no prop | |
  *
  * ```tsx
@@ -198,4 +224,5 @@ export const Footer = Object.assign(FooterBase, {
   Column: FooterColumn,
   Link: FooterLink,
   Brand: FooterBrand,
+  Mesh: FooterMesh,
 })

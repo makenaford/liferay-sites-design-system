@@ -20,7 +20,6 @@ import {
 } from '../icons'
 import classes from '../theme/components.module.css'
 import { logoTile } from './logo-tile'
-import footerBubbleLight from '../../assets/footer/footer-bubble-light.webp'
 
 /* Re-exported: it used to live here, and the templates import it from here. */
 export { logoTile }
@@ -384,15 +383,16 @@ export function SiteHeader({
 /** `LRDC footer` — the action band, the disclaimers, the numbers and the link grid. */
 export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterContent } = {}) {
   /*
-   * The light canvas draws the link band pale, with the bubble rising out of its lower left — node
-   * `24859:64519`. The artwork goes in through `backdrop`, as the Footer asks of anything it draws, and
-   * only on light: the dark band keeps its mesh. `.footerBubble` places and softens it.
+   * Colour pools along the foot of the link band — aqua up the left edge, violet in the lower left
+   * corner, sky across the bottom and brand blue in the lower right. That is a live mesh rather than a
+   * picture: the four colours on one heavily blurred field that drifts slowly, so they melt into each
+   * other and flow. `Footer.Mesh` carries both schemes' palettes, so it goes in on either canvas.
    */
   const light = useComputedColorScheme('dark') === 'light'
 
   return (
   <Footer
-    backdrop={light ? <img className={classes.footerBubble} src={footerBubbleLight} alt="" /> : undefined}
+    backdrop={<Footer.Mesh />}
     cta={
       <Stack gap={40} maw={1280} mx="auto">
         <Stack gap={32} align="center">
