@@ -8980,8 +8980,9 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
 
 /*
  * 140% of the band each way, hung 20% off its top left, so each colour's spot on the field is
- * `(band% + 20) / 140`: aqua at the band's left edge 72% down, violet in its bottom-left corner, sky
- * across the bottom 45% in, blue in its bottom-right corner.
+ * `(band% + 20) / 140`: aqua at the band's left edge 75% down, violet near its bottom-left corner, sky
+ * across the bottom from the middle, blue toward its bottom-right corner — each wide enough that,
+ * together, they span the whole foot with no plain gap between them.
  */
 .footerMeshField {
   position: absolute;
@@ -8996,25 +8997,25 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   --sds-footer-mesh-blue: #4f6fe6;
   background-image:
     radial-gradient(
-      34% 30% at 14% 66%,
+      40% 30% at 14% 68%,
       var(--sds-footer-mesh-aqua) 0%,
       var(--sds-footer-mesh-aqua) 30%,
       transparent 100%
     ),
     radial-gradient(
-      28% 24% at 14% 88%,
+      36% 24% at 18% 88%,
       var(--sds-footer-mesh-violet) 0%,
       var(--sds-footer-mesh-violet) 30%,
       transparent 100%
     ),
     radial-gradient(
-      42% 22% at 46% 88%,
+      56% 24% at 50% 88%,
       var(--sds-footer-mesh-sky) 0%,
       var(--sds-footer-mesh-sky) 30%,
       transparent 100%
     ),
     radial-gradient(
-      30% 26% at 88% 88%,
+      40% 26% at 84% 88%,
       var(--sds-footer-mesh-blue) 0%,
       var(--sds-footer-mesh-blue) 25%,
       transparent 100%
@@ -9026,7 +9027,7 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
    * of snapping to the first — the reference's own trick. Slow on purpose: the colour should be seen to
    * flow, not to travel.
    */
-  animation: sds-footer-mesh-flow 22s ease-in-out infinite alternate;
+  animation: sds-footer-mesh-flow 14s ease-in-out infinite alternate;
 }
 
 @keyframes sds-footer-mesh-flow {
