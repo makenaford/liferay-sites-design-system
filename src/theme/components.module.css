@@ -10633,6 +10633,18 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
   gap: 24px;
 }
 
+/*
+ * Under the picture the figures share its width in equal thirds, each centred in its own, so the rules
+ * between them land evenly across the panel rather than the three bunching in its middle. Only once the
+ * bar is a row — below 576px it stacks, and a stacked figure already has the full width.
+ */
+@media (min-width: 576px) {
+  .mediaStats > .statBar > :not(.statBarDivider) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
 /* ============================================================================ media crossfade
  *
  * Swapping the panel's media used to be a cut: the element was keyed by `src`, so React threw the old
