@@ -17,8 +17,8 @@ import { Stat, StatBar } from '../components/Stat'
 import {
   IconArrowRight,
   IconArrowUp,
-  IconGlassComposable,
-  IconGlassDatabase,
+  IconGlassOutOfTheBox,
+  IconGlassCdn,
   IconGlassMail,
 } from '../icons'
 
@@ -96,11 +96,11 @@ export const CardGrid: Story = {
     >
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="24">
         {[
-          [IconGlassComposable, 'Composable by default', 'Take the capabilities you need.'],
-          [IconGlassDatabase, 'One source of content', 'Pages, assets and translations in one tree.'],
+          [IconGlassOutOfTheBox, 'Composable by default', 'Take the capabilities you need.'],
+          [IconGlassCdn, 'One source of content', 'Pages, assets and translations in one tree.'],
           [IconGlassMail, 'Every channel', 'Web, portal, commerce and search together.'],
         ].map(([Icon, title, description]) => {
-          const Glyph = Icon as typeof IconGlassComposable
+          const Glyph = Icon as typeof IconGlassOutOfTheBox
           return (
             <Card
               key={title as string}
@@ -129,7 +129,7 @@ export const CardGridNonClickable: Story = {
           <Card
             key={title}
             headerAlign="center"
-            hero={<IconGlassComposable width={40} height={40} />}
+            hero={<IconGlassOutOfTheBox width={40} height={40} />}
             title={title}
           />
         ))}
@@ -402,7 +402,7 @@ export const FullCard: Story = {
       <Card
         align="horizontal"
         titleSize="full"
-        hero={<IconGlassComposable width={48} height={48} />}
+        hero={<IconGlassOutOfTheBox width={48} height={48} />}
         title="Unify client and advisor data"
         description="One identity across the public site, the adviser portal and the mobile app."
         main={

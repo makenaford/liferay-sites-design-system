@@ -50,13 +50,13 @@ const example = instance.getEnum('Type', {
       description="Short description here"
     />`,
   'Icon-Left': `<Card
-      hero={<IconGlassComposable width={40} height={40} />}
+      hero={<IconGlassOutOfTheBox width={40} height={40} />}
       title="Card Title"
       description="Short description here"
     />`,
   'Icon-Center': `<Card
       headerAlign="center"
-      hero={<IconGlassComposable width={40} height={40} />}
+      hero={<IconGlassOutOfTheBox width={40} height={40} />}
       title="Card Title"
     />`,
   /* Not in `Card Examples` — the nearest arrangement, to be confirmed against the design. */

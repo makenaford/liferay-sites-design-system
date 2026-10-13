@@ -98,7 +98,7 @@ const COMPOUND: Record<string, (ctx: Context, node: PageNode, indent: number) =>
   },
 
   GlassIcon: (ctx, node, indent) => {
-    const name = String(node.props.name ?? 'IconGlassComposable')
+    const name = String(node.props.name ?? 'IconGlassOutOfTheBox')
     ctx.used.add(name)
     const size = Number(node.props.size ?? 40)
     ctx.out.push(indent, `<${name} width={${size}} height={${size}} />`)

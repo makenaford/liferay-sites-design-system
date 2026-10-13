@@ -191,7 +191,7 @@ const TabsBase = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
  * ```tsx
  * <Tabs variant="pills" defaultValue="websites">
  *   <Tabs.List grow>
- *     <Tabs.Tab value="websites" leftSection={<IconGlassComposable />}>Websites</Tabs.Tab>
+ *     <Tabs.Tab value="websites" leftSection={<IconGlassOutOfTheBox />}>Websites</Tabs.Tab>
  *     <Tabs.Tab value="commerce">Commerce</Tabs.Tab>
  *   </Tabs.List>
  *   <Tabs.Panel value="websites">…</Tabs.Panel>

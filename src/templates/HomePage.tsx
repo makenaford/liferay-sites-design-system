@@ -47,10 +47,10 @@ import {
   IconBracketsAngle,
   IconBuilding2,
   IconDepartment,
-  IconGlassCommerce,
   IconGlassCustomerPortals,
-  IconGlassDXP,
-  IconGlassEnterpriseWebsite4,
+  IconGlassDigitalCommerce,
+  IconGlassDxp,
+  IconGlassEnterpriseWebsites,
   IconGlassIntranets,
   IconGlassPartnerPortals,
   IconGlassSupplierPortals,
@@ -155,12 +155,12 @@ const CAPABILITY_ICONS: Record<string, { glass: ReactNode; icon: ReactNode }> = 
     icon: <IconDepartment />,
   },
   'enterprise-websites': {
-    glass: <IconGlassEnterpriseWebsite4 width={40} height={40} />,
+    glass: <IconGlassEnterpriseWebsites width={40} height={40} />,
     icon: <IconBuilding2 />,
   },
   intranets: { glass: <IconGlassIntranets width={40} height={40} />, icon: <IconGroup /> },
   'digital-commerce': {
-    glass: <IconGlassCommerce width={40} height={40} />,
+    glass: <IconGlassDigitalCommerce width={40} height={40} />,
     icon: <IconShoppingCart1 />,
   },
 }
@@ -935,7 +935,7 @@ export function HomePage({
             <CapabilityMap
               clusters={clusters}
               names="outside"
-              hubIcon={<IconGlassDXP />}
+              hubIcon={<IconGlassDxp />}
               hubLabel={content.platformMap.hubLabel}
               maxHeight={PRODUCT_MAP_MAX_HEIGHT}
             />

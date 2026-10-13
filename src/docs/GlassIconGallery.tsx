@@ -21,7 +21,7 @@ export function GlassIconGallery() {
     <DocsFrame>
       <Stack gap="16">
         <Text fz="sm" c="var(--sds-surfaces-text-tertiary)">
-          {entries.length} of the 165 illustrative icons are declared, shown at their 48px card box.
+          {entries.length} illustrative icons, shown at their 48px card box.
           Click one to copy its import name.
         </Text>
         <SimpleGrid cols={{ base: 2, xs: 3, sm: 4 }} spacing="12">

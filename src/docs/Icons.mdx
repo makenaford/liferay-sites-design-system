@@ -60,16 +60,18 @@ import { Card, IconGlassMail, Label } from 'liferay-sites-design-system'
 They default to a **48px box**, which is the container Figma's `card-main` draws them in, and take a
 `size` prop for anything else. The art is on a 64px grid, so it stays crisp when scaled up.
 
-### Adding one
+### Updating the set
 
-1. Find its path in `assets/glass-icons/` — the folder is the category, e.g. `Data/DAM`.
-2. Add that path to `src/icons/glass-manifest.json`.
+The set is the October 2026 export, and all 100 icons ship. The export names each file
+`<category>-<name>.dark.svg` and `.light.svg`; they live at `assets/glass-icons/<category>/<name>.svg`
+(dark) and the same path under `assets/glass-icons-light/` (light), so a new export copies straight in.
+
+1. Copy the new files into those two folders, under the same names.
+2. If an icon is new, add its path — e.g. `capabilities/low-code` — to `src/icons/glass-manifest.json`.
 3. Run `pnpm glass-icons`.
 
-165 are available and the declared subset is generated, for the same reason as the UI set: the bundle
-carries what the library uses. Set `"icons": "*"` in the manifest to generate all of them. A path that
-does not exist fails the build with suggestions, and two icons whose file names collide — `Dashboard`,
-`Analytics`, `Integration`, `Pricing`, `Global Services` all appear in two categories — fail until one
-is given an `as` name.
+The component is named from the file name: `capabilities/low-code` is `IconGlassLowCode`. A path that
+does not exist fails the build with suggestions, and two icons whose file names collide — `education`
+is in both Education and Industries — fail until one is given an `as` name.
 
 <GlassIconGallery />

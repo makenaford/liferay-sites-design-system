@@ -23,7 +23,7 @@ import classes from '../../theme/components.module.css'
 export interface CapabilityItem {
   /** The product name, printed under the icon. */
   label: string
-  /** The glass icon — `IconGlassPIM`, `IconGlassSites`, and so on, at whatever size the tile sets. */
+  /** The glass icon — `IconGlassPim`, `IconGlassSites`, and so on, at whatever size the tile sets. */
   icon: ReactNode
   /** Where the tile goes. Renders the tile as an `a`. */
   href?: string
@@ -743,7 +743,7 @@ export interface CapabilityMapProps extends BoxProps, Omit<ElementProps<'div'>, 
    */
   clusters: CapabilityCluster[]
 
-  /** The thing at the centre: `IconGlassDXP` for the product map. */
+  /** The thing at the centre: `IconGlassDxp` for the product map. */
   hubIcon?: ReactNode
   /** The name under it. */
   hubLabel?: ReactNode
@@ -930,11 +930,11 @@ const DIRS: Record<string, [number, number]> = {
  *
  * ```tsx
  * <CapabilityMap
- *   hubIcon={<IconGlassDXP />}
+ *   hubIcon={<IconGlassDxp />}
  *   hubLabel="DXP"
  *   clusters={[
  *     { label: 'Commerce & Sales', items: [
- *       { label: 'PIM', icon: <IconGlassPIM />, href: '/pim' },
+ *       { label: 'PIM', icon: <IconGlassPim />, href: '/pim' },
  *       …four in all, read top, left, right, bottom
  *     ] },
  *     …four sections, clockwise from the top left

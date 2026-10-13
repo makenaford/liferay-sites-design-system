@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Stack, Text, Title } from '@mantine/core'
 import { Tabs } from './Tabs'
-import { IconGlassComposable, IconGlassDatabase, IconGlassMail } from '../../icons'
+import { IconGlassOutOfTheBox, IconGlassCdn, IconGlassMail } from '../../icons'
 
 /** The six tabs Figma draws in `Tabs Menu Bottom`, at their drawn labels. */
 const TABS = [
@@ -230,10 +230,10 @@ export const PillsWithIcons: Story = {
   render: (args) => (
     <Tabs {...args}>
       <Tabs.List grow>
-        <Tabs.Tab value="websites" leftSection={<IconGlassComposable />}>
+        <Tabs.Tab value="websites" leftSection={<IconGlassOutOfTheBox />}>
           Websites
         </Tabs.Tab>
-        <Tabs.Tab value="commerce" leftSection={<IconGlassDatabase />}>
+        <Tabs.Tab value="commerce" leftSection={<IconGlassCdn />}>
           Commerce
         </Tabs.Tab>
         <Tabs.Tab value="portals" leftSection={<IconGlassMail />}>

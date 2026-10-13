@@ -19,7 +19,7 @@ export interface MegaMenuProps {
  *     <MegaMenu.Heading>What are you looking to achieve?</MegaMenu.Heading>
  *     <MegaMenu.Columns>
  *       <MegaMenu.Column heading="Digital Experience">
- *         <MegaMenu.Item href="/platform" icon={<IconGlassComposable />} title="Platform Overview"
+ *         <MegaMenu.Item href="/platform" icon={<IconGlassOutOfTheBox />} title="Platform Overview"
  *           description="Explore the complete platform." />
  *       </MegaMenu.Column>
  *     </MegaMenu.Columns>

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CapabilityMap } from './CapabilityMap'
 import { PRODUCT_CLUSTERS } from '../../templates/product-map'
-import { IconGlassDXP } from '../../icons'
+import { IconGlassDxp } from '../../icons'
 
 const meta = {
   title: 'Components/CapabilityMap',
@@ -21,7 +21,7 @@ const meta = {
   parameters: { frame: { width: 1100 } },
   args: {
     clusters: PRODUCT_CLUSTERS,
-    hubIcon: <IconGlassDXP />,
+    hubIcon: <IconGlassDxp />,
     hubLabel: 'DXP',
   },
 } satisfies Meta<typeof CapabilityMap>
