@@ -825,12 +825,12 @@ const entries: Entry[] = [
     group: 'Media',
     hint: 'One of the 64px illustrations, with its own gradient.',
     spec: spec('GlassIcon', [
-      { name: 'name', kind: 'enum', options: glassNames, default: 'IconGlassComposable' },
+      { name: 'name', kind: 'enum', options: glassNames, default: 'IconGlassOutOfTheBox' },
       { name: 'size', kind: 'number', default: '40' },
     ]),
-    blank: () => seed('GlassIcon', { name: 'IconGlassComposable', size: 40 }),
+    blank: () => seed('GlassIcon', { name: 'IconGlassOutOfTheBox', size: 40 }),
     render: ({ props }) => {
-      const Glyph = icons[(props.name as string) ?? 'IconGlassComposable']
+      const Glyph = icons[(props.name as string) ?? 'IconGlassOutOfTheBox']
       if (!Glyph) return null
       const size = (props.size as number) ?? 40
       return <Glyph width={size} height={size} />
@@ -1009,7 +1009,7 @@ function cardSeed(): Seed {
     'Card',
     {},
     {
-      hero: [seed('GlassIcon', { name: 'IconGlassComposable', size: 40 })],
+      hero: [seed('GlassIcon', { name: 'IconGlassOutOfTheBox', size: 40 })],
       title: [heading('Card title', { level: 'h3' })],
       description: [paragraph('One or two lines about what this is.')],
     },

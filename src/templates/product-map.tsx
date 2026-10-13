@@ -2,16 +2,16 @@ import type { CapabilityCluster } from '../components/CapabilityMap'
 import {
   IconGlassAiHub,
   IconGlassAnalytics,
-  IconGlassCloudNativeExperience,
+  IconGlassCloudNative,
   IconGlassCommerce,
-  IconGlassContentManagement,
-  IconGlassContentMarketingPlatform,
+  IconGlassCms,
+  IconGlassCmp,
   IconGlassContentPerformance,
-  IconGlassDigitalSalesRooms,
+  IconGlassDsr,
   IconGlassIntegration,
-  IconGlassLiferayDataPlatform,
+  IconGlassLdp,
   IconGlassLowCode,
-  IconGlassPIM,
+  IconGlassPim,
   IconGlassPersonalization,
   IconGlassPremiumSecurity,
   IconGlassSearch,
@@ -63,7 +63,7 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
   {
     label: 'Commerce & Sales',
     items: [
-      { label: 'PIM', icon: <IconGlassPIM />, href: '#pim', description: 'Product Information Management' },
+      { label: 'PIM', icon: <IconGlassPim />, href: '#pim', description: 'Product Information Management' },
       {
         /*
          * A soft hyphen, because `hyphens: auto` cannot be relied on.
@@ -84,7 +84,7 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
         icon: <IconGlassPersonalization />,
         href: '#personalization',
       },
-      { label: 'DSR', icon: <IconGlassDigitalSalesRooms />, href: '#dsr', description: 'Digital Sales Rooms' },
+      { label: 'DSR', icon: <IconGlassDsr />, href: '#dsr', description: 'Digital Sales Rooms' },
       { label: 'Commerce', icon: <IconGlassCommerce />, href: '#commerce' },
     ],
   },
@@ -92,10 +92,10 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
     label: 'Content & Experience',
     items: [
       { label: 'Sites', icon: <IconGlassSites />, href: '#sites' },
-      { label: 'CMS', icon: <IconGlassContentManagement />, href: '#cms', description: 'Content Management System' },
+      { label: 'CMS', icon: <IconGlassCms />, href: '#cms', description: 'Content Management System' },
       {
         label: 'CMP',
-        icon: <IconGlassContentMarketingPlatform />,
+        icon: <IconGlassCmp />,
         href: '#cmp',
         description: 'Content Marketing Platform',
       },
@@ -113,7 +113,7 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
      */
     label: 'Intelligence &\nAI',
     items: [
-      { label: 'LDP', icon: <IconGlassLiferayDataPlatform />, href: '#ldp', description: 'Liferay Data Platform' },
+      { label: 'LDP', icon: <IconGlassLdp />, href: '#ldp', description: 'Liferay Data Platform' },
       { label: 'AI Hub', icon: <IconGlassAiHub />, href: '#ai-hub' },
       { label: 'Search', icon: <IconGlassSearch />, href: '#search' },
       { label: 'Analytics', icon: <IconGlassAnalytics />, href: '#analytics' },
@@ -122,7 +122,7 @@ export const PRODUCT_CLUSTERS: CapabilityCluster[] = [
   {
     label: 'Platform & Infrastructure',
     items: [
-      { label: 'Cloud Native', icon: <IconGlassCloudNativeExperience />, href: '#cloud-native' },
+      { label: 'Cloud Native', icon: <IconGlassCloudNative />, href: '#cloud-native' },
       { label: 'Security', icon: <IconGlassPremiumSecurity />, href: '#security' },
       { label: 'Low-Code', icon: <IconGlassLowCode />, href: '#low-code' },
       { label: 'Integration', icon: <IconGlassIntegration />, href: '#integration' },

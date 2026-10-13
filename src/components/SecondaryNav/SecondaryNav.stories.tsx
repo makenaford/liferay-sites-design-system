@@ -9,7 +9,7 @@ import { Section, SectionTitle } from '../Section'
 import { SiteFooter, SiteHeader } from '../../templates/shared'
 import bubbleCorner from '../../../assets/bubbles/bubble_corner.webm'
 import bubbleCornerLight from '../../../assets/bubbles/bubble_corner_light.webm'
-import { IconGlassCommerce, IconGlassContentManagement } from '../../icons/glass.generated'
+import { IconGlassCommerce, IconGlassCms } from '../../icons/glass.generated'
 import {
   IconChartLine,
   IconGroup,
@@ -133,7 +133,7 @@ const CMS_ITEMS: SecondaryNavItem[] = [
 
 /** The CMS bar's own props — the product swapped in over the Commerce defaults. */
 const CMS = {
-  icon: <IconGlassContentManagement size={32} />,
+  icon: <IconGlassCms size={32} />,
   title: 'CMS',
   items: CMS_ITEMS,
 }

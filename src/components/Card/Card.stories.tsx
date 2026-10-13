@@ -9,8 +9,8 @@ import { Stat, StatBar } from '../Stat'
 import {
   IconArrowRight,
   IconArrowUp,
-  IconGlassComposable,
-  IconGlassDatabase,
+  IconGlassOutOfTheBox,
+  IconGlassCdn,
   IconGlassMail,
 } from '../../icons'
 
@@ -220,7 +220,7 @@ export const IconLeft: Story = {
     <Box w={320} maw="100%">
       <Card
         {...args}
-        hero={<IconGlassComposable width={40} height={40} />}
+        hero={<IconGlassOutOfTheBox width={40} height={40} />}
         title="Card Title"
         description="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do."
       />
@@ -240,7 +240,7 @@ export const IconCenter: Story = {
       <Card
         {...args}
         headerAlign="center"
-        hero={<IconGlassDatabase width={40} height={40} />}
+        hero={<IconGlassCdn width={40} height={40} />}
         title="Card Title"
       />
     </Box>
@@ -288,7 +288,7 @@ export const CardExamples: Story = {
       />
       <Card
         {...args}
-        hero={<IconGlassComposable width={40} height={40} />}
+        hero={<IconGlassOutOfTheBox width={40} height={40} />}
         title="Icon-Left"
         description="No image, so the stack opens to 20px."
       />
@@ -384,7 +384,7 @@ export const NonClickableSurfaces: Story = {
           component="a"
           href="#"
           interactive
-          hero={<IconGlassComposable width={40} height={40} />}
+          hero={<IconGlassOutOfTheBox width={40} height={40} />}
           title="Clickable"
           description="The whole card is a link, so it wears the interactive surface."
         />
@@ -395,7 +395,7 @@ export const NonClickableSurfaces: Story = {
         </Text>
         <Card
           {...args}
-          hero={<IconGlassDatabase width={40} height={40} />}
+          hero={<IconGlassCdn width={40} height={40} />}
           title="Not clickable"
           description="Nothing to click, so no hairline to warm and no ring to show."
         />
@@ -418,7 +418,7 @@ export const NonClickableSurfaces: Story = {
         </Text>
         <Card
           {...args}
-          hero={<IconGlassComposable width={40} height={40} />}
+          hero={<IconGlassOutOfTheBox width={40} height={40} />}
           title="Buttons inside"
           description="A container with controls is not a clickable card."
           bottom={<Button size="sm">Book a demo</Button>}
@@ -487,7 +487,7 @@ export const Horizontal: Story = {
       {...args}
       align="horizontal"
       titleSize="full"
-      hero={<IconGlassComposable width={48} height={48} />}
+      hero={<IconGlassOutOfTheBox width={48} height={48} />}
       title="Financial Services"
       description="Unify client and advisor data, and ship the same experience to every channel."
       main={

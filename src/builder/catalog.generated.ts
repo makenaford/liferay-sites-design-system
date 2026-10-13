@@ -146,7 +146,7 @@ export const CATALOG: ComponentSpec[] = [
     name: "CapabilityMap",
     doc: "CapabilityMap — the product constellation from the homepage redesign (`Homepage Redesign`, node `7703:16084`): sixteen products in four sections of four, around the platform they all sit on.",
     props: [
-      { name: "hubIcon", kind: "slot", doc: "The thing at the centre: `IconGlassDXP` for the product map." },
+      { name: "hubIcon", kind: "slot", doc: "The thing at the centre: `IconGlassDxp` for the product map." },
       { name: "hubLabel", kind: "slot", default: "DXP", doc: "The name under it." },
       { name: "hubHref", kind: "text", doc: "Where the hub goes, if it is a target too." },
       { name: "wash", kind: "boolean", default: "true", doc: "The gradient behind the hub — the light the whole figure sits in." },
