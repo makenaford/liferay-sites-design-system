@@ -242,6 +242,11 @@ export interface CardSpec {
    * card's foot. At 100 it reads as complete.
    */
   progress?: number
+  /**
+   * A button at the card's foot — `View the Partner Directory`. A card with an action is not itself a
+   * link, so set this or `href`, not both.
+   */
+  action?: LinkRef
 }
 
 /** A figure and its unit — `140` + `%`, `+` + `100M`. */
@@ -267,11 +272,14 @@ export interface StatSpec {
 
 export interface StorySpec {
   customer: string
-  /** The figure and its unit — `140` + `%`, or `+` + `100M`. */
-  value: string
+  /**
+   * The figure and its unit — `140` + `%`, or `+` + `100M`. Optional: a partner testimonial has a
+   * quote and no figure, and the card then leads straight into the quote.
+   */
+  value?: string
   prefix?: string
   suffix?: string
-  label: string
+  label?: string
   quote: string
   name: string
   role: string
@@ -343,9 +351,11 @@ export type SectionSpec =
        * `Card Grid- Non Clickable` and the detail pages' feature grids, where six cards read as two rows
        * of three rather than a row of four and a stranded pair.
        *
+       * Two is a pair of large destination cards — Partner Home's `Explore the Liferay Ecosystem`.
+       *
        * @default 4
        */
-      columns?: 3 | 4
+      columns?: 2 | 3 | 4
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
@@ -406,6 +416,7 @@ export type SectionSpec =
    * of its heading. Anything that assumes a tail cannot draw that one.
    */
   titleHighlight?: string
+      description?: string
       stories: StorySpec[]
     }
   /**
@@ -500,6 +511,9 @@ export type SectionSpec =
    */
   | {
       type: 'statsBar'
+      /** A centred heading over the figures — Partner Home's `Join a Growing Global Ecosystem`. */
+      title?: string
+      description?: string
       stats: StatSpec[]
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
@@ -526,6 +540,7 @@ export type SectionSpec =
        * sanctions, so it belongs in the data — unlike a gap, which does not. @default 'right'
        */
       mediaSide?: 'left' | 'right'
+      /** With a single tab there is nothing to switch, so the pill bar is left out. */
       tabs: TabGroup<PanelSpec>[]
     }
   /**
