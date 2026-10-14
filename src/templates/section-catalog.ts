@@ -29,7 +29,7 @@ export const SECTION_TYPES: SectionType[] = [
   {
     type: 'cardGrid',
     label: 'Card grid',
-    hint: 'Four image cards, optionally behind a pill bar.',
+    hint: 'Two to four cards, optionally behind a pill bar.',
     blank: () => ({
       type: 'cardGrid',
       title: 'Section title',
@@ -287,7 +287,7 @@ export const SECTION_TYPES: SectionType[] = [
   {
     type: 'statsBar',
     label: 'Stats bar',
-    hint: 'A row of figures as a band of its own.',
+    hint: 'A row of figures as a band of its own, optionally under a centred heading.',
     blank: () => ({
       type: 'statsBar',
       stats: [

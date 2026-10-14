@@ -698,6 +698,10 @@ function GridCard({ card }: { card: CardSpec }) {
       bottom={
         card.progress !== undefined ? (
           <Progress value={card.progress} label={`${card.title} progress`} />
+        ) : card.action ? (
+          <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
+            {card.action.label}
+          </Button>
         ) : undefined
       }
     />
@@ -820,17 +824,20 @@ function StoryCard({ story }: { story: StorySpec }) {
           radius="sm"
         />
       }
+      /* A testimonial without a figure leads straight into the quote. */
       top={
-        <Stat
-          value={
-            <>
-              {story.prefix ? unit(story.prefix) : null}
-              {story.value}
-              {story.suffix ? unit(story.suffix) : null}
-            </>
-          }
-          label={story.label}
-        />
+        story.value ? (
+          <Stat
+            value={
+              <>
+                {story.prefix ? unit(story.prefix) : null}
+                {story.value}
+                {story.suffix ? unit(story.suffix) : null}
+              </>
+            }
+            label={story.label}
+          />
+        ) : undefined
       }
       description={`“${story.quote}”`}
       bottom={<Quotee name={story.name} title={story.role} />}
@@ -901,6 +908,7 @@ function CustomerStoriesSection({
         <SectionTitle
           align="center"
           title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
         />
       }
     >
@@ -979,6 +987,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
           * So the width steps with the count: the file's 776 up to three, and 1080 beyond, which is
           * five labels at the same padding and still inside the 1280 column.
           */}
+        {/* One tab is nothing to switch between, so the bar is left out and the panel stands alone. */}
+        {spec.tabs.length > 1 ? (
         <Tabs
           variant="pills"
           w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
@@ -998,6 +1008,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             ))}
           </Tabs.List>
         </Tabs>
+        ) : null}
 
         {panel ? (
           <ContentMedia
@@ -1473,7 +1484,12 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
  */
 function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBar' }> }) {
   return (
-    <Section spacing="tight">
+    <Section
+      spacing={spec.title ? undefined : 'tight'}
+      title={
+        spec.title ? <SectionTitle align="center" title={spec.title} description={spec.description} /> : undefined
+      }
+    >
       <StatBar align="center">{spec.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
     </Section>
   )
