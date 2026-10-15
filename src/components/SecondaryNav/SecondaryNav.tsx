@@ -120,7 +120,7 @@ export interface SecondaryNavProps
   offset?: number
   /**
    * A reading-progress bar along the bar's bottom edge: how far down the page the reader has scrolled,
-   * filled in the `Progress` bar's blue-into-aqua. For a long read — the blog draws it under its bar.
+   * in the gradient `Label`'s blue-into-purple. For a long read — the blog draws it under its bar.
    * Decorative, so it is hidden from assistive technology; the scroll position is already theirs.
    * @default false
    */
@@ -210,7 +210,7 @@ export function SecondaryNav({
 
   /*
    * Written to the element rather than through state: it changes on every scroll frame, and a re-render
-   * of the whole bar per frame would be for one transform.
+   * of the whole bar per frame would be for one clip.
    */
   useEffect(() => {
     if (!progress) return undefined
@@ -221,7 +221,7 @@ export function SecondaryNav({
       if (!el) return
       const room = document.documentElement.scrollHeight - window.innerHeight
       const fraction = room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)) : 0
-      el.style.transform = `scaleX(${fraction})`
+      el.style.setProperty('--sds-progress', String(fraction))
     }
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update)

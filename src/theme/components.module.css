@@ -12067,14 +12067,28 @@ a.secondaryNavTitle:focus-visible {
   pointer-events: none;
 }
 
+/*
+ * The gradient `Label`'s stops — `Brand/Primary/Primary` held to halfway, then out to `Accent/Product
+ * Accent` — laid across the whole width and *revealed* by a clip, not stretched by a scale. Scaled, the
+ * full blue-to-purple would squash into whatever length had been read; clipped, the purple only
+ * arrives as the reader nears the end.
+ */
 .secondaryNavProgress > span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--sds-brand-primary-primary), var(--sds-accent-aqua));
-  transform: scaleX(0);
-  transform-origin: left center;
+  background: linear-gradient(
+    to right,
+    var(--sds-brand-primary-primary) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  clip-path: inset(0 calc((1 - var(--sds-progress, 0)) * 100%) 0 0);
 }
 
 :global([dir='rtl']) .secondaryNavProgress > span {
-  transform-origin: right center;
+  background: linear-gradient(
+    to left,
+    var(--sds-brand-primary-primary) 50%,
+    var(--sds-accent-product-accent) 100%
+  );
+  clip-path: inset(0 0 0 calc((1 - var(--sds-progress, 0)) * 100%));
 }
