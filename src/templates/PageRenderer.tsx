@@ -9,7 +9,6 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  Title,
   useComputedColorScheme,
 } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
@@ -95,6 +94,7 @@ import {
   type StorySelection,
 } from './story-filters'
 import type {
+  ArticleBlock,
   CardSpec,
   GlassIconName,
   HeroSpec,
@@ -181,11 +181,23 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
 /** A value that is just a number, separators allowed — `1,200` yes, `24/7` and `A+` no. */
 const countable = (value: string) => /^\d[\d,]*(\.\d+)?$/.test(value.trim())
 
-function renderStat(stat: StatSpec, align?: 'center', index = 0) {
+/**
+ * `size` and `iconSide` are for the `Key Metrics` panel, whose `Stats Item` draws the arrow after the
+ * figure (`Show Stat Icon Right`) at the small size; everywhere else the arrow leads.
+ */
+function renderStat(
+  stat: StatSpec,
+  align?: 'center',
+  index = 0,
+  { size, iconSide = 'left' }: { size?: 'sm'; iconSide?: 'left' | 'right' } = {},
+) {
+  const icon =
+    stat.sentiment === 'negative' ? <IconArrowDown /> : stat.sentiment === 'positive' ? <IconArrowUp /> : undefined
   return (
     <Stat
       key={index}
       align={align}
+      size={size}
       value={
         <>
           {stat.prefix ? unit(stat.prefix) : null}
@@ -202,13 +214,8 @@ function renderStat(stat: StatSpec, align?: 'center', index = 0) {
       }
       label={stat.label}
       /* A win points up regardless of which way the number went; see `sentiment` in the schema. */
-      leftSection={
-        stat.sentiment === 'negative' ? (
-          <IconArrowDown />
-        ) : stat.sentiment === 'positive' ? (
-          <IconArrowUp />
-        ) : undefined
-      }
+      leftSection={iconSide === 'left' ? icon : undefined}
+      rightSection={iconSide === 'right' ? icon : undefined}
     />
   )
 }
@@ -460,6 +467,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       breadcrumb={hero.breadcrumbs?.length ? <Breadcrumbs trail={hero.breadcrumbs} /> : undefined}
+      label={hero.logo ? <img className={classes.heroLogo} src={hero.logo.src} alt={hero.logo.alt} /> : undefined}
       /*
        * The page's own arrival. A rendered page is a marketing page by definition — it is what this
        * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
@@ -538,6 +546,10 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       proof={
         hero.proof ? (
           renderProof(hero.proof)
+        ) : hero.readTime ? (
+          <Label variant="glass" size="md">
+            {hero.readTime}
+          </Label>
         ) : hero.byline || hero.tags?.length ? (
           <Stack gap={12}>
             {hero.byline ? <Byline byline={hero.byline} /> : null}
@@ -1590,6 +1602,66 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
  * `spacing="tight"` for the same reason `Highlight Text` uses it, and no title: the figures are the
  * claim, and a heading over them would be a second one.
  */
+/** One block of an article section's running content — see `ArticleBlock`. */
+function ArticleBlockView({ block }: { block: ArticleBlock }) {
+  switch (block.type) {
+    case 'paragraph':
+      return <p className={classes.articleParagraph}>{block.text}</p>
+    case 'list':
+      return (
+        <ol className={classes.articleList}>
+          {block.items.map((item, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <li key={i}>{item}</li>
+          ))}
+        </ol>
+      )
+    case 'quote':
+      return (
+        <figure className={classes.articleQuote}>
+          <span className={classes.articleQuoteMark} aria-hidden>
+            “
+          </span>
+          <div className={classes.articleQuoteBody}>
+            <blockquote>
+              <p>{emphasise(block.text, block.emphasis)}</p>
+            </blockquote>
+            <figcaption>
+              <span className={classes.articleQuoteName}>{block.name}</span>
+              {block.role ? <span className={classes.articleQuoteRole}>{block.role}</span> : null}
+            </figcaption>
+          </div>
+        </figure>
+      )
+    case 'image':
+      return (
+        <Image
+          className={classes.articleImage}
+          src={block.image.src}
+          alt={block.image.alt}
+          ratio={block.image.ratio ?? 'auto'}
+          radius="lg"
+        />
+      )
+    default:
+      return null
+  }
+}
+
+/** `text` with each of `phrases` wrapped in `strong`, in the order they appear. */
+function emphasise(text: string, phrases: string[] = []) {
+  if (!phrases.length) return text
+  const pattern = new RegExp(`(${phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+  return text.split(pattern).map((part, i) =>
+    phrases.includes(part) ? (
+      // eslint-disable-next-line react/no-array-index-key
+      <strong key={i}>{part}</strong>
+    ) : (
+      part
+    ),
+  )
+}
+
 /**
  * The blog post's body: a sticky `TableOfContents` beside an 800px column of sections, then the call to
  * action and the author. The outline's rows are the section titles, and it follows the reader itself.
@@ -1601,7 +1673,7 @@ function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article'
 
   return (
     <Section spacing="tight">
-      <div className={classes.article}>
+      <div className={classes.article} data-aside={spec.metrics ? 'metrics' : spec.featured ? 'featured' : undefined}>
         <div className={classes.articleOutline}>
           <TableOfContents
             label={spec.outlineLabel}
@@ -1612,27 +1684,27 @@ function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article'
         <div className={classes.articleBody}>
           {spec.sections.map((section, i) => (
             <section key={ids[i]} id={ids[i]} className={classes.articleSection}>
-              <Title order={2} size="h2">
-                {section.title}
-              </Title>
+              <h2 className={classes.articleHeading}>{section.title}</h2>
               {section.body?.map((paragraph, j) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <Text key={j} className={classes.articleParagraph}>
+                <p key={j} className={classes.articleParagraph}>
                   {paragraph}
-                </Text>
+                </p>
               ))}
               {section.points?.length ? <KeyPoints points={section.points} /> : null}
+              {section.blocks?.map((block, j) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <ArticleBlockView key={j} block={block} />
+              ))}
               {section.subsections?.map((sub, j) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <div key={j} className={classes.articleSubsection}>
-                  <Title order={3} size="h4">
-                    {sub.title}
-                  </Title>
+                  <h3 className={classes.articleSubheading}>{sub.title}</h3>
                   {sub.body.map((paragraph, k) => (
                     // eslint-disable-next-line react/no-array-index-key
-                    <Text key={k} className={classes.articleParagraph}>
+                    <p key={k} className={classes.articleParagraph}>
                       {paragraph}
-                    </Text>
+                    </p>
                   ))}
                 </div>
               ))}
@@ -1679,7 +1751,16 @@ function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article'
           ) : null}
         </div>
 
-        {spec.featured ? (
+        {/*
+          * `Key Metrics` — a glass panel, 20 padding and 8 corners, its bold uppercase 14px title 8 over a stacked
+          * `Stats Bar` (`Size=Small, Align=Vertical`).
+          */}
+        {spec.metrics ? (
+          <aside className={classes.articleMetrics} aria-label={spec.metrics.title}>
+            <span className={classes.articleMetricsTitle}>{spec.metrics.title}</span>
+            <StatBar>{spec.metrics.stats.map((stat, i) => renderStat(stat, undefined, i, { size: 'sm', iconSide: 'right' }))}</StatBar>
+          </aside>
+        ) : spec.featured ? (
           <aside className={classes.articleFeatured} aria-label={spec.featured.tag ?? 'Featured'}>
             <Card
               component="a"

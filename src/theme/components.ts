@@ -98,6 +98,20 @@ const LABEL_SIZES = {
   lg: { height: 40, paddingX: 16, fontSize: 16, lineHeight: 24, icon: 20, border: 2, radius: radius.round },
 } as const
 
+/**
+ * The glass `Size=Small` cell, which is not the gradient's: 26 tall, 4/8 padding, 8px corners, a 1.5px
+ * line and 14/125% semibold text — as the blog and customer-story heroes draw it (node `24920:103155`).
+ */
+const LABEL_GLASS_SM = {
+  height: 26,
+  paddingX: 8,
+  fontSize: 14,
+  lineHeight: '1.25',
+  icon: 16,
+  border: 1.5,
+  radius: radius.medium,
+} as const
+
 export type LabelThemeSize = keyof typeof LABEL_SIZES
 
 /** The label colour per variant. Constant across sizes in Figma. */
@@ -307,8 +321,8 @@ export const componentTheme: MantineThemeComponents = {
      */
     vars: (_theme, props) => {
       const size = (props.size ?? 'lg') as LabelThemeSize
-      const spec = LABEL_SIZES[size] ?? LABEL_SIZES.lg
       const variant = (props.variant ?? 'filled') as keyof typeof LABEL_TEXT_COLOR
+      const spec = variant === 'glass' && size === 'sm' ? LABEL_GLASS_SM : (LABEL_SIZES[size] ?? LABEL_SIZES.lg)
       const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.filled
 
       return {

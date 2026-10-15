@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
 import { SecondaryNav, type SecondaryNavItem } from '../components/SecondaryNav'
-import { IconGlassEducation } from '../icons'
+import { IconGlassBlogs } from '../icons'
 import { presetFor } from './page-presets'
 import type { PageSpec } from './page-schema'
 
@@ -190,7 +190,7 @@ export const Blog: Story = {
       {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
       <SecondaryNav
         title="Blogs"
-        icon={<IconGlassEducation size={32} />}
+        icon={<IconGlassBlogs size={32} />}
         titleHref="#"
         items={BLOG_NAV}
         progress
@@ -249,4 +249,25 @@ export const SectionBackdrop: Story = {
       </>
     )
   },
+}
+
+/**
+ * `Solutions Library` -> `Customer Story` (node `24179:45329`).
+ *
+ * The blog's `article` told about a customer: their logo over the hero heading and a read-time tag in
+ * place of a byline, and a `Key Metrics` panel down the right in place of the featured card. The
+ * sections mix paragraphs, numbered lists, a pull quote and a screenshot through `blocks`. The footer
+ * keeps its `Ready for the future?` band, as the frame draws it.
+ *
+ * The copy is the frame's own — a Yusen Logistics hero over SkyTV's write-up — and the metrics are its
+ * `845 Months to Launch` placeholder, three times.
+ */
+export const CustomerStory: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      <PageRenderer page={presetFor('customer-story')!.create()} />
+      <SiteFooter />
+    </>
+  ),
 }

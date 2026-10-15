@@ -1,6 +1,9 @@
 import heroMedia from '../../assets/home/hero-media.png'
 import blogHeroMedia from '../../assets/blog/hero-media.webp'
 import featuredMedia from '../../assets/home/trending/b2b-ecommerce.jpg'
+import customerStoryHero from '../../assets/customer-story/hero-media.jpg'
+import customerStoryImplementation from '../../assets/customer-story/implementation.jpg'
+import yusenLogo from '../../assets/customer-story/yusen-logistics-logo.png'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
 import resourceA from '../../assets/home/trending/ai-transformation.jpg'
 import resourceB from '../../assets/home/trending/digital-strategy.jpg'
@@ -475,6 +478,159 @@ export const PAGE_PRESETS: PagePreset[] = [
                   alt: 'A 3D render of a lit platform ringed by Create, Find, Share, Trust and Improve tiles',
                 },
               },
+            ],
+          }
+        })(),
+      ],
+    }),
+  },
+  {
+    id: 'customer-story',
+    label: 'Customer Story',
+    hint: 'One customer’s story: their logo, the outlined write-up, the figures beside it, then what to read next.',
+    create: () => ({
+      /*
+       * `Solutions Library` -> `Customer Story` (node `24179:45329`).
+       *
+       * The blog's article, told about a customer: their logo over the heading instead of a byline, and
+       * the `Key Metrics` panel down the right instead of a featured asset — the figures are the proof, so
+       * they stay in view while the reader works through how they were reached.
+       *
+       * The file's copy is carried over as drawn — a Yusen Logistics hero over SkyTV's write-up — and is
+       * the first thing to replace.
+       */
+      hero: {
+        background: 'full',
+        breadcrumbs: [
+          { label: 'Home', href: '#' },
+          { label: 'Customer Stories', href: '#' },
+          { label: 'Yusen Logistics', href: '#' },
+        ],
+        logo: { src: yusenLogo, alt: 'Yusen Logistics' },
+        title: { text: 'Yusen Logistics Transforms Global Freight Booking with Liferay' },
+        description: {
+          text: 'Enabling faster, more efficient freight booking through a centralized digital collaboration',
+        },
+        readTime: '2 Minute Read',
+        media: {
+          src: customerStoryHero,
+          alt: 'A container ship stacked with containers, guided by tugboats across open water',
+          ratio: '3:2',
+        },
+      },
+      sections: [
+        {
+          type: 'article',
+          outlineLabel: 'Table of contents',
+          metrics: {
+            title: 'Key Metrics',
+            stats: Array.from({ length: 3 }, () => ({
+              value: '845',
+              label: 'Months to Launch',
+              sentiment: 'positive' as const,
+            })),
+          },
+          sections: [
+            {
+              title: 'Key Takeaways',
+              blocks: [
+                {
+                  type: 'list',
+                  items: [
+                    'Redesigning your website with a more modern look and feel nets tangible benefits. With the new zero-touch end-to-end integration, easily searchable and continuously updated content display, and exclusive add-ons for subscribers, SkyTV has seen cart acquisition jump to over 7%.',
+                    'Offering more self-service options takes the pressure off customer service. Since SkyTV enabled customers to manage and make purchases from their own accounts, 140% more customer transactions are digitally self-serviced, and calls to the customer call center have decreased.',
+                    'Scaling is crucial for fast-paced, evolving markets. Previously, SkyTV deployed changes every three weeks, making scaling for special events difficult. Now, changes are deployed daily through Liferay DXP Cloud, and monitoring and high-availability environments ensure minimal downtime during peak hours.',
+                  ],
+                },
+              ],
+            },
+            {
+              title: 'Background',
+              body: [
+                'SkyTV is a Top 30 New Zealand-based digital broadcaster and telecom provider connecting over 1 million customers and counting with the entertainment they love on any device they want. They are serving both employees and retirees with the goal of guaranteeing affordable and responsible credit to enable customers to meet their daily expenses sustainably and improve their quality of life.',
+              ],
+            },
+            {
+              title: 'Challenges',
+              blocks: [
+                {
+                  type: 'paragraph',
+                  text: 'Hoping to continue their success as a dominant player in the streaming world, SkyTV decided to refresh their website.\n\nSkyTV wanted to resolve these challenges:',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Their website was dated and kept users from making purchasing decisions. Competitors had websites with a simplified UI and modern functionalities that made it easy for users to find what they need, but SkyTV’s website didn’t live up to increasing user expectations across the entire customer lifecycle.',
+                    'Call centers were burdened trying to manually support customers. The original website didn’t include many self-service options, which meant call center operators had to field every customer question and sale.',
+                    'A monolithic on-premise platform made scaling difficult. The existing CMS required slow, manual deployments and custom code, so maintenance was difficult and time-consuming, with deployments happening every three weeks. Special events, like PPV, saw an uptick in traffic that required easy scaling.',
+                  ],
+                },
+                {
+                  type: 'quote',
+                  text: 'With Liferay Experience Cloud SM, [Sky can] scale automatically or on a schedule a lot quicker than we could do before.',
+                  emphasis: ['scale automatically', 'a lot quicker'],
+                  name: 'Jacques Hefer',
+                  role: 'Solution Architect For SkyTV',
+                },
+              ],
+            },
+            {
+              title: 'Implementation',
+              blocks: [
+                {
+                  type: 'paragraph',
+                  text: 'SkyTV had already been leveraging some content management of the capabilities from Liferay on their website, the decision to migrate to Liferay Experience Cloud Managed (SM) for simplified deployment and the possibility of business made sense.\n\nIntergen assisted SkyTV through the rollout process, which took only ten months and happened in two phases. Critical to the success of the implementation was the Getting Started with DXP Cloud Journey.',
+                },
+                {
+                  type: 'image',
+                  image: {
+                    src: customerStoryImplementation,
+                    alt: 'The redesigned SkyTV site: a featured show banner over a grid of programmes',
+                  },
+                },
+              ],
+            },
+            {
+              title: 'Results',
+              blocks: [
+                {
+                  type: 'paragraph',
+                  text: 'Post Liferay Experience Cloud SM implementation, SkyTV’s and the development with operations teams have become better aligned by following a DevOps. This ensures that the IT team is more efficient and agile, able to meet business demands quickly.\n\nSkyTV has also reaped the following benefits:',
+                },
+                {
+                  type: 'list',
+                  items: [
+                    'Cart acquisition has increased to 7%. The website redesign includes an enhanced user experience and zero-touch end-to-end integration, with a content display that’s always updated and easy to browse as well as new and existing customer add-ons.',
+                    'Customer self-service has increased 140%. A new section of the website for logged in users called My Account offers self-service options for account management and purchases, reducing the number of call center calls.',
+                    'Customer self-service has increased 140%. A new section of the website for logged in users called My Account offers self-service options for account management and purchases, reducing the number of call center calls.',
+                  ],
+                },
+                {
+                  type: 'paragraph',
+                  text: 'With Liferay, SkyTV can continue offering their customers the ability to watch the entertainment they love and manage exactly what they want from their SkyTV subscription.',
+                },
+              ],
+            },
+          ],
+          cta: {
+            label: 'Label',
+            title: 'Liferay Recognized in the 2025 Gartner Critical Capabilities for DXPs Report',
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            href: '#',
+          },
+        },
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            title: 'Related Content',
+            description:
+              'Whether you drive campaigns, build infrastructure, or grow partnerships — Liferay empowers your success.',
+            card: 'resource' as const,
+            cards: [
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
+              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
             ],
           }
         })(),
