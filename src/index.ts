@@ -121,6 +121,15 @@ export {
   type StatAlign,
   type CountUpProps,
 } from './components/Stat'
+// TEST component for the Liferay DXP sync spike. Do not use or merge.
+export {
+  SpikeStat,
+  type SpikeStatProps,
+  type SpikeStatSize,
+  type SpikeStatTone,
+  type SpikeStatAlign,
+  type SpikeStatLayout,
+} from './components/SpikeStat'
 export { Tabs, type TabsProps } from './components/Tabs'
 export {
   TableOfContents,
