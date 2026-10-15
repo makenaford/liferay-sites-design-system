@@ -1609,6 +1609,101 @@
   letter-spacing: normal;
 }
 
+/* ------------------------------------------------------------------------------- spike stat
+ *
+ * TEST component for the Liferay DXP sync spike. Do not use or merge. A copy of the stat above with
+ * two additions: `data-size='hero'` (56px value) and `data-tone='gradient'` (blue-to-purple digits).
+ * Delete this section with `src/components/SpikeStat/` when the test is over.
+ */
+
+.spikeStat {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.spikeStat[data-align='center'] {
+  align-items: center;
+  text-align: center;
+}
+
+.spikeStat[data-layout='inline'] {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.spikeStat[data-layout='inline'][data-align='center'] {
+  justify-content: center;
+}
+
+.spikeStatValue {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  color: var(--sds-accent-primary-blue-accent);
+  font-weight: 600;
+  line-height: 1;
+  font-size: 40px;
+}
+
+.spikeStat[data-size='sm'] .spikeStatValue {
+  font-size: 32px;
+}
+
+/* The new hero size: a figure that leads a section. Tighter tracking keeps 56px digits compact. */
+.spikeStat[data-size='hero'] .spikeStatValue {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* The new gradient tone, painted through the digits. Icons keep the solid brand colour. */
+.spikeStat[data-tone='gradient'] .spikeStatValue > span:not([data-section]) {
+  background-image: linear-gradient(90deg, var(--sds-accent-primary-blue-accent), var(--sds-accent-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.spikeStatValue > [data-section] {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.spikeStatValue > [data-section] > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.spikeStatLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sds-surfaces-text-secondary);
+  font-weight: 600;
+  font-size: var(--sds-size-paragraph-small-caps-xs);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+:global(:lang(ja)) .spikeStatLabel {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.spikeStat[data-size='sm'] .spikeStatLabel {
+  font-size: var(--sds-size-paragraph-x-small);
+  line-height: var(--sds-line-height-paragraph-x-small);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 /* ------------------------------------------------------------------------------- the stat bar
  *
  * Figma's `Stats Bar`: a horizontal row with a 16px gap and a 1px gradient divider between the
