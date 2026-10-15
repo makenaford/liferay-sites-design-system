@@ -196,6 +196,13 @@ export interface HeroSpec {
   byline?: { name: string; avatar?: ImageRef; date?: string; readTime?: string }
   /** The post's topics, as glass tags in a row under the byline. */
   tags?: string[]
+  /**
+   * The customer's logo over the heading — the customer story's `Logo Container` (48px tall). Drawn
+   * white for the dark canvas; on light it is darkened, so one file serves both.
+   */
+  logo?: ImageRef
+  /** `2 Minute Read` — a medium glass tag under the description, for a page with no byline to carry it. */
+  readTime?: string
   media?: ImageRef
 }
 
@@ -221,7 +228,24 @@ export interface ArticleSectionSpec {
   points?: { title: string; description?: string }[]
   /** `Section/2` — a smaller heading inside the section. Not listed in the outline. */
   subsections?: { title: string; body: string[] }[]
+  /**
+   * The section's content as a run of blocks, in order, after `body` and `points` — for a section that
+   * mixes paragraphs with a numbered list, a quote or a picture, as the customer story's do.
+   */
+  blocks?: ArticleBlock[]
 }
+
+/** One piece of an article section's running content. */
+export type ArticleBlock =
+  | { type: 'paragraph'; text: string }
+  /** The numbered `Main List Item` run: `1.`, `2.`… beside each item, the text in secondary. */
+  | { type: 'list'; items: string[] }
+  /**
+   * `Quote Resources` — a pull quote with the accent quote mark. `emphasis` are phrases inside `text`
+   * set in semibold, as the file draws `scale automatically` and `a lot quicker`.
+   */
+  | { type: 'quote'; text: string; emphasis?: string[]; name: string; role?: string }
+  | { type: 'image'; image: ImageRef }
 
 /* ------------------------------------------------------------------ the sections */
 
@@ -582,6 +606,11 @@ export type SectionSpec =
        * glass card with a 3:2 picture, a gradient tag and the title, sticky as the reader scrolls.
        */
       featured?: { tag?: string; title: string; image?: ImageRef; href: string }
+      /**
+       * The customer story's `Key Metrics` panel down the right instead of a featured card: a small glass
+       * panel with a title over the figures, stacked with rules between. Set one or the other.
+       */
+      metrics?: { title: string; stats: StatSpec[] }
     }
   /**
    * Figma `Type=Tabbed- Content`. A centred title, a pill bar, and a content-and-media panel that the

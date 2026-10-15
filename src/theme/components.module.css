@@ -485,16 +485,25 @@
 }
 
 /*
- * `Style=Glass` — `Surfaces/Card BG/Translucent` under the `glass effect card` effect: a background
- * blur and the ambient shadow. No hairline; the set binds no stroke to this cell, and the edge you can
- * see in the file is the translucent fill against the dark ground rather than a border.
+ * `Style=Glass` — as the blog and customer-story heroes draw it (node `24920:103155`): a
+ * `Components/Glass Card/shadow` fill (black at 8%) behind a 1.5px hairline of white at 30%, under the
+ * `glass effect card` blur and ambient shadow. On the light canvas the hairline is the text colour at
+ * 20%, since white disappears against it.
  */
 .labelRoot[data-variant='glass'] {
-  background-color: var(--sds-surfaces-card-bg-translucent);
+  --sds-label-glass-line: rgb(255 255 255 / 0.3);
+  background-color: var(--sds-glass-shadow);
+  border-color: var(--sds-label-glass-line);
   backdrop-filter: blur(var(--sds-glass-blur));
   -webkit-backdrop-filter: blur(var(--sds-glass-blur));
   box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
 }
+
+:where([data-mantine-color-scheme='light']) .labelRoot[data-variant='glass'] {
+  --sds-label-glass-line: color-mix(in srgb, var(--sds-surfaces-text-primary) 20%, transparent);
+}
+
+/* The glass cell's small size is its own — 26 tall, 8px corners, a 1.5px line: `LABEL_GLASS_SM` in `components.ts`. */
 
 /*
  * `Style=Gradient` — no fill, and a gradient stroke running corner to corner: `Brand/Primary/Primary`
@@ -11767,6 +11776,15 @@ a.secondaryNavTitle:focus-visible {
   inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
 }
 
+/*
+ * The customer story's columns: the outline, the 700 reading column and a 200 metrics panel, 64 apart
+ * (80 / 344 / 1108 in the file) — the remainder of the 1280 left spare at the right.
+ */
+.article[data-aside='metrics'] {
+  grid-template-columns: 200px minmax(0, 700px) 200px;
+  column-gap: 64px;
+}
+
 .articleOutline {
   position: sticky;
   inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
@@ -11794,10 +11812,175 @@ a.secondaryNavTitle:focus-visible {
   margin-block-start: 24px;
 }
 
-.articleParagraph {
-  font-size: var(--sds-size-paragraph-base, 16px);
-  line-height: 1.4;
+/*
+ * `Header Section Asset` `Type=H1` — `Heading/F1` (37 at desktop), semibold, 125%. Scoped to the section,
+ * so it outranks Mantine's own `Title` rule at the same weight.
+ */
+.articleSection .articleHeading {
+  margin: 0;
+  font-size: var(--sds-size-heading-f1);
+  line-height: 1.25;
+  font-weight: 600;
   color: var(--sds-surfaces-text-primary);
+}
+
+/* `Section/2`'s heading — `Heading/F3` (28 at desktop). */
+.articleSection .articleSubheading {
+  margin: 0;
+  font-size: var(--sds-size-heading-f3);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* `Description` — 18/125%. No 18px paragraph token exists; `List` takes the same literal. Scoped, as above. */
+.articleSection .articleParagraph {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+  white-space: pre-line;
+}
+
+/* The numbered `Main List Item` run: `1.` in an 24px column 8 from the text, items 20 apart, secondary. */
+.articleList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 4px 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sds-article-list;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.articleList > li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: 8px;
+  counter-increment: sds-article-list;
+}
+
+.articleList > li::before {
+  content: counter(sds-article-list) '.';
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * `Quote Resources` — 40 above and below, then the accent `“”` mark 12 from a 28px quote with its
+ * emphasised phrases in semibold, and the attribution 16 under it.
+ */
+.articleQuote {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 64px 0;
+}
+
+.articleQuoteMark {
+  flex: none;
+  width: 34px;
+  font-size: 72px;
+  line-height: 0.75;
+  font-weight: 700;
+  color: var(--sds-accent-product-accent);
+}
+
+.articleQuoteBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.articleQuoteBody blockquote,
+.articleQuoteBody p {
+  margin: 0;
+}
+
+.articleQuoteBody p {
+  font-size: var(--sds-size-heading-f3);
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.articleQuoteBody strong {
+  font-weight: 600;
+}
+
+.articleQuoteBody figcaption {
+  display: flex;
+  flex-direction: column;
+}
+
+.articleQuoteName {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.articleQuoteRole {
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.articleImage {
+  margin-block: 24px;
+}
+
+/* `Key Metrics`: the glass panel and its bold 14px title. */
+.articleMetrics {
+  position: sticky;
+  inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 8px;
+  /* The glass card's own surface — its step gradient, blur and lit top edge — with the file's hairline. */
+  border: 1px solid var(--sds-glass-line-from);
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+  backdrop-filter: blur(var(--sds-glass-blur));
+  -webkit-backdrop-filter: blur(var(--sds-glass-blur));
+  box-shadow:
+    inset 0 1px 0 var(--sds-card-lit-edge),
+    var(--sds-card-cast-shadow);
+}
+
+.articleMetricsTitle {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The `Align=Vertical` cell at any width: stacked, with horizontal rules, 8 apart. */
+.articleMetrics .statBar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.articleMetrics .statBar > .statBarDivider {
+  width: auto;
+  height: 1px;
+}
+
+/* The customer's logo over the hero heading — white for dark, darkened for light. */
+.heroLogo {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+
+:where([data-mantine-color-scheme='light']) .heroLogo {
+  filter: brightness(0);
 }
 
 .articleCta {
@@ -11870,6 +12053,11 @@ a.secondaryNavTitle:focus-visible {
     grid-template-columns: minmax(0, 1fr) 300px;
   }
 
+  .article[data-aside='metrics'] {
+    grid-template-columns: minmax(0, 1fr) 200px;
+    column-gap: 40px;
+  }
+
   .articleOutline {
     display: none;
   }
@@ -11882,7 +12070,12 @@ a.secondaryNavTitle:focus-visible {
     row-gap: 40px;
   }
 
-  .articleFeatured {
+  .article[data-aside='metrics'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .articleFeatured,
+  .articleMetrics {
     position: static;
     max-width: 400px;
   }
@@ -11932,7 +12125,7 @@ a.secondaryNavTitle:focus-visible {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--sds-size-paragraph-small, 14px);
+  font-size: 14px;
   line-height: 1.25;
   color: var(--sds-surfaces-text-secondary);
 }
