@@ -127,6 +127,11 @@ export interface HeroSpec {
    */
   align?: 'left' | 'center'
   banner?: HeroBanner
+  /**
+   * The trail above the heading — where this page sits, from the top. The last entry is the page
+   * itself: it is drawn as text, not a link, and marked as the current page.
+   */
+  breadcrumbs?: LinkRef[]
   title: Headline
   /** The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. */
   description: { text: string; emphasis?: string }
@@ -184,7 +189,38 @@ export interface HeroSpec {
   action?: LinkRef
   /** The Gartner rating and the compliance marks. */
   proof?: { rating?: { score: string; outOf: number; source: string }; marks?: string[] }
+  /**
+   * Who wrote it and when — the blog hero's `Author` row under the lead paragraph: a small portrait,
+   * the name, the date and the read time, dot-separated. Without `avatar` the portrait is initials.
+   */
+  byline?: { name: string; avatar?: ImageRef; date?: string; readTime?: string }
+  /** The post's topics, as glass tags in a row under the byline. */
+  tags?: string[]
   media?: ImageRef
+}
+
+/** The person under a post — the blog's `Author` card at the foot of the article. */
+export interface AuthorSpec {
+  name: string
+  /** The job title, set in small caps under the name. */
+  title?: string
+  /** Without one, the portrait is the name's initials. */
+  avatar?: ImageRef
+}
+
+/**
+ * One heading's worth of an article. `nav` is the shorter name the outline lists it under — the file
+ * titles the first section `Key Points` and lists it as `Key Takeaways`.
+ */
+export interface ArticleSectionSpec {
+  title: string
+  nav?: string
+  /** Paragraphs, in order. */
+  body?: string[]
+  /** The checked `Key Point Main List`, under the paragraphs. */
+  points?: { title: string; description?: string }[]
+  /** `Section/2` — a smaller heading inside the section. Not listed in the outline. */
+  subsections?: { title: string; body: string[] }[]
 }
 
 /* ------------------------------------------------------------------ the sections */
@@ -372,6 +408,13 @@ export type SectionSpec =
       description?: string
       /** The button on the heading's trailing edge — `Additional Resources` draws one. */
       action?: LinkRef
+      /**
+       * Which card the grid is made of. `resource` is Figma's `Common Cards` `Type=Resource` — the
+       * `Resource Card Default` the blog's Related Content draws: no surface, a 3:2 picture with 8px
+       * corners and a faint blue hairline, the tag, then the title. Without it, cards are the glass
+       * kind the Home page's grids use. @default 'glass'
+       */
+      card?: 'glass' | 'resource'
       cards: CardSpec[]
     }
   /**
@@ -518,6 +561,28 @@ export type SectionSpec =
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
   | { type: 'logoMarquee'; label: string; logos: string[] }
+  /**
+   * The blog post's body — `Solutions Library` -> `Blog` (node `24223:173039`). A sticky outline on
+   * the left that follows the reader, an 800px column of headed sections on the right, then a call to
+   * action card and the author.
+   *
+   * The outline is not data: it is the section titles (or their `nav`), so it cannot drift from the
+   * headings it points at.
+   */
+  | {
+      type: 'article'
+      /** The outline's eyebrow. @default 'Outline' */
+      outlineLabel?: string
+      sections: ArticleSectionSpec[]
+      /** The `Call to Action` card under the last section — a label, a headline, a line and an arrow. */
+      cta?: { label?: string; title: string; description?: string; href: string }
+      author?: AuthorSpec
+      /**
+       * The card down the right of the article — the blog's `Featured Asset` (node `24918:81870`): a
+       * glass card with a 3:2 picture, a gradient tag and the title, sticky as the reader scrolls.
+       */
+      featured?: { tag?: string; title: string; image?: ImageRef; href: string }
+    }
   /**
    * Figma `Type=Tabbed- Content`. A centred title, a pill bar, and a content-and-media panel that the
    * bar swaps. Covers both of the Home page's tabbed sections.

@@ -118,6 +118,13 @@ export interface SecondaryNavProps
    * condensed. Without a header it sticks at the top.
    */
   offset?: number
+  /**
+   * A reading-progress bar along the bar's bottom edge: how far down the page the reader has scrolled,
+   * filled in the `Progress` bar's blue-into-aqua. For a long read — the blog draws it under its bar.
+   * Decorative, so it is hidden from assistive technology; the scroll position is already theirs.
+   * @default false
+   */
+  progress?: boolean
 }
 
 const isFragment = (href?: string): href is `#${string}` =>
@@ -193,11 +200,42 @@ export function SecondaryNav({
   sticky = true,
   replaceHeader = true,
   offset,
+  progress = false,
   className,
   style,
   'aria-label': ariaLabel,
   ...props
 }: SecondaryNavProps) {
+  const progressRef = useRef<HTMLSpanElement>(null)
+
+  /*
+   * Written to the element rather than through state: it changes on every scroll frame, and a re-render
+   * of the whole bar per frame would be for one transform.
+   */
+  useEffect(() => {
+    if (!progress) return undefined
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const el = progressRef.current
+      if (!el) return
+      const room = document.documentElement.scrollHeight - window.innerHeight
+      const fraction = room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)) : 0
+      el.style.transform = `scaleX(${fraction})`
+    }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [progress])
+
   const [open, setOpen] = useState<string | null>(defaultOpen)
   /*
    * The phone menu — whether the sheet is down, and which section is expanded inside it. Separate from
@@ -605,6 +643,12 @@ export function SecondaryNav({
           <IconDown aria-hidden />
         </UnstyledButton>
       </div>
+
+      {progress ? (
+        <div className={classes.secondaryNavProgress} aria-hidden>
+          <span ref={progressRef} />
+        </div>
+      ) : null}
 
       {/*
        * The phone menu — `Mobile- Opened`. A sheet under the bar with a row per section; a section with

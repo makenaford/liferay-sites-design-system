@@ -122,6 +122,11 @@ export {
   type CountUpProps,
 } from './components/Stat'
 export { Tabs, type TabsProps } from './components/Tabs'
+export {
+  TableOfContents,
+  type TableOfContentsProps,
+  type TableOfContentsItem,
+} from './components/TableOfContents'
 
 /**
  * Page templates as data. `PageSpec` describes a page at the level of whole sections — the Home page

@@ -381,7 +381,14 @@ export function SiteHeader({
 }
 
 /** `LRDC footer` — the action band, the disclaimers, the numbers and the link grid. */
-export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterContent } = {}) {
+export function SiteFooter({
+  content = FOOTER_CONTENT,
+  cta = true,
+}: {
+  content?: FooterContent
+  /** The `Ready for the future?` band over the links. Off for a page that has made its own ask — a blog post. */
+  cta?: boolean
+} = {}) {
   /*
    * Colour pools along the foot of the link band — aqua up the left edge, violet in the lower left
    * corner, sky across the bottom and brand blue in the lower right. That is a live mesh rather than a
@@ -394,6 +401,7 @@ export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterConte
   <Footer
     backdrop={<Footer.Mesh />}
     cta={
+      cta ? (
       <Stack gap={40} maw={1280} mx="auto">
         <Stack gap={32} align="center">
           <SectionTitle
@@ -472,6 +480,7 @@ export function SiteFooter({ content = FOOTER_CONTENT }: { content?: FooterConte
           ))}
         </Stack>
       </Stack>
+      ) : undefined
     }
     stats={
       <Box maw={1280} mx="auto">

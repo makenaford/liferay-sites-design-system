@@ -216,6 +216,40 @@ export const SECTION_TYPES: SectionType[] = [
     }),
   },
   {
+    type: 'article',
+    label: 'Article',
+    hint: 'A blog post body: a sticky outline beside headed sections, a call to action and the author.',
+    blank: () => ({
+      type: 'article',
+      sections: [
+        {
+          title: 'Key Points',
+          nav: 'Key Takeaways',
+          points: Array.from({ length: 3 }, () => ({
+            title: 'Key Point Main List',
+            description: 'Short description here',
+          })),
+        },
+        { title: 'Section Title', nav: 'Background', body: [LOREM] },
+        {
+          title: 'Section Title',
+          nav: 'Challenges',
+          body: [LOREM],
+          subsections: [{ title: 'Subsection Title', body: [LOREM] }],
+        },
+        { title: 'Section Title', nav: 'Results', body: [LOREM] },
+      ],
+      cta: {
+        label: 'Label',
+        title: 'Liferay Recognized in the 2025 Gartner Critical Capabilities for DXPs Report',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        href: '#',
+      },
+      author: { name: 'Author Name', title: 'This is the author title' },
+      featured: { tag: 'Featured Asset', title: 'Card Title', href: '#' },
+    }),
+  },
+  {
     type: 'customerStory',
     label: 'Customer story',
     hint: 'One story as a wide card: the logo, the figures and a link.',

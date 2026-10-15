@@ -5180,13 +5180,52 @@ html:has(.headerShell[data-position='fixed']) {
  * 1440 container, and a scrollbar alone leaves a 1440 window a pixel short of that.
  */
 body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
-  padding-block-start: calc(65px + clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+  padding-block-start: var(
+    --sds-hero-inner-top,
+    calc(var(--sds-hero-chrome, 65px) + clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px))
+  );
 }
 
 @media (min-width: 1200px) {
   body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .heroInner {
-    padding-block-start: calc(65px + 80px);
+    padding-block-start: var(--sds-hero-inner-top, calc(var(--sds-hero-chrome, 65px) + 80px));
   }
+}
+
+/*
+ * A product bar between the header and the hero. The hero reaches up behind both, as the file draws the
+ * blog's — the bubble runs to the top of the page — so it starts the bar's 65 + 64 higher and counts
+ * both as the chrome its content clears.
+ */
+.secondaryNav + .hero {
+  --sds-hero-chrome: calc(65px + 64px);
+  margin-block-start: calc(-1 * var(--sds-hero-chrome));
+}
+
+/*
+ * The breadcrumb row: 20px under the chrome, the columns 80px under the chrome — so 42 between the
+ * row's 18px of text and the columns. The chrome is paid here, so the columns take none of it.
+ */
+.heroBreadcrumb {
+  position: relative;
+  /* A column flex item with auto margins shrinks to its content; the row has to span the column. */
+  width: 100%;
+  max-width: calc(1280px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
+  margin: 0 auto;
+  padding-block-start: 20px;
+  padding-inline: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
+}
+
+body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
+  padding-block-start: calc(var(--sds-hero-chrome, 65px) + 20px);
+}
+
+.hero[data-with-breadcrumb] {
+  --sds-hero-inner-top: 42px;
+}
+
+.hero[data-with-breadcrumb] .heroInner {
+  padding-block-start: var(--sds-hero-inner-top);
 }
 
 .heroBanner {
@@ -11706,4 +11745,336 @@ a.secondaryNavTitle:focus-visible {
 /* The file draws the check in white on dark — the primary text colour, so it inverts on light. */
 .progress[data-state='completed'] .progressValue {
   color: var(--sds-surfaces-text-primary);
+}
+
+/* ------------------------------------------------------------------ the blog article */
+
+/*
+ * `Solutions Library` -> `Blog`: a 200px outline, the 700px reading column and a 300px featured card,
+ * 40px apart — 1280 exactly. Without a featured card the reading column keeps its 700 measure and the
+ * remainder stays spare, as the file draws it — a measure, not a fill.
+ */
+.article {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 700px) 300px;
+  column-gap: 40px;
+  align-items: start;
+}
+
+/* Sticky beside the article, at the same line as the outline. */
+.articleFeatured {
+  position: sticky;
+  inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
+}
+
+.articleOutline {
+  position: sticky;
+  inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
+}
+
+.articleBody {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-block-start: 40px;
+}
+
+.articleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Lands a followed anchor under the fixed header rather than behind it. */
+  scroll-margin-block-start: calc(var(--sds-header-offset, 64px) + 24px);
+}
+
+.articleSubsection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block-start: 24px;
+}
+
+.articleParagraph {
+  font-size: var(--sds-size-paragraph-base, 16px);
+  line-height: 1.4;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.articleCta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 16px;
+  border: 1px solid var(--sds-card-static-line);
+  border-radius: 8px;
+  color: var(--sds-surfaces-text-primary);
+  text-decoration: none;
+  transition: border-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.articleCta:hover {
+  border-color: var(--sds-brand-primary-primary);
+}
+
+.articleCtaText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.articleCtaArrow {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.articleAuthor {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.articleAuthorText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* `Title` — 18/125% semibold, `Surfaces/Text/Primary`. */
+.articleAuthorName {
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* `Subtitle` — 14/20 semibold, 6% tracking, uppercase, `Surfaces/Text/Secondary`. */
+.articleAuthorTitle {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* Japanese sets no small caps; the same reasoning as `.quoteeTitle`. */
+:global(:lang(ja)) .articleAuthorTitle {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Under 1200 the three columns stop fitting: the outline goes first, the reading column and card stay. */
+@media (max-width: 75em) {
+  .article {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .articleOutline {
+    display: none;
+  }
+}
+
+/* Then one column: the featured card drops under the article, where it is still worth reaching. */
+@media (max-width: 62em) {
+  .article {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 40px;
+  }
+
+  .articleFeatured {
+    position: static;
+    max-width: 400px;
+  }
+
+  .articleBody {
+    padding-block-start: 0;
+  }
+}
+
+.heroByline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.heroBylineAuthor {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* The file's `dot divider`: a 4px dot in the text colour, 12px either side. */
+.heroBylinePart {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.heroBylinePart::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* The hero's trail. `/` between entries, drawn by the list rather than typed into the data. */
+.heroBreadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--sds-size-paragraph-small, 14px);
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.heroBreadcrumbs li {
+  display: flex;
+  gap: 4px;
+}
+
+.heroBreadcrumbs li + li::before {
+  content: '/';
+}
+
+.heroBreadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.heroBreadcrumbs a:hover {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.heroBreadcrumbs [aria-current] {
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* =====================================================================================
+ * TableOfContents — Figma `Table of Contents` (node `17927:12691`) and its `Toc Item` set
+ *
+ *   outline   14/20, 6% tracking, uppercase, `Surfaces/Text/Secondary`, 16 over the rows
+ *   Toc Item  a 3px rail, 12 gap, 16/20 text with 16 above and below
+ *             Default: a 1px `Neutral/03` line centred in the rail, text `Surfaces/Text/Secondary`
+ *             Active:  the full 3px in `Brand/Primary/Primary`, text `Surfaces/Text/Primary`
+ * ===================================================================================== */
+
+.toc {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tocLabel {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.tocList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tocItem {
+  position: relative;
+  display: block;
+  /* The 3px rail and the 12px gap beside it. */
+  padding: 16px 0 16px 15px;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--sds-surfaces-text-secondary);
+  text-decoration: none;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+/* The rail. Rows stack with no gap, so the default lines join into one rule. */
+.tocItem::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 1px;
+  width: 1px;
+  background: var(--sds-neutral-03);
+  transition:
+    background-color var(--sds-motion-fast) var(--sds-motion-ease),
+    width var(--sds-motion-fast) var(--sds-motion-ease),
+    inset-inline-start var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.tocItem:hover {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tocItem:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.tocItem[data-active] {
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tocItem[data-active]::before {
+  inset-inline-start: 0;
+  width: 3px;
+  background: var(--sds-brand-primary-primary);
+}
+
+/* The resource card's picture — `Common Cards` `Type=Resource`: 8px corners and a 20% `#6FA0FF` hairline. */
+.resourceCardImage {
+  position: relative;
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+
+/* Over the picture rather than around it, so the line sits on the image's edge as drawn. */
+.resourceCardImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(111 160 255 / 0.2);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/*
+ * `SecondaryNav` `progress` — a 3px reading-progress bar hanging from the bar's bottom edge, so it reads
+ * as part of the bar wherever the bar is: resting under the header, stuck, or in the header's place.
+ */
+.secondaryNavProgress {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  height: 3px;
+  pointer-events: none;
+}
+
+.secondaryNavProgress > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--sds-brand-primary-primary), var(--sds-accent-aqua));
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+:global([dir='rtl']) .secondaryNavProgress > span {
+  transform-origin: right center;
 }

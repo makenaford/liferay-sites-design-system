@@ -180,7 +180,13 @@ export interface HeroProps extends BoxProps, Omit<ElementProps<'section'>, 'titl
    * it, not an afterthought.
    */
   banner?: ReactNode
-  /** Above the heading — a `Label`, an eyebrow, a breadcrumb. */
+  /**
+   * The trail at the top of the hero, on a row of its own above both columns — the blog's `Breadcrumb`
+   * (node `24920:83125`), 20px under the bar with the columns 80px under it. Distinct from `label`,
+   * which sits in the text column directly over the heading.
+   */
+  breadcrumb?: ReactNode
+  /** Above the heading — a `Label`, an eyebrow. */
   label?: ReactNode
   /**
    * The heading. Pass a real `h1` — the hero does not choose a heading level for you, because only the
@@ -466,6 +472,7 @@ export function Hero({
   videoPoster,
   align = 'left',
   banner,
+  breadcrumb,
   label,
   title,
   description,
@@ -547,6 +554,7 @@ export function Hero({
       data-entrance={entrance || undefined}
       data-with-media={media ? true : undefined}
       data-with-banner={banner ? true : undefined}
+      data-with-breadcrumb={breadcrumb ? true : undefined}
       {...props}
     >
       {background === 'none' ? null : (
@@ -610,6 +618,7 @@ export function Hero({
       )}
 
       {banner ? <div className={classes.heroBanner}>{banner}</div> : null}
+      {breadcrumb ? <div className={classes.heroBreadcrumb}>{breadcrumb}</div> : null}
 
       <div className={classes.heroInner}>
         <div className={classes.heroContent}>

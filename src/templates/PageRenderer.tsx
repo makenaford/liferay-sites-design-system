@@ -1,7 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
-import { Button as MantineButton, Checkbox, Group, SimpleGrid, Stack, Text, useComputedColorScheme } from '@mantine/core'
+import {
+  Avatar,
+  Button as MantineButton,
+  Checkbox,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+  useComputedColorScheme,
+} from '@mantine/core'
 import { Accordion } from '../components/Accordion'
 import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
@@ -23,6 +33,7 @@ import { Marquee } from '../components/Marquee'
 import { ContentMedia, Section as SDSSection, SectionTitle, type SectionProps } from '../components/Section'
 import { Stat, StatBar, CountUp } from '../components/Stat'
 import { Tabs } from '../components/Tabs'
+import { TableOfContents } from '../components/TableOfContents'
 import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
@@ -88,6 +99,7 @@ import type {
   GlassIconName,
   HeroSpec,
   ImageRef,
+  LinkRef,
   IconName,
   PageSpec,
   PanelSpec,
@@ -447,6 +459,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
+      breadcrumb={hero.breadcrumbs?.length ? <Breadcrumbs trail={hero.breadcrumbs} /> : undefined}
       /*
        * The page's own arrival. A rendered page is a marketing page by definition — it is what this
        * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
@@ -522,7 +535,24 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
           </>
         ) : undefined
       }
-      proof={hero.proof ? renderProof(hero.proof) : undefined}
+      proof={
+        hero.proof ? (
+          renderProof(hero.proof)
+        ) : hero.byline || hero.tags?.length ? (
+          <Stack gap={12}>
+            {hero.byline ? <Byline byline={hero.byline} /> : null}
+            {hero.tags?.length ? (
+              <Group gap={8}>
+                {hero.tags.map((tag) => (
+                  <Label key={tag} variant="glass" size="sm">
+                    {tag}
+                  </Label>
+                ))}
+              </Group>
+            ) : null}
+          </Stack>
+        ) : undefined
+      }
       /* A form card takes the media column: the file draws one or the other there, never both. */
       media={
         hero.formCard ? (
@@ -569,6 +599,46 @@ function HeroSearch({ search }: { search: NonNullable<HeroSpec['search']> }) {
         </Group>
       ) : null}
     </form>
+  )
+}
+
+/** The hero's trail: links up to the last entry, which is this page and so is text. */
+function Breadcrumbs({ trail }: { trail: LinkRef[] }) {
+  return (
+    <nav aria-label="Breadcrumb">
+      <ol className={classes.heroBreadcrumbs}>
+        {trail.map((crumb, i) => (
+          <li key={`${crumb.label}-${i}`}>
+            {i < trail.length - 1 ? (
+              <a href={crumb.href}>{crumb.label}</a>
+            ) : (
+              <span aria-current="page">{crumb.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+/**
+ * The blog hero's `Author` `Type=Row`: a 36px portrait 16px from the name, then the date and read time,
+ * each behind a 4px `dot divider`, 12 apart and all 16px semibold in `Surfaces/Text/Primary`. It takes the
+ * proof slot — a post has an author where a landing page has a rating.
+ */
+function Byline({ byline }: { byline: NonNullable<HeroSpec['byline']> }) {
+  return (
+    <div className={classes.heroByline}>
+      <span className={classes.heroBylineAuthor}>
+        <Avatar src={byline.avatar?.src} alt="" name={byline.name} size={36} color="blue" variant="filled" />
+        {byline.name}
+      </span>
+      {[byline.date, byline.readTime].filter(Boolean).map((part) => (
+        <span key={part} className={classes.heroBylinePart}>
+          {part}
+        </span>
+      ))}
+    </div>
   )
 }
 
@@ -781,10 +851,48 @@ function ResourceGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'res
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
         {spec.cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
-          <GridCard key={`${card.title}-${i}`} card={card} />
+          spec.card === 'resource' ? (
+            // eslint-disable-next-line react/no-array-index-key
+            <ResourceCard key={`${card.title}-${i}`} card={card} />
+          ) : (
+            // eslint-disable-next-line react/no-array-index-key
+            <GridCard key={`${card.title}-${i}`} card={card} />
+          )
         ))}
       </SimpleGrid>
     </Section>
+  )
+}
+
+/**
+ * `Common Cards` `Type=Resource` — the same `Card` its Code Connect mapping draws: no surface and no
+ * padding, so the picture is the card's face and the tag and title sit under it on the page itself.
+ */
+function ResourceCard({ card }: { card: CardSpec }) {
+  return (
+    <Card
+      component={card.href ? 'a' : 'div'}
+      href={card.href}
+      interactive={Boolean(card.href)}
+      surface="none"
+      padding="none"
+      image={
+        card.image ? (
+          <div className={classes.resourceCardImage}>
+            <Image src={card.image.src} alt={card.image.alt} ratio="3:2" />
+          </div>
+        ) : undefined
+      }
+      hero={
+        card.tag ? (
+          <Label variant="gradient" size="sm">
+            {card.tag}
+          </Label>
+        ) : undefined
+      }
+      title={card.title}
+      description={card.description}
+    />
   )
 }
 
@@ -1482,6 +1590,125 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
  * `spacing="tight"` for the same reason `Highlight Text` uses it, and no title: the figures are the
  * claim, and a heading over them would be a second one.
  */
+/**
+ * The blog post's body: a sticky `TableOfContents` beside an 800px column of sections, then the call to
+ * action and the author. The outline's rows are the section titles, and it follows the reader itself.
+ */
+function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article' }> }) {
+  /* Prefixed per instance, so two articles on one page cannot share an anchor. */
+  const prefix = `article-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const ids = spec.sections.map((_, i) => `${prefix}-${i}`)
+
+  return (
+    <Section spacing="tight">
+      <div className={classes.article}>
+        <div className={classes.articleOutline}>
+          <TableOfContents
+            label={spec.outlineLabel}
+            items={spec.sections.map((section, i) => ({ label: section.nav ?? section.title, href: `#${ids[i]}` }))}
+          />
+        </div>
+
+        <div className={classes.articleBody}>
+          {spec.sections.map((section, i) => (
+            <section key={ids[i]} id={ids[i]} className={classes.articleSection}>
+              <Title order={2} size="h2">
+                {section.title}
+              </Title>
+              {section.body?.map((paragraph, j) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <Text key={j} className={classes.articleParagraph}>
+                  {paragraph}
+                </Text>
+              ))}
+              {section.points?.length ? <KeyPoints points={section.points} /> : null}
+              {section.subsections?.map((sub, j) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={j} className={classes.articleSubsection}>
+                  <Title order={3} size="h4">
+                    {sub.title}
+                  </Title>
+                  {sub.body.map((paragraph, k) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <Text key={k} className={classes.articleParagraph}>
+                      {paragraph}
+                    </Text>
+                  ))}
+                </div>
+              ))}
+            </section>
+          ))}
+
+          {spec.cta ? (
+            <a href={spec.cta.href} className={classes.articleCta}>
+              {spec.cta.label ? (
+                <Label variant="glass" size="sm">
+                  {spec.cta.label}
+                </Label>
+              ) : null}
+              <span className={classes.articleCtaText}>
+                <Text span fw={600} display="block">
+                  {spec.cta.title}
+                </Text>
+                {spec.cta.description ? (
+                  <Text span display="block" c="var(--sds-surfaces-text-secondary)">
+                    {spec.cta.description}
+                  </Text>
+                ) : null}
+              </span>
+              <IconArrowRight aria-hidden className={classes.articleCtaArrow} />
+            </a>
+          ) : null}
+
+          {/* Figma `Author` `Type=Card` (node `24223:173058`): a 48px portrait beside the name and title. */}
+          {spec.author ? (
+            <div className={classes.articleAuthor}>
+              <Avatar
+                src={spec.author.avatar?.src}
+                alt=""
+                name={spec.author.name}
+                size={48}
+                color="blue"
+                variant="filled"
+              />
+              <div className={classes.articleAuthorText}>
+                <span className={classes.articleAuthorName}>{spec.author.name}</span>
+                {spec.author.title ? <span className={classes.articleAuthorTitle}>{spec.author.title}</span> : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {spec.featured ? (
+          <aside className={classes.articleFeatured} aria-label={spec.featured.tag ?? 'Featured'}>
+            <Card
+              component="a"
+              href={spec.featured.href}
+              surface="glass"
+              padding="all"
+              image={
+                spec.featured.image ? (
+                  <div className={classes.resourceCardImage}>
+                    <Image src={spec.featured.image.src} alt={spec.featured.image.alt} ratio="3:2" />
+                  </div>
+                ) : undefined
+              }
+              hero={
+                spec.featured.tag ? (
+                  <Label variant="gradient" size="sm">
+                    {spec.featured.tag}
+                  </Label>
+                ) : undefined
+              }
+              title={spec.featured.title}
+            />
+          </aside>
+        ) : null}
+      </div>
+    </Section>
+  )
+}
+
 function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBar' }> }) {
   return (
     <Section
@@ -1581,6 +1808,8 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CustomerStoriesSection key={index} spec={spec} />
     case 'logoMarquee':
       return <LogoMarqueeSection key={index} spec={spec} />
+    case 'article':
+      return <ArticleSection key={index} spec={spec} />
     case 'tabbedContent':
       return <TabbedContentSection key={index} spec={spec} />
     case 'fullCard':
