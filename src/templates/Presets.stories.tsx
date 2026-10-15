@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
+import { SecondaryNav, type SecondaryNavItem } from '../components/SecondaryNav'
+import { IconGlassEducation } from '../icons'
 import { presetFor } from './page-presets'
 import type { PageSpec } from './page-schema'
 
@@ -146,6 +148,57 @@ export const CustomerStoryCatalog: Story = {
       <SiteHeader />
       <PageRenderer page={presetFor('catalog')!.create()} />
       <SiteFooter />
+    </>
+  ),
+}
+
+/** The blog's own bar — `Secondary Nav` (node `24920:83110`): its three menus, as plain lists of links. */
+const BLOG_NAV: SecondaryNavItem[] = [
+  {
+    value: 'categories',
+    label: 'Categories',
+    columns: 2,
+    links: ['AI', 'CMS', 'Commerce', 'Customer Experience', 'Developers', 'Digital Experience', 'Portals', 'Search'].map(
+      (label) => ({ label, href: '#' }),
+    ),
+  },
+  {
+    value: 'top-stories',
+    label: 'Top Stories',
+    links: ['Most read this month', 'Editor’s picks', 'Field reports'].map((label) => ({ label, href: '#' })),
+  },
+  {
+    value: 'industries',
+    label: 'Industries',
+    links: ['Financial Services', 'Healthcare', 'Manufacturing', 'Public Sector'].map((label) => ({ label, href: '#' })),
+  },
+]
+
+/**
+ * `Solutions Library` -> `Blog` (node `24223:173039`).
+ *
+ * The page that brought in the `article` section type, the hero's `byline`, `tags` and `breadcrumbs`, and
+ * `SecondaryNav`'s `progress`. The blog's own bar sits under the header with a reading-progress line
+ * along its foot, and the hero reaches up behind both. The article is three columns — a
+ * `TableOfContents` that follows the reader, the 700px reading column, and a sticky featured card. Under
+ * 1200 the outline goes; under 992 the card drops below the article.
+ */
+export const Blog: Story = {
+  render: () => (
+    <>
+      <SiteHeader />
+      {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
+      <SecondaryNav
+        title="Blogs"
+        icon={<IconGlassEducation size={32} />}
+        titleHref="#"
+        items={BLOG_NAV}
+        progress
+        mt={65}
+      />
+      <PageRenderer page={presetFor('blog')!.create()} />
+      {/* No `Ready for the future?` band: the post makes its own ask, in the article's CTA card. */}
+      <SiteFooter cta={false} />
     </>
   ),
 }

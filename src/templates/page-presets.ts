@@ -1,4 +1,6 @@
 import heroMedia from '../../assets/home/hero-media.png'
+import blogHeroMedia from '../../assets/blog/hero-media.webp'
+import featuredMedia from '../../assets/home/trending/b2b-ecommerce.jpg'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
 import resourceA from '../../assets/home/trending/ai-transformation.jpg'
 import resourceB from '../../assets/home/trending/digital-strategy.jpg'
@@ -56,6 +58,10 @@ function blank<T extends SectionSpec['type']>(type: T) {
 
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam non lacinia mi. Etiam nec mauris fringilla, tincidunt tellus sed, feugiat nulla.'
+
+/** A paragraph at the length the `Blog` frame draws its body copy. */
+const ARTICLE_LOREM =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus est metus, commodo vel condimentum ut, iaculis at felis. Donec sed sollicitudin mauris. Donec tempor, odio et fringilla vehicula, turpis dolor cursus lacus, sit amet pulvinar urna mi in ante. Sed quis eros ut ante dapibus pulvinar. Quisque ac velit neque. Suspendisse vel turpis eget augue ultricies suscipit at vel felis. Phasellus interdum dapibus felis, ut accumsan metus. Aliquam fermentum lacus at sodales tristique.'
 
 export const PAGE_PRESETS: PagePreset[] = [
   {
@@ -385,6 +391,94 @@ export const PAGE_PRESETS: PagePreset[] = [
        * count, and a grid that renders everything it is given cannot express either.
        */
       sections: [blank('customerStories'), blank('storyCatalog'), blank('mediaBand')],
+    }),
+  },
+  {
+    id: 'blog',
+    label: 'Blog',
+    hint: 'A byline hero, an outlined article, the author, and what to read next.',
+    create: () => ({
+      /*
+       * `Solutions Library` -> `Blog` (node `24223:173039`).
+       *
+       * The hero names who wrote it and when rather than asking for anything: a post earns its call to
+       * action by the end, so the one ask sits in the article, after the last section.
+       */
+      hero: {
+        background: 'full',
+        breadcrumbs: [
+          { label: 'Home', href: '#' },
+          { label: 'Blogs', href: '#' },
+          { label: 'CMS MCP Server', href: '#' },
+        ],
+        title: { text: 'CMS MCP Server: How AI Agents Migrate Content in Liferay' },
+        description: {
+          text: "A CMS MCP server lets AI agents migrate legacy content and Asset Libraries into Liferay's new CMS. A field report on how it works today. By Marc Hermann, Managing Director of Portalworks",
+        },
+        byline: { name: 'Author Name', date: '10/20/1994', readTime: '2 min read' },
+        tags: ['SEO & Analytics', 'Developer', 'Digital Experience'],
+        media: {
+          src: blogHeroMedia,
+          alt: 'Two colleagues at a desk at night, one pointing at a tablet the other is holding',
+          ratio: '3:2',
+        },
+      },
+      sections: [
+        (() => {
+          /* The blank's one-line paragraphs, at the length the file draws them, so the outline has a page to follow. */
+          const section = blank('article')
+          return {
+            ...section,
+            featured: {
+              tag: 'Featured Asset',
+              title: '4 Best Practices to Design an Effective Ecommerce Website',
+              href: '#',
+              image: { src: featuredMedia, alt: 'Replace with the featured asset’s own cover' },
+            },
+            sections: section.sections.map((part) => ({
+              ...part,
+              body: part.body?.map(() => ARTICLE_LOREM),
+              subsections: part.subsections?.map((sub) => ({ ...sub, body: [ARTICLE_LOREM] })),
+            })),
+          }
+        })(),
+        (() => {
+          const section = blank('resourceGrid')
+          return {
+            ...section,
+            /*
+             * The Home page's `Trending Now` resource section, cut to the three a post has room for —
+             * real-looking titles and a type tag on each, and no button: the cards are the way on.
+             */
+            title: 'Related Content',
+            description: 'More insights and resources from Liferay.',
+            card: 'resource',
+            cards: [
+              {
+                title: 'What is AI Transformation?',
+                tag: 'Guide',
+                href: '#',
+                image: { src: resourceA, alt: 'Hands at a laptop keyboard under a blue overlay of circuitry and data' },
+              },
+              {
+                title: 'What is Digital Strategy?',
+                tag: 'Article',
+                href: '#',
+                image: { src: resourceB, alt: 'Two colleagues at a whiteboard covered in sticky notes' },
+              },
+              {
+                title: '16 Awesome Web Portal Examples',
+                tag: 'Blog',
+                href: '#',
+                image: {
+                  src: resourceC,
+                  alt: 'A 3D render of a lit platform ringed by Create, Find, Share, Trust and Improve tiles',
+                },
+              },
+            ],
+          }
+        })(),
+      ],
     }),
   },
 ]
