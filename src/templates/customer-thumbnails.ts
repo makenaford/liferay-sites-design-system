@@ -13,6 +13,7 @@
  * A story with no entry here falls back to `logoTile`, the drawn stand-in, so the list can grow ahead
  * of the artwork.
  */
+import agiaAffinity from '../../assets/customer-stories/agia.jpg'
 import airbus from '../../assets/home/customers/airbus.jpg'
 import broadcom from '../../assets/home/customers/broadcom.jpg'
 import cityOfVienna from '../../assets/home/customers/city-of-vienna.jpg'
@@ -32,6 +33,8 @@ export const CUSTOMER_THUMBNAILS: Record<string, string> = {
   'Mueller, Inc.': mueller,
   'Jose Cuervo': joseCuervo,
   MacDon: macdon,
+  /* From the catalog frame (node `24581:69993`), a 1x render: softer than the 820x547 set above. */
+  'AGIA Affinity': agiaAffinity,
 }
 
 /** The alt a thumbnail wants: it is the customer's mark, and that is the whole of what it shows. */

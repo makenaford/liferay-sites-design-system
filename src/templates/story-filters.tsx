@@ -282,10 +282,11 @@ export function StoryFilterBar({
 }
 
 /** `60 Results` — the count beside the heading, and the only feedback a press gets. */
-export function ResultCount({ count }: { count: number }) {
+export function ResultCount({ count, total }: { count: number; total?: number }) {
   return (
     <Text fz={18} fw={600} c="var(--sds-surfaces-text-secondary)" aria-live="polite">
-      {count} {count === 1 ? 'Result' : 'Results'}
+      {/* `4 of 60 Match`, as the catalog draws it, when the whole list's size is known. */}
+      {total !== undefined ? `${count} of ${total} Match` : `${count} ${count === 1 ? 'Result' : 'Results'}`}
     </Text>
   )
 }

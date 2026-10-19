@@ -307,6 +307,8 @@ export interface CardSpec {
    * link, so set this or `href`, not both.
    */
   action?: LinkRef
+  /** A figure at the card's foot, under a rule — the catalog's `845 Months to Launch`. */
+  stat?: StatSpec
 }
 
 /** A figure and its unit — `140` + `%`, `+` + `100M`. */
@@ -457,6 +459,11 @@ export type SectionSpec =
   | {
       type: 'storyCatalog'
       title: string
+      /**
+       * Cards per page. With it, the grid pages — `Showing 1 to 9 of 68 entries` and the numbered
+       * `Pagination` under the grid; without, every match shows at once.
+       */
+      pageSize?: number
       /** One multiselect each. The label is the pill's label *and* the key into a card's `facets`. */
       filters: { label: string; options: string[] }[]
       /**
@@ -484,6 +491,10 @@ export type SectionSpec =
    */
   titleHighlight?: string
       description?: string
+      /** `left` puts the heading on the content edge, as the catalog draws it. @default 'center' */
+      align?: 'left' | 'center'
+      /** `glass` is the catalog's card; the Home carousel's is the flat `static` one. @default 'static' */
+      surface?: 'glass' | 'static'
       stories: StorySpec[]
     }
   /**
@@ -527,6 +538,11 @@ export type SectionSpec =
       description?: string
       points?: { title: string; description?: string }[]
       action?: LinkRef
+      /**
+       * A button row instead of the link — `Find a Partner` and `Become a Partner` on the catalog's
+       * partner band. The same shape as the hero's, Medium as drawn.
+       */
+      buttons?: HeroSpec['buttons']
       media?: ImageRef
       /** @default 'right' */
       mediaSide?: 'left' | 'right'
