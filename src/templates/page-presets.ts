@@ -531,7 +531,7 @@ export const PAGE_PRESETS: PagePreset[] = [
        * action by the end, so the one ask sits in the article, after the last section.
        */
       hero: {
-        background: 'full',
+        background: 'corner',
         breadcrumbs: [
           { label: 'Home', href: '#' },
           { label: 'Blogs', href: '#' },
@@ -623,7 +623,7 @@ export const PAGE_PRESETS: PagePreset[] = [
        * the first thing to replace.
        */
       hero: {
-        background: 'full',
+        background: 'corner',
         breadcrumbs: [
           { label: 'Home', href: '#' },
           { label: 'Customer Stories', href: '#' },
