@@ -134,13 +134,15 @@ export const FormPage: Story = {
 }
 
 /**
- * `Customer Story Catalog` (node `24581:69991`).
+ * `Solutions Library` -> `Customer Stories- Hub` (node `24581:69993`).
  *
- * A catalog hero is **short** — 433 in the file, against the 624 every detail page uses — because the
- * page's content is the list, and a hero that fills the screen puts the first row of it below the fold.
+ * A short corner-bubble hero with two buttons; the lead stories in a left-titled carousel of glass
+ * cards; every story behind three filters, nine to a page, each card closing on its figure under a
+ * rule; then the implementation-partner band.
  *
- * One thing the file has that this does not: the grid is paginated. `resourceGrid` renders every card
- * it is given, and a row of controls that does not page anything is worse than none.
+ * The grid pages now — `storyCatalog`'s `pageSize` — with the file's `Showing 1 to 9 of 12 entries`
+ * and numbered pager. Its six stories appear twice so there is a second page; the descriptions and the
+ * `845 Months to Launch` figure are the file's placeholders.
  */
 export const CustomerStoryCatalog: Story = {
   render: () => (

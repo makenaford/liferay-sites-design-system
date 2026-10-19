@@ -4,6 +4,13 @@ import featuredMedia from '../../assets/home/trending/b2b-ecommerce.jpg'
 import customerStoryHero from '../../assets/customer-story/hero-media.jpg'
 import customerStoryImplementation from '../../assets/customer-story/implementation.jpg'
 import yusenLogo from '../../assets/customer-story/yusen-logistics-logo.png'
+import storyAgia from '../../assets/customer-stories/agia.jpg'
+import storyCsob from '../../assets/customer-stories/csob.jpg'
+import storySigla from '../../assets/customer-stories/sigla.jpg'
+import storySpringboard from '../../assets/customer-stories/springboard.jpg'
+import storySamoa from '../../assets/customer-stories/samoa.jpg'
+import storyUnilever from '../../assets/customer-stories/unilever.jpg'
+import implementationPartner from '../../assets/customer-stories/implementation-partner.png'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
 import resourceA from '../../assets/home/trending/ai-transformation.jpg'
 import resourceB from '../../assets/home/trending/digital-strategy.jpg'
@@ -65,6 +72,23 @@ const LOREM =
 /** A paragraph at the length the `Blog` frame draws its body copy. */
 const ARTICLE_LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus est metus, commodo vel condimentum ut, iaculis at felis. Donec sed sollicitudin mauris. Donec tempor, odio et fringilla vehicula, turpis dolor cursus lacus, sit amet pulvinar urna mi in ante. Sed quis eros ut ante dapibus pulvinar. Quisque ac velit neque. Suspendisse vel turpis eget augue ultricies suscipit at vel felis. Phasellus interdum dapibus felis, ut accumsan metus. Aliquam fermentum lacus at sodales tristique.'
+
+/** The catalog's three filter pills, as the file labels them. */
+const CATALOG_FILTERS = [
+  { label: 'Product Module', options: ['DXP', 'Commerce', 'CMS', 'Search', 'AI Hub'] },
+  { label: 'Industry', options: ['Financial Services', 'Public Sector', 'Manufacturing', 'Healthcare'] },
+  { label: 'Solution', options: ['Customer Portals', 'Websites', 'Partner Portals', 'Intranets'] },
+]
+
+/** The catalog grid's six stories — `Customer Stories- Hub` (node `24581:69993`). */
+const CATALOG_STORIES = [
+  { customer: 'AGIA Affinity', title: 'RSPCA Sees 38% Increase in Engagement with Liferay Solution', image: storyAgia },
+  { customer: 'ČSOB', title: 'Upgrade Gives ČSOB More Flexibility in Web Content Management', image: storyCsob },
+  { customer: 'Sigla Credit', title: 'Sigla Simplifies Client Loan Process with New Liferay Partner Portal', image: storySigla },
+  { customer: 'Springboard', title: 'Integration: The Foundation for New Experiences with Embasa', image: storySpringboard },
+  { customer: 'SAMOA', title: 'ENGIE Re-Energizes Their Website, Putting the User Experience at the Center', image: storySamoa },
+  { customer: 'Unilever', title: 'Agility, Autonomy, and New Touchpoints for BNB’s Users', image: storyUnilever },
+]
 
 export const PAGE_PRESETS: PagePreset[] = [
   {
@@ -370,30 +394,129 @@ export const PAGE_PRESETS: PagePreset[] = [
   {
     id: 'catalog',
     label: 'Customer story catalog',
-    hint: 'A short hero, the stories worth leading with, then the whole grid of them.',
+    hint: 'A short hero with two ways in, the stories worth leading with, the whole filtered list, then a partner band.',
     create: () => ({
       /*
-       * `Customer Story Catalog` -> `Customer Stories` (node `24581:69991`).
+       * `Solutions Library` -> `Customer Stories- Hub` (node `24581:69993`).
        *
-       * A catalog hero is **short** — 433 in the file against the 624 every detail page uses — because
-       * the page's content is the list, and a hero that fills the screen puts the first row of it below
-       * the fold. So: no media, no buttons, one line of description.
-       *
-       * The file's grid carries pagination, which this does not have yet: `resourceGrid` renders every
-       * card it is given. That is the one thing on this page the schema cannot express — noted in
-       * README.md rather than faked with a row of dead controls.
+       * A catalog hero is **short** — 434 in the file against the 624 a detail page uses — because the
+       * page's content is the list, and a hero that fills the screen puts the first row of it below the
+       * fold. So: no media, the corner bubble rather than the full one, and the two buttons for the
+       * reader who already knows they want to talk.
        */
       hero: {
-        background: 'none',
+        background: 'corner',
         title: { text: 'Customer Stories' },
-        description: { text: 'How teams like yours build with Liferay.' },
+        description: {
+          text: 'Increased revenue. Happier clients. Major efficiency gains. Read winning stories from successful Liferay customers to get inspired on your own digital transformation journey.',
+        },
+        buttons: [
+          { label: 'Book a Demo', href: '#' },
+          { label: 'Contact Sales', href: '#', variant: 'outline' },
+        ],
       },
-      /*
-       * The stories worth leading with, then the whole list behind its filters. `storyCatalog` replaces
-       * the plain `resourceGrid` that stood here: the file's catalog has a filter bar and a result
-       * count, and a grid that renders everything it is given cannot express either.
-       */
-      sections: [blank('customerStories'), blank('storyCatalog'), blank('mediaBand')],
+      sections: [
+        /* The stories worth leading with — the file's six, its heading still its placeholder. */
+        {
+          type: 'customerStories',
+          title: 'Card Title',
+          description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          align: 'left',
+          surface: 'glass',
+          stories: [
+            {
+              customer: 'Sky TV',
+              value: '140',
+              suffix: '%',
+              label: 'Increase in customer self-service',
+              quote:
+                'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
+              name: 'Anne Anderson',
+              role: 'VP of Experience and Change Management',
+            },
+            {
+              customer: 'City of Vienna',
+              prefix: '+',
+              value: '100M',
+              label: 'Site views per month',
+              quote:
+                'Liferay’s out-of-the-box features mean we can offer state-of-the-art communication trends and methods, quickly and conveniently.',
+              name: 'Nikolaus Reisel',
+              role: 'GBS Group Leader: Basic Systems and Platforms',
+            },
+            {
+              customer: 'Broadcom',
+              value: '845',
+              label: 'Features implemented',
+              quote:
+                'We don’t look at Liferay as the vendor. We see them as a partner. Everything we wanted to do in terms of providing customer self-service has been realized.',
+              name: 'Erica Callaghan',
+              role: 'Communications and UX Officer, Global Technology Organization',
+            },
+            {
+              customer: 'AGIA Affinity',
+              value: '133',
+              suffix: '%',
+              label: 'Faster go to market',
+              quote:
+                'Liferay was a bit of a no-brainer for us. The entire digital journey is now orchestrated in a unified way.',
+              name: 'Srikant Chandrasekharan',
+              role: 'Senior Delivery Lead for Enterprise Platforms & Products',
+            },
+            {
+              customer: 'Mueller, Inc.',
+              value: '73',
+              suffix: '%',
+              label: 'Quote increase',
+              quote:
+                'Liferay’s out-of-the-box features and development toolset empower us to create a customer experience that moves us toward the vision of engaging customers wherever they are and completing the whole purchase process online.',
+              name: 'Hab Adkins',
+              role: 'Corporate Technology Manager',
+            },
+            {
+              customer: 'Airbus',
+              value: '24,000',
+              label: 'Users served by portal',
+              quote:
+                'Keycopter brings efficiency and autonomy to helicopter operators. By providing coherent online services with Liferay, it is easy for our customers to keep their aircraft in good condition.',
+              name: 'Jérôme Chauvin',
+              role: 'IM Project Manager',
+            },
+          ],
+        },
+        /*
+         * The whole list behind its filters, nine to a page. The file's six cards, twice over, so the
+         * pagination has a second page to go to; their descriptions and figures are its placeholders.
+         */
+        {
+          type: 'storyCatalog',
+          title: 'All Stories',
+          pageSize: 9,
+          filters: CATALOG_FILTERS,
+          cards: [...CATALOG_STORIES, ...CATALOG_STORIES].map((story, i) => ({
+            title: story.title,
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            href: '#',
+            image: { src: story.image, alt: `${story.customer} logo` },
+            stat: { value: '845', label: 'Months to Launch' },
+            facets: CATALOG_FILTERS.reduce<Record<string, string[]>>((facets, filter, f) => {
+              facets[filter.label] = [filter.options[(i + f) % filter.options.length]]
+              return facets
+            }, {}),
+          })),
+        },
+        {
+          type: 'contentBlock',
+          title: 'Looking for an Implementation Partner?',
+          description:
+            'We have an extensive network of trusted solution and technology partners ready to help you solve business challenges and create the custom solutions you need.',
+          buttons: [
+            { label: 'Find a Partner', href: '#' },
+            { label: 'Become a Partner', href: '#', variant: 'outline' },
+          ],
+          media: { src: implementationPartner, alt: 'Two people shaking hands across a desk' },
+        },
+      ],
     }),
   },
   {

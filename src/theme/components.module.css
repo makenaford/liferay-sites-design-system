@@ -5237,6 +5237,19 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   padding-block-start: var(--sds-hero-inner-top);
 }
 
+/*
+ * The blog and customer-story heroes' `card-header`: the description 12 under the title, not the
+ * column's 24 — and the byline or read-time tag the column's 24 under that, without the 8 the proof row
+ * adds above a Gartner badge. Both frames draw it so; the heroes with a breadcrumb row are those two.
+ */
+.hero[data-with-breadcrumb] .heroTitle + .heroDescription {
+  margin-block-start: -12px;
+}
+
+.hero[data-with-breadcrumb] .heroProof {
+  padding-top: 0;
+}
+
 .heroBanner {
   display: flex;
   justify-content: center;
@@ -5259,6 +5272,12 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   display: flex;
   align-items: center;
   gap: 80px;
+  /*
+   * Full width as a flex item: `.hero` is a column, and an auto-margined item in one shrinks to its
+   * content — which, in a hero with no media column, centred the copy instead of starting it on the
+   * content edge.
+   */
+  width: 100%;
   max-width: calc(1280px + 2 * clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px));
   margin: 0 auto;
   padding-block: clamp(20px, calc(20px + (100cqi - 390px) * 0.05714), 80px);
@@ -11790,11 +11809,11 @@ a.secondaryNavTitle:focus-visible {
   inset-block-start: calc(var(--sds-header-offset, 64px) + 24px);
 }
 
+/* No top padding: the first heading starts level with the outline and the right-hand card. */
 .articleBody {
   display: flex;
   flex-direction: column;
   gap: 40px;
-  padding-block-start: 40px;
 }
 
 .articleSection {
@@ -12079,10 +12098,6 @@ a.secondaryNavTitle:focus-visible {
     position: static;
     max-width: 400px;
   }
-
-  .articleBody {
-    padding-block-start: 0;
-  }
 }
 
 .heroByline {
@@ -12284,4 +12299,90 @@ a.secondaryNavTitle:focus-visible {
     var(--sds-accent-product-accent) 100%
   );
   clip-path: inset(0 0 0 calc((1 - var(--sds-progress, 0)) * 100%));
+}
+
+/* The catalog card's `Stats Bar` at its foot: a full-width `Neutral/03` rule, 16 above the figure. */
+.cardStat {
+  width: 100%;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--sds-neutral-03);
+}
+
+/*
+ * The catalog's `Pagination` (node `24581:100572`): the summary at 18 on the left — `Showing 1 to 9` in
+ * primary, `of 68 entries` in secondary — and the controls on the right: the carousel's 44x40 outline
+ * arrows either side of 42x48 numbered pills, the current one filled `Brand/Primary/Primary`.
+ */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-block-start: 24px;
+}
+
+.pagerSummary {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.pagerSummary > span {
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.pagerControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* As `.carouselArrow`: 11px of padding lands the bordered box on Figma's 44. */
+.pagerControls .pagerArrow {
+  flex: none;
+  padding-inline: 11px;
+}
+
+.pagerControls .pagerArrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pagerControls .pagerArrow:first-child {
+  margin-inline-end: 8px;
+}
+
+.pagerControls .pagerArrow:last-child {
+  margin-inline-start: 8px;
+}
+
+.pagerPage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 48px;
+  padding-inline: 8px;
+  border-radius: var(--mantine-radius-sm);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+  transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.pagerPage:hover {
+  background-color: var(--sds-surfaces-card-bg-translucent);
+}
+
+.pagerPage:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-primary);
+  outline-offset: 2px;
+}
+
+.pagerPage[data-active] {
+  background-color: var(--sds-brand-primary-primary);
+  color: #fff;
 }

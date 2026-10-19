@@ -9,6 +9,7 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  UnstyledButton,
   useComputedColorScheme,
 } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
@@ -36,6 +37,7 @@ import { TableOfContents } from '../components/TableOfContents'
 import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
+  IconArrowLeft,
   IconArrowUp,
   IconArrowRight,
   IconBracketsAngle,
@@ -784,6 +786,9 @@ function GridCard({ card }: { card: CardSpec }) {
           <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
             {card.action.label}
           </Button>
+        ) : card.stat ? (
+          /* The catalog card's `Stats Bar`: one figure under a full-width rule. */
+          <div className={classes.cardStat}>{renderStat(card.stat, undefined, 0, { size: 'sm' })}</div>
         ) : undefined
       }
     />
@@ -927,11 +932,12 @@ const logoTile = (name: string) => {
 </svg>`)}`
 }
 
-function StoryCard({ story }: { story: StorySpec }) {
+function StoryCard({ story, surface = 'static' }: { story: StorySpec; surface?: 'glass' | 'static' }) {
   return (
     <Card
-      /* A quote is content, not a destination. */
-      surface="static"
+      /* A quote is content, not a destination — so even on glass it does not lift or take a pointer. */
+      surface={surface}
+      interactive={false}
       image={
         <Image
           src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer)}
@@ -974,11 +980,21 @@ function StoryCard({ story }: { story: StorySpec }) {
  * taste: this runs on every keystroke of a checkbox against every card in the catalog.
  */
 function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'storyCatalog' }> }) {
-  const [selection, setSelection] = useState<StorySelection>({})
-  const shown = useMemo(
+  const [selection, setSelectionState] = useState<StorySelection>({})
+  const [page, setPage] = useState(1)
+  const matched = useMemo(
     () => spec.cards.filter((card) => matchesSelection(card.facets, selection)),
     [spec.cards, selection],
   )
+  /* A new filter is a new list: page 3 of the old one means nothing in it. */
+  const setSelection: typeof setSelectionState = (update) => {
+    setSelectionState(update)
+    setPage(1)
+  }
+  const pageSize = spec.pageSize ?? matched.length
+  const pages = Math.max(1, Math.ceil(matched.length / Math.max(1, pageSize)))
+  const current = Math.min(page, pages)
+  const shown = spec.pageSize ? matched.slice((current - 1) * pageSize, current * pageSize) : matched
 
   return (
     <Section
@@ -986,7 +1002,7 @@ function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'sto
         <Stack gap={16} w="100%">
           <Group justify="space-between" align="baseline" wrap="nowrap">
             <SectionTitle title={spec.title} />
-            <ResultCount count={shown.length} />
+            <ResultCount count={matched.length} total={spec.cards.length} />
           </Group>
           <StoryFilterBar
             filters={spec.filters}
@@ -1012,7 +1028,87 @@ function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'sto
           No stories match these filters.
         </Text>
       )}
+      {spec.pageSize && matched.length ? (
+        <CatalogPagination
+          page={current}
+          pages={pages}
+          from={(current - 1) * pageSize + 1}
+          to={(current - 1) * pageSize + shown.length}
+          total={matched.length}
+          onPage={setPage}
+        />
+      ) : null}
     </Section>
+  )
+}
+
+/**
+ * The catalog's `Pagination` (node `24581:100572`): `Showing 1 to 9` in primary and `of 68 entries` in
+ * secondary on the left; on the right the carousel's 44x40 outline arrows either side of numbered
+ * `Tabs Pill`s, the current page filled.
+ *
+ * Five numbers at most, centred on the current page where there is room, so the row never outgrows a
+ * phone however long the list.
+ */
+function CatalogPagination({
+  page,
+  pages,
+  from,
+  to,
+  total,
+  onPage,
+}: {
+  page: number
+  pages: number
+  from: number
+  to: number
+  total: number
+  onPage: (page: number) => void
+}) {
+  const span = Math.min(5, pages)
+  const first = Math.min(Math.max(1, page - Math.floor(span / 2)), pages - span + 1)
+  const numbers = Array.from({ length: span }, (_, i) => first + i)
+
+  return (
+    <nav className={classes.pager} aria-label="Pages">
+      <p className={classes.pagerSummary} aria-live="polite">
+        Showing {from} to {to} <span>of {total} entries</span>
+      </p>
+      <div className={classes.pagerControls}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={classes.pagerArrow}
+          aria-label="Previous page"
+          disabled={page <= 1}
+          onClick={() => onPage(page - 1)}
+        >
+          <IconArrowLeft aria-hidden />
+        </Button>
+        {numbers.map((n) => (
+          <UnstyledButton
+            key={n}
+            className={classes.pagerPage}
+            data-active={n === page || undefined}
+            aria-current={n === page ? 'page' : undefined}
+            aria-label={`Page ${n}`}
+            onClick={() => onPage(n)}
+          >
+            {n}
+          </UnstyledButton>
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          className={classes.pagerArrow}
+          aria-label="Next page"
+          disabled={page >= pages}
+          onClick={() => onPage(page + 1)}
+        >
+          <IconArrowRight aria-hidden />
+        </Button>
+      </div>
+    </nav>
   )
 }
 
@@ -1026,7 +1122,7 @@ function CustomerStoriesSection({
       bleed
       title={
         <SectionTitle
-          align="center"
+          align={spec.align ?? 'center'}
           title={highlightPhrase(spec.title, spec.titleHighlight, true)}
           description={spec.description}
         />
@@ -1034,7 +1130,7 @@ function CustomerStoriesSection({
     >
       <Carousel label={spec.title} gutter={80} indicators="none" arrows>
         {spec.stories.map((story) => (
-          <StoryCard key={story.customer} story={story} />
+          <StoryCard key={story.customer} story={story} surface={spec.surface} />
         ))}
       </Carousel>
     </Section>
@@ -1456,7 +1552,22 @@ function ContentBlockSection({ spec }: { spec: Extract<SectionSpec, { type: 'con
         title={highlightPhrase(spec.title, spec.titleHighlight, true)}
         description={spec.description}
         actions={
-          spec.action ? (
+          spec.buttons?.length ? (
+            <Group gap={16}>
+              {spec.buttons.map((button) => (
+                /* Mantine's `Button`, as the hero's: a CTA has to be an anchor. */
+                <MantineButton
+                  key={button.label}
+                  component="a"
+                  href={button.href}
+                  size="md"
+                  variant={button.variant === 'outline' ? 'outline' : 'filled'}
+                >
+                  {button.label}
+                </MantineButton>
+              ))}
+            </Group>
+          ) : spec.action ? (
             <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
               {spec.action.label}
             </Link>
