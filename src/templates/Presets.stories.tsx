@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
 import { SecondaryNav, type SecondaryNavItem } from '../components/SecondaryNav'
-import { IconGlassBlogs } from '../icons'
+import { IconGlassBlogs, IconGlassCustomerPortals } from '../icons'
+import { Button } from '../components/Button'
+import classes from '../theme/components.module.css'
 import { presetFor } from './page-presets'
 import type { PageSpec } from './page-schema'
 
@@ -92,20 +94,92 @@ export const ProductDetail: Story = {
   ),
 }
 
+/** The solution bar's `Explore` panel: related solutions, capabilities and industries, a column each. */
+function SolutionExploreMenu() {
+  const groups: [string, string[]][] = [
+    ['Related solutions', ['Partner Portals', 'Supplier Portals', 'Intranets', 'B2B Commerce']],
+    ['Capabilities', ['Account management', 'AI Hub', 'Search', 'Personalization']],
+    ['Industries', ['Manufacturing', 'Financial Services', 'Healthcare', 'Public Sector']],
+  ]
+  return (
+    <div className={classes.navGroups}>
+      {groups.map(([heading, links]) => (
+        <div key={heading} className={classes.navGroup}>
+          <span className={classes.navGroupHeading}>{heading}</span>
+          {links.map((label) => (
+            <a key={label} href="#" className={classes.secondaryNavLink}>
+              <span className={classes.secondaryNavLinkTitle}>{label}</span>
+            </a>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** The solution bar: the page's sections, which it follows, and one way out to the related pages. */
+const SOLUTION_NAV: SecondaryNavItem[] = [
+  ...[
+    ['challenges', 'Challenges'],
+    ['features', 'Features'],
+    ['built-on-liferay', 'Built on Liferay'],
+    ['why-liferay', 'Why Liferay'],
+    ['pricing', 'Pricing'],
+    ['faq', 'FAQ'],
+  ].map(([value, label]) => ({ value, label, href: `#${value}` })),
+  { value: 'explore', label: 'Explore', menu: <SolutionExploreMenu /> },
+]
+
 /**
- * `Detail Pages` -> `Solution` (node `24631:68574`). The same family as the product page and
- * deliberately shorter — five sections against seven, with no FAQ and no quick links.
+ * The solution page — liferay.com/solutions/customer-portals, from the solutions mockup.
  *
- * A solution page is read *before* a product page, by someone still working out whether this is their
- * problem. So it makes the claim, shows what is in it, and hands over; the questions someone asks once
- * they have decided belong on the page they land on next.
+ * The bar carries the page's sections and follows them as the reader scrolls, with one `Explore` menu
+ * out to related solutions, capabilities and industries — one sticky bar rather than the mockup's
+ * product bar *and* section bar stacked. Once it takes the header's place it adds `Request a demo`.
+ *
+ * Built from the library's sections, with four new ones the page needed: the `Built on Liferay` gallery,
+ * the comparison table, the cost calculator and the closing call to action, which replaces the
+ * footer's band. The calculator's model is the mockup's, read back from its outputs.
  */
 export const SolutionDetail: Story = {
   render: () => (
     <>
       <SiteHeader />
+      {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
+      <SecondaryNav
+        title="Customer Portals"
+        icon={<IconGlassCustomerPortals size={32} />}
+        titleHref="#"
+        items={SOLUTION_NAV}
+        scrollActions={<Button size="sm">Request a demo</Button>}
+        mt={65}
+      />
       <PageRenderer page={presetFor('solution')!.create()} />
-      <SiteFooter />
+      <SiteFooter cta={false} />
+    </>
+  ),
+}
+
+/**
+ * The solution page with its second hero — `Solutions Library` node `24920:87684`: the heading and value
+ * props beside the AI Hub film, then the email field beside the proof, which moves under the media and
+ * gains the Gartner and G2 badges. Everything below the hero is `SolutionDetail`'s.
+ */
+export const SolutionDetailMediaProof: Story = {
+  name: 'Solution Detail — Media and Proof',
+  render: () => (
+    <>
+      <SiteHeader />
+      <SecondaryNav
+        title="Customer Portals"
+        icon={<IconGlassCustomerPortals size={32} />}
+        titleHref="#"
+        items={SOLUTION_NAV}
+        scrollActions={<Button size="sm">Request a demo</Button>}
+        mt={65}
+      />
+      <PageRenderer page={presetFor('solution-media-proof')!.create()} />
+      <SiteFooter cta={false} />
     </>
   ),
 }

@@ -133,8 +133,11 @@ export interface HeroSpec {
    */
   breadcrumbs?: LinkRef[]
   title: Headline
-  /** The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. */
-  description: { text: string; emphasis?: string }
+  /**
+   * The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. Optional: a
+   * solution hero answers with its value props instead.
+   */
+  description?: { text: string; emphasis?: string }
   /** The email capture: a field with a contained button. */
   form?: { placeholder: string; submit: string }
   /**
@@ -188,7 +191,33 @@ export interface HeroSpec {
   /** The secondary call to action under the form. */
   action?: LinkRef
   /** The Gartner rating and the compliance marks. */
-  proof?: { rating?: { score: string; outOf: number; source: string }; marks?: string[] }
+  proof?: {
+    rating?: { score: string; outOf: number; source: string }
+    marks?: string[]
+    /** Analyst badges beside the rating — Gartner Customers' Choice, G2 Leader. */
+    badges?: ImageRef[]
+  }
+  /**
+   * How the hero's pieces are arranged.
+   *
+   * - `default` — copy beside the media, the proof under the copy.
+   * - `media-proof` — the solution page's second option (node `24920:87684`): two aligned rows. The
+   *   heading and value props beside the media; then the email field and links beside the proof, which
+   *   sits under the media. The field and the rating start on the same line whatever the copy's length.
+   *
+   * @default 'default'
+   */
+  layout?: 'default' | 'media-proof'
+  /**
+   * The value props under the description — a solution page's three bullets, each a UI icon and the
+   * answer to a buyer's question.
+   */
+  points?: { icon?: IconName; text: string }[]
+  /**
+   * Arrow links under the form or buttons — a solution page's `Request a demo` and `Calculate your
+   * savings`. `action` is the single link a landing hero draws; this is the row.
+   */
+  links?: LinkRef[]
   /**
    * Who wrote it and when — the blog hero's `Author` row under the lead paragraph: a small portrait,
    * the name, the date and the read time, dot-separated. Without `avatar` the portrait is initials.
@@ -391,9 +420,17 @@ export interface PanelSpec {
   media?: ImageRef
   /** A stat row under the media, inside the same column. */
   stats?: StatSpec[]
+  /** A customer's proof under the points — `140% increase in customer self-service · Sky`, and its story. */
+  proof?: { customer: string; value: string; label: string; href?: string; linkLabel?: string }
 }
 
-export type SectionSpec =
+/**
+ * Every section takes an optional `anchor` — an id to link to, which is what a page's sticky sub-nav
+ * points at. It is the page's choice, not the section type's, so it lives on all of them.
+ */
+export type SectionSpec = SectionBody & { anchor?: string }
+
+type SectionBody =
   /**
    * Figma `Type=Card Grid`. Four columns of image cards at a 32px section gap.
    *
@@ -559,7 +596,90 @@ export type SectionSpec =
       title: string
       titleHighlight?: string
       description?: string
+      /** `Key takeaways` — the claims the questions add up to, checked, over the accordion. */
+      takeaways?: string[]
       items: { question: string; answer: string }[]
+      /** The sources for the page's figures, small, under the accordion. */
+      footnotes?: string[]
+    }
+  /**
+   * `Built on Liferay` — a gallery that scrolls sideways, led by large screenshots of real customer
+   * builds in a browser frame: the address, the solution tag, the customer and its industry, what they
+   * built, and the features in it. What was built, not what it achieved; outcomes are the story's.
+   */
+  | {
+      type: 'buildGallery'
+      title: string
+      titleHighlight?: string
+      description?: string
+      builds: {
+        url: string
+        image: ImageRef
+        tag: string
+        customer: string
+        industry?: string
+        headline: string
+        features?: string[]
+        link?: LinkRef
+      }[]
+      action?: LinkRef
+    }
+  /**
+   * `Why Liferay` — differentiator cards over a feature comparison against the alternatives a buyer
+   * shortlists, each cell yes, partial or no, with links to the `Liferay vs X` pages and the basis for
+   * the comparison under it. The first column is Liferay.
+   */
+  | {
+      type: 'comparison'
+      title: string
+      titleHighlight?: string
+      description?: string
+      cards: { icon?: GlassIconName; title: string; description: string }[]
+      table: {
+        caption: string
+        columns: string[]
+        rows: { feature: string; values: ('yes' | 'partial' | 'no')[] }[]
+        links?: LinkRef[]
+        note?: string
+      }
+    }
+  /**
+   * A TCO calculator: accounts and the number of point tools replaced, a three- or five-year horizon,
+   * and the estimate it adds up to — the stitched stack against Liferay — with an email field for the
+   * PDF and a link to a competitor comparison.
+   *
+   * The model is data, not code, so each solution can carry its own: a one-time cost, a cost per year,
+   * a cost per tool (one-time and per year) and a cost per account per year, for each side.
+   */
+  | {
+      type: 'costCalculator'
+      title: string
+      titleHighlight?: string
+      description?: string
+      accounts: { label: string; min: number; max: number; step: number; value: number }
+      tools: { label: string; hint?: string; min: number; max: number; value: number }
+      horizons: number[]
+      model: {
+        stack: { label: string; oneTime: number; perYear: number; perTool: number; perToolPerYear: number; perAccountPerYear: number }
+        liferay: { label: string; oneTime: number; perYear: number; perAccountPerYear: number }
+      }
+      report: { prompt: string; placeholder: string; submit: string; success: string }
+      compare?: LinkRef
+      note?: string
+    }
+  /**
+   * The closing call to action, on the page rather than in the footer: a heading, a line, an email
+   * field with its button, then the arrow links — and a quieter line for someone not ready yet.
+   */
+  | {
+      type: 'closingCta'
+      title: string
+      titleHighlight?: string
+      description?: string
+      placeholder: string
+      submit: string
+      links?: LinkRef[]
+      aside?: LinkRef
     }
   /**
    * Figma `Type=Quick Links` (node `24263:34142`). A left title over a grid of small horizontal cards,

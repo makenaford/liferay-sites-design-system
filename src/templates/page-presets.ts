@@ -1,4 +1,9 @@
 import heroMedia from '../../assets/home/hero-media.png'
+import aiHubFilm from '../../assets/solutions/ai-hub.webm'
+import commerceDashboard from '../../assets/solutions/commerce-dashboard.webp'
+import aiHubPoster from '../../assets/solutions/ai-hub-poster.jpg'
+import gartnerBadge from '../../assets/home/badges/gartner-peer-insights-customers-choice-2026-white.png'
+import g2Badge from '../../assets/home/badges/g2-leader-enterprise-fall-2026.png'
 import blogHeroMedia from '../../assets/blog/hero-media.webp'
 import featuredMedia from '../../assets/home/trending/b2b-ecommerce.jpg'
 import customerStoryHero from '../../assets/customer-story/hero-media.jpg'
@@ -12,6 +17,13 @@ import storySamoa from '../../assets/customer-stories/samoa.jpg'
 import storyUnilever from '../../assets/customer-stories/unilever.jpg'
 import implementationPartner from '../../assets/customer-stories/implementation-partner.png'
 import industryHeroMedia from '../../assets/industry/hero-media.jpg'
+import goal1 from '../../assets/home/goal-1.png'
+import goal2 from '../../assets/home/goal-2.png'
+import goal3 from '../../assets/home/goal-3.png'
+import goal4 from '../../assets/home/goal-4.png'
+import teamsMedia from '../../assets/home/teams-media.png'
+import capabilityMedia from '../../assets/home/capability-media.png'
+import industryMedia from '../../assets/home/industry-media.png'
 import resourceA from '../../assets/home/trending/ai-transformation.jpg'
 import resourceB from '../../assets/home/trending/digital-strategy.jpg'
 import resourceC from '../../assets/home/trending/web-portals.jpg'
@@ -271,62 +283,478 @@ export const PAGE_PRESETS: PagePreset[] = [
   {
     id: 'solution',
     label: 'Solution detail',
-    hint: 'The proof first, then what is in it, then the block that explains it.',
+    hint: 'A solution or use case: the commercial claim, the problem, the features, the proof, the cost case and the questions.',
     create: () => ({
       /*
-       * `Detail Pages` -> `Solution` (node `24631:68574`).
+       * The solution page — liferay.com/solutions/customer-portals, as the solutions mockup lays it out.
        *
-       * It opens on a customer story rather than on features, which is the difference between this and
-       * the product page: someone reading a solution page is still deciding whether this is their
-       * problem, and the fastest answer is somebody else who had it.
+       * The order is an argument: what it is and who it is for, then the problem before the features,
+       * then what people built and why Liferay over the alternatives, then the cost case, the proof and
+       * the plan. The sub-nav anchors are on the sections a buyer jumps between: Challenges, Features,
+       * Built on Liferay, Why Liferay, Pricing and the FAQ.
        */
       hero: {
         background: 'corner',
-        title: { text: 'Hero Title' },
-        description: { text: LOREM },
-        buttons: [
-          { label: 'Book a Demo', href: '#' },
-          { label: 'Contact Sales', href: '#', variant: 'outline' },
+        breadcrumbs: [
+          { label: 'Solutions', href: '#' },
+          { label: 'Customer Portals', href: '#' },
         ],
-        media: { src: heroMedia, alt: 'Replace with this solution’s own shot', ratio: '3:2' },
+        title: { text: 'Customer Portal Software for', highlight: 'Complex B2B Accounts' },
+        points: [
+          {
+            icon: 'building',
+            text: 'Built for complex B2B portals, with account hierarchies, fine-grained permissions and approvals',
+          },
+          {
+            icon: 'monitor',
+            text: 'Run portals, content and B2B commerce on one platform instead of stitching separate tools',
+          },
+          {
+            icon: 'brackets-angle',
+            text: 'Deploy on-premises, in your private cloud or on Liferay SaaS, on an open-source core',
+          },
+        ],
+        form: { placeholder: 'Work email', submit: 'Contact Sales' },
+        links: [
+          { label: 'Request a demo', href: '#' },
+          { label: 'Calculate your savings', href: '#pricing' },
+        ],
+        proof: {
+          rating: {
+            score: '4.6',
+            outOf: 5,
+            source: 'by 233 verified users as of September 2026, Source: Gartner Peer Insights™',
+          },
+          marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
+        },
+        media: {
+          src: commerceDashboard,
+          alt: 'An operator at a control desk, beside an open-orders dashboard of totals, channels and inventory turnover',
+          ratio: '3:2',
+        },
       },
       sections: [
-        blank('customerStory'),
-        /* Three icon cards, not clickable — `Card Grid- Non Clickable` in the file. */
-        (() => {
-          const section = blank('cardGrid')
-          return {
-            ...section,
-            title: 'Card Title',
-            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-            columns: 3 as const,
-            cards: Array.from({ length: 3 }, () => ({
-              title: 'Card Title',
-              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-              icon: 'sites' as const,
-            })),
-          }
-        })(),
-        blank('contentBlock'),
-        (() => {
-          const section = blank('customerStories')
-          return { ...section, title: 'More Customer Stories' }
-        })(),
-        (() => {
-          const section = blank('resourceGrid')
-          return {
-            ...section,
-            title: 'Additional Resources',
-            description:
-              'Whether you drive campaigns, build infrastructure, or grow partnerships — Liferay empowers your success.',
-            action: { label: 'Button', href: '#' },
-            cards: [
-              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceA, alt: 'Replace with this resource’s own image' } },
-              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceB, alt: 'Replace with this resource’s own image' } },
-              { title: 'Card Title', tag: 'Label', href: '#', image: { src: resourceC, alt: 'Replace with this resource’s own image' } },
+        {
+          type: 'logoMarquee',
+          label: 'Trusted by 1,200+ enterprises',
+          logos: ['Lenovo', 'BROADCOM', 'Hewlett Packard Enterprise', 'AT&T', 'Sky', 'AIRBUS'],
+        },
+        /* The Home page's four visual tiles: the reasons to buy, at a glance. */
+        {
+          type: 'cardGrid',
+          title: 'Key customer portal capabilities',
+          cards: [
+            {
+              title: 'Secure access and simplify compliance',
+              description: 'Account-level permissions, SSO and audit trails for every customer, partner and dealer.',
+              image: { src: goal1, alt: '' },
+              href: '#',
+            },
+            {
+              title: 'Build complex portals fast with low-code',
+              description: 'Page builders, forms and workflows let business teams ship without waiting on developers.',
+              image: { src: goal2, alt: '' },
+              href: '#',
+            },
+            {
+              title: 'Answer questions with AI search',
+              description: 'Customers find articles, documents and cases in their own words, and open fewer tickets.',
+              image: { src: goal3, alt: '' },
+              href: '#',
+            },
+            {
+              title: 'Integrate the systems you already run',
+              description: 'Headless APIs and connectors bring CRM, ERP and support data into one view.',
+              image: { src: goal4, alt: '' },
+              href: '#',
+            },
+          ],
+        },
+        /* The definition: 40–60 words that stand on their own, for the snippet and the AI overview. */
+        {
+          type: 'highlightText',
+          icon: 'customer-portals',
+          title: 'What is a customer portal?',
+          body: 'A customer portal is a secure, personalized website where customers find answers, manage accounts, track orders and raise requests without calling support. Liferay builds portals for complex B2B relationships, with account hierarchies, permissions and commerce on one open-source platform, for enterprises that have outgrown a basic help center.',
+          action: { label: 'New to the category? Read What is a customer portal?', href: '#' },
+        },
+        {
+          type: 'tabbedContent',
+          anchor: 'challenges',
+          title: 'What challenges does customer portal software solve?',
+          titleHighlight: 'customer portal software',
+          description: 'The questions enterprise buyers ask most, and how Liferay answers them.',
+          mediaSide: 'right',
+          tabs: [
+            {
+              value: 'challenges',
+              label: 'Challenges',
+              content: {
+                title: '',
+                description: '',
+                items: [
+                  {
+                    question: 'How do we give every account the right access?',
+                    answer:
+                      'B2B customers are companies, not single users. Liferay models parent and child accounts, roles per account and approval rules, so a buyer, a plant manager and a finance approver each see only what they should. SSO through SAML or OpenID Connect keeps your identity provider the source of truth.',
+                    link: { label: 'Explore account management', href: '#' },
+                  },
+                  {
+                    question: 'Can one portal replace the tools we stitched together?',
+                    answer:
+                      'Content, search, documents, forms and B2B ordering run on one platform with one login, so customers stop jumping between a help center, a file share and a store — and your team stops maintaining the glue between them.',
+                    link: { label: 'Explore the platform', href: '#' },
+                  },
+                  {
+                    question: 'Will it meet our security and compliance requirements?',
+                    answer:
+                      'Fine-grained permissions, audit trails and SOC 2 Type 2 and ISO/IEC 27001 certified hosting — or run it on-premises or in your private cloud when data has to stay where it is.',
+                    link: { label: 'Explore security', href: '#' },
+                  },
+                  {
+                    question: 'How do we cut support tickets without frustrating customers?',
+                    answer:
+                      'AI search answers from your knowledge base in the customer’s own words, and anything it cannot answer becomes a case with the context attached — so agents start from the history rather than from scratch.',
+                    link: { label: 'Explore AI search', href: '#' },
+                  },
+                ],
+                media: { src: teamsMedia, alt: 'A support lead reviewing account cases on a dashboard' },
+                stats: [
+                  { value: '140', suffix: '%', label: 'More self-service · Sky' },
+                  { value: '845', label: 'Features shipped · Broadcom' },
+                  { value: '1,200', suffix: '+', label: 'Enterprise customers' },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          type: 'tabbedContent',
+          anchor: 'features',
+          title: 'Customer portal features built for self-service',
+          titleHighlight: 'built for self-service',
+          description: 'Four primary capabilities, each with proof from a customer running it today.',
+          tabs: [
+            {
+              value: 'self-service',
+              label: 'Self-service',
+              content: {
+                title: 'Self-service account and case management',
+                description:
+                  'Give customers one place to check orders, download invoices, update account details and raise cases. Liferay Objects model warranties, service requests or claims without custom code, and workflow routes each request to the right team with SLAs attached.',
+                points: [
+                  { title: 'Case submission, tracking and status alerts' },
+                  { title: 'Invoices, contracts and orders in one dashboard' },
+                  { title: 'No-code objects for any service request' },
+                ],
+                proof: { customer: 'Sky', value: '140%', label: 'increase in customer self-service', href: '#', linkLabel: 'Read the story' },
+                action: { label: 'Explore Liferay Objects', href: '#' },
+                media: { src: capabilityMedia, alt: 'A customer dashboard of orders, invoices and open cases' },
+              },
+            },
+            {
+              value: 'ai-search',
+              label: 'AI search',
+              content: {
+                title: 'Answers in the customer’s own words',
+                description:
+                  'AI search reads across articles, documents and past cases and answers with its sources, so customers resolve the routine questions themselves and agents get the ones that need a person.',
+                points: [
+                  { title: 'Answers drawn from your knowledge base, with sources' },
+                  { title: 'Search across content, documents and cases at once' },
+                  { title: 'Case deflection measured per article' },
+                ],
+                proof: { customer: 'Broadcom', value: '845', label: 'features implemented', href: '#', linkLabel: 'Read the story' },
+                action: { label: 'Explore AI Hub', href: '#' },
+                media: { src: heroMedia, alt: 'An AI answer drawn from three knowledge articles' },
+              },
+            },
+            {
+              value: 'personalization',
+              label: 'Personalization',
+              content: {
+                title: 'A portal that knows which account it is talking to',
+                description:
+                  'Segment by account, role and region, and personalize any fragment on the page against those segments — the same portal shows a distributor, a dealer and an end customer what each of them needs.',
+                points: [
+                  { title: 'Segments from account, role and behavior' },
+                  { title: 'Personalize any page fragment, no code' },
+                  { title: 'Analytics on what each segment uses' },
+                ],
+                proof: { customer: 'Meridian Bank', value: '62%', label: 'fewer service calls', href: '#', linkLabel: 'Read the story' },
+                action: { label: 'Explore personalization', href: '#' },
+                media: { src: industryMedia, alt: 'One portal page shown to two account segments' },
+              },
+            },
+            {
+              value: 'ordering',
+              label: 'Ordering',
+              content: {
+                title: 'B2B ordering and integrations in the same portal',
+                description:
+                  'Account-specific catalogs, pricing and approvals, with connectors to the ERP and CRM you already run — orders, entitlements and case history flow both ways, so the portal and your back office agree.',
+                points: [
+                  { title: 'Account price lists, quotes and approval flows' },
+                  { title: 'ERP and CRM connectors — SAP, Salesforce and more' },
+                  { title: 'Headless APIs for every object' },
+                ],
+                proof: { customer: 'Grain & Protein Technologies', value: '700K', label: 'parts in a self-service catalog', href: '#', linkLabel: 'Read the story' },
+                action: { label: 'Explore B2B commerce', href: '#' },
+                media: { src: industryHeroMedia, alt: 'A dealer reordering parts from an account catalog' },
+              },
+            },
+          ],
+        },
+        {
+          type: 'cardGrid',
+          title: 'More customer portal capabilities',
+          cards: [
+            { icon: 'security', title: 'Single sign-on (SSO)', description: 'SAML, OpenID Connect and LDAP with your identity provider.', href: '#' },
+            { icon: 'dam', title: 'Document management', description: 'Versioned, permissioned files customers can find.', href: '#' },
+            { icon: 'sites', title: 'Multilingual sites', description: 'Translate pages and content for every market.', href: '#' },
+            { icon: 'ai-hub', title: 'AI assistants', description: 'Agents that answer, summarize and route requests.', href: '#' },
+          ],
+        },
+        {
+          type: 'cardGrid',
+          title: 'One customer portal, built for every team',
+          description: 'How IT, service and marketing teams each get what they need from the same build.',
+          columns: 3,
+          cards: [
+            {
+              tag: 'IT & Platform',
+              title: 'Customer portal for IT teams',
+              description:
+                'Extend with REST and GraphQL APIs, client extensions and your CI/CD pipeline. Connect CRM, ERP and identity without rewrites, on-premises, in private cloud or SaaS.',
+              href: '#',
+            },
+            {
+              tag: 'Customer Service',
+              title: 'Customer portal for service teams',
+              description:
+                'Publish answers once and let search route customers to them. Case forms, SLAs and workflow move requests to the right agent, so routine questions resolve themselves.',
+              href: '#',
+            },
+            {
+              tag: 'Digital & Marketing',
+              title: 'Customer portal for marketers',
+              description:
+                'Build and update pages with drag-and-drop fragments, personalize content by account and segment, and measure what customers use — without a development sprint.',
+              href: '#',
+            },
+          ],
+        },
+        {
+          type: 'buildGallery',
+          anchor: 'built-on-liferay',
+          title: 'Built on Liferay',
+          titleHighlight: 'Liferay',
+          description: 'See the support, dealer and self-service portals customers built on Liferay.',
+          action: { label: 'Browse all customer stories', href: '#' },
+          builds: [
+            {
+              url: 'support.broadcom.com',
+              image: { src: teamsMedia, alt: 'Broadcom’s support portal: cases, documents and downloads' },
+              tag: 'Customer Portal',
+              customer: 'Broadcom',
+              industry: 'Technology',
+              headline: 'A single support portal for cases, docs and downloads',
+              features: ['Case management', 'Knowledge base search', 'Entitlements'],
+              link: { label: 'Read the Broadcom story', href: '#' },
+            },
+            {
+              url: 'sky.com/myaccount',
+              image: { src: customerStoryImplementation, alt: 'Sky’s account hub: billing, packages and faults' },
+              tag: 'Customer Portal',
+              customer: 'Sky',
+              industry: 'Media & Telecom',
+              headline: 'A self-service account hub for billing, packages and faults',
+              features: ['Bill pay', 'Package upgrades', 'Guided troubleshooting'],
+              link: { label: 'Read the Sky story', href: '#' },
+            },
+            {
+              url: 'airbusworld.com',
+              image: { src: capabilityMedia, alt: 'Airbus’s operator portal: fleet documents and service requests' },
+              tag: 'Customer Portal',
+              customer: 'Airbus',
+              industry: 'Aerospace',
+              headline: 'An operator portal for fleet docs, service requests and parts',
+              features: ['Fleet dashboard', 'Technical library', 'Service tracking'],
+              link: { label: 'Read the Airbus story', href: '#' },
+            },
+            {
+              url: 'dealers.grainprotein.com',
+              image: { src: industryMedia, alt: 'A dealer portal with a self-service parts catalog' },
+              tag: 'Partner Portal',
+              customer: 'Grain & Protein Technologies',
+              industry: 'Durable Goods',
+              headline: 'A dealer portal with a 700K-part self-service catalog',
+              features: ['Parts catalog', 'Warranty claims', 'Dealer marketing assets'],
+              link: { label: 'Read the Grain & Protein Technologies story', href: '#' },
+            },
+          ],
+        },
+        {
+          type: 'comparison',
+          anchor: 'why-liferay',
+          title: 'What sets Liferay portals apart',
+          titleHighlight: 'Liferay portals',
+          description: 'How Liferay compares with the options portal teams evaluate most.',
+          cards: [
+            { icon: 'customer-portals', title: 'Built for B2B account complexity', description: 'Parent-child accounts, roles and per-account content come native, not as custom code.' },
+            { icon: 'commerce', title: 'Portal, commerce and content on one platform', description: 'Add ordering, a public site or a knowledge base later without a second vendor.' },
+            { icon: 'cloud-native', title: 'Deploy where your data must live', description: 'Run on-premises, in a private cloud or on Liferay SaaS, with the same codebase.' },
+          ],
+          table: {
+            caption: 'Feature comparison: Liferay and alternatives',
+            columns: ['Liferay', 'Salesforce Experience Cloud', 'Adobe Experience Manager', 'Custom build'],
+            rows: [
+              { feature: 'Native B2B account hierarchies and roles', values: ['yes', 'yes', 'partial', 'no'] },
+              { feature: 'Portal, commerce and CMS in one platform', values: ['yes', 'partial', 'partial', 'no'] },
+              { feature: 'On-premises, private cloud or SaaS', values: ['yes', 'no', 'partial', 'yes'] },
+              { feature: 'Low-code page, form and workflow builders', values: ['yes', 'yes', 'yes', 'no'] },
+              { feature: 'Open-source, inspectable core', values: ['yes', 'no', 'no', 'partial'] },
             ],
-          }
-        })(),
+            links: [
+              { label: 'Liferay vs Salesforce', href: '#' },
+              { label: 'Liferay vs Adobe', href: '#' },
+            ],
+            note: 'Comparison based on publicly available product documentation at time of writing. Capabilities vary by edition and add-ons.',
+          },
+        },
+        {
+          type: 'costCalculator',
+          anchor: 'pricing',
+          title: 'Estimate your customer portal savings',
+          titleHighlight: 'customer portal savings',
+          description:
+            'See a three to five year cost estimate you can share with finance and procurement, and get a PDF with a feature comparison.',
+          accounts: { label: 'Customer accounts on the portal', min: 5000, max: 500000, step: 5000, value: 50000 },
+          tools: {
+            label: 'Point tools the portal would replace',
+            hint: 'CMS, community, knowledge base, search, forms, analytics…',
+            min: 1,
+            max: 8,
+            value: 4,
+          },
+          horizons: [3, 5],
+          /* The mockup's model, read back from its outputs: linear in accounts, tools and years. */
+          model: {
+            stack: { label: 'Stitched stack of point tools', oneTime: 180_000, perYear: 60_000, perTool: 40_000, perToolPerYear: 45_000, perAccountPerYear: 0.9 },
+            liferay: { label: 'Liferay DXP', oneTime: 150_000, perYear: 85_000, perAccountPerYear: 0.35 },
+          },
+          report: {
+            prompt: 'Get the full report as a PDF, with a line-by-line feature comparison.',
+            placeholder: 'Work email',
+            submit: 'Email my report',
+            success: 'Your report is on its way. Check your inbox in a few minutes.',
+          },
+          compare: { label: 'Compare Liferay vs Salesforce Experience Cloud', href: '#' },
+          note: 'Illustrative estimate based on typical licensing, implementation, and integration costs. Your results will vary.',
+        },
+        {
+          type: 'customerStories',
+          title: 'Customer portals customers actually use',
+          stories: [
+            {
+              customer: 'Broadcom',
+              value: '845',
+              label: 'Features implemented',
+              quote:
+                'We don’t look at Liferay as the vendor. We see them as a partner. Everything we wanted to do in terms of providing customer self-service has been realized.',
+              name: 'Erica Callaghan',
+              role: 'Communications and UX Officer, Broadcom',
+            },
+            {
+              customer: 'Sky TV',
+              value: '140',
+              suffix: '%',
+              label: 'Increase in customer self-service',
+              quote: 'With Liferay, [Sky can] scale automatically or on a schedule a lot quicker than we could do before.',
+              name: 'Jacques Hefer',
+              role: 'Solution Architect, Sky',
+            },
+            {
+              customer: 'Meridian Bank',
+              value: '62',
+              suffix: '%',
+              label: 'Fewer service calls',
+              quote:
+                'Clients now open accounts, upload documents, and track requests in one place, and our advisors finally see the same picture they do.',
+              name: 'Dana Whitfield',
+              role: 'VP Digital Channels, Meridian Bank',
+            },
+          ],
+        },
+        {
+          type: 'resourceGrid',
+          title: 'Plan your customer portal',
+          description: 'Documentation and guides for scoping requirements and building the business case.',
+          cards: [
+            { tag: 'Liferay Learn', title: 'Build a customer portal on Liferay DXP: documentation', href: '#' },
+            { tag: 'Guide', title: 'The customer portal planning guide for B2B enterprises', href: '#' },
+            { tag: 'Checklist', title: 'Customer portal requirements checklist for IT and service teams', href: '#' },
+          ],
+        },
+        {
+          type: 'closingCta',
+          title: 'Launch a customer portal your team won’t have to rebuild',
+          titleHighlight: 'won’t have to rebuild',
+          description: 'Talk to a portal specialist about your accounts, systems and goals.',
+          placeholder: 'Work email',
+          submit: 'Contact Sales',
+          links: [
+            { label: 'Book a custom demo', href: '#' },
+            { label: 'Calculate your savings', href: '#pricing' },
+          ],
+          aside: { label: 'Not ready yet? Get monthly DXP insights in your inbox', href: '#' },
+        },
+        {
+          type: 'faq',
+          anchor: 'faq',
+          title: 'Customer portal software FAQ',
+          takeaways: [
+            'Liferay customer portals handle complex B2B accounts, roles and approvals natively.',
+            'Content, search, documents and commerce run on one platform with one login.',
+            'Deploy on-premises, in private cloud or on Liferay SaaS with an open-source core.',
+          ],
+          items: [
+            {
+              question: 'What is customer portal software?',
+              answer:
+                'Customer portal software lets a company give customers a secure, personalized site to manage accounts, find answers, track orders and raise requests. Enterprise options add account hierarchies, permissions, integrations and analytics.',
+            },
+            {
+              question: 'How is a customer portal different from a website?',
+              answer:
+                'A website speaks to everyone; a portal knows who signed in. It shows each account its own orders, documents, cases and prices, and lets them act on them.',
+            },
+            {
+              question: 'How much does customer portal software cost?',
+              answer:
+                'It depends on accounts, deployment and the tools it replaces. The calculator above gives a three- or five-year estimate; a specialist can price your case.',
+            },
+            {
+              question: 'Can a customer portal integrate with Salesforce or SAP?',
+              answer:
+                'Yes. Connectors and headless APIs bring CRM, ERP and support data into the portal, and write orders, cases and account changes back.',
+            },
+            {
+              question: 'Is Liferay open source?',
+              answer:
+                'Liferay DXP is built on an open-source core you can inspect and extend, with enterprise subscriptions for support, security fixes and SaaS.',
+            },
+            {
+              question: 'What features should a B2B customer portal include?',
+              answer:
+                'Account hierarchies and roles, SSO, self-service cases and documents, search, personalization, ordering where it applies, and integrations with the systems behind it.',
+            },
+          ],
+          footnotes: [
+            'Customer metrics are taken from published Liferay customer stories.',
+            'Savings estimates are illustrative.',
+          ],
+        },
       ],
     }),
   },
@@ -759,6 +1187,44 @@ export const PAGE_PRESETS: PagePreset[] = [
         })(),
       ],
     }),
+  },
+  {
+    id: 'solution-media-proof',
+    label: 'Solution detail — media and proof',
+    hint: 'The solution page with its second hero: the copy beside the product video, the form beside the proof.',
+    /*
+     * The same page as `solution`, with the hero the file draws as its second option (node `24920:87684`):
+     * two aligned rows, the heading and value props beside the media and the email field beside the
+     * proof, which moves under the media and gains the analyst badges. The media is the AI Hub film.
+     */
+    create: () => {
+      const page = PAGE_PRESETS.find((preset) => preset.id === 'solution')!.create()
+      return {
+        ...page,
+        hero: {
+          ...page.hero,
+          layout: 'media-proof',
+          form: { placeholder: 'Enter your email', submit: 'Contact Sales' },
+          links: [
+            { label: 'Request a demo', href: '#' },
+            { label: 'Browse all solutions', href: '#' },
+          ],
+          proof: {
+            ...page.hero.proof,
+            badges: [
+              { src: gartnerBadge, alt: 'Gartner Peer Insights Customers’ Choice 2026' },
+              { src: g2Badge, alt: 'G2 Leader, Enterprise, Fall 2026' },
+            ],
+          },
+          media: {
+            src: aiHubFilm,
+            poster: aiHubPoster,
+            alt: 'Liferay AI Hub: an agent builder and a search workflow over a team at work',
+            ratio: '3:2',
+          },
+        },
+      }
+    },
   },
 ]
 

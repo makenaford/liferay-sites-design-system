@@ -5250,6 +5250,17 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   padding-top: 0;
 }
 
+/*
+ * …but value props under the heading want room, not the 12 a description takes: 40 between the title
+ * and the list, the same as the media-proof layout draws.
+ */
+/* The column's 24 plus 16. The media-proof layout has no column gap and sets its own 40. */
+.hero[data-with-breadcrumb]:not([data-layout='media-proof'])
+  .heroTitle
+  + .heroDescription:has(> .heroPoints:first-child) {
+  margin-block-start: 16px;
+}
+
 .heroBanner {
   display: flex;
   justify-content: center;
@@ -12385,4 +12396,528 @@ a.secondaryNavTitle:focus-visible {
 .pagerPage[data-active] {
   background-color: var(--sds-brand-primary-primary);
   color: #fff;
+}
+
+/* =====================================================================================
+ * Solution page — hero value props, the sections a solution page adds, and section anchors.
+ * ===================================================================================== */
+
+/* A sub-nav's target lands a little under the sticky bar rather than against it. */
+.sectionAnchor {
+  scroll-margin-top: 24px;
+}
+
+/*
+ * The hero's value props: a 24px line icon in the accent, no tile, and the answer beside it in
+ * `Paragraph/Base` — 16 apart.
+ */
+.heroPoints {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--sds-size-paragraph-base);
+  line-height: var(--sds-line-height-paragraph-base);
+  font-weight: 400;
+}
+
+.heroDescription > p + .heroPoints {
+  margin-block-start: 20px;
+}
+
+.heroPoints > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.heroPointIcon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-primary));
+}
+
+.heroPointIcon > svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* A Features tab's proof: the figure bold in the accent, then what it measures and who. */
+.panelProof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  margin: 0;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--sds-neutral-03);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.panelProof > strong {
+  font-size: 21px;
+  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-primary));
+}
+
+/* The FAQ's key takeaways: a bordered panel over the accordion. */
+.faqTakeaways {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-block-end: 32px;
+  padding: 24px;
+  border: 1px solid var(--sds-card-static-line);
+  border-radius: 8px;
+}
+
+.faqTakeawaysLabel {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.footnotes {
+  margin: 32px 0 0;
+  padding-inline-start: 20px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/* `Built on Liferay`: the build, the browser frame around its screenshot, and what was built. */
+.buildCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.buildFrame {
+  overflow: hidden;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 12px;
+  background-color: var(--sds-surfaces-card-bg-translucent);
+}
+
+.buildFrameBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-block-end: 1px solid var(--sds-glass-line-from);
+}
+
+.buildFrameBar > span:not(.buildFrameUrl) {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--sds-neutral-03);
+}
+
+.buildFrameUrl {
+  margin-inline-start: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.buildMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 8px;
+}
+
+.buildCustomer {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.buildIndustry {
+  font-size: 14px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.buildHeadline {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The comparison table: Liferay's column lit, each verdict a mark and its word. */
+.comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comparisonScroll {
+  overflow-x: auto;
+  border: 1px solid var(--sds-card-static-line);
+  border-radius: 12px;
+}
+
+.comparisonTable {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.comparisonTable caption {
+  padding: 16px 20px;
+  text-align: start;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.comparisonTable th,
+.comparisonTable td {
+  padding: 14px 20px;
+  text-align: start;
+  border-block-start: 1px solid var(--sds-neutral-03);
+  color: var(--sds-surfaces-text-primary);
+}
+
+.comparisonTable thead th {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.comparisonTable tbody th {
+  font-weight: 400;
+}
+
+.comparisonTable [data-lead] {
+  background-color: color-mix(in srgb, var(--sds-brand-primary-primary) 10%, transparent);
+}
+
+.comparisonTable thead [data-lead] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.verdictMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.verdict[data-value='yes'] .verdictMark {
+  background-color: color-mix(in srgb, var(--sds-brand-primary-primary) 25%, transparent);
+  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-primary));
+}
+
+.verdict[data-value='partial'] .verdictMark {
+  background-color: color-mix(in srgb, var(--sds-accent-product-accent) 22%, transparent);
+  color: var(--sds-accent-product-accent);
+}
+
+.verdict[data-value='no'] .verdictMark {
+  background-color: var(--sds-surfaces-card-bg-translucent);
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.verdictText {
+  font-size: 14px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.comparisonNote {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/* The calculator: inputs on the left, the estimate on a glass panel on the right; stacked under 992. */
+.calculator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 16px;
+}
+
+@media (max-width: 62em) {
+  .calculator {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.calculatorInputs,
+.calculatorResult {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: clamp(20px, 4vw, 40px);
+}
+
+.calculatorResult {
+  gap: 16px;
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+}
+
+.calculatorField {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calculatorFieldHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.calculatorFieldHead > strong {
+  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-primary));
+}
+
+.calculatorHint {
+  font-size: 13px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.calculatorRange {
+  width: 100%;
+  accent-color: var(--sds-brand-primary-primary);
+}
+
+.calculatorSaving {
+  font-size: var(--sds-size-display-display-sm);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.calculatorBar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calculatorTrack {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--sds-surfaces-card-bg-translucent);
+}
+
+.calculatorTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.calculatorTrack > span[data-tone='stack'] {
+  background-color: var(--sds-neutral-03);
+}
+
+.calculatorTrack > span[data-tone='liferay'] {
+  background: linear-gradient(90deg, var(--sds-brand-primary-primary) 50%, var(--sds-accent-product-accent) 100%);
+}
+
+.calculatorPrompt {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.calculatorSent {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.calculatorEyebrow {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* A bar dropdown of grouped links — the solution bar's `Explore`: a column per group, under its heading. */
+.navGroups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 24px 32px;
+}
+
+@media (max-width: 767px) {
+  .navGroups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.navGroupHeading {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* A heading element in a card's title slot, wearing the slot's type rather than the browser's. */
+.cardHeading {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* =====================================================================================
+ * Hero `layout="media-proof"` — the solution page's second option (node `24920:87684`).
+ *
+ * Two aligned rows: the heading and value props beside the media, then the email field and links
+ * beside the proof, which sits under the media, 16 below. The copy column steps out of the way
+ * (`display: contents`) so its pieces are cells of one grid with the media, and the field and the
+ * rating start on the same line whatever the copy's length. A filler row soaks up the difference
+ * when the media is the taller side, so the heading and the value props keep their 40 between them.
+ * ===================================================================================== */
+
+.hero[data-layout='media-proof'] .heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 596px);
+  grid-template-rows: auto auto auto 1fr auto auto;
+  grid-template-areas:
+    'label media'
+    'title media'
+    'desc media'
+    'fill media'
+    'form proof'
+    'actions proof';
+  /* Columns only: the hero's own 80 gap would otherwise open 80 between every row. */
+  gap: 0 80px;
+  align-items: start;
+}
+
+.hero[data-layout='media-proof'] .heroContent {
+  display: contents;
+}
+
+.hero[data-layout='media-proof'] .heroLabel {
+  grid-area: label;
+  margin-block-end: 24px;
+}
+
+.hero[data-layout='media-proof'] .heroTitle {
+  grid-area: title;
+}
+
+.hero[data-layout='media-proof'] .heroDescription {
+  grid-area: desc;
+  max-width: none;
+}
+
+/* 40 under the heading — matched as specifically as the breadcrumb heroes' 12, which would win. */
+.hero[data-layout='media-proof'] .heroTitle + .heroDescription {
+  margin-block-start: 40px;
+}
+
+.hero[data-layout='media-proof'] .heroMedia {
+  grid-area: media;
+}
+
+/* 16 under the taller of the two columns — tighter than the file's 80, so the two rows read as one block. */
+.hero[data-layout='media-proof'] .heroForm {
+  grid-area: form;
+  /* The file's field is the column's 596, not the default hero's 480. */
+  max-width: 596px;
+  width: 100%;
+  margin-block-start: 16px;
+}
+
+.hero[data-layout='media-proof'] .heroActions {
+  grid-area: actions;
+  margin-block-start: 12px;
+}
+
+.hero[data-layout='media-proof'] .heroProof {
+  grid-area: proof;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding-top: 0;
+  margin-block-start: 16px;
+}
+
+
+
+/* One column on a narrow hero: the copy, the form and links, then the media and its proof. */
+@container sds-hero (max-width: 900px) {
+  .hero[data-layout='media-proof'] .heroInner {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: 'label' 'title' 'desc' 'form' 'actions' 'media' 'proof';
+    row-gap: 0;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm {
+    margin-block-start: 32px;
+  }
+
+  .hero[data-layout='media-proof'] .heroMedia {
+    margin-block-start: 40px;
+  }
+
+  .hero[data-layout='media-proof'] .heroProof {
+    margin-block-start: 24px;
+  }
+}
+
+/* The rating beside the analyst badges. */
+.heroProofRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.heroProofBadges > img {
+  display: block;
+  height: 48px;
+  width: auto;
 }
