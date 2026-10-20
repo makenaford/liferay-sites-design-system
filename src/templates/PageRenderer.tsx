@@ -1,8 +1,9 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import {
   Avatar,
+  Box,
   Button as MantineButton,
   Checkbox,
   Group,
@@ -464,6 +465,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        */
       background={background}
       align={hero.align}
+      data-layout={hero.layout === 'media-proof' ? 'media-proof' : undefined}
       drawn={bubble?.css || undefined}
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
@@ -488,17 +490,38 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
         </h1>
       }
       description={
-        <p>
-          {hero.description.text}
-          {hero.description.emphasis ? (
-            <>
-              {' '}
-              <Text span inherit fw={700} c="var(--sds-surfaces-text-primary)">
-                {hero.description.emphasis}
-              </Text>
-            </>
-          ) : null}
-        </p>
+        hero.description || hero.points?.length ? (
+          <>
+            {hero.description ? (
+              <p>
+                {hero.description.text}
+                {hero.description.emphasis ? (
+                  <>
+                    {' '}
+                    <Text span inherit fw={700} c="var(--sds-surfaces-text-primary)">
+                      {hero.description.emphasis}
+                    </Text>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+            {hero.points?.length ? (
+              /* The value props: a UI icon in a small glass tile, and the answer beside it. */
+              <ul className={classes.heroPoints}>
+                {hero.points.map((point) => (
+                  <li key={point.text}>
+                    {point.icon ? (
+                      <span className={classes.heroPointIcon} aria-hidden>
+                        {ICONS[point.icon]}
+                      </span>
+                    ) : null}
+                    {point.text}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
+        ) : undefined
       }
       form={
         hero.form ? (
@@ -518,7 +541,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
         ) : undefined
       }
       actions={
-        hero.buttons?.length || hero.action ? (
+        hero.buttons?.length || hero.action || hero.links?.length ? (
           <>
             {hero.buttons?.map((button) => (
               /*
@@ -542,6 +565,11 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
                 {hero.action.label}
               </Link>
             ) : null}
+            {hero.links?.map((link) => (
+              <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+                {link.label}
+              </Link>
+            ))}
           </>
         ) : undefined
       }
@@ -657,25 +685,41 @@ function Byline({ byline }: { byline: NonNullable<HeroSpec['byline']> }) {
 }
 
 function renderProof(proof: NonNullable<HeroSpec['proof']>) {
+  /* With badges the rating is one block beside them; without, its two lines flow in the proof row as before. */
+  const Wrap = proof.badges?.length ? 'div' : Fragment
+  const rating = proof.rating ? (
+    <Wrap>
+      <Group gap={8} wrap="nowrap">
+        <Text fz={28} fw={700} lh={1}>
+          {proof.rating.score}
+        </Text>
+        {/*
+         * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
+         * stars — a better rating than the number beside it claimed.
+         */}
+        <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} />
+      </Group>
+      <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
+        {proof.rating.source}
+      </Text>
+    </Wrap>
+  ) : null
+
   return (
     <>
-      {proof.rating ? (
-        <>
-          <Group gap={8} wrap="nowrap">
-            <Text fz={28} fw={700} lh={1}>
-              {proof.rating.score}
-            </Text>
-            {/*
-             * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
-             * stars — a better rating than the number beside it claimed.
-             */}
-            <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} />
+      {proof.badges?.length ? (
+        /* The rating on the left and the analyst badges on the right, 48 tall, as the Gartner section draws them. */
+        <div className={classes.heroProofRow}>
+          {rating}
+          <Group gap={8} wrap="nowrap" className={classes.heroProofBadges}>
+            {proof.badges.map((badge) => (
+              <img key={badge.src} src={badge.src} alt={badge.alt} />
+            ))}
           </Group>
-          <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
-            {proof.rating.source}
-          </Text>
-        </>
-      ) : null}
+        </div>
+      ) : (
+        rating
+      )}
       {proof.marks?.length ? (
         <Group gap={8} wrap="wrap">
           {proof.marks.map((mark) => (
@@ -1279,6 +1323,22 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             }
           >
             {panel.points?.length ? <KeyPoints points={panel.points} /> : null}
+            {panel.proof ? (
+              /* The tab's proof: the figure in the accent, what it measures, the customer, its story. */
+              <p className={classes.panelProof}>
+                <strong>{panel.proof.value}</strong> {panel.proof.label}
+                <span aria-hidden> · </span>
+                {panel.proof.customer}
+                {panel.proof.href ? (
+                  <>
+                    {' '}
+                    <Link href={panel.proof.href} size="sm" rightSection={<IconArrowRight />}>
+                      {panel.proof.linkLabel ?? 'Read the story'}
+                    </Link>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
             {panel.items?.length ? (
               /*
                * The panel opens itself, row by row. A tabbed section is the page showing what it can do
@@ -1597,6 +1657,17 @@ function FaqSection({ spec }: { spec: Extract<SectionSpec, { type: 'faq' }> }) {
         />
       }
     >
+      {spec.takeaways?.length ? (
+        /* `Key takeaways` — what the answers add up to, for the reader who reads nothing else. */
+        <div className={classes.faqTakeaways}>
+          <span className={classes.faqTakeawaysLabel}>Key takeaways</span>
+          <List marker="check" spacing={12}>
+            {spec.takeaways.map((line) => (
+              <List.Item key={line}>{line}</List.Item>
+            ))}
+          </List>
+        </div>
+      ) : null}
       <Accordion size="lg" order={3} defaultValue={spec.items[0]?.question}>
         {spec.items.map((item) => (
           <Accordion.Item key={item.question} value={item.question}>
@@ -1607,6 +1678,13 @@ function FaqSection({ spec }: { spec: Extract<SectionSpec, { type: 'faq' }> }) {
           </Accordion.Item>
         ))}
       </Accordion>
+      {spec.footnotes?.length ? (
+        <ol className={classes.footnotes}>
+          {spec.footnotes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ol>
+      ) : null}
     </Section>
   )
 }
@@ -1682,7 +1760,8 @@ function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'hi
         surface="highlighted"
         padding="all"
         hero={spec.icon ? GLASS[spec.icon](40) : undefined}
-        title={spec.title}
+        /* A real heading: the card is a section of its own, and its title is often the page's question. */
+        title={<h2 className={classes.cardHeading}>{spec.title}</h2>}
         description={spec.body}
         bottom={
           spec.action ? (
@@ -1901,6 +1980,356 @@ function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article'
   )
 }
 
+/* ------------------------------------------------------------------ the solution page */
+
+/**
+ * `Built on Liferay` — real builds, large, in a sideways gallery. Each slide is a browser frame around
+ * the screenshot (the address in its bar), then the solution tag, the customer and industry, what they
+ * built, the features in it, and the way to their story.
+ */
+function BuildGallerySection({ spec }: { spec: Extract<SectionSpec, { type: 'buildGallery' }> }) {
+  return (
+    <Section
+      bleed
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+      footer={
+        spec.action ? (
+          <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
+            {spec.action.label}
+          </Link>
+        ) : undefined
+      }
+    >
+      <Carousel label={spec.title} gutter={80} slideSize="min(620px, 86vw)" gap={24} indicators="none" arrows>
+        {spec.builds.map((build) => (
+          <article key={build.url} className={classes.buildCard}>
+            <div className={classes.buildFrame}>
+              <span className={classes.buildFrameBar} aria-hidden>
+                <span />
+                <span />
+                <span />
+                <span className={classes.buildFrameUrl}>{build.url}</span>
+              </span>
+              <Image src={build.image.src} alt={build.image.alt} ratio="16:9" />
+            </div>
+            <div className={classes.buildMeta}>
+              <Label variant="gradient" size="sm">
+                {build.tag}
+              </Label>
+              <span className={classes.buildCustomer}>{build.customer}</span>
+              {build.industry ? <span className={classes.buildIndustry}>{build.industry}</span> : null}
+            </div>
+            <h3 className={classes.buildHeadline}>{build.headline}</h3>
+            {build.features?.length ? (
+              <Group gap={8} wrap="wrap">
+                {build.features.map((feature) => (
+                  <Label key={feature} variant="glass" size="sm">
+                    {feature}
+                  </Label>
+                ))}
+              </Group>
+            ) : null}
+            {build.link ? (
+              <Link href={build.link.href} size="md" rightSection={<IconArrowRight />}>
+                {build.link.label}
+              </Link>
+            ) : null}
+          </article>
+        ))}
+      </Carousel>
+    </Section>
+  )
+}
+
+const VERDICT: Record<'yes' | 'partial' | 'no', string> = { yes: 'Yes', partial: 'Partial or add-on', no: 'No' }
+
+/** One comparison cell: the mark for the eye, the word for everyone else. */
+function Verdict({ value }: { value: 'yes' | 'partial' | 'no' }) {
+  return (
+    <span className={classes.verdict} data-value={value}>
+      <span className={classes.verdictMark} aria-hidden>
+        {value === 'yes' ? '✓' : value === 'partial' ? '◐' : '–'}
+      </span>
+      <span className={classes.verdictText}>{VERDICT[value]}</span>
+    </span>
+  )
+}
+
+/**
+ * `Why Liferay` — the differentiators as glass icon cards, then the comparison: a real table, the
+ * feature in the row header and Liferay's column first and lit, each cell a mark and its word. It
+ * scrolls sideways inside itself on a phone rather than squeezing four columns of verdicts.
+ */
+function ComparisonSection({ spec }: { spec: Extract<SectionSpec, { type: 'comparison' }> }) {
+  return (
+    <Section
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+    >
+      <Stack gap={48}>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: spec.cards.length >= 4 ? 4 : 3 }} spacing={24}>
+          {spec.cards.map((card) => (
+            <Card
+              key={card.title}
+              surface="static"
+              hero={card.icon ? GLASS[card.icon](40) : undefined}
+              title={card.title}
+              description={card.description}
+            />
+          ))}
+        </SimpleGrid>
+        <div className={classes.comparison}>
+          <div className={classes.comparisonScroll}>
+            <table className={classes.comparisonTable}>
+              <caption>{spec.table.caption}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  {spec.table.columns.map((column, i) => (
+                    <th key={column} scope="col" data-lead={i === 0 || undefined}>
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {spec.table.rows.map((row) => (
+                  <tr key={row.feature}>
+                    <th scope="row">{row.feature}</th>
+                    {row.values.map((value, i) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <td key={i} data-lead={i === 0 || undefined}>
+                        <Verdict value={value} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {spec.table.links?.length ? (
+            <Group gap={24} wrap="wrap">
+              {spec.table.links.map((link) => (
+                <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+                  {link.label}
+                </Link>
+              ))}
+            </Group>
+          ) : null}
+          {spec.table.note ? <p className={classes.comparisonNote}>{spec.table.note}</p> : null}
+        </div>
+      </Stack>
+    </Section>
+  )
+}
+
+/** `$737.5K`, `$1.2M` — the estimate as the card prints it. */
+const money = (value: number) =>
+  /* Rounded half-up from whole hundreds, not `toFixed`, which rounds 3.05 down to 3.0 in floating point. */
+  value >= 1_000_000
+    ? `$${Math.round(value / 100_000) / 10}M`
+    : `$${Math.round(value / 100) / 10}K`
+
+/**
+ * The cost calculator. Two sliders and a horizon on the left; on the right the saving, the two totals
+ * as bars, and the email that sends the PDF. Everything is worked out from the spec's model as the
+ * inputs move — nothing is fetched, and nothing is sent from a story.
+ */
+function CostCalculatorSection({ spec }: { spec: Extract<SectionSpec, { type: 'costCalculator' }> }) {
+  const [accounts, setAccounts] = useState(spec.accounts.value)
+  const [tools, setTools] = useState(spec.tools.value)
+  const [years, setYears] = useState(String(spec.horizons[0] ?? 3))
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+
+  const y = Number(years)
+  const { stack: s, liferay: l } = spec.model
+  const stack = s.oneTime + s.perYear * y + tools * (s.perTool + s.perToolPerYear * y) + accounts * s.perAccountPerYear * y
+  const liferay = l.oneTime + l.perYear * y + accounts * l.perAccountPerYear * y
+  const saving = Math.max(0, stack - liferay)
+  const widest = Math.max(stack, liferay, 1)
+
+  return (
+    <Section
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+    >
+      <div className={classes.calculator}>
+        <div className={classes.calculatorInputs}>
+          <label className={classes.calculatorField}>
+            <span className={classes.calculatorFieldHead}>
+              {spec.accounts.label}
+              <strong>{accounts.toLocaleString('en-US')}</strong>
+            </span>
+            <input
+              type="range"
+              className={classes.calculatorRange}
+              min={spec.accounts.min}
+              max={spec.accounts.max}
+              step={spec.accounts.step}
+              value={accounts}
+              onChange={(event) => setAccounts(Number(event.currentTarget.value))}
+            />
+          </label>
+          <label className={classes.calculatorField}>
+            <span className={classes.calculatorFieldHead}>
+              {spec.tools.label}
+              <strong>{tools}</strong>
+            </span>
+            <input
+              type="range"
+              className={classes.calculatorRange}
+              min={spec.tools.min}
+              max={spec.tools.max}
+              step={1}
+              value={tools}
+              onChange={(event) => setTools(Number(event.currentTarget.value))}
+            />
+            {spec.tools.hint ? <span className={classes.calculatorHint}>{spec.tools.hint}</span> : null}
+          </label>
+          <div className={classes.calculatorField} role="group" aria-label="Time horizon">
+            <span className={classes.calculatorFieldHead}>Time horizon</span>
+            <Tabs variant="pills" value={years} onChange={(v) => setYears(v ?? years)}>
+              <Tabs.List grow>
+                {spec.horizons.map((h) => (
+                  <Tabs.Tab key={h} value={String(h)}>
+                    {h} years
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+          </div>
+        </div>
+
+        <div className={classes.calculatorResult} aria-live="polite">
+          <span className={classes.calculatorEyebrow}>Estimated {y}-year savings</span>
+          <span className={classes.calculatorSaving}>{money(saving)}</span>
+          {[
+            { label: s.label, value: stack, tone: 'stack' },
+            { label: l.label, value: liferay, tone: 'liferay' },
+          ].map((bar) => (
+            <div key={bar.tone} className={classes.calculatorBar}>
+              <span className={classes.calculatorFieldHead}>
+                {bar.label}
+                <strong>{money(bar.value)}</strong>
+              </span>
+              <span className={classes.calculatorTrack}>
+                <span data-tone={bar.tone} style={{ width: `${(bar.value / widest) * 100}%` }} />
+              </span>
+            </div>
+          ))}
+
+          <p className={classes.calculatorPrompt}>{spec.report.prompt}</p>
+          {sent ? (
+            <p className={classes.calculatorSent} role="status">
+              {spec.report.success}
+            </p>
+          ) : (
+            <form
+              noValidate
+              onSubmit={(event) => {
+                event.preventDefault()
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+                  setError('Enter a valid work email, like name@company.com.')
+                  return
+                }
+                setError(null)
+                setSent(true)
+              }}
+            >
+              <TextInput
+                type="email"
+                aria-label="Work email"
+                placeholder={spec.report.placeholder}
+                value={email}
+                error={error ?? undefined}
+                onChange={(event) => {
+                  setEmail(event.currentTarget.value)
+                  if (error) setError(null)
+                }}
+                containedButton={
+                  <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+                    {spec.report.submit}
+                  </Button>
+                }
+              />
+            </form>
+          )}
+          {spec.compare ? (
+            <Link href={spec.compare.href} size="md" rightSection={<IconArrowRight />}>
+              {spec.compare.label}
+            </Link>
+          ) : null}
+          {spec.note ? <p className={classes.comparisonNote}>{spec.note}</p> : null}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+/**
+ * The closing call to action on the page itself — the footer's band, with the page's own words: a
+ * heading with its gradient phrase, a line, the email field and its button, the arrow links, and the
+ * quieter way out underneath. A page with this turns the footer's band off.
+ */
+function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closingCta' }> }) {
+  return (
+    <Section>
+      <Stack gap={24} align="center" maw={760} mx="auto">
+        <SectionTitle
+          align="center"
+          order={2}
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+        <Box component="form" w="100%" maw={596} onSubmit={(event) => event.preventDefault()}>
+          <TextInput
+            type="email"
+            aria-label="Work email"
+            placeholder={spec.placeholder}
+            containedButton={
+              <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+                {spec.submit}
+              </Button>
+            }
+          />
+        </Box>
+        {spec.links?.length ? (
+          <Group gap={24} justify="center" wrap="wrap">
+            {spec.links.map((link) => (
+              <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+                {link.label}
+              </Link>
+            ))}
+          </Group>
+        ) : null}
+        {spec.aside ? (
+          <Link href={spec.aside.href} size="sm" variant="secondary">
+            {spec.aside.label}
+          </Link>
+        ) : null}
+      </Stack>
+    </Section>
+  )
+}
+
 function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBar' }> }) {
   return (
     <Section
@@ -2000,6 +2429,14 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CustomerStoriesSection key={index} spec={spec} />
     case 'logoMarquee':
       return <LogoMarqueeSection key={index} spec={spec} />
+    case 'buildGallery':
+      return <BuildGallerySection key={index} spec={spec} />
+    case 'comparison':
+      return <ComparisonSection key={index} spec={spec} />
+    case 'costCalculator':
+      return <CostCalculatorSection key={index} spec={spec} />
+    case 'closingCta':
+      return <ClosingCtaSection key={index} spec={spec} />
     case 'article':
       return <ArticleSection key={index} spec={spec} />
     case 'tabbedContent':
@@ -2058,7 +2495,19 @@ export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: Bubble
   return (
     <>
       {renderHero(page.hero, bubble)}
-      {page.sections.map(renderSection)}
+      {page.sections.map((section, index) =>
+        /*
+         * An anchored section is wrapped rather than given the id itself, so every section type takes one
+         * without each renderer having to: what a sub-nav links to is the page's business.
+         */
+        section.anchor ? (
+          <div key={index} id={section.anchor} className={classes.sectionAnchor}>
+            {renderSection(section, index)}
+          </div>
+        ) : (
+          renderSection(section, index)
+        ),
+      )}
     </>
   )
 }
