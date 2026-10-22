@@ -76,26 +76,31 @@ export const OEM_PARTNER_PAGE: PageSpec = {
             items: [
               {
                 question: 'Focus on Your Core Product',
+                icon: 'direction-arrow',
                 answer:
                   'Go beyond your core software to deliver more value, reach new opportunities, and bring modern digital experiences to market faster.',
               },
               {
                 question: 'Accelerate Time to Market',
+                icon: 'dashboard',
                 answer:
                   'Start from a proven platform instead of a blank repository: portals, content, search and commerce are there on day one, so your roadmap goes to what makes your product different.',
               },
               {
                 question: 'Expand and Monetize Your Offering',
+                icon: 'pig-money',
                 answer:
                   'Add digital experiences your customers will pay for — self-service portals, personalized content and commerce — and open new revenue on top of the software they already buy from you.',
               },
               {
                 question: 'Deliver White-Label Experience',
+                icon: 'tag',
                 answer:
                   'Ship under your own brand. Themes, fragments and custom domains make the experience yours end to end, with Liferay underneath rather than in front.',
               },
               {
                 question: 'Strengthen Your Market Position',
+                icon: 'barbell',
                 answer:
                   'Compete on a platform recognized by analysts and trusted by global enterprises, backed by Liferay’s partner programs, enablement and co-selling support.',
               },
@@ -186,48 +191,6 @@ export const OEM_PARTNER_PAGE: PageSpec = {
     },
 
     {
-      type: 'cardGrid',
-      title: 'Discover the Liferay Ecosystem',
-      columns: 2,
-      cards: [
-        {
-          icon: 'partner-portals',
-          title: 'Partner Directory',
-          description: 'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',
-          href: '#',
-        },
-        {
-          icon: 'commerce',
-          title: 'Liferay Marketplace',
-          description: 'Discover apps, integrations, and solutions that extend Liferay DXP.',
-          href: '#',
-        },
-      ],
-    },
-
-    {
-      type: 'cardGrid',
-      title: 'Other Ways to Partner with Liferay',
-      columns: 2,
-      cards: [
-        {
-          icon: 'integration',
-          title: 'Technology Partner',
-          description:
-            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
-          href: '#',
-        },
-        {
-          icon: 'enterprise-websites',
-          title: 'Solution Partner',
-          description:
-            'Turn every Liferay deal into a 5x services opportunity: Deliver digital transformation solutions and build a strong services business around DXP.',
-          href: '#',
-        },
-      ],
-    },
-
-    {
       type: 'stepsForm',
       anchor: 'apply',
       backdrop: 'mesh',
@@ -272,5 +235,48 @@ export const OEM_PARTNER_PAGE: PageSpec = {
         submit: 'Apply Now',
       },
     },
+
+    {
+      type: 'cardGrid',
+      title: 'Discover the Liferay Ecosystem',
+      columns: 2,
+      cards: [
+        {
+          icon: 'partner-portals',
+          title: 'Partner Directory',
+          description: 'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',
+          href: '#',
+        },
+        {
+          icon: 'commerce',
+          title: 'Liferay Marketplace',
+          description: 'Discover apps, integrations, and solutions that extend Liferay DXP.',
+          href: '#',
+        },
+      ],
+    },
+
+    {
+      type: 'cardGrid',
+      title: 'Other Ways to Partner with Liferay',
+      columns: 2,
+      cards: [
+        {
+          icon: 'integration',
+          title: 'Technology Partner',
+          description:
+            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
+          href: '#',
+        },
+        {
+          icon: 'enterprise-websites',
+          title: 'Solution Partner',
+          description:
+            'Turn every Liferay deal into a 5x services opportunity: Deliver digital transformation solutions and build a strong services business around DXP.',
+          href: '#',
+        },
+      ],
+    },
+
   ],
 }

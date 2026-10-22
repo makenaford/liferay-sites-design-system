@@ -115,6 +115,23 @@ export function IconBank(props: IconProps) {
   )
 }
 
+/** MingCute `barbell` (regular, sports). */
+export function IconBarbell(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 8v8m0-8v8m0-8a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3m0-8a2 2 0 0 1 2-2 1 1 0 0 1 1 1v10a1 1 0 0 1-1 1 2 2 0 0 1-2-2m12-8v8m0-8v8m0-8a3 3 0 0 1 3 3v2a3 3 0 0 1-3 3m0-8a2 2 0 0 0-2-2 1 1 0 0 0-1 1v10a1 1 0 0 0 1 1 2 2 0 0 0 2-2m-9-4h6"/>
+    </svg>
+  )
+}
+
 /** MingCute `book_2` (regular, education). */
 export function IconBook2(props: IconProps) {
   return (
@@ -387,6 +404,23 @@ export function IconCube(props: IconProps) {
   )
 }
 
+/** MingCute `dashboard` (regular, devices). */
+export function IconDashboard(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M21 12a9 9 0 1 1-18 0m18 0a9 9 0 0 0-9-9m9 9h-2M3 12a9 9 0 0 1 9-9m-9 9h2m7-9v2m3.536 3.464s-2.133 4.255-2.758 4.88c-.625.624-1.606.656-2.192.07s-.554-1.567.07-2.192 4.88-2.758 4.88-2.758Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `department` (regular, development). */
 export function IconDepartment(props: IconProps) {
   return (
@@ -400,6 +434,23 @@ export function IconDepartment(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 0v4m-6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `direction_arrow` (regular, arrow). */
+export function IconDirectionArrow(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m11 17 1 1 1-1m-6-6-1 1 1 1m4-6 1-1 1 1m4 4 1 1-1 1m4-1a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>
     </svg>
   )
 }
@@ -812,6 +863,23 @@ export function IconPause(props: IconProps) {
   )
 }
 
+/** MingCute `pig_money` (regular, business). */
+export function IconPigMoney(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 11.5v.5a2 2 0 0 0 2 2m10-6.5a3.5 3.5 0 1 0-6.848 1.025m0 0A5.5 5.5 0 0 1 10.5 8H14l4-1v2.257A5.5 5.5 0 0 1 19.793 12H21v3l-1.474.737A5.52 5.52 0 0 1 17 18.4V20h-3v-1h-3v1H8v-1.6a5.5 5.5 0 0 1 .152-9.876M16 12h.01"/>
+    </svg>
+  )
+}
+
 /** MingCute `play` (regular, media). */
 export function IconPlay(props: IconProps) {
   return (
@@ -1131,6 +1199,23 @@ export function IconStarFilled(props: IconProps) {
       {...props}
     >
       <path fill="currentColor" d="M10.92 2.37a1.25 1.25 0 0 1 2.16 0l2.795 4.8 5.428 1.175a1.25 1.25 0 0 1 .667 2.054l-3.7 4.142.56 5.525a1.25 1.25 0 0 1-1.748 1.27L12 19.096l-5.082 2.24a1.25 1.25 0 0 1-1.747-1.27l.559-5.525-3.7-4.142a1.25 1.25 0 0 1 .667-2.054L8.125 7.17z"/>
+    </svg>
+  )
+}
+
+/** MingCute `tag` (regular, business). */
+export function IconTag(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M3.738 12.223a2 2 0 0 1-.578-1.595l.472-5.186a2 2 0 0 1 1.81-1.81l5.186-.472a2 2 0 0 1 1.595.578l7.823 7.823a2 2 0 0 1 0 2.828l-5.657 5.657a2 2 0 0 1-2.828 0z"/><path fill="none" stroke="currentColor" strokeWidth="2" d="M10.853 8.025a2 2 0 1 1-2.829 2.829 2 2 0 0 1 2.829-2.829Z"/>
     </svg>
   )
 }

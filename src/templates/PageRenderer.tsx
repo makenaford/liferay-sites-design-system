@@ -39,6 +39,11 @@ import { TableOfContents } from '../components/TableOfContents'
 import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
+  IconBarbell,
+  IconDashboard,
+  IconDirectionArrow,
+  IconPigMoney,
+  IconTag,
   IconArrowLeft,
   IconArrowUp,
   IconArrowRight,
@@ -64,7 +69,10 @@ import {
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
+  IconGlassAddUser,
+  IconGlassAi,
   IconGlassAiHub,
+  IconGlassUserValidation,
   IconGlassAnalytics,
   IconGlassCloudNative,
   IconGlassCms,
@@ -137,6 +145,11 @@ const ICONS: Record<IconName, ReactNode> = {
   cart: <IconShoppingCart1 />,
   search: <IconSearch />,
   close: <IconClose />,
+  'direction-arrow': <IconDirectionArrow />,
+  dashboard: <IconDashboard />,
+  'pig-money': <IconPigMoney />,
+  tag: <IconTag />,
+  barbell: <IconBarbell />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -162,6 +175,9 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   analytics: (s) => <IconGlassAnalytics width={s} height={s} />,
   'cloud-native': (s) => <IconGlassCloudNative width={s} height={s} />,
   security: (s) => <IconGlassPremiumSecurity width={s} height={s} />,
+  'add-user': (s) => <IconGlassAddUser width={s} height={s} />,
+  'user-validation': (s) => <IconGlassUserValidation width={s} height={s} />,
+  ai: (s) => <IconGlassAi width={s} height={s} />,
   'low-code': (s) => <IconGlassLowCode width={s} height={s} />,
   integration: (s) => <IconGlassIntegration width={s} height={s} />,
   documentation: (s) => <IconGlassDocumentation width={s} height={s} />,
@@ -1357,9 +1373,18 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
               >
                 {panel.items.map((item) => (
                   <Accordion.Item key={item.question} value={item.question}>
-                    <Accordion.Control>{item.question}</Accordion.Control>
+                    <Accordion.Control icon={item.icon ? ICONS[item.icon] : undefined}>
+                      {item.question}
+                    </Accordion.Control>
                     <Accordion.Panel>
                       <p>{item.answer}</p>
+                      {item.list?.length ? (
+                        <ul className={classes.accList}>
+                          {item.list.map((line) => (
+                            <li key={line}>{line}</li>
+                          ))}
+                        </ul>
+                      ) : null}
                       {item.link ? (
                         <Link href={item.link.href} size="md" rightSection={<IconArrowRight />}>
                           {item.link.label}
@@ -2022,6 +2047,168 @@ function QuotesSection({ spec }: { spec: Extract<SectionSpec, { type: 'quotes' }
   )
 }
 
+/** One program-overview cell: a mark for the eye and words for everyone else. */
+function TierCell({ value }: { value: boolean | string | { level: number } }) {
+  if (typeof value === 'string') return <span className={classes.tierText}>{value}</span>
+  if (typeof value === 'boolean') {
+    return value ? (
+      <span className={classes.verdict} data-value="yes">
+        <span className={classes.verdictMark} aria-hidden>
+          ✓
+        </span>
+        <span className={classes.visuallyHidden}>Included</span>
+      </span>
+    ) : (
+      <span className={classes.verdict} data-value="no">
+        <span className={classes.verdictMark} aria-hidden>
+          –
+        </span>
+        <span className={classes.visuallyHidden}>Not included</span>
+      </span>
+    )
+  }
+  return (
+    <span className={classes.tierLevel} aria-label={`Level ${value.level} of 4`} role="img">
+      {Array.from({ length: value.level }, (_, i) => (
+        <span key={i} aria-hidden />
+      ))}
+    </span>
+  )
+}
+
+/**
+ * `Partner Levels Designed for Growth` — the tiers as cards, then the program overview: one table per
+ * view behind a pill bar, tiers across the top, rows grouped under their category. It scrolls sideways
+ * inside itself on a phone rather than squeezing five columns.
+ */
+function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTable' }> }) {
+  const [view, setView] = useState(spec.tables[0]?.label ?? '')
+  const table = spec.tables.find((t) => t.label === view) ?? spec.tables[0]
+  const tiers = spec.tiers.map((tier) => tier.name)
+
+  return (
+    <Section
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+    >
+      <Stack gap={48}>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: spec.tiers.length }} spacing={24}>
+          {spec.tiers.map((tier, i) => (
+            <div key={tier.name} className={classes.tierCard} data-tier={i}>
+              <span className={classes.tierName}>{tier.name}</span>
+              <p>{tier.description}</p>
+            </div>
+          ))}
+        </SimpleGrid>
+
+        {table ? (
+          <div className={classes.comparison}>
+            <Group justify="space-between" align="center" wrap="wrap" gap={16}>
+              {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
+              {spec.tables.length > 1 ? (
+                <Tabs variant="pills" value={view} onChange={(v) => setView(v ?? view)}>
+                  <Tabs.List>
+                    {spec.tables.map((t) => (
+                      <Tabs.Tab key={t.label} value={t.label}>
+                        {t.label}
+                      </Tabs.Tab>
+                    ))}
+                  </Tabs.List>
+                </Tabs>
+              ) : null}
+            </Group>
+            <div className={classes.comparisonScroll}>
+              <table className={classes.comparisonTable}>
+                <caption className={classes.visuallyHidden}>{table.label}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{table.label}</th>
+                    {tiers.map((tier) => (
+                      <th key={tier} scope="col">
+                        {tier}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                {table.groups.map((group) => (
+                  <tbody key={group.label}>
+                    <tr className={classes.tierGroup}>
+                      <th scope="colgroup" colSpan={tiers.length + 1}>
+                        {group.label}
+                      </th>
+                    </tr>
+                    {group.rows.map((row) => (
+                      <tr key={row.label}>
+                        <th scope="row">{row.label}</th>
+                        {row.values.map((value, i) => (
+                          // eslint-disable-next-line react/no-array-index-key
+                          <td key={i}>
+                            <TierCell value={value} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                ))}
+              </table>
+            </div>
+            {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
+          </div>
+        ) : null}
+      </Stack>
+    </Section>
+  )
+}
+
+/**
+ * `A Partnership Model for Every Opportunity` — the case on the left, centred against the list; the
+ * models on the right, each a 48px glass icon beside its name, what it is, and the boxed note on what
+ * Liferay looks for, ruled off from the next.
+ */
+function PartnershipModelsSection({ spec }: { spec: Extract<SectionSpec, { type: 'partnershipModels' }> }) {
+  return (
+    <Section>
+      <div className={classes.models}>
+        <div className={classes.modelsCopy}>
+          <SectionTitle title={highlightPhrase(spec.title, spec.titleHighlight, true)} description={spec.description} />
+          {spec.note ? <p className={classes.modelsNote}>{spec.note}</p> : null}
+          {spec.action ? (
+            <MantineButton component="a" href={spec.action.href} size="md" className={classes.modelsAction}>
+              {spec.action.label}
+            </MantineButton>
+          ) : null}
+        </div>
+        <ul className={classes.modelsList}>
+          {spec.models.map((model) => (
+            <li key={model.title} className={classes.model}>
+              {model.icon ? (
+                <span className={classes.modelIcon} aria-hidden>
+                  {GLASS[model.icon](48)}
+                </span>
+              ) : null}
+              <div className={classes.modelBody}>
+                <h3 className={classes.modelTitle}>{model.title}</h3>
+                <p className={classes.modelText}>{model.description}</p>
+                {model.lookFor ? (
+                  <p className={classes.modelLookFor}>
+                    <span>{spec.lookForLabel ?? 'What we look for in a partner:'}</span>
+                    {model.lookFor}
+                  </p>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  )
+}
+
 /**
  * `Path to Partnership` — the steps after applying, numbered down a rule, beside the application form.
  * With `backdrop: 'mesh'` the footer's colour field drifts behind it, so the ask closes the page lit.
@@ -2506,6 +2693,10 @@ function renderSection(spec: SectionSpec, index: number) {
       return <QuotesSection key={index} spec={spec} />
     case 'stepsForm':
       return <StepsFormSection key={index} spec={spec} />
+    case 'partnershipModels':
+      return <PartnershipModelsSection key={index} spec={spec} />
+    case 'tierTable':
+      return <TierTableSection key={index} spec={spec} />
     case 'buildGallery':
       return <BuildGallerySection key={index} spec={spec} />
     case 'comparison':
