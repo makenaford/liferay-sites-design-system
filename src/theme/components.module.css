@@ -12921,3 +12921,158 @@ a.secondaryNavTitle:focus-visible {
   height: 48px;
   width: auto;
 }
+
+/* =====================================================================================
+ * Partner pages — quote cards, and the steps-and-form band with its mesh backdrop.
+ * ===================================================================================== */
+
+/* A quote card: glass, 24 in, the accent mark over the quote, the person and the link at its foot. */
+.quoteCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 8px;
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+}
+
+.quoteCardMark {
+  font-size: 56px;
+  line-height: 0.6;
+  height: 28px;
+  font-weight: 700;
+  color: var(--sds-accent-product-accent);
+}
+
+.quoteCard blockquote {
+  flex: 1;
+  margin: 0;
+}
+
+.quoteCard blockquote p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.quoteCardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-block-start: 16px;
+}
+
+.quoteCardFoot > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quoteCardName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.quoteCardRole {
+  font-size: 14px;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* A band with the footer's mesh behind it: the field is the bottom layer, the content above it. */
+.meshBand {
+  position: relative;
+  isolation: isolate;
+}
+
+.meshBandField {
+  z-index: -1;
+}
+
+/* The steps beside the form card, 80 apart, the form 600 wide; stacked under 992. */
+.stepsForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 600px);
+  gap: 40px 80px;
+  align-items: start;
+}
+
+@media (max-width: 62em) {
+  .stepsForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stepsFormCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Numbered steps down a rule: a 32px ringed number in the accent, the rule joining it to the next. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-block-end: 32px;
+}
+
+.steps > li:last-child {
+  padding-block-end: 0;
+}
+
+.steps > li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  inset-block: 32px 0;
+  inset-inline-start: 15px;
+  width: 2px;
+  background-color: color-mix(in srgb, var(--sds-accent-product-accent) 60%, transparent);
+}
+
+.stepNumber {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--sds-accent-product-accent);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block-start: 4px;
+}
+
+.stepTitle {
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.stepText {
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--sds-surfaces-text-primary);
+}

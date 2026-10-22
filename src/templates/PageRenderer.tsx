@@ -18,6 +18,7 @@ import { Button } from '../components/Button'
 import { CapabilityMap } from '../components/CapabilityMap'
 import { Card } from '../components/Card'
 import { Carousel } from '../components/Carousel'
+import { Footer } from '../components/Footer'
 import { Form } from '../components/Form'
 import { GradientText, highlightPhrase } from '../components/GradientText'
 import { Hero, type HeroMediaSource } from '../components/Hero'
@@ -1980,6 +1981,78 @@ function ArticleSection({ spec }: { spec: Extract<SectionSpec, { type: 'article'
   )
 }
 
+/* ------------------------------------------------------------------ the partner pages */
+
+/** `What Partners Are Saying` — quote cards: the accent mark, the words, who said them, their story. */
+function QuotesSection({ spec }: { spec: Extract<SectionSpec, { type: 'quotes' }> }) {
+  return (
+    <Section
+      title={
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+      }
+    >
+      <SimpleGrid cols={{ base: 1, md: spec.quotes.length >= 3 ? 3 : 2 }} spacing={24}>
+        {spec.quotes.map((item) => (
+          <figure key={item.name} className={classes.quoteCard}>
+            <span className={classes.quoteCardMark} aria-hidden>
+              “
+            </span>
+            <blockquote>
+              <p>{item.quote}</p>
+            </blockquote>
+            <figcaption className={classes.quoteCardFoot}>
+              <span>
+                <span className={classes.quoteCardName}>{item.name}</span>
+                {item.role ? <span className={classes.quoteCardRole}>{item.role}</span> : null}
+              </span>
+              {item.link ? (
+                <Link href={item.link.href} size="md" rightSection={<IconArrowRight />}>
+                  {item.link.label}
+                </Link>
+              ) : null}
+            </figcaption>
+          </figure>
+        ))}
+      </SimpleGrid>
+    </Section>
+  )
+}
+
+/**
+ * `Path to Partnership` — the steps after applying, numbered down a rule, beside the application form.
+ * With `backdrop: 'mesh'` the footer's colour field drifts behind it, so the ask closes the page lit.
+ */
+function StepsFormSection({ spec }: { spec: Extract<SectionSpec, { type: 'stepsForm' }> }) {
+  return (
+    <Section className={spec.backdrop === 'mesh' ? classes.meshBand : undefined}>
+      {spec.backdrop === 'mesh' ? <Footer.Mesh className={classes.meshBandField} aria-hidden /> : null}
+      <div className={classes.stepsForm}>
+        <div className={classes.stepsFormCopy}>
+          <SectionTitle title={spec.title} description={spec.subtitle} />
+          <ol className={classes.steps}>
+            {spec.steps.map((step, i) => (
+              <li key={step.title}>
+                <span className={classes.stepNumber} aria-hidden>
+                  {i + 1}
+                </span>
+                <span className={classes.stepBody}>
+                  <span className={classes.stepTitle}>{step.title}</span>
+                  <span className={classes.stepText}>{step.body}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <HeroFormCard spec={spec.form} />
+      </div>
+    </Section>
+  )
+}
+
 /* ------------------------------------------------------------------ the solution page */
 
 /**
@@ -2429,6 +2502,10 @@ function renderSection(spec: SectionSpec, index: number) {
       return <CustomerStoriesSection key={index} spec={spec} />
     case 'logoMarquee':
       return <LogoMarqueeSection key={index} spec={spec} />
+    case 'quotes':
+      return <QuotesSection key={index} spec={spec} />
+    case 'stepsForm':
+      return <StepsFormSection key={index} spec={spec} />
     case 'buildGallery':
       return <BuildGallerySection key={index} spec={spec} />
     case 'comparison':
