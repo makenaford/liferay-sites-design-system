@@ -603,6 +603,30 @@ type SectionBody =
       footnotes?: string[]
     }
   /**
+   * Partner quotes as cards, two or three across — the partner pages' `What Partners Are Saying`: the
+   * accent quote mark, the quote, the person and their role, and the way to their story. No picture and
+   * no figure; for stories with results, `customerStories` is the carousel.
+   */
+  | {
+      type: 'quotes'
+      title: string
+      titleHighlight?: string
+      description?: string
+      quotes: { quote: string; name: string; role?: string; link?: LinkRef }[]
+    }
+  /**
+   * `Path to Partnership` — what happens after applying, as a numbered timeline, beside the form card
+   * that starts it. `backdrop: 'mesh'` lays the footer's drifting colour field behind the band.
+   */
+  | {
+      type: 'stepsForm'
+      title: string
+      subtitle?: string
+      steps: { title: string; body: string }[]
+      form: NonNullable<HeroSpec['formCard']>
+      backdrop?: 'mesh'
+    }
+  /**
    * `Built on Liferay` — a gallery that scrolls sideways, led by large screenshots of real customer
    * builds in a browser frame: the address, the solution tag, the customer and its industry, what they
    * built, and the features in it. What was built, not what it achieved; outcomes are the story's.
