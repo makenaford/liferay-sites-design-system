@@ -6318,6 +6318,12 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   color: var(--sds-surfaces-text-primary);
 }
 
+/* A row's leading UI icon — Figma's 24px `UI icon` before the question. */
+.accRoot[data-size] .accIcon > svg {
+  width: 24px;
+  height: 24px;
+}
+
 /*
  * The arrow. Its box is the full 32px (or 24px) Figma draws, which is also the hover disc and a
  * comfortable target; the glyph fills it.
@@ -12992,6 +12998,11 @@ a.secondaryNavTitle:focus-visible {
 
 .meshBandField {
   z-index: -1;
+  /*
+   * Much darker than the footer's: the band carries a form, so the field is a low glow behind it rather
+   * than the footer's full colour — the colours still drift, at about a third of their strength.
+   */
+  opacity: 0.35;
 }
 
 /* The steps beside the form card, 80 apart, the form 600 wide; stacked under 992. */
@@ -13075,4 +13086,195 @@ a.secondaryNavTitle:focus-visible {
   font-size: 18px;
   line-height: 1.3;
   color: var(--sds-surfaces-text-primary);
+}
+
+/* `A Partnership Model for Every Opportunity`: the case beside the models, 80 apart; one column under 992. */
+.models {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 640px);
+  gap: 40px 80px;
+  align-items: center;
+}
+
+@media (max-width: 62em) {
+  .models {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.modelsCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.modelsNote {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.modelsAction {
+  margin-block-start: -8px;
+}
+
+.modelsList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each model: the 48px icon 16 from its body, 24 above and below, a `Neutral/03` rule between. */
+.model {
+  display: flex;
+  gap: 16px;
+  padding-block: 24px;
+}
+
+.model + .model {
+  border-block-start: 1px solid var(--sds-neutral-03);
+}
+
+.modelIcon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+}
+
+.modelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.modelTitle {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.modelText {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The note: a bordered box, its label in small caps over the sentence. */
+.modelLookFor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--sds-card-static-line);
+  border-radius: 4px;
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.modelLookFor > span {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* Bullets under an accordion answer — a partner track's profile. */
+.accList {
+  margin: 8px 0 12px;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/*
+ * `Partner Levels Designed for Growth`: a card per tier, its name in the tier's metal along a top rule,
+ * then the program-overview table with its category rows.
+ */
+.tierCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--sds-glass-line-from);
+  border-block-start: 3px solid var(--sds-tier-colour, var(--sds-brand-primary-primary));
+  border-radius: 8px;
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+}
+
+.tierCard[data-tier='0'] {
+  --sds-tier-colour: var(--sds-brand-primary-primary);
+}
+
+.tierCard[data-tier='1'] {
+  --sds-tier-colour: #c0c6d4;
+}
+
+.tierCard[data-tier='2'] {
+  --sds-tier-colour: #e3b53e;
+}
+
+.tierCard[data-tier='3'] {
+  --sds-tier-colour: var(--sds-accent-product-accent);
+}
+
+.tierCard > p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.tierName {
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierOverviewTitle {
+  margin: 0;
+  font-size: var(--sds-size-heading-f3);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierGroup th {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+  background-color: var(--sds-surfaces-card-bg-translucent);
+}
+
+.tierText {
+  font-size: 15px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* A level — the sheet's coins — as that many small accent dots. */
+.tierLevel {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.tierLevel > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--sds-brand-primary-lighten-3, var(--sds-brand-primary-primary));
 }

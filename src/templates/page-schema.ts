@@ -38,6 +38,11 @@ export type IconName =
   | 'cart'
   | 'search'
   | 'close'
+  | 'direction-arrow'
+  | 'dashboard'
+  | 'pig-money'
+  | 'tag'
+  | 'barbell'
 
 export interface ImageRef {
   /**
@@ -317,6 +322,9 @@ export type GlassIconName =
   | 'global-services'
   | 'dam'
   | 'database'
+  | 'add-user'
+  | 'user-validation'
+  | 'ai'
 
 export interface CardSpec {
   title: string
@@ -407,7 +415,16 @@ export interface PanelSpec {
    * teams panel shows a different clip per claim. Rows without one fall back to `PanelSpec.media`, so
    * a panel can give footage to some rows and not others without going half-empty.
    */
-  items?: { question: string; answer: string; link?: LinkRef; media?: ImageRef }[]
+  /** `icon` is a UI icon before the question — the OEM page's `Why Partner` rows draw one each. */
+  items?: {
+    question: string
+    answer: string
+    /** Bullets under the answer — a partner track's `Target audience`, `Company size`… */
+    list?: string[]
+    icon?: IconName
+    link?: LinkRef
+    media?: ImageRef
+  }[]
   /**
    * A checked list under the description — Figma's `Key Point Main List`, which is what the product and
    * solution pages put in a panel where the Home page puts an accordion.
@@ -613,6 +630,42 @@ type SectionBody =
       titleHighlight?: string
       description?: string
       quotes: { quote: string; name: string; role?: string; link?: LinkRef }[]
+    }
+  /**
+   * `Partner Levels Designed for Growth` — the tiers as cards, then the program overview: a table per
+   * view (benefits, requirements) behind a pill bar, the tiers across the top and the rows grouped under
+   * category headings. A cell is included (`true`), not (`false`), a level of something (`{ level }`,
+   * drawn as that many marks — the sheet's coins), or text.
+   */
+  | {
+      type: 'tierTable'
+      title: string
+      titleHighlight?: string
+      description?: string
+      tiers: { name: string; description: string }[]
+      overviewTitle?: string
+      tables: {
+        label: string
+        groups: { label: string; rows: { label: string; values: (boolean | string | { level: number })[] }[] }[]
+        note?: string
+      }[]
+    }
+  /**
+   * `A Partnership Model for Every Opportunity` — the case and a button on the left, the models down the
+   * right: each a glass icon, a name, what it is, and a boxed `What we look for in a partner` note,
+   * ruled off from the next.
+   */
+  | {
+      type: 'partnershipModels'
+      title: string
+      titleHighlight?: string
+      description?: string
+      /** A second paragraph under the description — the nudge for someone unsure where they fit. */
+      note?: string
+      action?: LinkRef
+      models: { icon?: GlassIconName; title: string; description: string; lookFor?: string }[]
+      /** The note box's label. @default 'What we look for in a partner:' */
+      lookForLabel?: string
     }
   /**
    * `Path to Partnership` — what happens after applying, as a numbered timeline, beside the form card

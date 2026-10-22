@@ -15,7 +15,7 @@ function OemPartner() {
 }
 
 const meta = {
-  title: 'Built Pages/OEM Partner',
+  title: 'Built Pages/Partner Pages/OEM Partner',
   parameters: {
     layout: 'fullscreen',
     /* `padding: 0`, so the canvas shows the page's own gutter and nothing else — see `Built Pages/Home`. */
