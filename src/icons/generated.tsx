@@ -1237,6 +1237,23 @@ export function IconTerminalBox(props: IconProps) {
   )
 }
 
+/** MingCute `time` (regular, system). */
+export function IconTime(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 7v5l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>
+    </svg>
+  )
+}
+
 /** MingCute `tool` (regular, system). */
 export function IconTool(props: IconProps) {
   return (

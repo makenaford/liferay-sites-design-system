@@ -482,6 +482,8 @@
 /* `Style=Filled` — a flat `Components/Label/lab-tonal-bg` under white text. */
 .labelRoot[data-variant='filled'] {
   background-color: var(--sds-label-tonal-bg);
+  /* Only `Size=XS` sets one — the glass card's ambient shadow, from `components.ts`. */
+  box-shadow: var(--sds-label-shadow, none);
 }
 
 /*
@@ -4807,11 +4809,28 @@
  * These are the **dark** file's measurements. The light export is a different frame and takes its own
  * numbers, further down.
  */
+/*
+ * **Sized by the hero's height, not its width** (nodes `25025:51250`, `24920:83107`). Both files draw the
+ * corner bubble as a 636px-tall instance from the top of the hero: a short hero — the blog hub's — cuts
+ * it at its foot, a tall one — the blog post's — ends below it. Sized by width it was ~536px tall at 1440
+ * whatever the hero held, so the hub's 449px hero had the artwork hanging 87px into the section below.
+ *
+ *   height    = min(the hero's height, 636) / (630/866)   the frame whose artwork (rows 0-630) is that tall:
+ *             = min(137.5%, 874px)                          the hero's foot, or the file's 636, whichever
+ *                                                           comes first
+ *             … and never wider than 88.9vw, the old         a phone's hero is short but its width is
+ *             width-based frame: 88.9 × 866/1200 = 64.2vw   shorter still, and a bubble sized by height
+ *                                                           there ran off the left edge behind the heading
+ *   width     follows from the frame's 1200/866
+ *   translate = 1 - 1035/1200 = 13.75%      the ground right of the artwork's cut, off the hero's edge,
+ *                                           plus 1.25% so the cut lands past the edge rather than on it
+ */
 .hero[data-background='corner'] .heroVideo {
   left: auto;
-  right: -15.2%;
-  width: 88.9%;
-  height: auto;
+  right: 0;
+  width: auto;
+  height: min(137.5%, 874px, 64.2vw);
+  transform: translateX(15%);
   aspect-ratio: 1200 / 866;
   object-fit: contain;
   /*
@@ -4895,8 +4914,15 @@
  * horizontally, and vertically too, since the frame is square and the height follows the width.
  */
 .hero[data-canvas='light'][data-background='corner'] .heroVideo {
+  /*
+   * By height as well: the artwork is cut at 512/674 of the square frame, so the hero's height / 0.76 =
+   * 131.6%, capped where the artwork reaches the file's 636: 636 / 0.76 = 837px, and at the old
+   * width-based 63.4vw so a phone's bubble stays in the corner.
+   */
   right: -3%;
-  width: 63.4%;
+  width: auto;
+  height: min(131.6%, 837px, 63.4vw);
+  transform: none;
   aspect-ratio: 1;
   /* The artwork is cut at 512/674 = 76% of this box, so the fade is at nothing by 74%. */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 74%);
@@ -5208,6 +5234,17 @@ body:has(.headerShell[data-position='fixed']) .hero:not(:has(.heroBanner)) .hero
  */
 .secondaryNav + .hero {
   --sds-hero-chrome: calc(65px + 64px);
+  margin-block-start: calc(-1 * var(--sds-hero-chrome));
+}
+
+/* The same, with an `AnchorNav` under the product bar: the hero reaches up behind all three. */
+.secondaryNav + .anchorNav + .hero {
+  --sds-hero-chrome: calc(65px + 64px + 48px);
+  margin-block-start: calc(-1 * var(--sds-hero-chrome));
+}
+
+.headerShell + .anchorNav + .hero {
+  --sds-hero-chrome: calc(65px + 48px);
   margin-block-start: calc(-1 * var(--sds-hero-chrome));
 }
 
@@ -7638,8 +7675,17 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   /* `Content Text` gap 8, at both sizes. */
   gap: 8px;
   flex: 1 1 min(100%, 34rem);
-  max-width: 900px;
   min-width: 0;
+}
+
+/*
+ * The cap sits on the heading and description, not on their column. On the column it stopped the column
+ * at 900 and the action sat straight after it — 150-odd px short of the content edge — where Figma's
+ * `Section Title` puts the slot on the trailing edge. The column now grows to fill the row and pushes the
+ * action to the edge, while the text inside it keeps the same measure.
+ */
+.sectionTitleText > * {
+  max-width: 900px;
 }
 
 .sectionTitleRoot[data-align='center'] {
@@ -13279,4 +13325,560 @@ a.secondaryNavTitle:focus-visible {
   height: 10px;
   border-radius: 50%;
   background-color: var(--sds-brand-primary-lighten-3, var(--sds-brand-primary-primary));
+}
+
+/* ======================================================================================
+ * The blog hub's post card — `Blog Hub` (node `25025:51238`).
+ *
+ *   Vertical    the picture bled to the card's edge, then 20px all round the text (`padding="content"`)
+ *   Horizontal  padding 20, gap 24; a 200x133 picture with 8px corners and the blue hairline
+ *   Byline      a 36px portrait 8 from the name over the date (14px, semibold over regular), then the
+ *               read time 12 along behind a 12px clock; topics under it at 12, 14px, dot-separated
+ * ==================================================================================== */
+
+.blogCard[data-blog-align='vertical'] > .cardBody {
+  gap: 16px;
+}
+
+/*
+ * The shelf's stacked cards — a compact row, not the file's wide horizontal card.
+ *
+ * They share the lead card's height between them (`.blogStack`), so the two columns end on the same
+ * line. To fit three into it the card is tighter than the frame draws: 16px padding and gap, a 176px
+ * picture, an 18px title held to two lines, and the topics on one line that ends in an ellipsis
+ * rather than wrapping a dot onto a line of its own.
+ */
+.cardRoot[data-align='horizontal'].blogCard {
+  gap: 20px;
+  border-radius: 8px;
+}
+
+.cardRoot[data-align='horizontal'].blogCard:not([data-padding='none']) {
+  padding: 16px;
+}
+
+.cardRoot[data-align='horizontal'].blogCard > .cardImage {
+  flex: 0 0 176px;
+  align-self: center;
+  aspect-ratio: 3 / 2;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cardRoot[data-align='horizontal'].blogCard > .cardImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(111 160 255 / 0.2);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.cardRoot[data-align='horizontal'].blogCard > .cardBody {
+  gap: 12px;
+  justify-content: center;
+}
+
+.cardRoot[data-align='horizontal'].blogCard .cardTitle {
+  font-size: 18px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardRoot[data-align='horizontal'].blogCard .cardBottom {
+  margin-top: 0;
+}
+
+/* One line of topics: inline items so the list can end in an ellipsis. */
+.cardRoot[data-align='horizontal'].blogCard .blogTags {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardRoot[data-align='horizontal'].blogCard .blogTags > li {
+  display: inline;
+}
+
+.cardRoot[data-align='horizontal'].blogCard .blogTags > li + li::before {
+  display: inline-block;
+  margin: 0 8px;
+  vertical-align: middle;
+}
+
+/* The stack beside the lead: equal rows that together take the lead card's height. */
+.blogStack {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 16px;
+}
+
+.blogStackRow {
+  display: flex;
+  min-width: 0;
+}
+
+.blogStackRow > .blogCard {
+  flex: 1;
+}
+
+/*
+ * The frame's 200x133 picture at 3:2, top-aligned with the text beside it. The two are about the same
+ * height — tags, a two-line title and the byline come to roughly 130 — so neither has space above or
+ * below it. (A picture stretched to the text's height cannot hold 3:2 here: a stretched height does not
+ * feed `aspect-ratio`, and the image grows to its file's own size.)
+ */
+.blogStackRow > .cardRoot[data-align='horizontal'].blogCard {
+  align-items: flex-start;
+}
+
+.blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardImage {
+  flex: 0 0 200px;
+  align-self: flex-start;
+  aspect-ratio: 3 / 2;
+}
+
+.blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardBody {
+  justify-content: flex-start;
+}
+
+/*
+ * Plain stacks are ruled off — a 1px `Neutral/03` line between rows, the Divider's normal tone, centred in
+ * a 32px gap so each row keeps 16 either side of it. Their rows take their own height rather than a
+ * share of the lead's: a stretched row has nothing to fill it but space, which read as padding.
+ */
+.blogStack[data-divided] {
+  gap: 0;
+  grid-auto-rows: auto;
+  align-content: start;
+}
+
+.blogStack[data-divided] > .blogStackRow {
+  padding-block: 16px;
+}
+
+.blogStack[data-divided] > .blogStackRow:first-child {
+  padding-top: 0;
+}
+
+.blogStack[data-divided] > .blogStackRow:last-child {
+  padding-bottom: 0;
+}
+
+.blogStack[data-divided] > .blogStackRow + .blogStackRow {
+  border-top: 1px solid var(--sds-neutral-03);
+}
+
+.blogCard .cardBottom {
+  padding-top: 0;
+  /*
+   * The byline follows the title at the body's 16px rather than dropping to the card's foot. Pinned to
+   * the foot, a one-line title left a hole above the byline the height of the longest title in the row.
+   */
+  margin-top: 0;
+}
+
+.blogByline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* The lead card's wider foot: topics on the byline's row, pushed to the trailing edge. */
+.blogByline[data-inline] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.blogBylineAuthor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+}
+
+.blogBylineAuthor > :first-child {
+  margin-right: -4px;
+}
+
+/*
+ * A brand author — `Liferay Team` (node `25025:53104`): the white logo on `Brand/Primary`, inside a 1px
+ * `Components/Glass Line/01` ring.
+ */
+.blogAvatarBrand {
+  background-color: var(--sds-brand-primary-primary);
+  border: 1px solid rgb(111 160 255 / 0.6);
+}
+
+.blogBylineWho {
+  display: flex;
+  flex-direction: column;
+  /* `Paragraph/X-Small` — 14/125%, semibold for the name and regular for the date (node `25025:53104`). */
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.blogBylineName {
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.blogBylineDate {
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.blogBylineRead {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.blogBylineRead > svg {
+  width: 12px;
+  height: 12px;
+  color: var(--sds-brand-primary-lighten-1);
+}
+
+.blogTags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+/* The file's 4px dot between topics, in the text colour. */
+.blogTags > li + li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.blogTags > li + li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/*
+ * `card="overlay"` — a proposal, not a frame. The picture fills a 4:5 card and the text sits on its foot
+ * over a scrim that runs from clear to the page colour. The scrim is dark in both colour schemes, so the
+ * text on it is pinned light rather than following the scheme's text tokens.
+ */
+.blogCard[data-overlay] {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  justify-content: flex-end;
+}
+
+/*
+ * The extra attributes outrank the plain card's picture rule, which also matches `padding="none"` and
+ * comes later in the file.
+ */
+.blogCard[data-overlay][data-padding][data-blog-align] > .cardImage {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  z-index: 0;
+}
+
+.blogCard[data-overlay] > .cardBody {
+  position: relative;
+  z-index: 1;
+  /* Its own height at the card's foot, so the scrim covers the text and not the whole picture. */
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: 96px 20px 20px;
+  background: linear-gradient(to bottom, rgb(7 11 19 / 0), rgb(7 11 19 / 0.88) 45%, rgb(7 11 19 / 0.96));
+  --sds-surfaces-text-primary: #fff;
+  --sds-surfaces-text-secondary: rgb(255 255 255 / 0.75);
+  color: #fff;
+}
+
+/*
+ * `card="blog"` — `Common Cards` `Type=Blog- no padding` (node `25025:53104`). `card-main` is one 16px
+ * column — picture, topics, title and byline. The file's `Top Content` row adds 8px above and below the
+ * topics; only the top 8 is kept, so the topics sit 24 from the picture, and they sit 8 over the title so
+ * they read as its kicker. The date is primary text here rather than secondary.
+ */
+.blogCard[data-card='blog'] .cardHeader {
+  gap: 8px;
+}
+
+.blogCard[data-card='blog'] .cardHero {
+  padding-top: 8px;
+}
+
+/*
+ * `card="blogGlass"` — `Common Cards` `Type=Blog` (node `24980:63861`). The glass card with the picture
+ * bled: topics 20 under it (the body's own padding), the title 16 under them, the byline 16 under that,
+ * and a 32px portrait 4 from the name rather than 36 and 8.
+ */
+.blogCard[data-card='blogGlass'] .cardHeader {
+  gap: 16px;
+}
+
+.blogCard[data-card='blogGlass'] .blogBylineAuthor > :first-child {
+  /* The author row's gap is 12; this brings the portrait to 4 from the name. */
+  margin-right: -8px;
+}
+
+/* `tagStyle="caps"` — `Small Caps/Small Caps Smaller/Semi Bold`: 12/120%, uppercase, 6% tracking. */
+.blogTags[data-style='caps'] {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.blogCard[data-card='blog'] .blogBylineDate {
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * `byline="inline"` — `Common Cards` `Type=Blog` (node `24980:63861`). One row at 8px: the portrait, the
+ * name in semibold primary, the date in regular secondary, and the read time back in semibold primary,
+ * a 4px dot before each of the last two.
+ */
+.blogBylineRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.blogBylineRow > .blogBylineDate,
+.blogBylineRow > .blogBylineReadInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.blogBylineRow > .blogBylineName ~ .blogBylineDate::before,
+.blogBylineRow > :is(.blogBylineName, .blogBylineDate) ~ .blogBylineReadInline::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--sds-surfaces-text-secondary);
+}
+
+.blogBylineReadInline {
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The cell's text sits 16 under the picture, not 20 — `Card Content` is 16/20. */
+.blogCard[data-blog-align='vertical'][data-byline='inline'][data-padding='content'] > .cardBody {
+  padding-top: 16px;
+}
+
+/* `tagStyle="pill"` — the labels carry their own shape, so no dots, and the frame's 4/8 gap between them. */
+.blogTags[data-style='pill'] > li + li::before,
+.cardRoot[data-align='horizontal'].blogCard .blogTags[data-style='pill'] > li + li::before {
+  content: none;
+  display: none;
+}
+
+/* On the stacked cards the pills keep to one line, like the text; one that does not fit is clipped. */
+.cardRoot[data-align='horizontal'].blogCard .blogTags[data-style='pill'] {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+/*
+ * `card="plain"` — no surface and no padding. The bled picture would have square corners with nothing
+ * around it, so it takes the 8px corner and the hairline the stacked card's picture already has.
+ */
+.blogCard[data-blog-align='vertical'][data-padding='none'] > .cardImage {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.blogCard[data-blog-align='vertical'][data-padding='none'] > .cardImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(111 160 255 / 0.2);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* A phone has no room for a picture beside the text, so the stacked cards stack their picture too. */
+@media (max-width: 36em) {
+  /* `column-reverse` for the same reason `leading` is `row-reverse`: the image is ordered last. */
+  .cardRoot[data-align='horizontal'].blogCard {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .cardRoot[data-align='horizontal'].blogCard > .cardImage,
+  .blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardImage {
+    flex-basis: auto;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+  }
+}
+
+/* ======================================================================================
+ * AnchorNav — jump links to the page's own sections, under `SecondaryNav`.
+ *
+ * Not a frame in the file; built from its neighbours. A 48px bar on `SecondaryNav`'s glass — the shared
+ * `--sds-nav-fill`, a 50px blur and the same inset hairline — so the two read as one stack of chrome.
+ * Links are 14px semibold in secondary text, 24 apart; the current one goes to primary text over a 2px
+ * line in the gradient `Label`'s blue-into-purple, which is how `Tabs` marks where you are.
+ * ==================================================================================== */
+
+.anchorNav {
+  position: relative;
+  /* Under `SecondaryNav`'s 150, so an open product menu still hangs over this bar. */
+  z-index: 140;
+  width: 100%;
+  height: 48px;
+  --sds-nav-fill: rgba(0, 0, 0, 0.8);
+  --sds-anchor-nav-gutter: clamp(20px, calc(20px + (100vw - 390px) * 0.05714), 80px);
+}
+
+:where([data-mantine-color-scheme='light']) .anchorNav {
+  --sds-nav-fill: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+}
+
+.anchorNav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--sds-nav-fill);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+:where([data-mantine-color-scheme='light']) .anchorNav::before {
+  box-shadow: inset 0 -1px 0 var(--sds-glass-line-to);
+}
+
+/*
+ * Sticky at the product bar's foot: the header's offset plus the bar's 64. Once the product bar has
+ * replaced the header it sits at the top, so this one sits 64 down.
+ */
+.anchorNav[data-sticky] {
+  position: sticky;
+  inset-block-start: calc(var(--sds-header-offset, 0px) + 64px);
+  transition: inset-block-start var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+body:has(.secondaryNav[data-replacing]) .anchorNav[data-sticky] {
+  inset-block-start: 64px;
+}
+
+.headerShell + .anchorNav[data-sticky] {
+  inset-block-start: var(--sds-header-offset, 0px);
+}
+
+/* Land a jumped-to section under all three bars, not behind them. */
+html:has(.anchorNav) {
+  scroll-padding-top: calc(65px + 64px + 48px);
+}
+
+.anchorNavList {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  height: 100%;
+  max-width: calc(1280px + 2 * var(--sds-anchor-nav-gutter));
+  margin: 0 auto;
+  padding: 0 var(--sds-anchor-nav-gutter);
+  list-style: none;
+  /* A phone scrolls the links sideways rather than wrapping them into a second row. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.anchorNavList::-webkit-scrollbar {
+  display: none;
+}
+
+.anchorNavList > li {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.anchorNavLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--sds-surfaces-text-secondary);
+  text-decoration: none;
+  transition: color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.anchorNavLink::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background-image: linear-gradient(90deg, var(--sds-brand-primary-lighten-1), var(--sds-accent-product-accent));
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition:
+    transform var(--sds-motion-medium) var(--sds-motion-ease-out),
+    opacity var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.anchorNavLink:hover {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.anchorNavLink[aria-current] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.anchorNavLink[aria-current]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.anchorNavLink:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-lighten-1);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anchorNavLink,
+  .anchorNavLink::after,
+  .anchorNav[data-sticky] {
+    transition: none;
+  }
 }

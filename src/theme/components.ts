@@ -96,6 +96,12 @@ const LABEL_SIZES = {
   },
   md: { height: 32, paddingX: 8, fontSize: 16, lineHeight: 24, icon: 20, border: 1.5, radius: radius.medium },
   lg: { height: 40, paddingX: 16, fontSize: 16, lineHeight: 24, icon: 20, border: 2, radius: radius.round },
+  /**
+   * `Size=XS` — the blog card's topic pills (`Blog Hub`, node `25025:51278`): 23 tall, 2/4 padding, a 4px
+   * corner and 12/125% semibold text. Its `Filled` is not the larger sizes' tonal fill: it is drawn on
+   * `Neutral/01` in `Surfaces/Text/Primary`, with the glass card's ambient shadow — see `vars` below.
+   */
+  xs: { height: 23, paddingX: 4, fontSize: 12, lineHeight: '1.25', icon: 12, border: 0, radius: radius.small },
 } as const
 
 /**
@@ -324,6 +330,7 @@ export const componentTheme: MantineThemeComponents = {
       const variant = (props.variant ?? 'filled') as keyof typeof LABEL_TEXT_COLOR
       const spec = variant === 'glass' && size === 'sm' ? LABEL_GLASS_SM : (LABEL_SIZES[size] ?? LABEL_SIZES.lg)
       const color = LABEL_TEXT_COLOR[variant] ?? LABEL_TEXT_COLOR.filled
+      const filledXs = variant === 'filled' && size === 'xs'
 
       return {
         root: {
@@ -343,7 +350,10 @@ export const componentTheme: MantineThemeComponents = {
 
           /** Painted by the stylesheet, which has the gradients and the mask the border needs. */
           '--badge-bg': 'transparent',
-          '--badge-color': color,
+          '--badge-color': filledXs ? 'var(--sds-surfaces-text-primary)' : color,
+          /* The XS filled pill's own fill and shadow, read by the stylesheet's `filled` rule. */
+          '--sds-label-tonal-bg': filledXs ? 'var(--sds-neutral-01)' : undefined,
+          '--sds-label-shadow': filledXs ? '0 0 6px 1px var(--sds-glass-shadow)' : undefined,
           /** Width and style only — the stylesheet paints the outline variant's gradient border. */
           '--badge-bd': `${spec.border}px solid transparent`,
           /** Kept in step with the border above: Mantine sizes the icon slots against it. */

@@ -28,6 +28,7 @@ export {
 } from './components/CapabilityMap'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
 export { Chip, type ChipProps } from './components/Chip'
+export { AnchorNav, type AnchorNavProps, type AnchorNavItem } from './components/AnchorNav'
 export { Divider, type DividerProps, type DividerTone } from './components/Divider'
 export {
   Footer,

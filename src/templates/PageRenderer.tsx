@@ -90,6 +90,7 @@ import {
   IconGlassSites,
   IconGlassSupplierPortals,
   IconSearch,
+  IconTime,
   IconShoppingCart1,
   IconUser1,
 } from '../icons'
@@ -107,6 +108,7 @@ import {
 } from './story-filters'
 import type {
   ArticleBlock,
+  BlogPostSpec,
   CardSpec,
   GlassIconName,
   HeroSpec,
@@ -488,7 +490,15 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       breadcrumb={hero.breadcrumbs?.length ? <Breadcrumbs trail={hero.breadcrumbs} /> : undefined}
-      label={hero.logo ? <img className={classes.heroLogo} src={hero.logo.src} alt={hero.logo.alt} /> : undefined}
+      label={
+        hero.logo ? (
+          <img className={classes.heroLogo} src={hero.logo.src} alt={hero.logo.alt} />
+        ) : hero.label ? (
+          <Label variant="gradient" size="lg">
+            {hero.label}
+          </Label>
+        ) : undefined
+      }
       /*
        * The page's own arrival. A rendered page is a marketing page by definition — it is what this
        * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
@@ -496,7 +506,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        */
       entrance
       title={
-        <h1>
+        <h1 style={hero.titleMaxWidth ? { maxWidth: hero.titleMaxWidth } : undefined}>
           {hero.title.text}
           {hero.title.highlight ? (
             <>
@@ -971,6 +981,278 @@ function ResourceCard({ card }: { card: CardSpec }) {
       title={card.title}
       description={card.description}
     />
+  )
+}
+
+/* ------------------------------------------------------------------ the blog hub */
+
+/** The heading every blog shelf shares: a title, an optional line, and `View All` on the trailing edge. */
+function blogShelfTitle(spec: { title: string; description?: string; action?: LinkRef }) {
+  return (
+    <SectionTitle
+      title={spec.title}
+      description={spec.description}
+      actions={
+        spec.action ? (
+          <MantineButton
+            component="a"
+            href={spec.action.href}
+            variant="outline"
+            size="md"
+            rightSection={<IconArrowRight />}
+          >
+            {spec.action.label}
+          </MantineButton>
+        ) : undefined
+      }
+    />
+  )
+}
+
+/**
+ * A post card's foot, as `Blog Hub` draws it: a 36px portrait, the name over the date, the read time
+ * behind a clock — then the topics, 14px and dot-separated. `inline` puts the topics on the byline's
+ * row, right-aligned, which is the lead card's wider foot; otherwise they take a row of their own.
+ */
+type BlogTagStyle = 'text' | 'pill' | 'caps'
+
+/** A post's topics: dot-separated text or small caps, or a row of XS filled labels. */
+function BlogTags({ tags, tagStyle = 'text' }: { tags?: string[]; tagStyle?: BlogTagStyle }) {
+  return tags?.length ? (
+    <ul className={classes.blogTags} data-style={tagStyle} aria-label="Topics">
+      {tags.map((tag) => (
+        <li key={tag}>
+          {tagStyle === 'pill' ? (
+            <Label variant="filled" size="xs">
+              {tag}
+            </Label>
+          ) : (
+            tag
+          )}
+        </li>
+      ))}
+    </ul>
+  ) : null
+}
+
+type BlogBylineLayout = 'stacked' | 'inline'
+
+function BlogByline({
+  post,
+  inline,
+  tags = true,
+  tagStyle,
+  layout = 'stacked',
+  avatarSize = 36,
+}: {
+  post: BlogPostSpec
+  inline?: boolean
+  tags?: boolean
+  tagStyle?: BlogTagStyle
+  layout?: BlogBylineLayout
+  /** The stacked byline's portrait — 36 in the hub frame, 32 in `Common Cards` `Type=Blog`. */
+  avatarSize?: number
+}) {
+  /*
+   * `Common Cards` `Type=Blog` (node `24980:63861`): one row — a 28px portrait 8 from the name, then the
+   * date and read time behind 4px dots. No clock; the read time is set semibold instead.
+   */
+  if (layout === 'inline') {
+    return (
+      <div className={classes.blogByline}>
+        <div className={classes.blogBylineRow}>
+          {post.author ? (
+            <>
+              <Avatar
+                src={post.author.avatar?.src}
+                alt=""
+                name={post.author.name}
+                size={28}
+                color="blue"
+                variant="filled"
+                className={post.author.brand ? classes.blogAvatarBrand : undefined}
+              />
+              <span className={classes.blogBylineName}>{post.author.name}</span>
+            </>
+          ) : null}
+          {post.date ? <span className={classes.blogBylineDate}>{post.date}</span> : null}
+          {post.readTime ? <span className={classes.blogBylineReadInline}>{post.readTime}</span> : null}
+        </div>
+        {tags ? <BlogTags tags={post.tags} tagStyle={tagStyle} /> : null}
+      </div>
+    )
+  }
+
+  return (
+    <div className={classes.blogByline} data-inline={inline || undefined}>
+      <div className={classes.blogBylineAuthor}>
+        {post.author ? (
+          <Avatar
+            src={post.author.avatar?.src}
+            alt=""
+            name={post.author.name}
+            size={avatarSize}
+            color="blue"
+            variant="filled"
+            className={post.author.brand ? classes.blogAvatarBrand : undefined}
+          />
+        ) : null}
+        {post.author || post.date ? (
+          <span className={classes.blogBylineWho}>
+            {post.author ? <span className={classes.blogBylineName}>{post.author.name}</span> : null}
+            {post.date ? <span className={classes.blogBylineDate}>{post.date}</span> : null}
+          </span>
+        ) : null}
+        {post.readTime ? (
+          <span className={classes.blogBylineRead}>
+            <IconTime aria-hidden />
+            {post.readTime}
+          </span>
+        ) : null}
+      </div>
+      {tags ? <BlogTags tags={post.tags} tagStyle={tagStyle} /> : null}
+    </div>
+  )
+}
+
+/**
+ * One post. `vertical` is the grid's card and the shelf's lead — the picture bled to the edge, 20px
+ * under it. `horizontal` is the shelf's stacked card: a 200x133 picture leading, the text beside it.
+ * `glass` by default, because every one of them is a link; `plain` takes the surface and its padding
+ * away and leaves the hover on the picture, as the resource card does.
+ */
+function BlogPostCard({
+  post,
+  align = 'vertical',
+  card = 'glass',
+  tagPosition = 'bottom',
+  tagStyle = 'text',
+  byline = 'stacked',
+  inlineTags,
+}: {
+  post: BlogPostSpec
+  align?: 'vertical' | 'horizontal'
+  card?: 'glass' | 'plain' | 'overlay' | 'blog' | 'blogGlass'
+  tagPosition?: 'top' | 'bottom'
+  tagStyle?: BlogTagStyle
+  byline?: BlogBylineLayout
+  inlineTags?: boolean
+}) {
+  /*
+   * The two `Common Cards` blog cells fix their topics as small caps over the title — the cell, not a
+   * choice. `Blog- no padding` is plain; `Type=Blog` keeps the glass surface.
+   */
+  const blogCell = card === 'blog'
+  const blogGlass = card === 'blogGlass'
+  if (blogCell || blogGlass) {
+    tagPosition = 'top'
+    tagStyle = 'caps'
+  }
+  const top = tagPosition === 'top'
+  const plain = card === 'plain' || blogCell
+  /* The overlay has no row to sit its text beside, so a horizontal card falls back to glass. */
+  const overlay = card === 'overlay' && align === 'vertical'
+  return (
+    <Card
+      component="a"
+      href={post.href}
+      surface={plain ? 'none' : 'glass'}
+      interactive
+      align={align}
+      imageSide="leading"
+      padding={plain || overlay ? 'none' : align === 'vertical' ? 'content' : 'all'}
+      className={classes.blogCard}
+      data-blog-align={align}
+      data-overlay={overlay || undefined}
+      data-card={card}
+      data-byline={byline}
+      image={
+        overlay ? (
+          /* A bare image, so it fills the 4:5 card rather than holding `Image`'s 3:2 box inside it. */
+          <img src={post.image.src} alt={post.image.alt} />
+        ) : (
+          <Image src={post.image.src} alt={post.image.alt} ratio="3:2" />
+        )
+      }
+      hero={top ? <BlogTags tags={post.tags} tagStyle={tagStyle} /> : undefined}
+      title={post.title}
+      /* Pills take a row of their own under the byline, as the frame draws them, even on the lead card. */
+      bottom={
+        <BlogByline
+          post={post}
+          inline={inlineTags && !top && tagStyle === 'text'}
+          tags={!top}
+          tagStyle={tagStyle}
+          layout={byline}
+          avatarSize={blogGlass ? 32 : undefined}
+        />
+      }
+    />
+  )
+}
+
+/** `Featured Blogs`, `Most Recent Blogs` — three across at 24px, or two columns of compact rows. */
+function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGrid' }> }) {
+  return (
+    <Section title={blogShelfTitle(spec)}>
+      <SimpleGrid
+        cols={spec.align === 'horizontal' ? { base: 1, md: 2 } : { base: 1, sm: 2, md: 3 }}
+        spacing={spec.align === 'horizontal' ? 16 : 24}
+        /* Rows 40 apart, so a second row of cards reads as a new row rather than more of the first. */
+        verticalSpacing={spec.align === 'horizontal' ? 16 : 40}
+      >
+        {spec.posts.map((post) => (
+          <BlogPostCard
+            key={post.href}
+            post={post}
+            align={spec.align}
+            card={spec.card}
+            tagPosition={spec.tagPosition}
+            tagStyle={spec.tagStyle}
+            byline={spec.byline}
+          />
+        ))}
+      </SimpleGrid>
+    </Section>
+  )
+}
+
+/** A topic shelf: the lead post beside a stack of the next ones, the two columns ending together. */
+function BlogFeatureSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogFeature' }> }) {
+  return (
+    <Section title={blogShelfTitle(spec)}>
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing={24}>
+        <BlogPostCard
+          post={spec.lead}
+          card={spec.card}
+          tagPosition={spec.tagPosition}
+          tagStyle={spec.tagStyle}
+          byline={spec.byline}
+          inlineTags
+        />
+        {/*
+         * Cards with no surface have no edge to tell one row from the next, so the stack rules them off.
+         * Each card sits in a row of its own so the rule belongs to the row, not to the card.
+         */}
+        <div
+          className={classes.blogStack}
+          data-divided={spec.card === 'plain' || spec.card === 'blog' || undefined}
+        >
+          {spec.posts.map((post) => (
+            <div key={post.href} className={classes.blogStackRow}>
+              <BlogPostCard
+                post={post}
+                card={spec.card}
+                tagPosition={spec.tagPosition}
+                tagStyle={spec.tagStyle}
+                byline={spec.byline}
+                align="horizontal"
+              />
+            </div>
+          ))}
+        </div>
+      </SimpleGrid>
+    </Section>
   )
 }
 
@@ -2735,6 +3017,10 @@ function renderSection(spec: SectionSpec, index: number) {
       return <HighlightTextSection key={index} spec={spec} />
     case 'statsBar':
       return <StatsBarSection key={index} spec={spec} />
+    case 'blogGrid':
+      return <BlogGridSection key={index} spec={spec} />
+    case 'blogFeature':
+      return <BlogFeatureSection key={index} spec={spec} />
     default: {
       /* A new section type in the data with no renderer is a mistake worth failing the build over. */
       const never: never = spec
