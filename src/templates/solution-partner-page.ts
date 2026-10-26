@@ -236,6 +236,7 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       tables: [
         {
           label: 'Program Benefits',
+          tab: 'Benefits',
           groups: [
             {
               label: 'Financial & Compensation',
@@ -267,6 +268,7 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
         },
         {
           label: 'Program Requirements',
+          tab: 'Requirements',
           groups: [
             {
               label: 'Program Performance',

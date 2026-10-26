@@ -2111,11 +2111,17 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
             <Group justify="space-between" align="center" wrap="wrap" gap={16}>
               {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
               {spec.tables.length > 1 ? (
-                <Tabs variant="pills" value={view} onChange={(v) => setView(v ?? view)}>
-                  <Tabs.List>
+                /* Full width on a phone, so the two pills share the row instead of pushing past it. */
+                <Tabs
+                  variant="pills"
+                  w={{ base: '100%', sm: 360 }}
+                  value={view}
+                  onChange={(v) => setView(v ?? view)}
+                >
+                  <Tabs.List grow>
                     {spec.tables.map((t) => (
                       <Tabs.Tab key={t.label} value={t.label}>
-                        {t.label}
+                        {t.tab ?? t.label}
                       </Tabs.Tab>
                     ))}
                   </Tabs.List>
