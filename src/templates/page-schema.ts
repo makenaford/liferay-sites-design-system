@@ -646,6 +646,8 @@ type SectionBody =
       overviewTitle?: string
       tables: {
         label: string
+        /** The pill's shorter name — `Benefits` under a `Program Overview` heading. @default label */
+        tab?: string
         groups: { label: string; rows: { label: string; values: (boolean | string | { level: number })[] }[] }[]
         note?: string
       }[]

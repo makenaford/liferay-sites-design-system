@@ -12572,6 +12572,8 @@ a.secondaryNavTitle:focus-visible {
 }
 
 .comparisonScroll {
+  /* The containing block for visually hidden labels inside, so they scroll with the table, not the page. */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--sds-card-static-line);
   border-radius: 12px;
