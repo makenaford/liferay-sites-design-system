@@ -137,7 +137,14 @@ export interface HeroSpec {
    * itself: it is drawn as text, not a link, and marked as the current page.
    */
   breadcrumbs?: LinkRef[]
+  /** The pill directly over the heading — the blog hub's `Liferay Blogs`. Drawn at the Large size. */
+  label?: string
   title: Headline
+  /**
+   * A cap on the heading's width, in px. For a hero with no media column, whose heading would otherwise
+   * run the full width and under the corner bubble — the blog hub holds its at 800.
+   */
+  titleMaxWidth?: number
   /**
    * The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. Optional: a
    * solution hero answers with its value props instead.
@@ -238,6 +245,28 @@ export interface HeroSpec {
   /** `2 Minute Read` — a medium glass tag under the description, for a page with no byline to carry it. */
   readTime?: string
   media?: ImageRef
+}
+
+/**
+ * One post on the blog hub — the `Common Cards` the `Blog Hub` frame draws in every shelf. Everything
+ * the card shows is the post's own: its cover, its title, who wrote it, when, how long it takes, and
+ * up to three topics, dot-separated at the foot.
+ */
+export interface BlogPostSpec {
+  title: string
+  href: string
+  image: ImageRef
+  /**
+   * Without one the byline is the date and read time alone — not every post names who wrote it. `brand`
+   * marks an author that is the company rather than a person — `Liferay Team` — whose portrait is the
+   * logo on `Brand/Primary` inside the glass line.
+   */
+  author?: { name: string; avatar?: ImageRef; brand?: boolean }
+  /** As the card prints it — `October 20, 2026`. A post with no date on its page leaves it out. */
+  date?: string
+  /** As the card prints it — `2 Min Read`. */
+  readTime?: string
+  tags?: string[]
 }
 
 /** The person under a post — the blog's `Author` card at the foot of the article. */
@@ -797,6 +826,75 @@ type SectionBody =
       title?: string
       description?: string
       stats: StatSpec[]
+    }
+  /**
+   * `Blog Hub` (node `25025:51238`) — `Featured Blogs` and `Most Recent Blogs`. Three columns at a 24px
+   * gap of `BlogPostSpec` cards: the picture bled to the card's edge, then the title, the byline and the
+   * topics. Its own type rather than a `resourceGrid` card, because a post's foot is a byline — who,
+   * when, how long — which no `CardSpec` field says.
+   */
+  | {
+      type: 'blogGrid'
+      title: string
+      description?: string
+      action?: LinkRef
+      /**
+       * `glass` is the frame's card — a glass surface with the text inset 20px. `plain` drops the surface
+       * and its padding, so the picture and text sit on the page itself, the way `resourceGrid`'s
+       * `resource` card does. `overlay` sets the text over the picture on a dark scrim — a taller, 4:5
+       * image-led card; vertical only. `blog` is `Common Cards` `Type=Blog- no padding` (node
+       * `25025:53104`): `plain`, with the topics always in small caps over the title, a 16px rhythm
+       * between every part, and the date in primary text. `blogGlass` is `Common Cards` `Type=Blog`
+       * (node `24980:63861`): the glass card, small-caps topics over the title 16 above it, and a
+       * stacked byline with a 32px portrait 4px from the name. @default 'glass'
+       */
+      card?: 'glass' | 'plain' | 'overlay' | 'blog' | 'blogGlass'
+      /**
+       * `horizontal` lays the grid out as two columns of the shelf's compact horizontal cards — a list
+       * that fits more posts in less height. @default 'vertical'
+       */
+      align?: 'vertical' | 'horizontal'
+      /**
+       * Where a post's topics sit. `bottom` is the frame's — under the byline. `top` puts them over the
+       * title, where they read as the post's kind before its headline. @default 'bottom'
+       */
+      tagPosition?: 'top' | 'bottom'
+      /**
+       * How the topics are drawn. `text` is the first frame's — 14px secondary text, dot-separated.
+       * `pill` is the updated frame's (node `25025:51278`) — `Label CTA` `Style=Filled, Size=XS`, one per
+       * topic. `caps` is `Small Caps/Small Caps Smaller/Semi Bold` — 12px uppercase, 6% tracking,
+       * dot-separated — as the `Blog- no padding` cell sets its topics. @default 'text'
+       */
+      tagStyle?: 'text' | 'pill' | 'caps'
+      /**
+       * How the byline is laid out. `stacked` is the hub frame's — a 36px portrait beside the name over
+       * the date, then the read time behind a clock. `inline` is the `Common Cards` `Type=Blog` cell
+       * (node `24980:63861`) — one row: a 28px portrait, then name, date and read time, dot-separated.
+       * @default 'stacked'
+       */
+      byline?: 'stacked' | 'inline'
+      posts: BlogPostSpec[]
+    }
+  /**
+   * `Blog Hub` -> `Digital Experience` (node `25025:51280`) — one topic's shelf. A lead post on the left
+   * as a tall card, and the next ones stacked on the right as horizontal cards with a 200x133 picture
+   * leading. Two equal columns at a 24px gap; under 992 the stack drops under the lead.
+   */
+  | {
+      type: 'blogFeature'
+      title: string
+      description?: string
+      action?: LinkRef
+      /** See `blogGrid`. `overlay` applies to the lead only. @default 'glass' */
+      card?: 'glass' | 'plain' | 'overlay' | 'blog' | 'blogGlass'
+      /** See `blogGrid`. @default 'bottom' */
+      tagPosition?: 'top' | 'bottom'
+      /** See `blogGrid`. @default 'text' */
+      tagStyle?: 'text' | 'pill' | 'caps'
+      /** See `blogGrid`. @default 'stacked' */
+      byline?: 'stacked' | 'inline'
+      lead: BlogPostSpec
+      posts: BlogPostSpec[]
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
   | { type: 'logoMarquee'; label: string; logos: string[] }

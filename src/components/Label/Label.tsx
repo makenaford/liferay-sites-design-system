@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from 'react'
 import { Badge } from '@mantine/core'
 import type { BadgeProps, ElementProps } from '@mantine/core'
 
-export type LabelSize = 'sm' | 'md' | 'lg'
+export type LabelSize = 'xs' | 'sm' | 'md' | 'lg'
 /**
  * Figma `Label CTA`'s `Style` axis.
  *
@@ -21,7 +21,7 @@ export interface LabelProps
    * `light` the flat tonal fill, `outline` the gradient stroke on no fill.
    */
   variant?: LabelVariant
-  /** Figma Size. Large 40px, Medium 32px, Small 22px tall, each with its own corner radius. */
+  /** Figma Size. Large 40px, Medium 32px, Small 22px, XS 23px tall, each with its own corner radius. */
   size?: LabelSize
   /** Icon placed before the label — Figma's `Show Icon`. */
   leftSection?: ReactNode
@@ -41,7 +41,7 @@ export interface LabelProps
  * | Style = Gradient | `variant="filled"` |
  * | Style = Tonal | `variant="light"` (default) |
  * | Style = Outline | `variant="outline"` |
- * | Size = Large / Medium / Small | `size="lg" \| "md" \| "sm"` (default `lg`) |
+ * | Size = Large / Medium / Small / XS | `size="lg" \| "md" \| "sm" \| "xs"` (default `lg`) |
  * | Show Icon + its instance swap | `leftSection` |
  * | Text | `children` |
  *

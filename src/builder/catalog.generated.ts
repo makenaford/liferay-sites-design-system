@@ -60,6 +60,16 @@ export const CATALOG: ComponentSpec[] = [
     unsupported: ["autoplay"],
   },
   {
+    name: "AnchorNav",
+    doc: "AnchorNav — a row of jump links to the sections of the page it sits on, under `SecondaryNav`.",
+    props: [
+      { name: "label", kind: "text", default: "On this page", doc: "What assistive technology calls the bar." },
+      { name: "spy", kind: "boolean", default: "true", doc: "Follow the page: the link for the section under the bar is marked current as the reader scrolls." },
+      { name: "sticky", kind: "boolean", default: "true", doc: "Stick under the product bar (or the header, without one) once the page scrolls to it." },
+    ],
+    unsupported: ["items"],
+  },
+  {
     name: "Banner",
     doc: "Banner — the announcement band across the top of the site.",
     props: [
@@ -332,7 +342,7 @@ export const CATALOG: ComponentSpec[] = [
     doc: "Label — Figma `Label CTA` component set (node `15121:237267`).",
     props: [
       { name: "variant", kind: "enum", options: ["filled", "glass", "gradient"], default: "filled", doc: "Figma Style — named Gradient / Tonal / Outline there. `filled` is the two-stop gradient, `light` the flat tonal fill, `outline` the gradient stroke on no fill." },
-      { name: "size", kind: "enum", options: ["sm", "md", "lg"], default: "lg", doc: "Figma Size. Large 40px, Medium 32px, Small 22px tall, each with its own corner radius." },
+      { name: "size", kind: "enum", options: ["xs", "sm", "md", "lg"], default: "lg", doc: "Figma Size. Large 40px, Medium 32px, Small 22px, XS 23px tall, each with its own corner radius." },
       { name: "leftSection", kind: "slot", doc: "Icon placed before the label — Figma's `Show Icon`." },
       { name: "rightSection", kind: "slot", doc: "Icon placed after the label. Not an axis in Figma; the icon slot there is leading only." },
       { name: "radius", kind: "enum", options: ["round", "md", "sm"], source: "story" },
