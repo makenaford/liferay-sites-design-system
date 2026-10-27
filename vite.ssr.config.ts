@@ -25,7 +25,18 @@ export default defineConfig({
     ssr: true,
     outDir: 'dist/ssr',
     emptyOutDir: true,
-    lib: { entry: 'src/builder/server.ts', formats: ['es'], fileName: () => 'server.js' },
+    /*
+     * An SSR entry rather than a `lib` build. Library mode inlines every imported asset as base64, which
+     * was harmless while the renderer drew only components — and fatal once it drew the built-page
+     * sections, whose heroes import footage: the Worker went from 2MB to 17MB. An SSR build instead
+     * turns an asset import into its URL, `/assets/<name>-<hash>.<ext>`, and the hash is the file's
+     * content — so it is the very file the client build already emitted and the Worker already serves.
+     * `ssrEmitAssets` stays off: the files are the client build's to ship, not this one's.
+     */
+    rollupOptions: {
+      input: 'src/builder/server.ts',
+      output: { format: 'es', entryFileNames: 'server.js' },
+    },
     /*
      * The stylesheet the client build already produces is the one that gets inlined, so the copy this
      * build would emit is dead weight. It cannot be turned off entirely, but it can be kept in one

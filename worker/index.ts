@@ -197,7 +197,14 @@ export default {
      */
     if (url.pathname === '/edit/new') {
       if (!who.authed) return signInNeeded(url)
-      return Response.redirect(new URL(`/edit/${newName()}`, url).toString(), 302)
+      /*
+       * `?template=` rides along to the new page, where the browser reads it and fills the page from
+       * that built page — the same place the default skeleton is written, for the same reason (see
+       * `src/builder/starter.ts`). Only a short slug is carried; the builder ignores one it does not know.
+       */
+      const template = url.searchParams.get('template')
+      const query = template && /^[a-z0-9-]{1,64}$/.test(template) ? `?template=${template}` : ''
+      return Response.redirect(new URL(`/edit/${newName()}${query}`, url).toString(), 302)
     }
 
     if (url.pathname.startsWith('/api/')) {

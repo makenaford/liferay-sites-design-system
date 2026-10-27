@@ -3073,6 +3073,28 @@ export interface BubbleOverride {
   css?: boolean
 }
 
+/**
+ * One built-page hero, on its own — what the page builder places as a node.
+ *
+ * `PageRenderer` draws a whole `PageSpec` at once; the builder holds a page as separate nodes it can
+ * reorder and edit, so it needs the hero and each section as components in their own right. Same
+ * render functions underneath, so a section looks identical in Storybook and on the canvas.
+ */
+export function HeroBlock({ hero }: { hero: HeroSpec }) {
+  return <>{renderHero(hero)}</>
+}
+
+/** One built-page section, with its anchor wrapper when it has one. See `HeroBlock`. */
+export function SectionBlock({ section }: { section: SectionSpec }) {
+  return section.anchor ? (
+    <div id={section.anchor} className={classes.sectionAnchor}>
+      {renderSection(section, 0)}
+    </div>
+  ) : (
+    <>{renderSection(section, 0)}</>
+  )
+}
+
 export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {
   return (
     <>

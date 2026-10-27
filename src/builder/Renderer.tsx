@@ -81,6 +81,7 @@ function renderNode(
   const context: RenderContext = {
     node,
     props: node.props,
+    editing: marked,
     children: (slot) => (node.slots[slot] ?? []).map((child) => doc.nodes[child]).filter(Boolean),
     renderNode: (child) => renderNode(doc, child, marked, path),
     slot: (slot) => {

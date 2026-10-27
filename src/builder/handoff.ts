@@ -39,6 +39,20 @@ const LIBRARY = new Set(CATALOG.map((entry) => entry.name))
  */
 const PRIMITIVES = new Set(['Heading', 'Paragraph', 'Stack', 'Row', 'Grid', 'Spacer', 'Plain'])
 
+/**
+ * The built-page blocks, and the module each one is exported from. Not library exports: they are
+ * the templates' own renderers, which is what the Storybook built pages are drawn with.
+ */
+const TEMPLATE_IMPORTS: Record<string, string> = {
+  HeroBlock: 'templates/PageRenderer',
+  SectionBlock: 'templates/PageRenderer',
+  SiteHeader: 'templates/shared',
+  SiteFooter: 'templates/shared',
+  SecondaryNav: '',
+  IconGlassBlogs: '',
+  BLOG_NAV: 'templates/blog-nav',
+}
+
 const quote = (value: string) => (value.includes("'") ? `"${value}"` : `'${value}'`)
 
 /** `variant="filled"`, `columns={3}`, `interactive`. */
@@ -86,7 +100,48 @@ const children = (ctx: Context, node: PageNode, slot: string): PageNode[] =>
  * Consulted before the generic path, which is what keeps the generic path simple enough to be
  * obviously correct for the other seventeen.
  */
+/** A JSON value as a JSX attribute, across lines so a long section still reads as code. */
+function dataAttribute(ctx: Context, name: string, value: unknown, indent: number) {
+  const [first, ...rest] = JSON.stringify(value, null, 2).split('\n')
+  ctx.out.push(indent, `${name}={${first}`)
+  for (const line of rest.slice(0, -1)) ctx.out.push(indent, line)
+  ctx.out.push(indent, `${rest[rest.length - 1] ?? ''}}`)
+}
+
 const COMPOUND: Record<string, (ctx: Context, node: PageNode, indent: number) => void> = {
+  /* ---------------------------------------------------------------- built-page blocks */
+  SiteHeader: (ctx, _node, indent) => {
+    ctx.used.add('SiteHeader')
+    ctx.out.push(indent, '<SiteHeader />')
+  },
+  SiteFooter: (ctx, node, indent) => {
+    ctx.used.add('SiteFooter')
+    ctx.out.push(indent, node.props.cta === false ? '<SiteFooter cta={false} />' : '<SiteFooter />')
+  },
+  BlogNav: (ctx, node, indent) => {
+    for (const name of ['SecondaryNav', 'IconGlassBlogs', 'BLOG_NAV']) ctx.used.add(name)
+    ctx.out.push(indent, '<SecondaryNav')
+    ctx.out.push(indent + 1, 'title="Blogs"')
+    ctx.out.push(indent + 1, 'icon={<IconGlassBlogs size={32} />}')
+    ctx.out.push(indent + 1, 'titleHref="#"')
+    ctx.out.push(indent + 1, 'items={BLOG_NAV}')
+    if (node.props.progress) ctx.out.push(indent + 1, 'progress')
+    ctx.out.push(indent + 1, 'mt={65}')
+    ctx.out.push(indent, '/>')
+  },
+  PageHero: (ctx, node, indent) => {
+    ctx.used.add('HeroBlock')
+    ctx.out.push(indent, '<HeroBlock')
+    dataAttribute(ctx, 'hero', node.data ?? {}, indent + 1)
+    ctx.out.push(indent, '/>')
+  },
+  PageSection: (ctx, node, indent) => {
+    ctx.used.add('SectionBlock')
+    ctx.out.push(indent, '<SectionBlock')
+    dataAttribute(ctx, 'section', node.data ?? {}, indent + 1)
+    ctx.out.push(indent, '/>')
+  },
+
   /* A bare string in the source, not an element — there is no `Plain` to import. */
   Plain: (ctx, node, indent) => ctx.out.push(indent, String(node.props.content ?? '')),
 
@@ -324,9 +379,17 @@ export function handoff(doc: PageDocument): Handoff {
 
   const fromLibrary = [...ctx.used].filter((name) => LIBRARY.has(name) || name.startsWith('Icon')).sort()
   const fromBuilder = [...ctx.used].filter((name) => PRIMITIVES.has(name)).sort()
+  const templates = new Map<string, string[]>()
+  for (const name of [...ctx.used].sort()) {
+    const from = TEMPLATE_IMPORTS[name]
+    if (from) templates.set(from, [...(templates.get(from) ?? []), name])
+  }
+  // `SecondaryNav` and the glass icon are library exports, reached through the blog nav block.
+  const libraryNames = [...new Set([...fromLibrary, ...[...ctx.used].filter((name) => TEMPLATE_IMPORTS[name] === '')])].sort()
 
   const header = [
-    fromLibrary.length ? `import { ${fromLibrary.join(', ')} } from 'liferay-sites-design-system'` : '',
+    libraryNames.length ? `import { ${libraryNames.join(', ')} } from 'liferay-sites-design-system'` : '',
+    ...[...templates].map(([from, names]) => `import { ${names.join(', ')} } from 'liferay-sites-design-system/${from}'`),
     fromBuilder.length
       ? `import { ${fromBuilder.join(', ')} } from 'liferay-sites-design-system/builder/primitives'`
       : '',

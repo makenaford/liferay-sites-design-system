@@ -33,6 +33,8 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm builder:worker` | The Worker and the Durable Objects, locally, on port 8787 |
 | `pnpm builder:catalog` | Regenerate the builder's component catalogue from the components' types |
 | `pnpm builder:catalog:check` | Fail if the catalogue is out of date (used by `pnpm build`) |
+| `pnpm builder:sections` | Regenerate the built-page section editor's schema from `page-schema.ts` |
+| `pnpm builder:sections:check` | Fail if that schema is out of date (used by `pnpm build`) |
 | `pnpm builder:build` | Build the builder app and the server-side renderer into `dist/` |
 | `pnpm builder:ssr` | Just the server-side renderer, for `/p/:id.html` |
 | `pnpm builder:deploy` | Build the app and deploy the Worker to Cloudflare |
@@ -183,6 +185,34 @@ header's nav is a list of objects rather than elements, so its items are held as
 read — not rendered — into `items`, the same way `Tabs` reads its tabs. `MegaMenu` is still out: it is
 a navigation panel several columns deep, and a component that takes twenty nodes to fill in is worse
 than no component until somebody asks for it.
+
+### Built pages in the builder
+
+The Storybook `Built Pages` open in the builder as editable copies. **Start from a built page** on the
+home screen makes a new page from one of them — Blog Hub, the partner pages, Customer Story, the page
+templates — with the site header, the hero, every section and the footer in place. The copy is the
+designer's from then on; editing it never changes the story it came from.
+
+Those pages are not component trees. A `cardGrid` is a title and a list of cards, and how the cards are
+laid out belongs to the section *type* — the rule `src/templates/page-schema.ts` is written around. So
+the builder holds each one as a node with `data` (a `HeroSpec` or a `SectionSpec`) and draws it with the
+same `PageRenderer` functions the stories use: a section on the canvas is the section in Storybook.
+
+The form that edits them is generated, like the component catalogue. `scripts/build-section-schema.mjs`
+reads `page-schema.ts` through the TypeScript compiler into `src/builder/sections.generated.ts`, and
+`src/builder/DataEditor.tsx` draws it: text for a string, a select for a union of literals, a list with
+add / reorder / remove for an array, the image uploader for an `ImageRef`. Add a field or a section type
+to the schema and it is editable on the next build; `pnpm build` fails if the generated file has
+drifted (`pnpm builder:sections` regenerates it). Changing a section's type replaces its content with a
+worked example of the new type — the catalogue's blank, or the first one on any built page.
+
+Not yet editable: `Home` and `Japan Home`, which are drawn by the bespoke `HomePage.tsx` rather than a
+`PageSpec`, and the Blog Hub's jump-to-section menu in the blog nav.
+
+The renderer in the Worker is an SSR build rather than a `lib` build since this change. Library mode
+inlines every imported asset as base64, and the section heroes import footage — the Worker went from
+2MB to 17MB. An SSR build turns an import into its content-hashed URL, which is the file the client build
+already ships.
 
 ### Why a Durable Object per page
 

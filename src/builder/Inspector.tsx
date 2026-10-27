@@ -35,7 +35,12 @@ import {
   Textarea,
   Tooltip,
 } from '@mantine/core'
-import type { PageDocument, PropValue } from './document'
+import type { JsonObject, JsonValue, PageDocument, PageNode, PropValue } from './document'
+import { DataEditor } from './DataEditor'
+import { ROOTS } from './sections.generated'
+import { exampleSection } from './templates'
+import { sectionTypeFor } from '../templates/section-catalog'
+import type { SectionSpec } from '../templates/page-schema'
 import type { PropSpec } from './catalog.generated'
 import { allowedIn, entryFor, humanise, PALETTE, REGISTRY, slotsOf } from './registry'
 import { presetsFor } from './presets'
@@ -46,6 +51,8 @@ export interface InspectorProps {
   selectedId: string | null
   onSelect: (id: string) => void
   onProp: (id: string, name: string, value: PropValue | undefined) => void
+  /** Replaces a built-page block's structured content. */
+  onData: (id: string, data: JsonObject) => void
   /** Refills the node from one of its component's Storybook stories. */
   onPreset: (id: string, preset: string) => void
   onAdd: (parentId: string, slot: string, component: string) => void
@@ -173,7 +180,7 @@ function Control({
  * takes a path to something already in the deployment, which is how the library's own artwork gets
  * onto a page without being uploaded a second time.
  */
-function ImageField({
+export function ImageField({
   spec,
   value,
   pageId,
@@ -311,6 +318,7 @@ export function Inspector({
   selectedId,
   onSelect,
   onProp,
+  onData,
   onPreset,
   onAdd,
   onRemove,
@@ -364,6 +372,21 @@ export function Inspector({
             onPick={(preset) => onPreset(node.id, preset)}
           />
 
+          {entry.dataRoot && node.data !== undefined ? (
+            /*
+             * Keyed by node: the form keeps which lists are open in local state, and that state belongs
+             * to this section rather than following the selection to the next one.
+             */
+            <DataEditor
+              key={node.id}
+              shape={ROOTS[entry.dataRoot]}
+              value={node.data as JsonValue}
+              pageId={doc.id}
+              onChange={(data) => onData(node.id, data as JsonObject)}
+              example={(type) => exampleSection(type) as unknown as JsonValue | undefined}
+            />
+          ) : null}
+
           {controls.length ? (
             controls.map((prop) => (
               <Control
@@ -374,7 +397,7 @@ export function Inspector({
                 onChange={(value) => onProp(node.id, prop.name, value)}
               />
             ))
-          ) : (
+          ) : entry.dataRoot ? null : (
             <Text size="xs" c="dimmed">
               Nothing to set on this one — it is all in what you put inside it.
             </Text>
@@ -571,7 +594,7 @@ function Slot({
                 style={{ flex: 1, cursor: 'pointer' }}
                 onClick={() => onSelect(child.id)}
               >
-                {summarise(child.component, child.props)}
+                {summarise(child.component, child.props, child.data)}
               </Text>
               <ActionIcon
                 size="xs"
@@ -595,8 +618,15 @@ function Slot({
 }
 
 /** What a node is called in a list: its own text if it has any, otherwise its component's name. */
-export function summarise(component: string, props: Record<string, PropValue>): string {
+export function summarise(component: string, props: Record<string, PropValue>, data?: PageNode['data']): string {
   const entry = entryFor(component)
+  if (entry?.dataRoot === 'SectionSpec' && data && typeof data === 'object' && !Array.isArray(data)) {
+    const section = data as unknown as SectionSpec
+    // Ten types arrived with a page rather than the palette and have no catalogue label: `blogGrid` reads `Blog grid`.
+    const kind = sectionTypeFor(section.type)?.label ?? label(section.type).replace(/ ([A-Z])/g, (_, c: string) => ` ${c.toLowerCase()}`)
+    const title = 'title' in section && typeof section.title === 'string' ? section.title : ''
+    return title ? `${kind} · ${title.length > 32 ? `${title.slice(0, 31)}…` : title}` : kind
+  }
   const text = entry?.textProp ? props[entry.textProp] : undefined
   const written = String(text ?? props.title ?? props.content ?? props.label ?? '').trim()
   if (written) return written.length > 40 ? `${written.slice(0, 39)}…` : written

@@ -36,12 +36,15 @@ import {
   move,
   refill,
   remove,
+  setData,
   setProp,
+  type JsonObject,
   type PropValue,
 } from './document'
 import { entryFor } from './registry'
 import { presetsFor } from './presets'
 import { isNew, starterContent } from './starter'
+import { BUILT_PAGES, builtPageContent, builtPageFor, type BuiltPage } from './templates'
 import { placementFor, refusal } from './placement'
 import { usePage } from './usePage'
 import { Canvas } from './Canvas'
@@ -204,6 +207,8 @@ function Home() {
         </Text>
       ) : null}
 
+      {me?.authed ? <StartFrom /> : null}
+
       {recent.length ? (
         <Box mt="40">
           <Text fz="sm" fw={600} mb="4">
@@ -231,6 +236,49 @@ function Home() {
           </Stack>
         </Box>
       ) : null}
+    </Box>
+  )
+}
+
+/**
+ * The Storybook built pages, as starting points.
+ *
+ * Each link makes a new page that is a copy of that one — header, hero, every section, footer — so
+ * the next version of a page starts from the current one rather than from a skeleton.
+ */
+function StartFrom() {
+  const groups = BUILT_PAGES.reduce<Record<string, BuiltPage[]>>((acc, page) => {
+    ;(acc[page.group] ??= []).push(page)
+    return acc
+  }, {})
+
+  return (
+    <Box mt="40">
+      <Text fz="sm" fw={600} mb="4">
+        Start from a built page
+      </Text>
+      <Text size="xs" c="dimmed" mb="12">
+        A new page that copies one of the Storybook built pages. Your edits change the copy, never the
+        original.
+      </Text>
+      <Stack gap="md">
+        {Object.entries(groups).map(([group, pages]) => (
+          <Box key={group}>
+            <Text size="10px" tt="uppercase" fw={700} c="dimmed" mb="4">
+              {group}
+            </Text>
+            <Group gap="xs">
+              {pages.map((page) => (
+                <Tooltip key={page.id} label={page.hint} disabled={!page.hint} multiline w={260}>
+                  <Button component="a" href={`${SIGN_IN}?template=${page.id}`} size="xs" variant="default">
+                    {page.label}
+                  </Button>
+                </Tooltip>
+              ))}
+            </Group>
+          </Box>
+        ))}
+      </Stack>
     </Box>
   )
 }
@@ -337,7 +385,14 @@ function Builder({ id }: { id: string }) {
   useEffect(() => {
     if (seeded.current || !doc || !isNew(doc)) return
     seeded.current = true
-    edit((current) => ({ ...current, ...starterContent() }))
+
+    // `/edit/new?template=blog-hub` starts the page as a copy of that built page instead.
+    const built = builtPageFor(new URLSearchParams(location.search).get('template'))
+    if (location.search) history.replaceState({}, '', location.pathname)
+
+    edit((current) =>
+      built ? { ...current, title: built.label, ...builtPageContent(built) } : { ...current, ...starterContent() },
+    )
   }, [doc, edit])
 
   useEffect(() => {
@@ -366,6 +421,11 @@ function Builder({ id }: { id: string }) {
   const onProp = useCallback(
     (nodeId: string, name: string, value: PropValue | undefined) =>
       edit((current) => setProp(current, nodeId, name, value)),
+    [edit],
+  )
+
+  const onData = useCallback(
+    (nodeId: string, data: JsonObject) => edit((current) => setData(current, nodeId, data)),
     [edit],
   )
 
@@ -600,6 +660,7 @@ function Builder({ id }: { id: string }) {
           selectedId={selectedId}
           onSelect={setSelectedId}
           onProp={onProp}
+          onData={onData}
           onPreset={onPreset}
           onAdd={(parentId, slot, component) => {
             const entry = entryFor(component)
