@@ -29,7 +29,7 @@ import trendingPortals from '../../assets/home/trending/web-portals.jpg'
 /*
  * The whole Home page, expressed as data instead of JSX.
  *
- * Every one of its eleven sections renders to the same height as the hand-written `Built Pages/Home`,
+ * Every one of its eleven sections renders to the same height as the hand-written `Built Pages/Home/Home`,
  * and everything below is content: no widths, no gaps, no `bleed`, no component imports. All of that
  * lives in `PageRenderer`, once per section type.
  *

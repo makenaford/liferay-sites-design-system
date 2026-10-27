@@ -8,6 +8,9 @@ export type SectionTitleAlign = 'left' | 'center'
 /** `h2` down to `h6`. A section heading is almost always `h2`, which is the default. */
 export type SectionTitleOrder = 2 | 3 | 4 | 5 | 6
 
+/** Where the action sits against the heading block, beside it. */
+export type SectionTitleActionsAlign = 'top' | 'bottom'
+
 export interface SectionTitleProps extends BoxProps, Omit<ElementProps<'div'>, 'title'> {
   /** Figma's `Title`. Rendered as a real heading — see `order`. */
   title?: ReactNode
@@ -18,6 +21,14 @@ export interface SectionTitleProps extends BoxProps, Omit<ElementProps<'div'>, '
    * The `Centered- Description` cell has no slot, but centring one is harmless and occasionally wanted.
    */
   actions?: ReactNode
+  /**
+   * Where the action sits beside the heading block. `bottom` — the default — lines it up with the last
+   * line of the description; `top` lines it up with the heading, as the blog hub's topic shelves draw it
+   * (node `25025:51284`). Ignored once the action has wrapped under the text.
+   *
+   * @default 'bottom'
+   */
+  actionsAlign?: SectionTitleActionsAlign
   /** Figma's `Type`: `Left- Description` or `Centered- Description`. @default 'left' */
   align?: SectionTitleAlign
   /**
@@ -54,7 +65,7 @@ export interface SectionTitleProps extends BoxProps, Omit<ElementProps<'div'>, '
  * of two things.
  */
 export const SectionTitle = forwardRef<HTMLDivElement, SectionTitleProps>(function SectionTitle(
-  { title, description, actions, align = 'left', order = 2, className, ...props },
+  { title, description, actions, actionsAlign = 'bottom', align = 'left', order = 2, className, ...props },
   ref,
 ) {
   const Heading = `h${order}` as 'h2'
@@ -64,6 +75,7 @@ export const SectionTitle = forwardRef<HTMLDivElement, SectionTitleProps>(functi
       ref={ref}
       className={[classes.sectionTitleRoot, className].filter(Boolean).join(' ')}
       data-align={align}
+      data-actions-align={actionsAlign === 'top' ? 'top' : undefined}
       {...props}
     >
       {title || description ? (

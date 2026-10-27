@@ -207,6 +207,215 @@ const POST_DATA = {
     readTime: '17 Min Read',
     tags: ['AI'],
   },
+  structuredContent: {
+    title: 'What Is Structured Content? Why It Matters When Choosing a CMS',
+    href: 'https://www.liferay.com/blog/what-is-structured-content-why-it-matters-when-choosing-a-cms',
+    image: {
+      src: doc(
+        '10182/539867977/structured-content-building-blocks.jpg/a957225c-e42c-7db0-b7fb-c2be4d326790/structured-content-building-blocks.jpg?version=1.0&t=1791931041087',
+      ),
+      alt: '',
+    },
+    date: 'October 26, 2026',
+    readTime: '10 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  webtownPartnerPulse: {
+    title: 'Partner Pulse: Webtown on 16 Years of Building Secure, AI-Ready Banking Portals with Liferay',
+    href: 'https://www.liferay.com/blog/partner-pulse-webtown-16-years-of-building-portals',
+    image: {
+      src: doc(
+        '10182/537711792/Partner+Pulse+-+Webtown+on+16+Years+of+Building+Portals.jpg/afc46a7d-6d69-da15-dafe-2b4e996540a9/Partner+Pulse+-+Webtown+on+16+Years+of+Building+Portals.jpg?version=1.0&t=1789470490677',
+      ),
+      alt: '',
+    },
+    date: 'September 15, 2026',
+    readTime: '12 Min Read',
+    /* The page carries a fourth, `Security`; a card shows three. */
+    tags: ['Content Management System (CMS)', 'Commerce', 'Integration'],
+  },
+  intranetContentManagement: {
+    title: 'Intranet Content Management Best Practices: How to Keep Employee Content Accurate and Findable',
+    href: 'https://www.liferay.com/blog/intranet-content-management-best-practices',
+    image: {
+      src: doc(
+        '10182/0/intranet+content+management+%281%29.jpg/f59d3e40-6cd6-f724-e202-84a19c7f2fab/intranet+content+management+%281%29.jpg?version=2.0&t=1791275234662',
+      ),
+      alt: '',
+    },
+    date: 'September 10, 2026',
+    readTime: '12 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  composableVsHeadless: {
+    title: 'Composable Commerce vs. Headless Commerce: Key Differences and How to Choose',
+    href: 'https://www.liferay.com/blog/composable-commerce-vs-headless-commerce-differences-and-how-to-choose',
+    image: {
+      src: doc(
+        '10182/0/composable+commerce+v+headless+commerce+%281%29.jpg/3e8ba0ea-e41c-8ddd-a573-845655caa387/composable+commerce+v+headless+commerce+%281%29.jpg?version=1.0&t=1787841421991',
+      ),
+      alt: '',
+    },
+    date: 'August 27, 2026',
+    readTime: '11 Min Read',
+    tags: ['Commerce'],
+  },
+  headlessVsTraditional: {
+    title: 'Headless Commerce vs. Traditional Commerce: Key Differences and How to Choose',
+    href: 'https://www.liferay.com/blog/headless-commerce-vs-traditional-commerce-key-differences-and-how-to-choose',
+    image: {
+      src: doc(
+        '10182/0/headless+commerce+v+traditional+how+to+choose+%281%29.jpeg/3f1de3e3-8d37-15c7-7c3d-7a4f71800510/headless+commerce+v+traditional+how+to+choose+%281%29.jpeg?version=1.0&t=1787839711469',
+      ),
+      alt: '',
+    },
+    date: 'August 27, 2026',
+    readTime: '11 Min Read',
+    tags: ['Commerce'],
+  },
+  b2bDataQuestions: {
+    title: '12 Questions to Ask Before Your Next B2B Data Project',
+    href: 'https://www.liferay.com/blog/questions-to-ask-before-your-next-data-project',
+    /* Served from the journal image endpoint rather than `/documents`, so the full address. */
+    image: { src: 'https://www.liferay.com/image/journal/article?img_id=535344637&t=1793045275252', alt: '' },
+    date: 'August 12, 2026',
+    readTime: '12 Min Read',
+    tags: ['Commerce'],
+  },
+  ecmHigherEducation: {
+    title: 'Enterprise Content Management for Higher Education: How To Choose the Right System',
+    href: 'https://www.liferay.com/blog/enterprise-content-management-for-higher-education',
+    image: {
+      src: doc(
+        '10182/0/higher+education+cms+%281%29.jpg/16bdbafd-663d-ea5a-650f-3445ff81ee5e/higher+education+cms+%281%29.jpg?version=2.0&t=1791275272152',
+      ),
+      alt: '',
+    },
+    date: 'August 25, 2026',
+    readTime: '13 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  ecmGovernment: {
+    title:
+      'Enterprise Content Management for Government: How Agencies Can Modernize Content, Records, and Citizen Services',
+    href: 'https://www.liferay.com/blog/enterprise-content-management-government',
+    image: {
+      src: doc(
+        '10182/0/government+building+%281%29.jpg/4f315013-91dc-3123-9654-beedbb0a1f21/government+building+%281%29.jpg?version=2.0&t=1790693504932',
+      ),
+      alt: '',
+    },
+    date: 'August 24, 2026',
+    readTime: '13 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  ecmHealthcare: {
+    title: 'The Importance of Enterprise Content Management in Healthcare',
+    href: 'https://www.liferay.com/blog/enterprise-content-management-healthcare',
+    image: {
+      src: doc(
+        '10182/0/Screenshot+2026-08-21+at+1.45.54%E2%80%AFPM+%281%29.jpg/5a6025c9-bf5b-1fbe-1b6e-2ff3a769c259/Screenshot+2026-08-21+at+1.45.54%E2%80%AFPM+%281%29.jpg?version=1.0&t=1787334546430',
+      ),
+      alt: '',
+    },
+    date: 'August 21, 2026',
+    readTime: '13 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  vibeCodingVsLowCode: {
+    title: 'Vibe Coding vs. Low-Code Solutions: Which Development Tools Fit Your Enterprise?',
+    href: 'https://www.liferay.com/blog/vibe-coding-vs-low-code-solutions-which-development-tools-fit-your-enterprise',
+    image: {
+      src: doc(
+        '10182/0/low+code+screen+%281%29.jpg/3eca6023-501b-3d67-05db-0f698e3a3f06/low+code+screen+%281%29.jpg?version=2.0&t=1791275278710',
+      ),
+      alt: '',
+    },
+    date: 'August 26, 2026',
+    readTime: '13 Min Read',
+    tags: ['Low-Code'],
+  },
+  agenticAiMarketing: {
+    title: 'Agentic AI in Marketing: The Next Evolution of Marketing Automation',
+    href: 'https://www.liferay.com/blog/agentic-ai-the-next-evolution-of-marketing-automation',
+    image: {
+      src: doc(
+        '10182/0/agentic-ai-in-marketing+%283%29.jpeg/f91802ac-2a96-0763-8efa-676c5676b38e/agentic-ai-in-marketing+%283%29.jpeg?version=1.0&t=1786643443523',
+      ),
+      alt: '',
+    },
+    date: 'August 13, 2026',
+    readTime: '15 Min Read',
+    tags: ['Low-Code'],
+  },
+  technopolisPartnerPulse: {
+    title: 'Partner Pulse: How Technopolis Embraces Digital Transformation with Liferay',
+    href: 'https://www.liferay.com/blog/customer-experience/partner-pulse-how-technopolis-embraces-digital-transformation',
+    image: {
+      src: doc(
+        '246440966/376969236/Partner+Pulse+-+How+Technopolis+Embraces+Digital+Transformation+with+Liferay_header.jpeg/45169ede-c9c7-37cd-6c8d-e65956a75935/Partner+Pulse+-+How+Technopolis+Embraces+Digital+Transformation+with+Liferay_header.jpeg?version=1.0&t=1753174867641',
+      ),
+      alt: '',
+    },
+    readTime: '1 Min Read',
+  },
+  europeanAccessibilityAct: {
+    title: 'How a DXP Can Help You Ensure Compliance With the European Accessibility Act',
+    href: 'https://www.liferay.com/blog/category/how-a-dxp-can-help-you-ensure-compliance-with-the-european-accessibility-act',
+    image: {
+      src: doc(
+        '246440966/376969236/Adobe+Express+-+file.jpg/769f4cb2-6c09-4935-fb98-f48ea6b385a6/Adobe+Express+-+file.jpg?version=1.0&t=1752525133245',
+      ),
+      alt: '',
+    },
+    readTime: '3 Min Read',
+  },
+  skodaEmployeeValue: {
+    title: 'Maximizing Employee Value at Škoda Auto',
+    href: 'https://www.liferay.com/blog/employee-experience/maximizing-employee-value-at-skoda-auto',
+    image: {
+      src: doc(
+        '246440966/376969236/Maximizing+Employee+Value+at+S%CC%8Ckoda+Auto+%281%29.jpg/24993e4c-d4d8-0146-38fc-60a3a7faf8e6/Maximizing+Employee+Value+at+S%CC%8Ckoda+Auto+%281%29.jpg?version=1.0&t=1748551436048',
+      ),
+      alt: '',
+    },
+    readTime: '4 Min Read',
+  },
+  /* The page's heading is `Innovative Student Experiences | Liferay`; the suffix is its SEO title's. */
+  innovativeStudentExperiences: {
+    title: 'Innovative Student Experiences',
+    href: 'https://www.liferay.com/blog/current-experiences/innovative-student-experiences',
+    image: {
+      src: doc(
+        '246440966/376969236/Innovative+Student+Experiences+-+3+Universities+Leading+the+Way+%281%29.jpg/e3d0c261-19f5-d4ca-ea70-1a66d6272edb/Innovative+Student+Experiences+-+3+Universities+Leading+the+Way+%281%29.jpg?version=1.0&t=1748550899198',
+      ),
+      alt: '',
+    },
+    readTime: '3 Min Read',
+  },
+  selfServiceBanking: {
+    title: 'Self Service Banking: How B2B and B2C Customers See Self Service',
+    href: 'https://www.liferay.com/blog/customer-experience/self-service-banking-how-b2b-and-b2c-customers-see-self-service',
+    image: {
+      src: doc(
+        '246440966/376969236/Self+Service+Banking+Blog+Header+%282%29.jpg/829d4cb9-eb5f-ed9c-a8aa-45a9e6e6d26b/Self+Service+Banking+Blog+Header+%282%29.jpg?version=1.0&t=1748552268525',
+      ),
+      alt: '',
+    },
+    readTime: '6 Min Read',
+  },
+  /* As above: the heading carries a ` | Liferay` suffix. */
+  implementingStudentPortals: {
+    title: 'Implementing Student Portals',
+    href: 'https://www.liferay.com/blog/liferay-experience/implementing-student-portals',
+    image: {
+      src: doc(
+        '246440966/376969236/3+Core+Considerations+When+Looking+To+Implement+a+Student+Portal+%281%29.jpg/b19e3eaa-a47e-bdeb-aa90-b432d3221abf/3+Core+Considerations+When+Looking+To+Implement+a+Student+Portal+%281%29.jpg?version=1.0&t=1748550852795',
+      ),
+      alt: '',
+    },
+    readTime: '2 Min Read',
+  },
 } satisfies Record<string, BlogPostSpec>
 
 /*
@@ -291,6 +500,92 @@ export const BLOG_HUB_PAGE: PageSpec = {
       action: { label: 'View All', href: '#' },
       lead: POSTS.aiAgentsInAction,
       posts: [POSTS.translationNotEnough, POSTS.agentGovernanceAccess, POSTS.solvingAiGovernance],
+    },
+    {
+      type: 'blogFeature',
+      title: 'Customer Experience',
+      anchor: 'customer-experience',
+      ...CARD,
+      description:
+        'CX strategy, personalization, and the customer and self-service portals that turn users into loyal customers.',
+      action: { label: 'View All', href: '#' },
+      lead: POSTS.structuredContent,
+      posts: [POSTS.evaluateCms, POSTS.webtownPartnerPulse, POSTS.intranetContentManagement],
+    },
+    {
+      type: 'blogFeature',
+      title: 'Digital Commerce',
+      anchor: 'digital-commerce',
+      ...CARD,
+      description:
+        'B2B and B2C commerce strategy and capability, from storefront design to the platforms that power them.',
+      action: { label: 'View All', href: '#' },
+      /* The first four blogs in the Resource Hub's Blog + Commerce filter, in its order. */
+      lead: POSTS.webtownPartnerPulse,
+      posts: [POSTS.composableVsHeadless, POSTS.headlessVsTraditional, POSTS.b2bDataQuestions],
+    },
+    {
+      type: 'blogFeature',
+      title: 'Industry and Public Sector',
+      anchor: 'industry-and-public-sector',
+      ...CARD,
+      description:
+        'Perspectives for government, financial services, manufacturing, and healthcare, including compliance topics like NIS2 and accessibility.',
+      action: { label: 'View All', href: '#' },
+      /* The Resource Hub's Blog + every-industry filter returns these three, in this order. */
+      lead: POSTS.ecmHigherEducation,
+      posts: [POSTS.ecmGovernment, POSTS.ecmHealthcare],
+    },
+    {
+      type: 'blogFeature',
+      title: 'Developer',
+      anchor: 'developer',
+      ...CARD,
+      description: 'Technical deep-dives, integration patterns, and architecture guidance for the teams who build.',
+      action: { label: 'View All', href: '#' },
+      /* The first four in the Resource Hub's Blog + Developer filter, in its order. */
+      lead: POSTS.vibeCodingExamples,
+      posts: [POSTS.vibeCodingDebt, POSTS.vibeCodingVsLowCode, POSTS.agenticAiMarketing],
+    },
+    {
+      type: 'blogFeature',
+      title: 'Marketing Automation',
+      anchor: 'marketing-automation',
+      ...CARD,
+      description:
+        'The martech stack, campaign orchestration, personalization at scale, and lead nurture programs that keep pipeline moving.',
+      action: { label: 'View All', href: '#' },
+      /* The first four in the Resource Hub's Blog + Marketing Automation filter, in its order. */
+      lead: POSTS.buyersWantFromAi,
+      posts: [POSTS.technopolisPartnerPulse, POSTS.europeanAccessibilityAct, POSTS.skodaEmployeeValue],
+    },
+    {
+      type: 'blogFeature',
+      title: 'SEO and Analytics',
+      anchor: 'seo-and-analytics',
+      ...CARD,
+      description:
+        'SEO, AEO and GEO for AI-driven search, content performance, and the analytics that show what is actually working.',
+      action: { label: 'View All', href: '#' },
+      /* The first four in the Resource Hub's Blog + SEO & Analytics filter, in its order. */
+      lead: POSTS.skodaEmployeeValue,
+      posts: [POSTS.innovativeStudentExperiences, POSTS.selfServiceBanking, POSTS.implementingStudentPortals],
+    },
+    /*
+     * The page's closing ask, in place of the footer's `Ready for the future?` band —
+     * `Page Action Section` (node `25037:46647`).
+     */
+    {
+      type: 'closingCta',
+      title: 'The Best of the Liferay Blog, Delivered Monthly.',
+      titleHighlight: 'Delivered Monthly',
+      description: 'Insights on digital experience, AI, and content. No fluff, just the ideas worth your time.',
+      placeholder: 'Enter Your Email',
+      submit: 'Subscribe',
+      consent: {
+        text: 'By subscribing, you agree to receive marketing emails from Liferay. You can unsubscribe at any time. See our',
+        link: { label: 'Privacy Policy', href: 'https://www.liferay.com/privacy-policy' },
+      },
     },
   ],
 }

@@ -28,7 +28,12 @@ export {
 } from './components/CapabilityMap'
 export { Carousel, type CarouselProps, type CarouselIndicators } from './components/Carousel'
 export { Chip, type ChipProps } from './components/Chip'
-export { AnchorNav, type AnchorNavProps, type AnchorNavItem } from './components/AnchorNav'
+export {
+  AnchorNav,
+  type AnchorNavProps,
+  type AnchorNavItem,
+  type AnchorNavVariant,
+} from './components/AnchorNav'
 export { Divider, type DividerProps, type DividerTone } from './components/Divider'
 export {
   Footer,
@@ -78,6 +83,7 @@ export {
   type SectionTitleProps,
   type SectionTitleAlign,
   type SectionTitleOrder,
+  type SectionTitleActionsAlign,
   type ContentMediaProps,
   type ContentMediaSide,
   type ContentMediaRatio,

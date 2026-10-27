@@ -967,13 +967,21 @@
   color: var(--sds-surfaces-text-primary);
 }
 
-/* Anything passed as a real heading or paragraph inherits the same treatment. */
-.cardRoot[data-align] :where(h1, h2, h3, h4, h5, h6) {
+/*
+ * Anything passed as a real heading or paragraph inherits the same treatment.
+ *
+ * At **zero specificity**, so it resets a bare `h2` and nothing more. It used to carry the root's
+ * class and attribute, which outranked any component that styles its own heading — a `SectionTitle`
+ * inside a card came out at 16px regular instead of its 37px bold. A heading with a class of its own
+ * now keeps it; a bare one still inherits the card's type, since the browser's own heading styles lose
+ * to any rule written here.
+ */
+:where(.cardRoot[data-align]) :where(h1, h2, h3, h4, h5, h6) {
   margin: 0;
   font: inherit;
 }
 
-.cardRoot[data-align] :where(p) {
+:where(.cardRoot[data-align]) :where(p) {
   margin: 0;
 }
 
@@ -7729,6 +7737,11 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   gap: 16px;
 }
 
+/* `actionsAlign="top"`: the action lines up with the heading rather than the description's last line. */
+.sectionTitleRoot[data-actions-align='top'] {
+  align-items: flex-start;
+}
+
 .sectionTitleRoot[data-align='center'] .sectionTitleActions {
   justify-content: center;
 }
@@ -13547,7 +13560,8 @@ a.secondaryNavTitle:focus-visible {
 .blogBylineRead > svg {
   width: 12px;
   height: 12px;
-  color: var(--sds-brand-primary-lighten-1);
+  /* `Accent/Primary Blue Accent` — #70a2ff on dark, #0b5fff on light. */
+  color: var(--sds-accent-primary-blue-accent);
 }
 
 .blogTags {
@@ -13823,6 +13837,21 @@ html:has(.anchorNav) {
   display: none;
 }
 
+/*
+ * The `Jump to` lead: what the row is for, before its first link. Regular weight in secondary text, so it
+ * reads as a caption and not as one more link. On a phone it scrolls with the links it introduces.
+ */
+.anchorNavLead {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--sds-surfaces-text-secondary);
+}
+
 .anchorNavList > li {
   display: flex;
   flex: 0 0 auto;
@@ -13881,4 +13910,166 @@ html:has(.anchorNav) {
   .anchorNav[data-sticky] {
     transition: none;
   }
+}
+
+/* --------------------------------------------------------------------------------------
+ * AnchorNav `variant="menu"` — the dropdown in `SecondaryNav`'s `action` slot.
+ *
+ * `Jump to` in 14px secondary, then a 40px button ruled like the bar's own controls — a 1px
+ * `rgba(255,255,255,0.2)` line on an 8px corner — holding the current section in 16px semibold, cut with
+ * an ellipsis past 200px, and a caret. The panel hangs 8px under it,
+ * right-aligned, on the product bar's dropdown glass; the current section is primary text over the
+ * brand-gradient line the bar variant uses, turned to stand on its left edge.
+ * ------------------------------------------------------------------------------------ */
+
+.anchorMenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Through the `nav`, to outrank the unstyled button's own border reset. */
+.anchorMenu > .anchorMenuTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--sds-surfaces-text-primary);
+  transition:
+    border-color var(--sds-motion-fast) var(--sds-motion-ease),
+    background-color var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+:where([data-mantine-color-scheme='light']) .anchorMenu > .anchorMenuTrigger {
+  border-color: var(--sds-glass-line-to);
+}
+
+.anchorMenu > .anchorMenuTrigger:hover,
+.anchorMenu > .anchorMenuTrigger[data-open] {
+  border-color: var(--sds-brand-primary-lighten-1);
+  background-color: rgb(255 255 255 / 0.04);
+}
+
+.anchorMenuTrigger:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-lighten-1);
+  outline-offset: 2px;
+}
+
+/* `Jump to`, beside the button rather than in it — 14px regular secondary, the bar variant's lead. */
+.anchorMenuLead {
+  flex: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.anchorMenuCurrent {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.anchorMenuCaret {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  transition: transform var(--sds-motion-fast) var(--sds-motion-ease);
+}
+
+.anchorMenuTrigger[data-open] .anchorMenuCaret {
+  transform: rotate(180deg);
+}
+
+.anchorMenuPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 210;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 40px));
+  max-height: min(480px, calc(100dvh - 160px));
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 10px 5px rgba(116, 164, 255, 0.1);
+}
+
+:where([data-mantine-color-scheme='light']) .anchorMenuPanel {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+  border-color: var(--sds-glass-line-to);
+}
+
+.anchorMenuPanel[hidden] {
+  display: none;
+}
+
+.anchorMenuLink {
+  position: relative;
+  display: block;
+  padding: 8px 12px 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-secondary);
+  text-decoration: none;
+}
+
+.anchorMenuLink:hover,
+.anchorMenuLink:focus-visible {
+  color: var(--sds-surfaces-text-primary);
+  background-color: rgb(255 255 255 / 0.06);
+  outline: none;
+}
+
+.anchorMenuLink[aria-current] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.anchorMenuLink[aria-current]::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 999px;
+  background-image: linear-gradient(180deg, var(--sds-brand-primary-lighten-1), var(--sds-accent-product-accent));
+}
+
+/* Land a jumped-to section under the header and the product bar, not behind them. */
+html:has(.anchorMenu) {
+  scroll-padding-top: calc(65px + 64px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anchorMenuTrigger,
+  .anchorMenuCaret {
+    transition: none;
+  }
+}
+
+/* A closing CTA's consent line: the policy link underlined, in the line's own colour. */
+.closingConsent a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

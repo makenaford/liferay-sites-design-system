@@ -45,7 +45,7 @@ function JapanHome(props: Partial<ComponentProps<typeof HomePage>>) {
 }
 
 const meta = {
-  title: 'Built Pages/Japan Home',
+  title: 'Built Pages/Home/Japan Home',
   parameters: {
     layout: 'fullscreen',
     /*
@@ -62,7 +62,7 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Japanese homepage — the same `HomePage` component as `Built Pages/Home`, rendered from `home-content.ja.ts` instead of `home-content.ts`. Nothing about the layout is forked: swapping the content object swaps every string, and the header and footer take the Japanese nav and footer copy the same way. Change a section here and it changes on both pages, which is the point of splitting the copy out.',
+          'The Japanese homepage — the same `HomePage` component as `Built Pages/Home/Home`, rendered from `home-content.ja.ts` instead of `home-content.ts`. Nothing about the layout is forked: swapping the content object swaps every string, and the header and footer take the Japanese nav and footer copy the same way. Change a section here and it changes on both pages, which is the point of splitting the copy out.',
           '',
           '**Light by default.** The story sets `colorScheme: light` as a Storybook global, so the page opens on the light canvas; the toolbar switch still works and will take it back to dark. Every colour on the page is a token, so nothing had to be re-specified for the light mode — this is the same page, in the other scheme.',
           '',

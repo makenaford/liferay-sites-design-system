@@ -2854,7 +2854,7 @@ invented copy.
 
 ### The page is one component and two content files
 
-`Built Pages/Home` and `Built Pages/Japan Home` are the *same* `HomePage`. Markup, icons, footage and
+`Built Pages/Home/Home` and `Built Pages/Home/Japan Home` are the *same* `HomePage`. Markup, icons, footage and
 layout live in `HomePage.tsx`; every string lives in a `HomeContent` object — `home-content.ts` for the
 global page, `home-content.ja.ts` for Japan — and the pictures are zipped in by position, so a locale
 supplies copy and nothing else. The chrome follows the same split: `footer-content.ts` and its `.ja`
@@ -2875,7 +2875,7 @@ content repeats itself where the file does; nothing was invented to fill the new
 
 ### The Japan page
 
-`Built Pages/Japan Home`, from `JP_Homepage_Nav_Content.xlsx`. It opens in **light** mode — the story
+`Built Pages/Home/Japan Home`, from `JP_Homepage_Nav_Content.xlsx`. It opens in **light** mode — the story
 sets the `colorScheme` global rather than restyling anything, since every colour on the page is already
 a token — and it is not simply the global page translated. The sheet marks its divergences ⚑, and they
 are carried through: a Japanese customer logo strip, eight JP-specific benefit cards pivoted from

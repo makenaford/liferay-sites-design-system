@@ -19,11 +19,18 @@ function BlogHub() {
   return (
     <>
       <SiteHeader />
-      {/* `mt` 65, the header's height: the hero reaches up behind all three bars from there. */}
-      <SecondaryNav title="Blogs" icon={<IconGlassBlogs size={32} />} titleHref="#" items={BLOG_NAV} mt={65} />
-      <AnchorNav items={JUMP_LINKS} />
+      {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
+      <SecondaryNav
+        title="Blogs"
+        icon={<IconGlassBlogs size={32} />}
+        titleHref="#"
+        items={BLOG_NAV}
+        action={<AnchorNav variant="menu" items={JUMP_LINKS} />}
+        mt={65}
+      />
       <PageRenderer page={BLOG_HUB_PAGE} />
-      <SiteFooter />
+      {/* No `Ready for the future?` band: the page closes on its own newsletter sign-up, a `closingCta`. */}
+      <SiteFooter cta={false} />
     </>
   )
 }
@@ -32,7 +39,7 @@ const meta = {
   title: 'Built Pages/Assets to Web/Blog Hub',
   parameters: {
     layout: 'fullscreen',
-    /* `padding: 0`, so the canvas shows the page's own gutter and nothing else — see `Built Pages/Home`. */
+    /* `padding: 0`, so the canvas shows the page's own gutter and nothing else — see `Built Pages/Home/Home`. */
     frame: { fullBleed: true, padding: 0 },
     docs: {
       description: {
@@ -41,7 +48,7 @@ const meta = {
           '',
           'Every shelf uses the same card: no surface or padding, so the picture is the card; the topics as `Label` `Filled` `XS` pills over the headline; and the two-line byline at the foot. It was chosen from the side-by-side in `Card Styles`, which keeps every option for reference. The other options — glass and overlay cards, text and small-caps topics, the one-row byline, the two-column list — are still on `blogGrid` and `blogFeature` if a page wants them.',
           '',
-          'The blog’s own bar sits under the header, as on a post (`Templates/Page Templates` -> `Blog`), without the reading-progress line — there is nothing to read through yet. Under it, an `AnchorNav` jumps to each shelf; its links are the shelves’ own titles, read from the sections that carry an `anchor`.',
+          'The blog’s own bar sits under the header, as on a post (`Templates/Page Templates` -> `Blog`), without the reading-progress line — there is nothing to read through yet. At its end, an `AnchorNav` menu — `Jump to` and the shelf you are in — opens onto every shelf; its links are the shelves’ own titles, read from the sections that carry an `anchor`.',
           '',
           '## Content',
           '',

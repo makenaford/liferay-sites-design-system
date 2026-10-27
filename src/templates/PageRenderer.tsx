@@ -992,12 +992,15 @@ function blogShelfTitle(spec: { title: string; description?: string; action?: Li
     <SectionTitle
       title={spec.title}
       description={spec.description}
+      /* The shelves set `View All` level with the heading (node `25025:51284`). */
+      actionsAlign="top"
       actions={
         spec.action ? (
           <MantineButton
             component="a"
             href={spec.action.href}
             variant="outline"
+            /* `Size=Medium` — 48 tall, 18px label. */
             size="md"
             rightSection={<IconArrowRight />}
           >
@@ -2840,25 +2843,44 @@ function CostCalculatorSection({ spec }: { spec: Extract<SectionSpec, { type: 'c
 function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closingCta' }> }) {
   return (
     <Section>
-      <Stack gap={24} align="center" maw={760} mx="auto">
+      {/*
+       * 1000 wide, as `Page Action Section` draws its title block (node `25037:46647`); the heading and
+       * line still keep `SectionTitle`'s own 900 measure, and the field its 600.
+       */}
+      <Stack gap={24} align="center" maw={1000} mx="auto">
         <SectionTitle
           align="center"
           order={2}
           title={highlightPhrase(spec.title, spec.titleHighlight, true)}
           description={spec.description}
         />
-        <Box component="form" w="100%" maw={596} onSubmit={(event) => event.preventDefault()}>
-          <TextInput
-            type="email"
-            aria-label="Work email"
-            placeholder={spec.placeholder}
-            containedButton={
-              <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
-                {spec.submit}
-              </Button>
-            }
-          />
-        </Box>
+        {/* The consent line sits 8px under the field, so the two are one group inside the 24px stack. */}
+        <Stack gap={8} w="100%" maw={600}>
+          <Box component="form" onSubmit={(event) => event.preventDefault()}>
+            <TextInput
+              type="email"
+              aria-label="Work email"
+              placeholder={spec.placeholder}
+              containedButton={
+                <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+                  {spec.submit}
+                </Button>
+              }
+            />
+          </Box>
+          {spec.consent ? (
+            /* `Paragraph/XX-Small` — 11/16 in primary text, the policy link underlined. */
+            <Text fz={11} lh="16px" c="var(--sds-surfaces-text-primary)" className={classes.closingConsent}>
+              {spec.consent.text}
+              {spec.consent.link ? (
+                <>
+                  {' '}
+                  <a href={spec.consent.link.href}>{spec.consent.link.label}</a>.
+                </>
+              ) : null}
+            </Text>
+          ) : null}
+        </Stack>
         {spec.links?.length ? (
           <Group gap={24} justify="center" wrap="wrap">
             {spec.links.map((link) => (

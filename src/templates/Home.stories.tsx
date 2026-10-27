@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { HomePage } from './HomePage'
 
 const meta = {
-  title: 'Built Pages/Home',
+  title: 'Built Pages/Home/Home',
   parameters: {
     layout: 'fullscreen',
     /*
@@ -129,7 +129,7 @@ function PhonePreview({ width, fitHeight, colorScheme }: MobileArgs & { colorSch
            */
           key={`${width}-${colorScheme}`}
           title={`Home page at ${width}px`}
-          src={`iframe.html?id=built-pages-home--page&viewMode=story&globals=colorScheme:${colorScheme}`}
+          src={`iframe.html?id=built-pages-home-home--page&viewMode=story&globals=colorScheme:${colorScheme}`}
           style={{
             width,
             height: fitHeight ? 'auto' : height,

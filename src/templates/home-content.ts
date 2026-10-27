@@ -1,8 +1,8 @@
 /*
  * The Home page's copy, as data.
  *
- * The page used to hold its strings inline. It now has more than one locale — `Built Pages/Home` and
- * `Built Pages/Japan Home` render the *same* `HomePage` component from two of these objects — so the
+ * The page used to hold its strings inline. It now has more than one locale — `Built Pages/Home/Home` and
+ * `Built Pages/Home/Japan Home` render the *same* `HomePage` component from two of these objects — so the
  * copy is here and the markup is in `HomePage.tsx`. Nothing in this file is a component: icons, images
  * and clips belong to the layout and are zipped in by position, so a translation is text only.
  *
