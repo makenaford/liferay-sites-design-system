@@ -39,10 +39,15 @@
  * | `GET /api/pages/:id/history` | Access |
  * | `POST /api/pages/:id/restore` | Access |
  * | `POST /api/pages/:id/share` | Access. `{ rotate: true }` replaces the code |
+ * | `POST /api/pages/:id/status` | Access. `{ status }` moves the page through review |
+ * | `GET /api/library` | Access. Every page's listing |
+ * | `GET /api/library/socket` | Access. Live library changes |
  * | `GET /p/:id.html` | Access, or the code |
  * | anything else | The builder's files. The shell is not secret; the page data behind it is |
  */
-import { PageDocument, type Env } from './PageDocument'
+import { LIBRARY_NAME, PageDocument, type Env } from './PageDocument'
+import { PageLibrary } from './PageLibrary'
+import { isPageStatus } from '../src/builder/library'
 import { cookie, identify, type Identity } from './access'
 /*
  * The renderer, built by Vite rather than by wrangler — see `vite.ssr.config.ts` for why that is not
@@ -52,7 +57,7 @@ import { cookie, identify, type Identity } from './access'
  */
 import { pageToHtml } from '#ssr'
 
-export { PageDocument }
+export { PageDocument, PageLibrary }
 
 /**
  * Page names are readable on purpose.
@@ -289,6 +294,23 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
   const segments = url.pathname.split('/').filter(Boolean) // ['api', 'pages', id?, action?, rest?]
 
   if (segments[1] === 'me') return json({ authed: who.authed, email: who.email ?? null })
+
+  /*
+   * The library is for the team, so it is Access-only throughout: a share code opens one page and
+   * says nothing about which others exist.
+   */
+  if (segments[1] === 'library') {
+    if (!who.authed) return signInNeeded(url)
+    const library = env.LIBRARY.getByName(LIBRARY_NAME)
+    if (segments[2] === 'socket') {
+      if (request.headers.get('Upgrade') !== 'websocket') return oops('Expected a WebSocket', 426)
+      return library.fetch(new Request('https://library/socket', request))
+    }
+    if (segments[2] !== undefined) return oops('No such endpoint', 404)
+    if (request.method !== 'GET') return oops('Method not allowed', 405)
+    return json(await library.list())
+  }
+
   if (segments[1] !== 'pages') return oops('No such endpoint', 404)
 
   const [, , id, action, rest] = segments
@@ -317,6 +339,7 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
        */
       const target = new URL('https://page/socket')
       if (who.authed) target.searchParams.set('write', '1')
+      if (who.authed && who.email) target.searchParams.set('by', who.email)
       return page.fetch(new Request(target, request))
     }
 
@@ -414,7 +437,17 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
 
       const { rev } = (await request.json()) as { rev?: number }
       if (typeof rev !== 'number') return oops('Which revision?', 400)
-      return json(await page.restore(rev))
+      return json(await page.restore(rev, who.email))
+    }
+
+    case 'status': {
+      const refused = editorOnly()
+      if (refused) return refused
+      if (request.method !== 'POST') return oops('Method not allowed', 405)
+
+      const { status } = ((await request.json().catch(() => ({}))) ?? {}) as { status?: unknown }
+      if (!isPageStatus(status)) return oops('Not a status', 400)
+      return json(await page.setStatus(status, who.email))
     }
 
     case 'share': {
@@ -456,7 +489,7 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
       const body = (await request.json()) as { doc?: unknown; baseRev?: number }
       if (typeof body.baseRev !== 'number') return oops('A save must say what it was based on', 400)
 
-      const result = await page.save(body.doc, body.baseRev)
+      const result = await page.save(body.doc, body.baseRev, undefined, who.email)
       // 409 is the honest answer to "I edited the version before last": the client has to look at
       // what came back before it can try again.
       return json(result, result.accepted ? 200 : 409)

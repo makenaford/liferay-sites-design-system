@@ -19,6 +19,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PageDocument } from './document'
+import type { PageMeta, PageStatus } from './library'
 
 export type Status = 'loading' | 'ready' | 'denied' | 'error'
 
@@ -31,6 +32,8 @@ const UNDO_LIMIT = 100
 interface Snapshot {
   doc: PageDocument
   editors: number
+  /** Optional only because an older Worker did not send it. */
+  meta?: PageMeta
 }
 
 /** Thrown for a 401 or 403, so the catch can tell "you may not" from "something broke". */
@@ -42,6 +45,10 @@ export interface Page {
   error: string | null
   /** How many people have this page open, this browser included. */
   editors: number
+  /** Status and authorship — see `library.ts`. `null` until the page has loaded. */
+  meta: PageMeta | null
+  /** Moves the page through review. Not an edit: no revision, no undo step. */
+  setStatus: (status: PageStatus) => Promise<void>
   /** True from the first unsaved keystroke until the Durable Object has taken it. */
   saving: boolean
   /** Applies an edit locally and schedules a save. */
@@ -65,6 +72,7 @@ export function usePage(id: string | null, key?: string | null): Page {
   const [status, setStatus] = useState<Status>('loading')
   const [error, setError] = useState<string | null>(null)
   const [editors, setEditors] = useState(1)
+  const [meta, setMeta] = useState<PageMeta | null>(null)
   const [saving, setSaving] = useState(false)
   const [depth, setDepth] = useState({ undo: 0, redo: 0 })
 
@@ -123,6 +131,7 @@ export function usePage(id: string | null, key?: string | null): Page {
   /** The Durable Object took our write. Take its revision number; the content is already ours. */
   const settle = useCallback((snapshot: Snapshot) => {
     setEditors(snapshot.editors)
+    if (snapshot.meta) setMeta(snapshot.meta)
     setError(null)
     const doc = current.current
     if (!doc) return
@@ -149,6 +158,7 @@ export function usePage(id: string | null, key?: string | null): Page {
    */
   const adopt = useCallback((snapshot: Snapshot) => {
     setEditors(snapshot.editors)
+    if (snapshot.meta) setMeta(snapshot.meta)
 
     if (!dirty.current) {
       publish(snapshot.doc)
@@ -186,6 +196,7 @@ export function usePage(id: string | null, key?: string | null): Page {
         setDepth({ undo: 0, redo: 0 })
         publish(snapshot.doc)
         setEditors(snapshot.editors)
+        setMeta(snapshot.meta ?? null)
         setStatus('ready')
       })
       .catch((reason: unknown) => {
@@ -209,17 +220,22 @@ export function usePage(id: string | null, key?: string | null): Page {
         type: string
         doc?: PageDocument
         editors?: number
+        meta?: PageMeta
         message?: string
       }
       if (message.type === 'error') return setError(message.message ?? 'Save failed')
       if (!message.doc) return
 
-      const snapshot = { doc: message.doc, editors: message.editors ?? 1 }
+      const snapshot = { doc: message.doc, editors: message.editors ?? 1, meta: message.meta }
       if (message.type === 'saved') return settle(snapshot)
       if (message.type === 'rejected') return adopt(snapshot)
       // `changed`: someone else's write, or the echo of our own.
+      // A status change arrives the same way, with the revision unmoved.
       if (message.doc.rev !== current.current?.rev) adopt(snapshot)
-      else setEditors(snapshot.editors)
+      else {
+        setEditors(snapshot.editors)
+        if (snapshot.meta) setMeta(snapshot.meta)
+      }
     }
 
     return () => {
@@ -284,6 +300,24 @@ export function usePage(id: string | null, key?: string | null): Page {
     [publish, schedule],
   )
 
+  const changeStatus = useCallback(
+    async (next: PageStatus) => {
+      if (!id) return
+      const response = await fetch(`/api/pages/${id}/status`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      })
+      const body = (await response.json()) as Snapshot & { error?: string }
+      if (!response.ok) {
+        setError(body.error ?? 'Could not change the status')
+        return
+      }
+      if (body.meta) setMeta(body.meta)
+    },
+    [id],
+  )
+
   const undo = useCallback(() => step(undoStack, redoStack), [step])
   const redo = useCallback(() => step(redoStack, undoStack), [step])
 
@@ -293,6 +327,8 @@ export function usePage(id: string | null, key?: string | null): Page {
       status,
       error,
       editors,
+      meta,
+      setStatus: changeStatus,
       saving,
       edit,
       undo,
@@ -300,6 +336,6 @@ export function usePage(id: string | null, key?: string | null): Page {
       canUndo: depth.undo > 0,
       canRedo: depth.redo > 0,
     }),
-    [doc, status, error, editors, saving, edit, undo, redo, depth],
+    [doc, status, error, editors, meta, changeStatus, saving, edit, undo, redo, depth],
   )
 }

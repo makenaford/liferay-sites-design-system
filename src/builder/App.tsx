@@ -44,7 +44,8 @@ import {
 import { entryFor } from './registry'
 import { presetsFor } from './presets'
 import { isNew, starterContent } from './starter'
-import { BUILT_PAGES, builtPageContent, builtPageFor, type BuiltPage } from './templates'
+import { builtPageContent, builtPageFor } from './templates'
+import { Library, StatusMenu } from './LibraryScreen'
 import { placementFor, refusal } from './placement'
 import { usePage } from './usePage'
 import { Canvas } from './Canvas'
@@ -181,6 +182,10 @@ function Home() {
   const me = useMe()
   const [recent] = useState(readRecent)
 
+  // The team's library, for anyone signed in. What follows is for everyone else: a reader who holds
+  // share links, and the way in for someone who has not signed in yet.
+  if (me?.authed) return <Library email={me.email} />
+
   return (
     <Box maw={640} mx="auto" p="xl">
       <Text fz={32} fw={700}>
@@ -206,8 +211,6 @@ function Home() {
           Signed in as {me.email}
         </Text>
       ) : null}
-
-      {me?.authed ? <StartFrom /> : null}
 
       {recent.length ? (
         <Box mt="40">
@@ -236,49 +239,6 @@ function Home() {
           </Stack>
         </Box>
       ) : null}
-    </Box>
-  )
-}
-
-/**
- * The Storybook built pages, as starting points.
- *
- * Each link makes a new page that is a copy of that one — header, hero, every section, footer — so
- * the next version of a page starts from the current one rather than from a skeleton.
- */
-function StartFrom() {
-  const groups = BUILT_PAGES.reduce<Record<string, BuiltPage[]>>((acc, page) => {
-    ;(acc[page.group] ??= []).push(page)
-    return acc
-  }, {})
-
-  return (
-    <Box mt="40">
-      <Text fz="sm" fw={600} mb="4">
-        Start from a built page
-      </Text>
-      <Text size="xs" c="dimmed" mb="12">
-        A new page that copies one of the Storybook built pages. Your edits change the copy, never the
-        original.
-      </Text>
-      <Stack gap="md">
-        {Object.entries(groups).map(([group, pages]) => (
-          <Box key={group}>
-            <Text size="10px" tt="uppercase" fw={700} c="dimmed" mb="4">
-              {group}
-            </Text>
-            <Group gap="xs">
-              {pages.map((page) => (
-                <Tooltip key={page.id} label={page.hint} disabled={!page.hint} multiline w={260}>
-                  <Button component="a" href={`${SIGN_IN}?template=${page.id}`} size="xs" variant="default">
-                    {page.label}
-                  </Button>
-                </Tooltip>
-              ))}
-            </Group>
-          </Box>
-        ))}
-      </Stack>
     </Box>
   )
 }
@@ -391,7 +351,9 @@ function Builder({ id }: { id: string }) {
     if (location.search) history.replaceState({}, '', location.pathname)
 
     edit((current) =>
-      built ? { ...current, title: built.label, ...builtPageContent(built) } : { ...current, ...starterContent() },
+      built
+        ? { ...current, title: built.label, template: built.id, ...builtPageContent(built) }
+        : { ...current, ...starterContent() },
     )
   }, [doc, edit])
 
@@ -584,6 +546,10 @@ function Builder({ id }: { id: string }) {
           </Group>
 
           <Group gap="xs" wrap="nowrap">
+            {page.meta ? (
+              /* Not an edit: it does not save the page, move the revision, or join the undo stack. */
+              <StatusMenu status={page.meta.status} onChange={(status) => void page.setStatus(status)} />
+            ) : null}
             <SaveState saving={page.saving} error={page.error} rev={doc.rev} />
             {page.editors > 1 ? (
               <Tooltip label="People with this page open">

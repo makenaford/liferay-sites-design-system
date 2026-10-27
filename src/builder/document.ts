@@ -72,6 +72,11 @@ export interface PageDocument {
   /** The Durable Object's name. Also the URL the designer shares. */
   id: string
   title: string
+  /**
+   * The built page this one was started from — a `BUILT_PAGES` id in `templates.ts` — so the library
+   * can say "copy of Blog Hub". Set once, when the page is first filled; absent for a blank start.
+   */
+  template?: string
   /** The library is drawn in dark, and that is the default; a page may be either. */
   colorScheme: 'dark' | 'light'
   /** Top-level nodes, in order. The page itself is the one slot with no owning node. */

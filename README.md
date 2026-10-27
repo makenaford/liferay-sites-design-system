@@ -214,6 +214,35 @@ inlines every imported asset as base64, and the section heroes import footage �
 2MB to 17MB. An SSR build turns an import into its content-hashed URL, which is the file the client build
 already ships.
 
+### The library
+
+Signed in, the home screen is **the library**: every page the team has made, newest first, with its
+status, its owner, who edited it last and which built page it started from. It is live — a colleague
+moving a page to *In review* changes the row on everyone's screen — and it filters by status, by
+"only mine", and by a search over title, owner and template.
+
+There is no way to ask Cloudflare for "every Durable Object", so the pages report in. Each page's
+object pushes its listing to one `PageLibrary` object (`worker/PageLibrary.ts`) a couple of seconds
+after a burst of saves — an alarm, so typing is one report rather than one per keystroke — and that
+object keeps a row per page and pushes changes to every open library over a hibernatable WebSocket.
+The rows are derived: a page made before the library existed reports in the first time it is opened,
+and deleting a page removes its row.
+
+**Statuses** are *Draft*, *In review*, *Approved*, *Handed off* and *Archived*, changed from the
+library row or the builder's toolbar. A status lives **beside** the document in the page's object,
+not in it, so restoring an old revision cannot un-approve a page and a status change is not an edit in
+the history. Who set it and when are kept with it. The **owner** is the first person to save a page
+and **last edited by** the most recent; pages from before this have no owner recorded.
+
+The library is Access-only. A share code opens one page and says nothing about which others exist, so
+a reader without a sign-in still gets the old home screen: the pages opened in that browser.
+
+| Route | Who |
+| --- | --- |
+| `GET /api/library` | Access. Every page's listing |
+| `GET /api/library/socket` | Access. Live changes |
+| `POST /api/pages/:id/status` | Access. `{ status }` |
+
 ### Why a Durable Object per page
 
 A page being edited is a session, not a row. Every write to one page has to be ordered against every

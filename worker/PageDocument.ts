@@ -24,12 +24,16 @@
 import { DurableObject } from 'cloudflare:workers'
 import { documentProblems, emptyDocument, migrate, type PageDocument as Page } from '../src/builder/document'
 import type { AccessConfig } from './access'
+import { isPageStatus, type LibraryEntry, type PageMeta, type PageStatus } from '../src/builder/library'
+import type { PageLibrary } from './PageLibrary'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
 const HISTORY = 200
 
 export interface Env extends AccessConfig {
   PAGES: DurableObjectNamespace<PageDocument>
+  /** The index of every page. One instance, named `library` — see `PageLibrary.ts`. */
+  LIBRARY: DurableObjectNamespace<PageLibrary>
   /** The built builder — the Worker's own files, not anything a designer uploaded. */
   ASSETS: Fetcher
   /** Uploaded images. Named for what a designer does, to keep it apart from `ASSETS`. */
@@ -39,6 +43,8 @@ export interface Env extends AccessConfig {
 /** What a client is told after a write, and what a broadcast carries. */
 export interface Snapshot {
   doc: Page
+  /** Status and authorship, which live beside the document rather than in it — see `library.ts`. */
+  meta: PageMeta
   /** The number of editors currently connected, including the one being answered. */
   editors: number
 }
@@ -52,6 +58,27 @@ type Row<T> = T & Record<string, SqlStorageValue>
 type PageRow = Row<{ json: string }>
 type RevisionRow = Row<{ rev: number; at: number; json: string }>
 type ShareRow = Row<{ code: string }>
+type MetaRow = Row<{
+  status: string
+  status_by: string | null
+  status_at: number | null
+  created_by: string | null
+  created_at: number | null
+  updated_by: string | null
+  indexed: number
+}>
+
+/**
+ * How long after a save the page tells the library about it.
+ *
+ * Saves arrive every few hundred milliseconds while someone types. The library wants to know the page
+ * changed, not every keystroke of how, so a burst of saves becomes one report: the first save sets an
+ * alarm and the ones after it find it already set.
+ */
+const INDEX_AFTER = 2_000
+
+/** The library's single instance. */
+export const LIBRARY_NAME = 'library'
 
 /**
  * A share code.
@@ -115,6 +142,25 @@ export class PageDocument extends DurableObject<Env> {
           at INTEGER NOT NULL
         )
       `)
+      /*
+       * Status and authorship. One row, beside the document rather than in it, so restoring an old
+       * revision cannot un-approve a page and a status change is not an edit in the history.
+       * `indexed` says whether the library has ever heard of this page — pages made before the
+       * library existed report in the first time they are opened.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS meta (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          status TEXT NOT NULL DEFAULT 'draft',
+          status_by TEXT,
+          status_at INTEGER,
+          created_by TEXT,
+          created_at INTEGER,
+          updated_by TEXT,
+          indexed INTEGER NOT NULL DEFAULT 0
+        )
+      `)
+      ctx.storage.sql.exec('INSERT OR IGNORE INTO meta (id) VALUES (1)')
     })
   }
 
@@ -152,8 +198,27 @@ export class PageDocument extends DurableObject<Env> {
     return migrate({ ...doc, id: this.name })
   }
 
+  private metaRow(): MetaRow {
+    return this.ctx.storage.sql.exec<MetaRow>('SELECT * FROM meta WHERE id = 1').toArray()[0]
+  }
+
+  meta(): PageMeta {
+    const row = this.metaRow()
+    return {
+      status: isPageStatus(row.status) ? row.status : 'draft',
+      statusBy: row.status_by,
+      statusAt: row.status_at,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      updatedBy: row.updated_by,
+    }
+  }
+
   snapshot(): Snapshot {
-    return { doc: this.load(), editors: this.ctx.getWebSockets().length }
+    const doc = this.load()
+    // A page from before the library, opened for the first time since: it reports in now.
+    if (doc.rev > 0 && !this.metaRow().indexed) this.scheduleIndex()
+    return { doc, meta: this.meta(), editors: this.ctx.getWebSockets().length }
   }
 
   /** Every kept version, newest first — enough to populate a history list without the bodies. */
@@ -177,7 +242,7 @@ export class PageDocument extends DurableObject<Env> {
    *
    * Returns the snapshot either way — accepted or not — so a client always ends up holding the truth.
    */
-  save(incoming: unknown, baseRev: number, from?: WebSocket): Snapshot & { accepted: boolean } {
+  save(incoming: unknown, baseRev: number, from?: WebSocket, by?: string): Snapshot & { accepted: boolean } {
     const current = this.load()
 
     if (baseRev !== current.rev) return { ...this.snapshot(), accepted: false }
@@ -203,8 +268,20 @@ export class PageDocument extends DurableObject<Env> {
     this.ctx.storage.sql.exec('INSERT OR REPLACE INTO page (id, json) VALUES (1, ?)', json)
     this.ctx.storage.sql.exec('INSERT OR REPLACE INTO revisions (rev, at, json) VALUES (?, ?, ?)', doc.rev, doc.updatedAt, json)
     this.ctx.storage.sql.exec('DELETE FROM revisions WHERE rev <= ?', doc.rev - HISTORY)
+    // The first person to save a page owns it; the last one to save it is who the library names.
+    this.ctx.storage.sql.exec(
+      `UPDATE meta SET
+         updated_by = COALESCE(?, updated_by),
+         created_by = COALESCE(created_by, ?),
+         created_at = COALESCE(created_at, ?)
+       WHERE id = 1`,
+      by ?? null,
+      by ?? null,
+      doc.updatedAt,
+    )
+    this.scheduleIndex()
 
-    const snapshot = { doc, editors: this.ctx.getWebSockets().length }
+    const snapshot = { doc, meta: this.meta(), editors: this.ctx.getWebSockets().length }
     this.broadcast(snapshot, from)
     return { ...snapshot, accepted: true }
   }
@@ -216,21 +293,74 @@ export class PageDocument extends DurableObject<Env> {
    * revision and the ones after it are kept. Undoing a restore is then just another restore, and no
    * history is ever destroyed by looking at it.
    */
-  restore(rev: number): Snapshot {
+  restore(rev: number, by?: string): Snapshot {
     const row = this.ctx.storage.sql
       .exec<PageRow>('SELECT json FROM revisions WHERE rev = ?', rev)
       .toArray()[0]
     if (!row) throw new Error(`No revision ${rev}`)
 
     const current = this.load()
-    const { accepted, ...snapshot } = this.save(JSON.parse(row.json), current.rev)
+    const { accepted, ...snapshot } = this.save(JSON.parse(row.json), current.rev, undefined, by)
     void accepted
     return snapshot
   }
 
-  /** Throws the page away. The Durable Object's storage goes with it. */
+  /** Throws the page away. The Durable Object's storage goes with it, and the library forgets it. */
   async destroy(): Promise<void> {
+    await this.env.LIBRARY.getByName(LIBRARY_NAME).remove(this.name)
+    await this.ctx.storage.deleteAlarm()
     await this.ctx.storage.deleteAll()
+  }
+
+  /* ---------------------------------------------------------------- status and the library */
+
+  /**
+   * Moves the page through review. Not an edit: the revision does not move and the history does not
+   * grow. Everyone with the page open sees it change, and the library hears about it at once rather
+   * than after the save delay — a status change is the thing a colleague is watching for.
+   */
+  async setStatus(status: PageStatus, by?: string): Promise<Snapshot> {
+    if (!isPageStatus(status)) throw new Error(`No status called ${String(status)}`)
+    this.ctx.storage.sql.exec(
+      'UPDATE meta SET status = ?, status_by = ?, status_at = ? WHERE id = 1',
+      status,
+      by ?? null,
+      Date.now(),
+    )
+    const snapshot = this.snapshot()
+    this.broadcast(snapshot)
+    await this.report()
+    return snapshot
+  }
+
+  private scheduleIndex(): void {
+    void this.ctx.storage.getAlarm().then((at) => {
+      if (at === null) return this.ctx.storage.setAlarm(Date.now() + INDEX_AFTER)
+    })
+  }
+
+  /** The one thing the alarm is for. */
+  override async alarm(): Promise<void> {
+    await this.report()
+  }
+
+  /** Tells the library what this page currently is. A page nobody has written to is not listed. */
+  private async report(): Promise<void> {
+    const doc = this.load()
+    if (doc.rev === 0) return
+
+    const entry: Omit<LibraryEntry, 'indexedAt'> = {
+      ...this.meta(),
+      id: this.name,
+      title: doc.title,
+      template: doc.template ?? null,
+      colorScheme: doc.colorScheme,
+      rev: doc.rev,
+      updatedAt: doc.updatedAt,
+      sections: doc.root.length,
+    }
+    await this.env.LIBRARY.getByName(LIBRARY_NAME).upsert(entry)
+    this.ctx.storage.sql.exec('UPDATE meta SET indexed = 1 WHERE id = 1')
   }
 
   /* ---------------------------------------------------------------- sharing */
@@ -297,7 +427,12 @@ export class PageDocument extends DurableObject<Env> {
      * field would come back `undefined` on the first message after it woke — defaulting a woken
      * viewer's socket to writable.
      */
-    pair[1].serializeAttachment({ canWrite: new URL(request.url).searchParams.get('write') === '1' })
+    const params = new URL(request.url).searchParams
+    pair[1].serializeAttachment({
+      canWrite: params.get('write') === '1',
+      // Who is on the other end, for the page's "last edited by". Set by the Worker, like `write`.
+      by: params.get('by') ?? undefined,
+    })
 
     // Everyone already in the page sees the count go up. Without this, "2 editing" only ever appears
     // for whoever arrived last, which is the wrong half of the room.
@@ -323,7 +458,7 @@ export class PageDocument extends DurableObject<Env> {
 
     if (payload.type !== 'save' || typeof payload.baseRev !== 'number') return
 
-    const { canWrite } = (ws.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+    const { canWrite, by } = (ws.deserializeAttachment() ?? {}) as { canWrite?: boolean; by?: string }
     if (!canWrite) {
       return ws.send(JSON.stringify({ type: 'error', message: 'This link is read-only' }))
     }
@@ -337,7 +472,7 @@ export class PageDocument extends DurableObject<Env> {
        * revisions. The sender learns the outcome from `saved` below, which is the only answer it
        * needs.
        */
-      const result = this.save(payload.doc, payload.baseRev, ws)
+      const result = this.save(payload.doc, payload.baseRev, ws, by)
       // This tells the sender whether their edit stuck.
       ws.send(JSON.stringify({ type: result.accepted ? 'saved' : 'rejected', ...result }))
     } catch (error) {
