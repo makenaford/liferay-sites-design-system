@@ -270,6 +270,42 @@ is screens wide and always moving, and a pin measured through it drifted off the
 | `PATCH /api/pages/:id/comments/:c` | Access. `{ body }` for your own, `{ resolved }` for any thread |
 | `DELETE /api/pages/:id/comments/:c` | Access. Your own; a thread's first comment takes the thread |
 
+### Versions: the deliverable
+
+A revision is a moment; a **version** is a decision. **Versions** in the builder's right rail freezes the
+page as it is now under a name and a note — "Approved for build", "what changed and what to look at" —
+and can move the page's status in the same step, so the version records the status it was made to mark.
+Above the button is what has changed since the last version, block by block, and the button stays off
+when nothing has.
+
+A version is frozen three ways, and kept for as long as the page is:
+
+- **the document**, copied out of the history (which is trimmed) into the page's own `versions` table;
+- **the HTML**, rendered then and stored in the bucket, so a later change to a component cannot change
+  what was signed off — unlike `/p/:id.html`, which is rendered on request from the live page;
+- **the files that HTML uses.** The library's images, footage and fonts are served under
+  content-hashed names that disappear on the next deploy that changes them, so each one is copied
+  beside the version and the HTML is rewritten to point there, with absolute URLs, so a downloaded
+  copy opened from disk still finds them. Those copies are ungated, like uploaded images: they are the
+  design system's own public files.
+
+The React handoff is frozen with it. `/p/:id/v/:n` shows a version (drawn live from its frozen
+document, with a bar holding the HTML, the React and what changed since the one before), and
+`/p/:id/compare/:a/:b` shows two versions' frozen HTML side by side at desktop width, scrolling together.
+**Restore** puts a version back as the newest revision; like restoring a revision, it adds history
+rather than rewinding it. The library shows each page's newest version.
+
+"What changed" compares the top-level blocks by node id. *Moved* means outside the longest run of blocks
+that kept their order — so dragging one section to the top reports one move, not a shift of all the rest.
+
+| Route | Who |
+| --- | --- |
+| `GET /api/pages/:id/versions`, `GET …/versions/:n` | Access, or the page's code |
+| `POST /api/pages/:id/versions` | Access. `{ name, note, status? }` |
+| `POST /api/pages/:id/versions/:n/restore` | Access |
+| `GET /p/:id/v/:n.html`, `/p/:id/v/:n.tsx` | Access, or the page's code |
+| `GET /p/:id/v/:n/assets/:file` | anyone |
+
 ### Why a Durable Object per page
 
 A page being edited is a session, not a row. Every write to one page has to be ordered against every

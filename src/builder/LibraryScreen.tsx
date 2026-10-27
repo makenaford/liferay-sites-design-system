@@ -281,6 +281,11 @@ function Row({ entry }: { entry: LibraryEntry }) {
           {template ? `From ${template.label} · ` : ''}
           {entry.sections} block{entry.sections === 1 ? '' : 's'} · rev {entry.rev}
           {entry.colorScheme === 'light' ? ' · light' : ''}
+          {entry.latestVersion ? (
+            <Anchor href={`/p/${entry.id}/v/${entry.latestVersion.number}`} size="xs" c="dimmed">
+              {' · '}v{entry.latestVersion.number} {entry.latestVersion.name}
+            </Anchor>
+          ) : null}
           {entry.openComments ? (
             <Anchor href={`/p/${entry.id}`} size="xs" c="orange" fw={600}>
               {' · '}

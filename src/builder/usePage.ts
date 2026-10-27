@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PageDocument } from './document'
 import type { PageMeta, PageStatus } from './library'
 import type { CommentsState, PagePoint } from './comments'
+import type { PageVersion } from './versions'
 
 /** What the comment actions take. A thread is started on a node; a reply names its thread. */
 export type NewComment = { body: string } & ({ thread: string } | { node: string | null; point: PagePoint | null })
@@ -64,6 +65,12 @@ export interface Page {
    */
   comments: CommentsState | null
   commentActions: CommentActions
+  /** Named versions, newest first. `null` until loaded or when this reader may not see them. */
+  versions: PageVersion[] | null
+  /** Freezes the page as it is now. Resolves to the new version, or `null` when it was refused. */
+  createVersion: (input: { name: string; note: string; status?: PageStatus }) => Promise<PageVersion | null>
+  /** Puts a version back as the newest revision. */
+  restoreVersion: (number: number) => Promise<boolean>
   /** Moves the page through review. Not an edit: no revision, no undo step. */
   setStatus: (status: PageStatus) => Promise<void>
   /** True from the first unsaved keystroke until the Durable Object has taken it. */
@@ -91,6 +98,7 @@ export function usePage(id: string | null, key?: string | null): Page {
   const [editors, setEditors] = useState(1)
   const [meta, setMeta] = useState<PageMeta | null>(null)
   const [comments, setComments] = useState<CommentsState | null>(null)
+  const [versions, setVersions] = useState<PageVersion[] | null>(null)
 
   /* The fetch and the socket can deliver the conversation in either order; the newer copy wins. */
   const takeComments = useCallback((next: CommentsState) => {
@@ -238,6 +246,13 @@ export function usePage(id: string | null, key?: string | null): Page {
     const connection = new WebSocket(url)
     socket.current = connection
 
+    void fetch(`/api/pages/${id}/versions`)
+      .then(async (response) => (response.ok ? ((await response.json()) as PageVersion[]) : null))
+      .then((list) => {
+        if (live && list) setVersions(list)
+      })
+      .catch(() => undefined)
+
     // Comments: asked for by anyone, answered only for the signed in. A refusal is simply "none".
     void fetch(`/api/pages/${id}/comments`)
       .then(async (response) => (response.ok ? ((await response.json()) as CommentsState) : null))
@@ -255,6 +270,9 @@ export function usePage(id: string | null, key?: string | null): Page {
         message?: string
         version?: number
         comments?: CommentsState['comments']
+      }
+      if (message.type === 'versions' && Array.isArray((message as { versions?: unknown }).versions)) {
+        return setVersions((message as unknown as { versions: PageVersion[] }).versions)
       }
       if (message.type === 'comments' && message.comments && typeof message.version === 'number') {
         return takeComments({ version: message.version, comments: message.comments })
@@ -378,6 +396,50 @@ export function usePage(id: string | null, key?: string | null): Page {
     }
   }, [id, takeComments])
 
+  const createVersion = useCallback<Page['createVersion']>(
+    async (input) => {
+      if (!id) return null
+      const response = await fetch(`/api/pages/${id}/versions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+      const body = (await response.json().catch(() => ({}))) as {
+        version?: PageVersion
+        versions?: PageVersion[]
+        error?: string
+      }
+      if (!response.ok || !body.version) {
+        setError(body.error ?? 'The version was not saved')
+        return null
+      }
+      if (body.versions) setVersions(body.versions)
+      return body.version
+    },
+    [id],
+  )
+
+  const restoreVersion = useCallback(
+    async (number: number) => {
+      if (!id) return false
+      // Anything unsaved goes first, so the restore lands on top of it and the history keeps both.
+      if (timer.current) {
+        clearTimeout(timer.current)
+        send()
+      }
+      const response = await fetch(`/api/pages/${id}/versions/${number}/restore`, { method: 'POST' })
+      const body = (await response.json().catch(() => ({}))) as Snapshot & { error?: string }
+      if (!response.ok) {
+        setError(body.error ?? 'The version was not restored')
+        return false
+      }
+      dirty.current = false
+      adopt(body)
+      return true
+    },
+    [id, send, adopt],
+  )
+
   const undo = useCallback(() => step(undoStack, redoStack), [step])
   const redo = useCallback(() => step(redoStack, undoStack), [step])
 
@@ -390,6 +452,9 @@ export function usePage(id: string | null, key?: string | null): Page {
       meta,
       comments,
       commentActions,
+      versions,
+      createVersion,
+      restoreVersion,
       setStatus: changeStatus,
       saving,
       edit,
@@ -398,6 +463,6 @@ export function usePage(id: string | null, key?: string | null): Page {
       canUndo: depth.undo > 0,
       canRedo: depth.redo > 0,
     }),
-    [doc, status, error, editors, meta, comments, commentActions, changeStatus, saving, edit, undo, redo, depth],
+    [doc, status, error, editors, meta, comments, commentActions, versions, createVersion, restoreVersion, changeStatus, saving, edit, undo, redo, depth],
   )
 }

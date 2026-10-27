@@ -49,6 +49,8 @@ import { builtPageContent, builtPageFor } from './templates'
 import { Library, StatusMenu } from './LibraryScreen'
 import { CommentLayer, type Draft } from './CommentLayer'
 import { CommentsPanel, pinnedThreads } from './CommentsPanel'
+import { VersionsPanel } from './VersionsPanel'
+import { CompareView, VersionView } from './VersionScreens'
 import { placementFor, refusal } from './placement'
 import { usePage, type Page } from './usePage'
 import type { CommentsState } from './comments'
@@ -71,6 +73,8 @@ type Route =
   | { screen: 'home' }
   | { screen: 'edit'; id: string }
   | { screen: 'view'; id: string; key: string | null }
+  | { screen: 'version'; id: string; number: number }
+  | { screen: 'compare'; id: string; from: number; to: number }
 
 /**
  * Three routes do not need a router.
@@ -79,8 +83,14 @@ type Route =
  * builder already loads the whole component library.
  */
 function routeOf(location: Location): Route {
-  const [first, second] = location.pathname.split('/').filter(Boolean)
+  const [first, second, third, fourth, fifth] = location.pathname.split('/').filter(Boolean)
   if (first === 'edit' && second) return { screen: 'edit', id: second }
+  if (first === 'p' && second && third === 'v' && /^\d+$/.test(fourth ?? '')) {
+    return { screen: 'version', id: second, number: Number(fourth) }
+  }
+  if (first === 'p' && second && third === 'compare' && /^\d+$/.test(fourth ?? '') && /^\d+$/.test(fifth ?? '')) {
+    return { screen: 'compare', id: second, from: Number(fourth), to: Number(fifth) }
+  }
   if (first === 'p' && second) {
     return { screen: 'view', id: second, key: new URLSearchParams(location.search).get('k') }
   }
@@ -119,6 +129,8 @@ export function App() {
       {route.screen === 'home' ? <Home /> : null}
       {route.screen === 'edit' ? <Builder id={route.id} /> : null}
       {route.screen === 'view' ? <Published id={route.id} shareKey={route.key} /> : null}
+      {route.screen === 'version' ? <VersionView page={route.id} number={route.number} /> : null}
+      {route.screen === 'compare' ? <CompareView page={route.id} from={route.from} to={route.to} /> : null}
     </MantineProvider>
   )
 }
@@ -484,7 +496,7 @@ function Builder({ id }: { id: string }) {
    * next click goes back to editing.
    */
   const [commenting, setCommenting] = useState(false)
-  const [rail, setRail] = useState<'inspect' | 'comments'>('inspect')
+  const [rail, setRail] = useState<'inspect' | 'comments' | 'versions'>('inspect')
   const [activeThread, setActiveThread] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
 
@@ -833,21 +845,26 @@ function Builder({ id }: { id: string }) {
 
       {/* ------------------------------------------------ right rail */}
       <Stack gap={0} w={300} style={{ borderLeft: '1px solid var(--mantine-color-dark-4)', flex: 'none' }}>
-        {page.comments ? (
-          <Box p="xs" pb={0}>
-            <SegmentedControl
-              size="xs"
-              fullWidth
-              value={rail}
-              onChange={(value) => setRail(value as 'inspect' | 'comments')}
-              data={[
-                { value: 'inspect', label: 'Inspect' },
-                { value: 'comments', label: openThreads ? `Comments ${openThreads}` : 'Comments' },
-              ]}
-            />
-          </Box>
-        ) : null}
-        {rail === 'comments' && page.comments ? (
+        <Box p="xs" pb={0}>
+          <SegmentedControl
+            size="xs"
+            fullWidth
+            value={rail}
+            onChange={(value) => setRail(value as typeof rail)}
+            data={[
+              { value: 'inspect', label: 'Inspect' },
+              ...(page.comments
+                ? [{ value: 'comments', label: openThreads ? `Comments ${openThreads}` : 'Comments' }]
+                : []),
+              { value: 'versions', label: page.versions?.length ? `Versions ${page.versions.length}` : 'Versions' },
+            ]}
+          />
+        </Box>
+        {rail === 'versions' ? (
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+            <VersionsPanel page={page as typeof page & { doc: PageDocument }} />
+          </ScrollArea>
+        ) : rail === 'comments' && page.comments ? (
           <ScrollArea style={{ flex: 1, minHeight: 0 }}>
             <CommentsPanel
               doc={doc}

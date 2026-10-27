@@ -26,6 +26,12 @@ import { documentProblems, emptyDocument, migrate, type PageDocument as Page } f
 import type { AccessConfig } from './access'
 import { isPageStatus, type LibraryEntry, type PageMeta, type PageStatus } from '../src/builder/library'
 import type { PageLibrary } from './PageLibrary'
+import {
+  VERSION_NAME_LIMIT,
+  VERSION_NOTE_LIMIT,
+  type PageVersion,
+  type VersionSummary,
+} from '../src/builder/versions'
 import { COMMENT_LIMIT, type CommentsState, type PageComment, type PagePoint } from '../src/builder/comments'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
@@ -83,6 +89,26 @@ type CommentRow = Row<{
   resolved_at: number | null
   resolved_by: string | null
 }>
+
+type VersionRow = Row<{
+  number: number
+  name: string
+  note: string
+  rev: number
+  by: string | null
+  at: number
+  status: string
+}>
+
+const toVersion = (row: VersionRow): PageVersion => ({
+  number: row.number,
+  name: row.name,
+  note: row.note,
+  rev: row.rev,
+  by: row.by,
+  at: row.at,
+  status: isPageStatus(row.status) ? row.status : 'draft',
+})
 
 const toComment = (row: CommentRow): PageComment => ({
   id: row.id,
@@ -221,6 +247,23 @@ export class PageDocument extends DurableObject<Env> {
           edited_at INTEGER,
           resolved_at INTEGER,
           resolved_by TEXT
+        )
+      `)
+      /*
+       * Named versions. The document is copied in whole rather than pointing at `revisions`, which is
+       * trimmed: a version is kept for as long as the page is. The frozen HTML and its files are in the
+       * bucket (see the Worker); this row is what they were made from.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS versions (
+          number INTEGER PRIMARY KEY,
+          name TEXT NOT NULL,
+          note TEXT NOT NULL,
+          rev INTEGER NOT NULL,
+          by TEXT,
+          at INTEGER NOT NULL,
+          status TEXT NOT NULL,
+          json TEXT NOT NULL
         )
       `)
     })
@@ -487,6 +530,91 @@ export class PageDocument extends DurableObject<Env> {
     return row?.n ?? 0
   }
 
+  /* ---------------------------------------------------------------- versions */
+
+  versions(): PageVersion[] {
+    return this.ctx.storage.sql
+      .exec<VersionRow>('SELECT number, name, note, rev, by, at, status FROM versions ORDER BY number DESC')
+      .toArray()
+      .map(toVersion)
+  }
+
+  version(number: number): { version: PageVersion; doc: Page } | null {
+    const row = this.ctx.storage.sql
+      .exec<VersionRow & Row<{ json: string }>>('SELECT * FROM versions WHERE number = ?', number)
+      .toArray()[0]
+    if (!row) return null
+    return { version: toVersion(row), doc: migrate({ ...(JSON.parse(row.json) as Page), id: this.name }) }
+  }
+
+  /**
+   * Freezes the page as it is now. Refused for a page with nothing on it — there is nothing to hand
+   * over — and numbered from the last version, so numbers are never reused even after a deletion.
+   */
+  /**
+   * `status`, when given, is applied **as part of** freezing, so the version records it: "Mark it
+   * Handed off" on the version that was handed off, not the status the page had a moment before.
+   */
+  createVersion(name: unknown, note: unknown, by?: string, status?: unknown): { version: PageVersion; doc: Page } {
+    if (typeof name !== 'string' || !name.trim()) throw new Error('A version needs a name')
+    if (name.length > VERSION_NAME_LIMIT) throw new Error(`Version names are limited to ${VERSION_NAME_LIMIT} characters`)
+    const text = typeof note === 'string' ? note.trim() : ''
+    if (text.length > VERSION_NOTE_LIMIT) throw new Error(`Version notes are limited to ${VERSION_NOTE_LIMIT} characters`)
+
+    const doc = this.load()
+    if (doc.rev === 0 || !doc.root.length) throw new Error('There is nothing on this page to freeze yet')
+
+    if (isPageStatus(status) && status !== this.meta().status) {
+      this.ctx.storage.sql.exec(
+        'UPDATE meta SET status = ?, status_by = ?, status_at = ? WHERE id = 1',
+        status,
+        by ?? null,
+        Date.now(),
+      )
+      this.broadcast(this.snapshot())
+    }
+
+    const last = this.ctx.storage.sql.exec<Row<{ n: number | null }>>('SELECT MAX(number) AS n FROM versions').toArray()[0]
+    const number = (last?.n ?? 0) + 1
+    const at = Date.now()
+    this.ctx.storage.sql.exec(
+      'INSERT INTO versions (number, name, note, rev, by, at, status, json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      number, name.trim(), text, doc.rev, by ?? null, at, this.meta().status, JSON.stringify(doc),
+    )
+    this.versionsChanged()
+    return { version: this.version(number)!.version, doc }
+  }
+
+  /** Puts a version back as the newest revision. Like `restore`, it adds history rather than rewinding it. */
+  restoreVersion(number: number, by?: string): Snapshot {
+    const found = this.version(number)
+    if (!found) throw new Error(`No version ${number}`)
+    const { accepted, ...snapshot } = this.save(found.doc, this.load().rev, undefined, by)
+    void accepted
+    return snapshot
+  }
+
+  private latestVersion(): VersionSummary | null {
+    const row = this.ctx.storage.sql
+      .exec<VersionRow>('SELECT number, name, at FROM versions ORDER BY number DESC LIMIT 1')
+      .toArray()[0]
+    return row ? { number: row.number, name: row.name, at: row.at } : null
+  }
+
+  private versionsChanged(): void {
+    const message = JSON.stringify({ type: 'versions', versions: this.versions() })
+    for (const socket of this.ctx.getWebSockets()) {
+      const { canWrite } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+      if (!canWrite) continue
+      try {
+        socket.send(message)
+      } catch {
+        // Gone.
+      }
+    }
+    this.scheduleIndex()
+  }
+
   /* ---------------------------------------------------------------- status and the library */
 
   /**
@@ -534,6 +662,7 @@ export class PageDocument extends DurableObject<Env> {
       updatedAt: doc.updatedAt,
       sections: doc.root.length,
       openComments: this.openThreads(),
+      latestVersion: this.latestVersion(),
     }
     await this.env.LIBRARY.getByName(LIBRARY_NAME).upsert(entry)
     this.ctx.storage.sql.exec('UPDATE meta SET indexed = 1 WHERE id = 1')

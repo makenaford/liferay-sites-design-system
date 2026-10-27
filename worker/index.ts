@@ -42,6 +42,12 @@
  * | `POST /api/pages/:id/status` | Access. `{ status }` moves the page through review |
  * | `GET`/`POST /api/pages/:id/comments` | Access. The conversation; `POST` adds a thread or a reply |
  * | `PATCH`/`DELETE /api/pages/:id/comments/:c` | Access. Reword or delete your own; resolve any |
+ * | `GET /api/pages/:id/versions` | Access, or the code. The named versions |
+ * | `POST /api/pages/:id/versions` | Access. `{ name, note, status? }` freezes the page as a version |
+ * | `GET /api/pages/:id/versions/:n` | Access, or the code. A version's frozen document |
+ * | `POST /api/pages/:id/versions/:n/restore` | Access. Puts a version back as the newest revision |
+ * | `GET /p/:id/v/:n.html`, `.tsx` | Access, or the code. The frozen deliverable |
+ * | `GET /p/:id/v/:n/assets/:file` | anyone — a frozen copy of a public design-system file |
  * | `GET /api/library` | Access. Every page's listing |
  * | `GET /api/library/socket` | Access. Live library changes |
  * | `GET /p/:id.html` | Access, or the code |
@@ -57,7 +63,8 @@ import { cookie, identify, type Identity } from './access'
  * file by `alias` in `wrangler.jsonc`, so the editor sees real types and the runtime gets the bundle
  * whose CSS class names match the stylesheet.
  */
-import { pageToHtml } from '#ssr'
+import { handoff, pageToHtml } from '#ssr'
+import type { PageDocument as Page } from '../src/builder/document'
 
 export { PageDocument, PageLibrary }
 
@@ -224,6 +231,13 @@ export default {
       }
     }
 
+    // `/p/dawn-harbor-4f2/v/3.html` — a frozen version. `/p/dawn-harbor-4f2/v/3` is its page in the app.
+    const frozen = /^\/p\/([a-z0-9-]+)\/v\/(\d{1,6})\.(html|tsx)$/.exec(url.pathname)
+    if (frozen) return versionFile(request, env, url, who, frozen[1], Number(frozen[2]), frozen[3] as 'html' | 'tsx')
+
+    const frozenAsset = /^\/p\/([a-z0-9-]+)\/v\/(\d{1,6})\/assets\/([A-Za-z0-9._-]{1,128})$/.exec(url.pathname)
+    if (frozenAsset) return versionAsset(env, frozenAsset[1], Number(frozenAsset[2]), frozenAsset[3])
+
     // `/p/dawn-harbor-4f2.html` — the artefact. `/p/dawn-harbor-4f2` stays the live page.
     const artefact = /^\/p\/([a-z0-9-]+)\.html$/.exec(url.pathname)
     if (artefact) return snapshot(request, env, artefact[1], url, who)
@@ -272,6 +286,121 @@ async function snapshot(
   })
 
   return read.code ? setKeyCookie(file, id, read.code, url) : file
+}
+
+/* ------------------------------------------------------------------ frozen versions */
+
+const versionKey = (page: string, number: number, file: string) => `pages/${page}/versions/${number}/${file}`
+
+/** The largest built file copied into a version. Past this a file is linked rather than kept. */
+const FREEZE_FILE_LIMIT = 25 * 1024 * 1024
+
+/**
+ * Freezes a version's deliverable into the bucket: the HTML, the React handoff, and a copy of every
+ * built file the HTML uses.
+ *
+ * The copies are the point. The library's images, footage and fonts are served from `/assets/` under
+ * content-hashed names, and the next deploy that changes one removes the old name — so HTML that linked
+ * to them would lose its pictures the first time a component was touched. Each file is copied beside
+ * the version and the HTML is rewritten to point there, with **absolute** URLs so that a downloaded copy
+ * opened from disk still finds them. Uploaded images are already in the bucket for the life of the page,
+ * so they are only made absolute.
+ */
+async function freeze(env: Env, url: URL, id: string, number: number, doc: Page): Promise<void> {
+  let html = pageToHtml(doc, await stylesheet(env, url))
+  const origin = url.origin
+
+  const built = new Set<string>()
+  for (const match of html.matchAll(/(["'(\s,])\/assets\/([A-Za-z0-9._-]+)/g)) built.add(match[2])
+
+  const copied = new Set<string>()
+  await Promise.all(
+    [...built].map(async (file) => {
+      const response = await env.ASSETS.fetch(new URL(`/assets/${file}`, url))
+      if (!response.ok) return
+      const size = Number(response.headers.get('content-length') ?? 0)
+      if (size > FREEZE_FILE_LIMIT) return
+      await env.UPLOADS.put(versionKey(id, number, `assets/${file}`), await response.arrayBuffer(), {
+        httpMetadata: { contentType: response.headers.get('content-type') ?? 'application/octet-stream' },
+      })
+      copied.add(file)
+    }),
+  )
+
+  html = html
+    .replace(/(["'(\s,])\/assets\/([A-Za-z0-9._-]+)/g, (_whole, lead: string, file: string) =>
+      copied.has(file) ? `${lead}${origin}/p/${id}/v/${number}/assets/${file}` : `${lead}${origin}/assets/${file}`,
+    )
+    .replace(/(["'(\s,])\/api\/pages\//g, `$1${origin}/api/pages/`)
+
+  await Promise.all([
+    env.UPLOADS.put(versionKey(id, number, 'page.html'), html, {
+      httpMetadata: { contentType: 'text/html; charset=utf-8' },
+    }),
+    env.UPLOADS.put(versionKey(id, number, 'page.tsx'), handoff(doc).text, {
+      httpMetadata: { contentType: 'text/plain; charset=utf-8' },
+    }),
+  ])
+}
+
+/**
+ * A version's HTML or React, as frozen. Gated like the page.
+ *
+ * Should the stored file be missing — a freeze that failed part-way — the HTML is rendered from the
+ * version's stored document instead, and says so in a header: the right content, without the guarantee
+ * that today's components draw it the way they did then.
+ */
+async function versionFile(
+  request: Request,
+  env: Env,
+  url: URL,
+  who: Identity,
+  id: string,
+  number: number,
+  kind: 'html' | 'tsx',
+): Promise<Response> {
+  if (!VALID_ID.test(id)) return oops('Not a page id', 404)
+  const read = await mayRead(request, env, url, id, who)
+  if (!read.ok) return oops('No access to this page', 403)
+
+  const headers: Record<string, string> = {
+    'content-type': kind === 'html' ? 'text/html; charset=utf-8' : 'text/plain; charset=utf-8',
+    'content-disposition': `${kind === 'html' ? 'inline' : 'attachment'}; filename="${id}-v${number}.${kind}"`,
+    'cache-control': 'private, max-age=31536000, immutable',
+  }
+
+  const stored = await env.UPLOADS.get(versionKey(id, number, `page.${kind}`))
+  let response: Response
+  if (stored) {
+    response = new Response(stored.body, { headers })
+  } else {
+    const found = await env.PAGES.getByName(id).version(number)
+    if (!found) return oops(`No version ${number}`, 404)
+    const body = kind === 'html' ? pageToHtml(found.doc, await stylesheet(env, url)) : handoff(found.doc).text
+    response = new Response(body, { headers: { ...headers, 'cache-control': 'no-store', 'x-frozen': 'missing; rendered now' } })
+  }
+  return read.code ? setKeyCookie(response, id, read.code, url) : response
+}
+
+/**
+ * A frozen copy of a built file. Ungated, like an uploaded image and for the same reason — a downloaded
+ * version opened from disk carries no cookie — and with less at stake: these are the design system's
+ * own public images and footage, which `/assets/` already serves to anyone.
+ */
+async function versionAsset(env: Env, id: string, number: number, file: string): Promise<Response> {
+  if (!VALID_ID.test(id)) return oops('Not a page id', 404)
+  const stored = await env.UPLOADS.get(versionKey(id, number, `assets/${file}`))
+  if (!stored) return oops('No such file', 404)
+  return new Response(stored.body, {
+    headers: {
+      'content-type': stored.httpMetadata?.contentType ?? 'application/octet-stream',
+      'content-length': String(stored.size),
+      etag: stored.httpEtag,
+      'cache-control': 'public, max-age=31536000, immutable',
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src data:",
+      'x-content-type-options': 'nosniff',
+    },
+  })
 }
 
 /**
@@ -479,6 +608,46 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
       const body = (await request.json().catch(() => ({}))) as { body?: unknown; resolved?: unknown }
       if (typeof body.resolved === 'boolean') return json(await page.resolveThread(rest, body.resolved, by))
       return json(await page.editComment(rest, body.body, by))
+    }
+
+    /*
+     * Named versions — the frozen deliverable. Reading follows the page (a share code that opens the
+     * page opens what was handed over); making one is an editor's act, and does the freezing here
+     * because the Worker holds the renderer, the built files and the bucket.
+     */
+    case 'versions': {
+      // `/api/pages/:id/versions/:n/restore` — `rest` is the number, the segment after it the verb.
+      const verb = segments[5]
+      if (!rest) {
+        if (request.method === 'GET') {
+          const read = await mayRead(request, env, url, id, who)
+          return read.ok ? json(await page.versions()) : oops('No access to this page', 403)
+        }
+        const refused = editorOnly()
+        if (refused) return refused
+        if (request.method !== 'POST') return oops('Method not allowed', 405)
+
+        const body = (await request.json().catch(() => ({}))) as { name?: unknown; note?: unknown; status?: unknown }
+        const made = await page.createVersion(body.name, body.note, who.email, body.status)
+        await freeze(env, url, id, made.version.number, made.doc)
+        return json({ version: made.version, versions: await page.versions() }, 201)
+      }
+
+      const n = Number(rest)
+      if (!Number.isInteger(n) || n < 1) return oops('Not a version number', 404)
+      if (verb === 'restore') {
+        const refused = editorOnly()
+        if (refused) return refused
+        if (request.method !== 'POST') return oops('Method not allowed', 405)
+        return json(await page.restoreVersion(n, who.email))
+      }
+      if (verb !== undefined) return oops('No such endpoint', 404)
+      if (request.method !== 'GET') return oops('Method not allowed', 405)
+
+      const read = await mayRead(request, env, url, id, who)
+      if (!read.ok) return oops('No access to this page', 403)
+      const found = await page.version(n)
+      return found ? json(found) : oops(`No version ${n}`, 404)
     }
 
     case 'share': {

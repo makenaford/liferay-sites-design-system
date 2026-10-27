@@ -18,6 +18,7 @@
  * status change would show up in the history as an edit. So it lives beside the document in the page's
  * object, with who set it and when.
  */
+import type { VersionSummary } from './versions'
 
 export const PAGE_STATUSES = ['draft', 'in-review', 'approved', 'handed-off', 'archived'] as const
 
@@ -69,6 +70,8 @@ export interface LibraryEntry extends PageMeta {
   sections: number
   /** Unresolved comment threads — where a page needs attention. */
   openComments: number
+  /** The newest named version, if the page has been frozen — see `versions.ts`. */
+  latestVersion: VersionSummary | null
   /**
    * When the library last heard about this page. The builder merges a fetched list with pushed
    * updates by this, so a push that raced the fetch is neither lost nor overwritten by older data.
