@@ -14,10 +14,10 @@ function PartnerHome() {
 }
 
 const meta = {
-  title: 'Built Pages/Partner Home',
+  title: 'Built Pages/Partner Pages/Partner Home',
   parameters: {
     layout: 'fullscreen',
-    /* `padding: 0`, so the canvas shows the page's own gutter and nothing else — see `Built Pages/Home`. */
+    /* `padding: 0`, so the canvas shows the page's own gutter and nothing else — see `Built Pages/Home/Home`. */
     frame: { fullBleed: true, padding: 0 },
     docs: {
       description: {

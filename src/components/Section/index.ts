@@ -4,6 +4,7 @@ export {
   type SectionTitleProps,
   type SectionTitleAlign,
   type SectionTitleOrder,
+  type SectionTitleActionsAlign,
 } from './SectionTitle'
 export {
   ContentMedia,

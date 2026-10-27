@@ -788,6 +788,11 @@ type SectionBody =
       submit: string
       links?: LinkRef[]
       aside?: LinkRef
+      /**
+       * The fine print under the field — a newsletter's consent line, as `Page Action Section` draws it
+       * (node `25037:46647`): `Paragraph/XX-Small` 11/16, 8px under the field. `link` follows `text`.
+       */
+      consent?: { text: string; link?: LinkRef }
     }
   /**
    * Figma `Type=Quick Links` (node `24263:34142`). A left title over a grid of small horizontal cards,
