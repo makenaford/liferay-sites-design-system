@@ -7,7 +7,7 @@
  * fall apart — so the marking is done with zero-box `display: contents` spans in `Renderer.tsx` and the
  * drawing is done here, in an overlay that sits above the page and measures through to it.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Box, Text } from '@mantine/core'
 import type { PageDocument } from './document'
 import { NODE_ATTR, Renderer } from './Renderer'
@@ -29,6 +29,8 @@ export interface CanvasProps {
   /** A component name being dragged out of the palette, if any. */
   dragging: string | null
   onDrop: (component: string, overId: string | null) => void
+  /** Drawn over the page, in its coordinates — the comment pins. */
+  overlay?: ReactNode
 }
 
 /** A rectangle in the overlay's own coordinates. */
@@ -213,6 +215,7 @@ export function Canvas({
   onText,
   dragging,
   onDrop,
+  overlay,
 }: CanvasProps) {
   const frame = useRef<HTMLDivElement>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -349,6 +352,8 @@ export function Canvas({
           />
         ) : null}
       </Box>
+
+      {overlay}
     </Box>
   )
 }

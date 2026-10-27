@@ -40,6 +40,8 @@
  * | `POST /api/pages/:id/restore` | Access |
  * | `POST /api/pages/:id/share` | Access. `{ rotate: true }` replaces the code |
  * | `POST /api/pages/:id/status` | Access. `{ status }` moves the page through review |
+ * | `GET`/`POST /api/pages/:id/comments` | Access. The conversation; `POST` adds a thread or a reply |
+ * | `PATCH`/`DELETE /api/pages/:id/comments/:c` | Access. Reword or delete your own; resolve any |
  * | `GET /api/library` | Access. Every page's listing |
  * | `GET /api/library/socket` | Access. Live library changes |
  * | `GET /p/:id.html` | Access, or the code |
@@ -448,6 +450,35 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
       const { status } = ((await request.json().catch(() => ({}))) ?? {}) as { status?: unknown }
       if (!isPageStatus(status)) return oops('Not a status', 400)
       return json(await page.setStatus(status, who.email))
+    }
+
+    /*
+     * The conversation. Access-only in both directions: comments are internal, and a share code
+     * opens the page without opening what the team said about it.
+     */
+    case 'comments': {
+      const refused = editorOnly()
+      if (refused) return refused
+      const by = who.email ?? 'unknown'
+
+      if (!rest) {
+        if (request.method === 'GET') return json(await page.comments())
+        if (request.method !== 'POST') return oops('Method not allowed', 405)
+        const body = (await request.json().catch(() => ({}))) as {
+          thread?: string
+          node?: string | null
+          point?: { x: number; y: number } | null
+          body?: unknown
+        }
+        return json(await page.addComment(body, by), 201)
+      }
+
+      if (request.method === 'DELETE') return json(await page.deleteComment(rest, by))
+      if (request.method !== 'PATCH') return oops('Method not allowed', 405)
+
+      const body = (await request.json().catch(() => ({}))) as { body?: unknown; resolved?: unknown }
+      if (typeof body.resolved === 'boolean') return json(await page.resolveThread(rest, body.resolved, by))
+      return json(await page.editComment(rest, body.body, by))
     }
 
     case 'share': {

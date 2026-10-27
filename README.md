@@ -243,6 +243,33 @@ a reader without a sign-in still gets the old home screen: the pages opened in t
 | `GET /api/library/socket` | Access. Live changes |
 | `POST /api/pages/:id/status` | Access. `{ status }` |
 
+### Comments
+
+Press **C** (or **Comment**) and click anywhere on a page to pin a comment there. Threads take replies,
+are resolved and reopened by anyone signed in, and can be edited or deleted only by whoever wrote them.
+They work in two places: the builder, where the right rail switches between **Inspect** and
+**Comments**, and the shared page `/p/:id`, which for anyone signed in opens with the conversation in a
+panel beside it — so a reviewer never needs the editor, only the link. Everything is live: a reply or a
+resolution appears on every open copy of the page, and the library shows each page's open threads.
+
+A comment is pinned to a **node id and a point inside that node**, as fractions of its width and height,
+not to a position on the page. Node ids survive reordering and editing, so the pin stays on the third
+card when the cards are shuffled, and on the same spot of that card when the preview goes from desktop to
+mobile. Each comment records the revision it was written against. When its component is deleted the
+thread is kept under **On deleted components** rather than dropped.
+
+Comments live in the page's own Durable Object (a `comments` table beside the document), so they are
+ordered with everything else that happens to the page and pushed over the sockets it already holds —
+only to signed-in sockets. **Comments are internal:** a share code opens the page, not the conversation
+about it. Pins are measured against a component's outer box, not everything inside it: a marquee's track
+is screens wide and always moving, and a pin measured through it drifted off the page.
+
+| Route | Who |
+| --- | --- |
+| `GET`/`POST /api/pages/:id/comments` | Access. `POST` takes `{ node, point, body }` or `{ thread, body }` |
+| `PATCH /api/pages/:id/comments/:c` | Access. `{ body }` for your own, `{ resolved }` for any thread |
+| `DELETE /api/pages/:id/comments/:c` | Access. Your own; a thread's first comment takes the thread |
+
 ### Why a Durable Object per page
 
 A page being edited is a session, not a row. Every write to one page has to be ordered against every

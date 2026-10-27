@@ -21,6 +21,11 @@ export interface RendererProps {
    * what keeps a published page free of builder machinery while still being the same render.
    */
   marked?: boolean
+  /**
+   * Drawing into the editor's canvas. Defaults to `marked`; the shared page passes `false` with
+   * `marked` on, because it needs the markers to pin comments to and none of the editor's adjustments.
+   */
+  editing?: boolean
 }
 
 /**
@@ -63,6 +68,7 @@ function renderNode(
   id: string,
   marked: boolean,
   seen: Set<string>,
+  editing = marked,
 ): ReactNode {
   const node: PageNode | undefined = doc.nodes[id]
   if (!node) return null
@@ -81,13 +87,13 @@ function renderNode(
   const context: RenderContext = {
     node,
     props: node.props,
-    editing: marked,
+    editing,
     children: (slot) => (node.slots[slot] ?? []).map((child) => doc.nodes[child]).filter(Boolean),
-    renderNode: (child) => renderNode(doc, child, marked, path),
+    renderNode: (child) => renderNode(doc, child, marked, path, editing),
     slot: (slot) => {
       const ids = node.slots[slot] ?? []
       if (!ids.length) return undefined
-      return ids.map((child) => <Fragment key={child}>{renderNode(doc, child, marked, path)}</Fragment>)
+      return ids.map((child) => <Fragment key={child}>{renderNode(doc, child, marked, path, editing)}</Fragment>)
     },
   }
 
@@ -97,11 +103,11 @@ function renderNode(
   return <Marker key={id} id={id}>{drawn}</Marker>
 }
 
-export function Renderer({ doc, marked }: RendererProps) {
+export function Renderer({ doc, marked, editing }: RendererProps) {
   return (
     <>
       {doc.root.map((id) => (
-        <Fragment key={id}>{renderNode(doc, id, marked ?? false, new Set())}</Fragment>
+        <Fragment key={id}>{renderNode(doc, id, marked ?? false, new Set(), editing ?? marked ?? false)}</Fragment>
       ))}
     </>
   )

@@ -67,6 +67,8 @@ export interface LibraryEntry extends PageMeta {
   updatedAt: number
   /** How many top-level blocks, as a rough sense of how far along it is. */
   sections: number
+  /** Unresolved comment threads — where a page needs attention. */
+  openComments: number
   /**
    * When the library last heard about this page. The builder merges a fetched list with pushed
    * updates by this, so a push that raced the fetch is neither lost nor overwritten by older data.

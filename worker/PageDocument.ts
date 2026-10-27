@@ -26,6 +26,7 @@ import { documentProblems, emptyDocument, migrate, type PageDocument as Page } f
 import type { AccessConfig } from './access'
 import { isPageStatus, type LibraryEntry, type PageMeta, type PageStatus } from '../src/builder/library'
 import type { PageLibrary } from './PageLibrary'
+import { COMMENT_LIMIT, type CommentsState, type PageComment, type PagePoint } from '../src/builder/comments'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
 const HISTORY = 200
@@ -67,6 +68,44 @@ type MetaRow = Row<{
   updated_by: string | null
   indexed: number
 }>
+
+type CommentRow = Row<{
+  id: string
+  thread: string
+  node: string | null
+  x: number | null
+  y: number | null
+  rev: number
+  body: string
+  author: string
+  at: number
+  edited_at: number | null
+  resolved_at: number | null
+  resolved_by: string | null
+}>
+
+const toComment = (row: CommentRow): PageComment => ({
+  id: row.id,
+  thread: row.thread,
+  node: row.node,
+  point: row.x === null || row.y === null ? null : { x: row.x, y: row.y },
+  rev: row.rev,
+  body: row.body,
+  author: row.author,
+  at: row.at,
+  editedAt: row.edited_at,
+  resolvedAt: row.resolved_at,
+  resolvedBy: row.resolved_by,
+})
+
+/** A comment's body, trimmed and bounded, or an error a person can act on. */
+function cleanBody(body: unknown): string {
+  if (typeof body !== 'string' || !body.trim()) throw new Error('A comment needs some words')
+  if (body.length > COMMENT_LIMIT) throw new Error(`Comments are limited to ${COMMENT_LIMIT} characters`)
+  return body.trim()
+}
+
+const fraction = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
 
 /**
  * How long after a save the page tells the library about it.
@@ -161,6 +200,29 @@ export class PageDocument extends DurableObject<Env> {
         )
       `)
       ctx.storage.sql.exec('INSERT OR IGNORE INTO meta (id) VALUES (1)')
+      /*
+       * Comments. In the page's own object rather than somewhere shared, for the same reason as the
+       * document: every change to a page's conversation is ordered against every other one, and the
+       * object already holds the sockets of everyone looking at the page. A deleted comment is removed
+       * outright; the conversation's version lives in storage beside the table (`commentsVersion`), so a
+       * delete still moves it forward.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS comments (
+          id TEXT PRIMARY KEY,
+          thread TEXT NOT NULL,
+          node TEXT,
+          x REAL,
+          y REAL,
+          rev INTEGER NOT NULL,
+          body TEXT NOT NULL,
+          author TEXT NOT NULL,
+          at INTEGER NOT NULL,
+          edited_at INTEGER,
+          resolved_at INTEGER,
+          resolved_by TEXT
+        )
+      `)
     })
   }
 
@@ -312,6 +374,119 @@ export class PageDocument extends DurableObject<Env> {
     await this.ctx.storage.deleteAll()
   }
 
+  /* ---------------------------------------------------------------- comments */
+
+  /**
+   * When the conversation last changed. Kept in storage rather than derived from the rows, because a
+   * delete leaves no row behind to carry the time — and a client comparing versions must see a delete
+   * as newer than the list it already holds.
+   */
+  private commentsVersion = 0
+
+  private touchComments(): void {
+    this.commentsVersion = Math.max(Date.now(), this.commentsVersion + 1)
+    void this.ctx.storage.put('commentsVersion', this.commentsVersion)
+  }
+
+  async comments(): Promise<CommentsState> {
+    if (!this.commentsVersion) this.commentsVersion = (await this.ctx.storage.get<number>('commentsVersion')) ?? 0
+    const rows = this.ctx.storage.sql.exec<CommentRow>('SELECT * FROM comments ORDER BY at').toArray()
+    return { version: this.commentsVersion, comments: rows.map(toComment) }
+  }
+
+  /**
+   * A new thread, or a reply to one. A reply's node and point come from its thread — a reply is to the
+   * conversation, not to a new spot on the page.
+   */
+  async addComment(
+    input: { thread?: string; node?: string | null; point?: PagePoint | null; body?: unknown },
+    by: string,
+  ): Promise<CommentsState> {
+    const body = cleanBody(input.body)
+    const id = crypto.randomUUID()
+    const at = Date.now()
+    const rev = this.load().rev
+
+    if (input.thread) {
+      const root = this.ctx.storage.sql
+        .exec<CommentRow>('SELECT * FROM comments WHERE id = ? AND thread = id', input.thread)
+        .toArray()[0]
+      if (!root) throw new Error('No such thread')
+      this.ctx.storage.sql.exec(
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?, ?)',
+        id, root.id, rev, body, by, at,
+      )
+      // Replying to a resolved thread reopens it: somebody evidently has more to say.
+      this.ctx.storage.sql.exec('UPDATE comments SET resolved_at = NULL, resolved_by = NULL WHERE id = ?', root.id)
+    } else {
+      const node = typeof input.node === 'string' && input.node.length <= 64 ? input.node : null
+      const point = input.point && fraction(input.point.x) && fraction(input.point.y) ? input.point : null
+      this.ctx.storage.sql.exec(
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        id, id, node, point?.x ?? null, point?.y ?? null, rev, body, by, at,
+      )
+    }
+    return this.commentsChanged()
+  }
+
+  /** Only the author may reword a comment — it is their name on it. */
+  async editComment(id: string, body: unknown, by: string): Promise<CommentsState> {
+    const row = this.ownComment(id, by)
+    this.ctx.storage.sql.exec('UPDATE comments SET body = ?, edited_at = ? WHERE id = ?', cleanBody(body), Date.now(), row.id)
+    return this.commentsChanged()
+  }
+
+  /** Anyone signed in may resolve or reopen a thread; who did it is recorded. */
+  async resolveThread(thread: string, resolved: boolean, by: string): Promise<CommentsState> {
+    const found = this.ctx.storage.sql
+      .exec<CommentRow>('UPDATE comments SET resolved_at = ?, resolved_by = ? WHERE id = ? AND thread = id RETURNING *',
+        resolved ? Date.now() : null, resolved ? by : null, thread)
+      .toArray()
+    if (!found.length) throw new Error('No such thread')
+    return this.commentsChanged()
+  }
+
+  /** The author's own comment. Deleting a thread's first comment deletes the thread. */
+  async deleteComment(id: string, by: string): Promise<CommentsState> {
+    const row = this.ownComment(id, by)
+    if (row.thread === row.id) this.ctx.storage.sql.exec('DELETE FROM comments WHERE thread = ?', row.id)
+    else this.ctx.storage.sql.exec('DELETE FROM comments WHERE id = ?', row.id)
+    return this.commentsChanged()
+  }
+
+  private ownComment(id: string, by: string): CommentRow {
+    const row = this.ctx.storage.sql.exec<CommentRow>('SELECT * FROM comments WHERE id = ?', id).toArray()[0]
+    if (!row) throw new Error('No such comment')
+    if (row.author !== by) throw new Error('Only the person who wrote a comment can change it')
+    return row
+  }
+
+  /** After any change: everyone signed in sees it, and the library's open-thread count follows. */
+  private async commentsChanged(): Promise<CommentsState> {
+    this.touchComments()
+    const state = await this.comments()
+    const message = JSON.stringify({ type: 'comments', ...state })
+    for (const socket of this.ctx.getWebSockets()) {
+      // Only signed-in sockets: a share code opens the page, not the conversation about it.
+      const { canWrite } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+      if (!canWrite) continue
+      try {
+        socket.send(message)
+      } catch {
+        // Gone; the close handler tidies up.
+      }
+    }
+    this.scheduleIndex()
+    return state
+  }
+
+  private openThreads(): number {
+    const row = this.ctx.storage.sql
+      .exec<Row<{ n: number }>>('SELECT COUNT(*) AS n FROM comments WHERE thread = id AND resolved_at IS NULL')
+      .toArray()[0]
+    return row?.n ?? 0
+  }
+
   /* ---------------------------------------------------------------- status and the library */
 
   /**
@@ -358,6 +533,7 @@ export class PageDocument extends DurableObject<Env> {
       rev: doc.rev,
       updatedAt: doc.updatedAt,
       sections: doc.root.length,
+      openComments: this.openThreads(),
     }
     await this.env.LIBRARY.getByName(LIBRARY_NAME).upsert(entry)
     this.ctx.storage.sql.exec('UPDATE meta SET indexed = 1 WHERE id = 1')

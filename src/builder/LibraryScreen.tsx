@@ -281,6 +281,12 @@ function Row({ entry }: { entry: LibraryEntry }) {
           {template ? `From ${template.label} · ` : ''}
           {entry.sections} block{entry.sections === 1 ? '' : 's'} · rev {entry.rev}
           {entry.colorScheme === 'light' ? ' · light' : ''}
+          {entry.openComments ? (
+            <Anchor href={`/p/${entry.id}`} size="xs" c="orange" fw={600}>
+              {' · '}
+              {entry.openComments} open comment{entry.openComments === 1 ? '' : 's'}
+            </Anchor>
+          ) : null}
         </Text>
       </Table.Td>
       <Table.Td>

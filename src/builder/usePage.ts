@@ -20,6 +20,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PageDocument } from './document'
 import type { PageMeta, PageStatus } from './library'
+import type { CommentsState, PagePoint } from './comments'
+
+/** What the comment actions take. A thread is started on a node; a reply names its thread. */
+export type NewComment = { body: string } & ({ thread: string } | { node: string | null; point: PagePoint | null })
+
+export interface CommentActions {
+  add: (comment: NewComment) => Promise<boolean>
+  edit: (id: string, body: string) => Promise<boolean>
+  resolve: (thread: string, resolved: boolean) => Promise<boolean>
+  remove: (id: string) => Promise<boolean>
+}
 
 export type Status = 'loading' | 'ready' | 'denied' | 'error'
 
@@ -47,6 +58,12 @@ export interface Page {
   editors: number
   /** Status and authorship — see `library.ts`. `null` until the page has loaded. */
   meta: PageMeta | null
+  /**
+   * The conversation about the page, live. `null` for anyone not signed in — comments are internal —
+   * and until it has loaded.
+   */
+  comments: CommentsState | null
+  commentActions: CommentActions
   /** Moves the page through review. Not an edit: no revision, no undo step. */
   setStatus: (status: PageStatus) => Promise<void>
   /** True from the first unsaved keystroke until the Durable Object has taken it. */
@@ -73,6 +90,12 @@ export function usePage(id: string | null, key?: string | null): Page {
   const [error, setError] = useState<string | null>(null)
   const [editors, setEditors] = useState(1)
   const [meta, setMeta] = useState<PageMeta | null>(null)
+  const [comments, setComments] = useState<CommentsState | null>(null)
+
+  /* The fetch and the socket can deliver the conversation in either order; the newer copy wins. */
+  const takeComments = useCallback((next: CommentsState) => {
+    setComments((current) => (current && current.version > next.version ? current : next))
+  }, [])
   const [saving, setSaving] = useState(false)
   const [depth, setDepth] = useState({ undo: 0, redo: 0 })
 
@@ -215,6 +238,14 @@ export function usePage(id: string | null, key?: string | null): Page {
     const connection = new WebSocket(url)
     socket.current = connection
 
+    // Comments: asked for by anyone, answered only for the signed in. A refusal is simply "none".
+    void fetch(`/api/pages/${id}/comments`)
+      .then(async (response) => (response.ok ? ((await response.json()) as CommentsState) : null))
+      .then((state) => {
+        if (live && state) takeComments(state)
+      })
+      .catch(() => undefined)
+
     connection.onmessage = (event) => {
       const message = JSON.parse(event.data as string) as {
         type: string
@@ -222,6 +253,11 @@ export function usePage(id: string | null, key?: string | null): Page {
         editors?: number
         meta?: PageMeta
         message?: string
+        version?: number
+        comments?: CommentsState['comments']
+      }
+      if (message.type === 'comments' && message.comments && typeof message.version === 'number') {
+        return takeComments({ version: message.version, comments: message.comments })
       }
       if (message.type === 'error') return setError(message.message ?? 'Save failed')
       if (!message.doc) return
@@ -244,7 +280,7 @@ export function usePage(id: string | null, key?: string | null): Page {
       connection.close()
       if (timer.current) clearTimeout(timer.current)
     }
-  }, [id, key, publish, settle, adopt])
+  }, [id, key, publish, settle, adopt, takeComments])
 
   /*
    * A page with unwritten edits must not be closed silently. The timer is at most a few hundred
@@ -318,6 +354,30 @@ export function usePage(id: string | null, key?: string | null): Page {
     [id],
   )
 
+  const commentActions = useMemo<CommentActions>(() => {
+    const call = async (path: string, method: string, body?: unknown): Promise<boolean> => {
+      if (!id) return false
+      const response = await fetch(`/api/pages/${id}/comments${path}`, {
+        method,
+        headers: body ? { 'content-type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      })
+      const answer = (await response.json().catch(() => ({}))) as CommentsState & { error?: string }
+      if (!response.ok) {
+        setError(answer.error ?? 'That comment did not go through')
+        return false
+      }
+      takeComments(answer)
+      return true
+    }
+    return {
+      add: (comment) => call('', 'POST', comment),
+      edit: (commentId, body) => call(`/${commentId}`, 'PATCH', { body }),
+      resolve: (thread, resolved) => call(`/${thread}`, 'PATCH', { resolved }),
+      remove: (commentId) => call(`/${commentId}`, 'DELETE'),
+    }
+  }, [id, takeComments])
+
   const undo = useCallback(() => step(undoStack, redoStack), [step])
   const redo = useCallback(() => step(redoStack, undoStack), [step])
 
@@ -328,6 +388,8 @@ export function usePage(id: string | null, key?: string | null): Page {
       error,
       editors,
       meta,
+      comments,
+      commentActions,
       setStatus: changeStatus,
       saving,
       edit,
@@ -336,6 +398,6 @@ export function usePage(id: string | null, key?: string | null): Page {
       canUndo: depth.undo > 0,
       canRedo: depth.redo > 0,
     }),
-    [doc, status, error, editors, meta, changeStatus, saving, edit, undo, redo, depth],
+    [doc, status, error, editors, meta, comments, commentActions, changeStatus, saving, edit, undo, redo, depth],
   )
 }
