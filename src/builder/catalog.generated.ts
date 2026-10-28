@@ -480,6 +480,20 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "SpikeStat",
+    doc: "SpikeStat — TEST component for the Liferay DXP sync spike. Do not use or merge.",
+    props: [
+      { name: "value", kind: "slot", default: "845", doc: "The number itself." },
+      { name: "label", kind: "slot", default: "Months to launch", doc: "The caption under it." },
+      { name: "size", kind: "enum", options: ["md", "sm", "hero"], default: "md", doc: "Default (40px value), Small (32px) or Hero (56px, for a figure that leads a section)." },
+      { name: "tone", kind: "enum", options: ["brand", "gradient"], default: "brand", doc: "Value colour: the brand blue, or a blue-to-purple gradient across the digits." },
+      { name: "leftSection", kind: "slot", doc: "Icon before the number." },
+      { name: "rightSection", kind: "slot", doc: "Icon after the number." },
+      { name: "align", kind: "enum", options: ["left", "center"], doc: "Left as drawn, or centred for a stat sitting alone in a card." },
+      { name: "layout", kind: "enum", options: ["stacked", "inline"], doc: "Caption under the figure, or beside it on one line." },
+    ],
+  },
+  {
     name: "Stat",
     doc: "Stat — Figma `Stats Item` component set (node `15121:237366`).",
     props: [
