@@ -31,6 +31,8 @@
     "glass-icons:check": "node scripts/build-glass-icons.mjs --check",
     "glass-icons:fit": "node scripts/fit-glass-icon-viewbox.mjs",
     "glass-icons:fit:check": "node scripts/fit-glass-icon-viewbox.mjs --check",
+    "glass-icons:sync": "node scripts/sync-glass-icons.mjs",
+    "glass-icons:sync:check": "node scripts/sync-glass-icons.mjs --check",
     "icons": "node scripts/build-icons.mjs",
     "icons:check": "node scripts/build-icons.mjs --check",
     "storybook": "storybook dev -p 6006 --no-open",

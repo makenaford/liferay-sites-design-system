@@ -12,8 +12,13 @@
     "",
     "A component is named from the file name: capabilities/low-code -> IconGlassLowCode. The one clash,",
     "education/education and industries/education, is settled with an { \"path\", \"as\" } entry.",
-    "Run `pnpm glass-icons` after editing."
+    "Run `pnpm glass-icons` after editing.",
+    "",
+    "\"library\": true ships every icon under assets/glass-icons/library/ — the Marketing Assets library's",
+    "set, mirrored by `pnpm glass-icons:sync` and never edited by hand. Those are named from category and name",
+    "(library/product-modules/dxp -> IconGlassProductModulesDxp), so they never clash with the curated icons above."
   ],
+  "library": true,
   "icons": [
     "business-value/costly",
     "business-value/rapid-roi",

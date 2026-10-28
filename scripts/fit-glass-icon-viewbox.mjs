@@ -37,8 +37,9 @@
  *
  * Idempotent: run it twice and the second run writes nothing.
  *
- * Usage: node scripts/fit-glass-icon-viewbox.mjs [--check]
+ * Usage: node scripts/fit-glass-icon-viewbox.mjs [--check] [file ...]
  *   --check  exits non-zero if any icon is still cropped, without writing (for CI)
+ *   file     fit only these files rather than every icon in both folders
  */
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -59,7 +60,9 @@ function walk(dir) {
   })
 }
 
-const files = dirs.filter(existsSync).flatMap(walk)
+/* Named files only, when given — the library sync fits what it wrote and leaves the curated icons alone. */
+const named = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
+const files = named.length ? named : dirs.filter(existsSync).flatMap(walk)
 
 const browser = await chromium.launch()
 const page = await browser.newPage()

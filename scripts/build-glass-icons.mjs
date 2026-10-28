@@ -133,7 +133,21 @@ const declared =
     ? [...available.keys()].sort()
     : (manifest.icons ?? []).map((entry) => (typeof entry === 'string' ? { path: entry } : entry))
 
-const entries = manifest.icons === '*' ? declared.map((path) => ({ path })) : declared
+const curated = manifest.icons === '*' ? declared.filter((path) => !path.startsWith('library/')).map((path) => ({ path })) : declared
+
+/*
+ * The Marketing Assets library's set, mirrored into `library/` by `sync-glass-icons.mjs`. All of it ships,
+ * so it is not listed icon by icon; each is named from its category *and* its name —
+ * `library/product-modules/dxp` is `IconGlassProductModulesDxp` — so it cannot take a curated icon's name.
+ */
+const library = manifest.library
+  ? [...available.keys()]
+      .filter((path) => path.startsWith('library/'))
+      .sort()
+      .map((path) => ({ path, as: path.slice('library/'.length) }))
+  : []
+
+const entries = [...curated, ...library]
 
 const components = []
 const errors = []
