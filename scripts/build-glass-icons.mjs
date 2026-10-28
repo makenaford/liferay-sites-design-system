@@ -14,7 +14,8 @@
  *    `style` string React will not accept as-is, and contributes nothing an icon-sized illustration
  *    shows. The real artwork is the sibling `<g filter="…">`, which is kept. The now-unused
  *    `bgblur_*` clip paths go with it.
- * 2. **Namespaces every id per rendered instance.** Ids like `paint0_linear_65_14601` happen to be
+ * 2. **Namespaces every id per rendered instance**, and every reference to one — `url(#…)` and a `<use>`'s
+ *    `href` alike. Ids like `paint0_linear_65_14601` happen to be
  *    unique across this export, but that is not enough on its own: the same icon rendered twice on one
  *    page would emit the id twice, which is invalid and leaves the browser resolving `url(#…)` to
  *    whichever copy came first. Each id is prefixed with React's `useId()` instead, so every instance
@@ -117,6 +118,12 @@ function bodyOf(svg, variant) {
   return toJsx(stripped)
     .replace(/id="([^"]+)"/g, (_, id) => `id={\`\${uid}-${variant}-${id}\`}`)
     .replace(/="url\(#([^)]+)\)"/g, (_, id) => `={\`url(#\${uid}-${variant}-${id})\`}`)
+    /*
+     * A `<use>` points at its shape by `href`, which needs the same prefix as the id it names. Left bare it
+     * names an id that no longer exists, and the layer it draws — the frosted copy of the shape behind the
+     * glass — silently disappears.
+     */
+    .replace(/\s(?:xlink:)?href="#([^"]+)"/g, (_, id) => ` href={\`#\${uid}-${variant}-${id}\`}`)
 }
 
 /** Suggests close matches so a typo in the manifest is easy to fix. */
