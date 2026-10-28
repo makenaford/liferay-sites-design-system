@@ -13656,31 +13656,6 @@ a.secondaryNavTitle:focus-visible {
   margin-block-end: 16px;
 }
 
-/* The tier columns' headers in the file's metals, 12px corners on top. */
-.comparisonTable thead th[data-tier] {
-  border-start-start-radius: 12px;
-  border-start-end-radius: 12px;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--sds-surfaces-text-primary);
-}
-
-.comparisonTable thead th[data-tier='0'] {
-  background-color: var(--sds-surfaces-card-bg-grey);
-}
-
-.comparisonTable thead th[data-tier='1'] {
-  background-image: linear-gradient(93deg, var(--sds-neutral-06, #758096) 0%, var(--sds-neutral-03, #404b5d) 100%);
-}
-
-.comparisonTable thead th[data-tier='2'] {
-  background-image: linear-gradient(93deg, #cc9600 0%, #b30065 100%);
-}
-
-.comparisonTable thead th[data-tier='3'] {
-  background-image: linear-gradient(93deg, #990057 0%, #0017e5 100%);
-}
 
 .tierCard > p {
   margin: 0;
@@ -13704,32 +13679,10 @@ a.secondaryNavTitle:focus-visible {
   color: var(--sds-surfaces-text-primary);
 }
 
-.tierGroup th {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sds-surfaces-text-secondary);
-  background-color: var(--sds-surfaces-card-bg-translucent);
-}
 
-.tierText {
-  font-size: 15px;
-  color: var(--sds-surfaces-text-primary);
-}
 
 /* A level — the sheet's coins — as that many small accent dots. */
-.tierLevel {
-  display: inline-flex;
-  gap: 4px;
-}
 
-.tierLevel > span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--sds-brand-primary-lighten-3, var(--sds-brand-primary-primary));
-}
 
 /* ======================================================================================
  * The blog hub's post card — `Blog Hub` (node `25025:51238`).
@@ -14463,4 +14416,196 @@ html:has(.anchorMenu) {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/*
+ * The tier comparison. Fixed columns — the feature a third, the tiers sharing the rest — so the marks
+ * line up down each column; a compact 10px row; the sections as small-caps dividers rather than filled
+ * bands; the tier names as metal pills over their columns; a tick where a tier has it and a quiet dash
+ * where it does not, so the eye reads the ticks.
+ */
+.comparisonScroll[data-variant='tiers'] {
+  border-color: var(--sds-glass-line-from);
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+}
+
+.tierTable {
+  table-layout: fixed;
+  min-width: 680px;
+  font-size: 15px;
+  line-height: 1.3;
+  --sds-tier-rule: color-mix(in srgb, var(--sds-surfaces-text-primary) 8%, transparent);
+}
+
+.tierTableFeature {
+  width: 34%;
+}
+
+.tierTable th,
+.tierTable td {
+  padding: 10px 12px;
+  border-block-start: 1px solid var(--sds-tier-rule);
+  vertical-align: middle;
+}
+
+.tierTable td {
+  text-align: center;
+}
+
+.tierTable tbody th[scope='row'] {
+  padding-inline-start: 20px;
+  font-weight: 500;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The header: the feature column's label in small caps, the tiers as pills. */
+.tierTable thead th {
+  padding: 16px 6px 12px;
+  border-block-start: 0;
+  vertical-align: bottom;
+}
+
+.tierTable thead th:first-child {
+  padding-inline-start: 20px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.tierTable thead th[data-tier] > span {
+  display: block;
+  padding: 8px 6px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+}
+
+.tierTable thead th[data-tier='0'] > span {
+  border: 1px solid var(--sds-glass-line-from);
+  background-color: var(--sds-surfaces-card-bg-grey);
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierTable thead th[data-tier='1'] > span {
+  background-image: linear-gradient(93deg, var(--sds-neutral-06, #758096) 0%, var(--sds-neutral-03, #404b5d) 100%);
+}
+
+.tierTable thead th[data-tier='2'] > span {
+  background-image: linear-gradient(93deg, #cc9600 0%, #b30065 100%);
+}
+
+.tierTable thead th[data-tier='3'] > span {
+  background-image: linear-gradient(93deg, #990057 0%, #0017e5 100%);
+}
+
+/* A section: a small-caps divider with room above it, not a filled band. */
+.tierTable .tierGroup th {
+  padding: 22px 20px 6px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-secondary));
+  background: none;
+}
+
+.tierTable thead + tbody .tierGroup th {
+  padding-block-start: 14px;
+}
+
+/* The row under the pointer, across every column — the line is easy to follow to its marks. */
+@media (hover: hover) {
+  .tierTable tbody tr:not(.tierGroup):hover > * {
+    background-color: color-mix(in srgb, var(--sds-brand-primary-primary) 7%, transparent);
+  }
+}
+
+.tierYes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--sds-brand-primary-primary) 28%, transparent);
+  color: var(--sds-brand-primary-lighten-3, #70a2ff);
+}
+
+.tierYes > svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tierNo {
+  color: var(--sds-surfaces-text-tertiary);
+  opacity: 0.6;
+}
+
+.tierText {
+  font-size: 14px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/* The margin as stacked coins. */
+.tierLevel {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tierLevel > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  /* Opaque, so each coin sits in front of the last rather than their rings tangling. */
+  background-color: var(--sds-surfaces-page-bg-base-default);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--sds-accent-product-accent);
+}
+
+.tierLevel > span + span {
+  /* Two-thirds over the last, as the file stacks them: the back coins show as rims, the front one whole. */
+  margin-inline-start: -15px;
+}
+
+/*
+ * On a phone the table scrolls sideways inside its card; the feature column stays pinned, so a row's name
+ * is still beside its marks while the reader swipes across the tiers.
+ */
+@media (max-width: 767px) {
+  .tierTable {
+    min-width: 600px;
+  }
+
+  .tierTableFeature {
+    width: 180px;
+  }
+
+  .tierTable thead th:first-child,
+  .tierTable tbody th[scope='row'] {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 1;
+    padding-inline-start: 16px;
+    background-color: var(--sds-surfaces-page-bg-base-default);
+    box-shadow: 1px 0 0 var(--sds-tier-rule);
+  }
+}
+
+.tierGroupLabel {
+  position: sticky;
+  inset-inline-start: 16px;
 }

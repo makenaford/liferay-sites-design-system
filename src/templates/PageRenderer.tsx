@@ -57,6 +57,7 @@ import {
   IconPlugin,
   IconShareForward,
   IconGitCompare,
+  IconCheck,
   IconDown,
   IconDashboard,
   IconDirectionArrow,
@@ -2604,25 +2605,25 @@ function TierCell({ value }: { value: boolean | string | { level: number } }) {
   if (typeof value === 'string') return <span className={classes.tierText}>{value}</span>
   if (typeof value === 'boolean') {
     return value ? (
-      <span className={classes.verdict} data-value="yes">
-        <span className={classes.verdictMark} aria-hidden>
-          ✓
-        </span>
+      <span className={classes.tierYes}>
+        <IconCheck aria-hidden />
         <span className={classes.visuallyHidden}>Included</span>
       </span>
     ) : (
-      <span className={classes.verdict} data-value="no">
-        <span className={classes.verdictMark} aria-hidden>
-          –
-        </span>
+      /* A quiet dash rather than a mark: the row reads as the ticks, and absence should not compete. */
+      <span className={classes.tierNo}>
+        <span aria-hidden>—</span>
         <span className={classes.visuallyHidden}>Not included</span>
       </span>
     )
   }
+  /* The margin as stacked coins — one per level, overlapping, as the file draws them. */
   return (
     <span className={classes.tierLevel} aria-label={`Level ${value.level} of 4`} role="img">
       {Array.from({ length: value.level }, (_, i) => (
-        <span key={i} aria-hidden />
+        <span key={i} aria-hidden>
+          $
+        </span>
       ))}
     </span>
   )
@@ -2637,6 +2638,76 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
   const [view, setView] = useState(spec.tables[0]?.label ?? '')
   const table = spec.tables.find((t) => t.label === view) ?? spec.tables[0]
   const tiers = spec.tiers.map((tier) => tier.name)
+
+  /*
+   * The comparison, laid out once whether or not it folds. Fixed columns — the feature a third of the
+   * width, the tiers sharing the rest equally — so the marks line up down every column, whatever the
+   * length of a tier's name.
+   */
+  const comparison = table ? (
+    <div className={classes.comparison}>
+      {spec.overviewTitle || spec.tables.length > 1 ? (
+        <Group justify="space-between" align="center" wrap="wrap" gap={16}>
+          {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
+          {spec.tables.length > 1 ? (
+            /* Full width on a phone, so the two pills share the row instead of pushing past it. */
+            <Tabs variant="pills" w={{ base: '100%', sm: 360 }} value={view} onChange={(v) => setView(v ?? view)}>
+              <Tabs.List grow>
+                {spec.tables.map((t) => (
+                  <Tabs.Tab key={t.label} value={t.label}>
+                    {t.tab ?? t.label}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+          ) : null}
+        </Group>
+      ) : null}
+      <div className={classes.comparisonScroll} data-variant="tiers">
+        <table className={`${classes.comparisonTable} ${classes.tierTable}`}>
+          <caption className={classes.visuallyHidden}>{table.label}</caption>
+          <colgroup>
+            <col className={classes.tierTableFeature} />
+            {tiers.map((tier) => (
+              <col key={tier} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">{table.label}</th>
+              {tiers.map((tier, i) => (
+                <th key={tier} scope="col" data-tier={i}>
+                  <span>{tier}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          {table.groups.map((group) => (
+            <tbody key={group.label}>
+              <tr className={classes.tierGroup}>
+                <th scope="colgroup" colSpan={tiers.length + 1}>
+                  {/* Its own sticky box, so the label stays in view while a phone scrolls the tiers. */}
+                  <span className={classes.tierGroupLabel}>{group.label}</span>
+                </th>
+              </tr>
+              {group.rows.map((row) => (
+                <tr key={row.label}>
+                  <th scope="row">{row.label}</th>
+                  {row.values.map((value, i) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <td key={i} data-tier={i}>
+                      <TierCell value={value} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      </div>
+      {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
+    </div>
+  ) : null
 
   return (
     <Section
@@ -2685,135 +2756,19 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
         </SimpleGrid>
         {spec.tiersNote ? <p className={classes.tierNote}>{spec.tiersNote}</p> : null}
 
-        {table ? (
-          spec.compareLabel ? (
-            /* Folded away behind its own toggle, open to start — the cards above are the summary. */
-            <details className={classes.compareFold} open>
-              <summary>
-                <IconGitCompare aria-hidden />
-                <span>{spec.compareLabel}</span>
-                <IconDown aria-hidden className={classes.compareFoldChevron} />
-              </summary>
-              <div className={classes.comparison}>
-                <Group justify="space-between" align="center" wrap="wrap" gap={16}>
-                  {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
-                  {spec.tables.length > 1 ? (
-                    /* Full width on a phone, so the two pills share the row instead of pushing past it. */
-                    <Tabs
-                      variant="pills"
-                      w={{ base: '100%', sm: 360 }}
-                      value={view}
-                      onChange={(v) => setView(v ?? view)}
-                    >
-                      <Tabs.List grow>
-                        {spec.tables.map((t) => (
-                          <Tabs.Tab key={t.label} value={t.label}>
-                            {t.tab ?? t.label}
-                          </Tabs.Tab>
-                        ))}
-                      </Tabs.List>
-                    </Tabs>
-                  ) : null}
-                </Group>
-                <div className={classes.comparisonScroll}>
-                  <table className={classes.comparisonTable}>
-                    <caption className={classes.visuallyHidden}>{table.label}</caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">{table.label}</th>
-                        {tiers.map((tier, i) => (
-                          <th key={tier} scope="col" data-tier={i}>
-                            {tier}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    {table.groups.map((group) => (
-                      <tbody key={group.label}>
-                        <tr className={classes.tierGroup}>
-                          <th scope="colgroup" colSpan={tiers.length + 1}>
-                            {group.label}
-                          </th>
-                        </tr>
-                        {group.rows.map((row) => (
-                          <tr key={row.label}>
-                            <th scope="row">{row.label}</th>
-                            {row.values.map((value, i) => (
-                              // eslint-disable-next-line react/no-array-index-key
-                              <td key={i}>
-                                <TierCell value={value} />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    ))}
-                  </table>
-                </div>
-                {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
-              </div>
-            </details>
-          ) : (
-            <div className={classes.comparison}>
-              <Group justify="space-between" align="center" wrap="wrap" gap={16}>
-                {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
-                {spec.tables.length > 1 ? (
-                  /* Full width on a phone, so the two pills share the row instead of pushing past it. */
-                  <Tabs
-                    variant="pills"
-                    w={{ base: '100%', sm: 360 }}
-                    value={view}
-                    onChange={(v) => setView(v ?? view)}
-                  >
-                    <Tabs.List grow>
-                      {spec.tables.map((t) => (
-                        <Tabs.Tab key={t.label} value={t.label}>
-                          {t.tab ?? t.label}
-                        </Tabs.Tab>
-                      ))}
-                    </Tabs.List>
-                  </Tabs>
-                ) : null}
-              </Group>
-              <div className={classes.comparisonScroll}>
-                <table className={classes.comparisonTable}>
-                  <caption className={classes.visuallyHidden}>{table.label}</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">{table.label}</th>
-                      {tiers.map((tier, i) => (
-                        <th key={tier} scope="col" data-tier={i}>
-                          {tier}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  {table.groups.map((group) => (
-                    <tbody key={group.label}>
-                      <tr className={classes.tierGroup}>
-                        <th scope="colgroup" colSpan={tiers.length + 1}>
-                          {group.label}
-                        </th>
-                      </tr>
-                      {group.rows.map((row) => (
-                        <tr key={row.label}>
-                          <th scope="row">{row.label}</th>
-                          {row.values.map((value, i) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <td key={i}>
-                              <TierCell value={value} />
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  ))}
-                </table>
-              </div>
-              {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
-            </div>
-          )
-        ) : null}
+        {comparison && spec.compareLabel ? (
+          /* Folded away behind its own toggle, open to start — the cards above are the summary. */
+          <details className={classes.compareFold} open>
+            <summary>
+              <IconGitCompare aria-hidden />
+              <span>{spec.compareLabel}</span>
+              <IconDown aria-hidden className={classes.compareFoldChevron} />
+            </summary>
+            {comparison}
+          </details>
+        ) : (
+          comparison
+        )}
       </Stack>
     </Section>
   )
