@@ -12,3 +12,5 @@
  * lived here too, and the story modules it reads took the bundle past what a Worker is allowed to be.
  */
 export { pageToHtml } from './html'
+/* The React handoff, stored beside a named version's HTML when it is frozen. */
+export { handoff } from './handoff'

@@ -24,12 +24,23 @@
 import { DurableObject } from 'cloudflare:workers'
 import { documentProblems, emptyDocument, migrate, type PageDocument as Page } from '../src/builder/document'
 import type { AccessConfig } from './access'
+import { isPageStatus, type LibraryEntry, type PageMeta, type PageStatus } from '../src/builder/library'
+import type { PageLibrary } from './PageLibrary'
+import {
+  VERSION_NAME_LIMIT,
+  VERSION_NOTE_LIMIT,
+  type PageVersion,
+  type VersionSummary,
+} from '../src/builder/versions'
+import { COMMENT_LIMIT, type CommentsState, type PageComment, type PagePoint } from '../src/builder/comments'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
 const HISTORY = 200
 
 export interface Env extends AccessConfig {
   PAGES: DurableObjectNamespace<PageDocument>
+  /** The index of every page. One instance, named `library` — see `PageLibrary.ts`. */
+  LIBRARY: DurableObjectNamespace<PageLibrary>
   /** The built builder — the Worker's own files, not anything a designer uploaded. */
   ASSETS: Fetcher
   /** Uploaded images. Named for what a designer does, to keep it apart from `ASSETS`. */
@@ -39,6 +50,8 @@ export interface Env extends AccessConfig {
 /** What a client is told after a write, and what a broadcast carries. */
 export interface Snapshot {
   doc: Page
+  /** Status and authorship, which live beside the document rather than in it — see `library.ts`. */
+  meta: PageMeta
   /** The number of editors currently connected, including the one being answered. */
   editors: number
 }
@@ -52,6 +65,85 @@ type Row<T> = T & Record<string, SqlStorageValue>
 type PageRow = Row<{ json: string }>
 type RevisionRow = Row<{ rev: number; at: number; json: string }>
 type ShareRow = Row<{ code: string }>
+type MetaRow = Row<{
+  status: string
+  status_by: string | null
+  status_at: number | null
+  created_by: string | null
+  created_at: number | null
+  updated_by: string | null
+  indexed: number
+}>
+
+type CommentRow = Row<{
+  id: string
+  thread: string
+  node: string | null
+  x: number | null
+  y: number | null
+  rev: number
+  body: string
+  author: string
+  at: number
+  edited_at: number | null
+  resolved_at: number | null
+  resolved_by: string | null
+}>
+
+type VersionRow = Row<{
+  number: number
+  name: string
+  note: string
+  rev: number
+  by: string | null
+  at: number
+  status: string
+}>
+
+const toVersion = (row: VersionRow): PageVersion => ({
+  number: row.number,
+  name: row.name,
+  note: row.note,
+  rev: row.rev,
+  by: row.by,
+  at: row.at,
+  status: isPageStatus(row.status) ? row.status : 'draft',
+})
+
+const toComment = (row: CommentRow): PageComment => ({
+  id: row.id,
+  thread: row.thread,
+  node: row.node,
+  point: row.x === null || row.y === null ? null : { x: row.x, y: row.y },
+  rev: row.rev,
+  body: row.body,
+  author: row.author,
+  at: row.at,
+  editedAt: row.edited_at,
+  resolvedAt: row.resolved_at,
+  resolvedBy: row.resolved_by,
+})
+
+/** A comment's body, trimmed and bounded, or an error a person can act on. */
+function cleanBody(body: unknown): string {
+  if (typeof body !== 'string' || !body.trim()) throw new Error('A comment needs some words')
+  if (body.length > COMMENT_LIMIT) throw new Error(`Comments are limited to ${COMMENT_LIMIT} characters`)
+  return body.trim()
+}
+
+const fraction = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
+
+/**
+ * How long after a save the page tells the library about it.
+ *
+ * Saves arrive every few hundred milliseconds while someone types. The library wants to know the page
+ * changed, not every keystroke of how, so a burst of saves becomes one report: the first save sets an
+ * alarm and the ones after it find it already set.
+ */
+const INDEX_AFTER = 2_000
+
+/** The library's single instance. */
+export const LIBRARY_NAME = 'library'
 
 /**
  * A share code.
@@ -115,6 +207,65 @@ export class PageDocument extends DurableObject<Env> {
           at INTEGER NOT NULL
         )
       `)
+      /*
+       * Status and authorship. One row, beside the document rather than in it, so restoring an old
+       * revision cannot un-approve a page and a status change is not an edit in the history.
+       * `indexed` says whether the library has ever heard of this page — pages made before the
+       * library existed report in the first time they are opened.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS meta (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          status TEXT NOT NULL DEFAULT 'draft',
+          status_by TEXT,
+          status_at INTEGER,
+          created_by TEXT,
+          created_at INTEGER,
+          updated_by TEXT,
+          indexed INTEGER NOT NULL DEFAULT 0
+        )
+      `)
+      ctx.storage.sql.exec('INSERT OR IGNORE INTO meta (id) VALUES (1)')
+      /*
+       * Comments. In the page's own object rather than somewhere shared, for the same reason as the
+       * document: every change to a page's conversation is ordered against every other one, and the
+       * object already holds the sockets of everyone looking at the page. A deleted comment is removed
+       * outright; the conversation's version lives in storage beside the table (`commentsVersion`), so a
+       * delete still moves it forward.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS comments (
+          id TEXT PRIMARY KEY,
+          thread TEXT NOT NULL,
+          node TEXT,
+          x REAL,
+          y REAL,
+          rev INTEGER NOT NULL,
+          body TEXT NOT NULL,
+          author TEXT NOT NULL,
+          at INTEGER NOT NULL,
+          edited_at INTEGER,
+          resolved_at INTEGER,
+          resolved_by TEXT
+        )
+      `)
+      /*
+       * Named versions. The document is copied in whole rather than pointing at `revisions`, which is
+       * trimmed: a version is kept for as long as the page is. The frozen HTML and its files are in the
+       * bucket (see the Worker); this row is what they were made from.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS versions (
+          number INTEGER PRIMARY KEY,
+          name TEXT NOT NULL,
+          note TEXT NOT NULL,
+          rev INTEGER NOT NULL,
+          by TEXT,
+          at INTEGER NOT NULL,
+          status TEXT NOT NULL,
+          json TEXT NOT NULL
+        )
+      `)
     })
   }
 
@@ -152,8 +303,27 @@ export class PageDocument extends DurableObject<Env> {
     return migrate({ ...doc, id: this.name })
   }
 
+  private metaRow(): MetaRow {
+    return this.ctx.storage.sql.exec<MetaRow>('SELECT * FROM meta WHERE id = 1').toArray()[0]
+  }
+
+  meta(): PageMeta {
+    const row = this.metaRow()
+    return {
+      status: isPageStatus(row.status) ? row.status : 'draft',
+      statusBy: row.status_by,
+      statusAt: row.status_at,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      updatedBy: row.updated_by,
+    }
+  }
+
   snapshot(): Snapshot {
-    return { doc: this.load(), editors: this.ctx.getWebSockets().length }
+    const doc = this.load()
+    // A page from before the library, opened for the first time since: it reports in now.
+    if (doc.rev > 0 && !this.metaRow().indexed) this.scheduleIndex()
+    return { doc, meta: this.meta(), editors: this.ctx.getWebSockets().length }
   }
 
   /** Every kept version, newest first — enough to populate a history list without the bodies. */
@@ -177,7 +347,7 @@ export class PageDocument extends DurableObject<Env> {
    *
    * Returns the snapshot either way — accepted or not — so a client always ends up holding the truth.
    */
-  save(incoming: unknown, baseRev: number, from?: WebSocket): Snapshot & { accepted: boolean } {
+  save(incoming: unknown, baseRev: number, from?: WebSocket, by?: string): Snapshot & { accepted: boolean } {
     const current = this.load()
 
     if (baseRev !== current.rev) return { ...this.snapshot(), accepted: false }
@@ -203,8 +373,20 @@ export class PageDocument extends DurableObject<Env> {
     this.ctx.storage.sql.exec('INSERT OR REPLACE INTO page (id, json) VALUES (1, ?)', json)
     this.ctx.storage.sql.exec('INSERT OR REPLACE INTO revisions (rev, at, json) VALUES (?, ?, ?)', doc.rev, doc.updatedAt, json)
     this.ctx.storage.sql.exec('DELETE FROM revisions WHERE rev <= ?', doc.rev - HISTORY)
+    // The first person to save a page owns it; the last one to save it is who the library names.
+    this.ctx.storage.sql.exec(
+      `UPDATE meta SET
+         updated_by = COALESCE(?, updated_by),
+         created_by = COALESCE(created_by, ?),
+         created_at = COALESCE(created_at, ?)
+       WHERE id = 1`,
+      by ?? null,
+      by ?? null,
+      doc.updatedAt,
+    )
+    this.scheduleIndex()
 
-    const snapshot = { doc, editors: this.ctx.getWebSockets().length }
+    const snapshot = { doc, meta: this.meta(), editors: this.ctx.getWebSockets().length }
     this.broadcast(snapshot, from)
     return { ...snapshot, accepted: true }
   }
@@ -216,21 +398,274 @@ export class PageDocument extends DurableObject<Env> {
    * revision and the ones after it are kept. Undoing a restore is then just another restore, and no
    * history is ever destroyed by looking at it.
    */
-  restore(rev: number): Snapshot {
+  restore(rev: number, by?: string): Snapshot {
     const row = this.ctx.storage.sql
       .exec<PageRow>('SELECT json FROM revisions WHERE rev = ?', rev)
       .toArray()[0]
     if (!row) throw new Error(`No revision ${rev}`)
 
     const current = this.load()
-    const { accepted, ...snapshot } = this.save(JSON.parse(row.json), current.rev)
+    const { accepted, ...snapshot } = this.save(JSON.parse(row.json), current.rev, undefined, by)
     void accepted
     return snapshot
   }
 
-  /** Throws the page away. The Durable Object's storage goes with it. */
+  /** Throws the page away. The Durable Object's storage goes with it, and the library forgets it. */
   async destroy(): Promise<void> {
+    await this.env.LIBRARY.getByName(LIBRARY_NAME).remove(this.name)
+    await this.ctx.storage.deleteAlarm()
     await this.ctx.storage.deleteAll()
+  }
+
+  /* ---------------------------------------------------------------- comments */
+
+  /**
+   * When the conversation last changed. Kept in storage rather than derived from the rows, because a
+   * delete leaves no row behind to carry the time — and a client comparing versions must see a delete
+   * as newer than the list it already holds.
+   */
+  private commentsVersion = 0
+
+  private touchComments(): void {
+    this.commentsVersion = Math.max(Date.now(), this.commentsVersion + 1)
+    void this.ctx.storage.put('commentsVersion', this.commentsVersion)
+  }
+
+  async comments(): Promise<CommentsState> {
+    if (!this.commentsVersion) this.commentsVersion = (await this.ctx.storage.get<number>('commentsVersion')) ?? 0
+    const rows = this.ctx.storage.sql.exec<CommentRow>('SELECT * FROM comments ORDER BY at').toArray()
+    return { version: this.commentsVersion, comments: rows.map(toComment) }
+  }
+
+  /**
+   * A new thread, or a reply to one. A reply's node and point come from its thread — a reply is to the
+   * conversation, not to a new spot on the page.
+   */
+  async addComment(
+    input: { thread?: string; node?: string | null; point?: PagePoint | null; body?: unknown },
+    by: string,
+  ): Promise<CommentsState> {
+    const body = cleanBody(input.body)
+    const id = crypto.randomUUID()
+    const at = Date.now()
+    const rev = this.load().rev
+
+    if (input.thread) {
+      const root = this.ctx.storage.sql
+        .exec<CommentRow>('SELECT * FROM comments WHERE id = ? AND thread = id', input.thread)
+        .toArray()[0]
+      if (!root) throw new Error('No such thread')
+      this.ctx.storage.sql.exec(
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?, ?)',
+        id, root.id, rev, body, by, at,
+      )
+      // Replying to a resolved thread reopens it: somebody evidently has more to say.
+      this.ctx.storage.sql.exec('UPDATE comments SET resolved_at = NULL, resolved_by = NULL WHERE id = ?', root.id)
+    } else {
+      const node = typeof input.node === 'string' && input.node.length <= 64 ? input.node : null
+      const point = input.point && fraction(input.point.x) && fraction(input.point.y) ? input.point : null
+      this.ctx.storage.sql.exec(
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        id, id, node, point?.x ?? null, point?.y ?? null, rev, body, by, at,
+      )
+    }
+    return this.commentsChanged()
+  }
+
+  /** Only the author may reword a comment — it is their name on it. */
+  async editComment(id: string, body: unknown, by: string): Promise<CommentsState> {
+    const row = this.ownComment(id, by)
+    this.ctx.storage.sql.exec('UPDATE comments SET body = ?, edited_at = ? WHERE id = ?', cleanBody(body), Date.now(), row.id)
+    return this.commentsChanged()
+  }
+
+  /** Anyone signed in may resolve or reopen a thread; who did it is recorded. */
+  async resolveThread(thread: string, resolved: boolean, by: string): Promise<CommentsState> {
+    const found = this.ctx.storage.sql
+      .exec<CommentRow>('UPDATE comments SET resolved_at = ?, resolved_by = ? WHERE id = ? AND thread = id RETURNING *',
+        resolved ? Date.now() : null, resolved ? by : null, thread)
+      .toArray()
+    if (!found.length) throw new Error('No such thread')
+    return this.commentsChanged()
+  }
+
+  /** The author's own comment. Deleting a thread's first comment deletes the thread. */
+  async deleteComment(id: string, by: string): Promise<CommentsState> {
+    const row = this.ownComment(id, by)
+    if (row.thread === row.id) this.ctx.storage.sql.exec('DELETE FROM comments WHERE thread = ?', row.id)
+    else this.ctx.storage.sql.exec('DELETE FROM comments WHERE id = ?', row.id)
+    return this.commentsChanged()
+  }
+
+  private ownComment(id: string, by: string): CommentRow {
+    const row = this.ctx.storage.sql.exec<CommentRow>('SELECT * FROM comments WHERE id = ?', id).toArray()[0]
+    if (!row) throw new Error('No such comment')
+    if (row.author !== by) throw new Error('Only the person who wrote a comment can change it')
+    return row
+  }
+
+  /** After any change: everyone signed in sees it, and the library's open-thread count follows. */
+  private async commentsChanged(): Promise<CommentsState> {
+    this.touchComments()
+    const state = await this.comments()
+    const message = JSON.stringify({ type: 'comments', ...state })
+    for (const socket of this.ctx.getWebSockets()) {
+      // Only signed-in sockets: a share code opens the page, not the conversation about it.
+      const { canWrite } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+      if (!canWrite) continue
+      try {
+        socket.send(message)
+      } catch {
+        // Gone; the close handler tidies up.
+      }
+    }
+    this.scheduleIndex()
+    return state
+  }
+
+  private openThreads(): number {
+    const row = this.ctx.storage.sql
+      .exec<Row<{ n: number }>>('SELECT COUNT(*) AS n FROM comments WHERE thread = id AND resolved_at IS NULL')
+      .toArray()[0]
+    return row?.n ?? 0
+  }
+
+  /* ---------------------------------------------------------------- versions */
+
+  versions(): PageVersion[] {
+    return this.ctx.storage.sql
+      .exec<VersionRow>('SELECT number, name, note, rev, by, at, status FROM versions ORDER BY number DESC')
+      .toArray()
+      .map(toVersion)
+  }
+
+  version(number: number): { version: PageVersion; doc: Page } | null {
+    const row = this.ctx.storage.sql
+      .exec<VersionRow & Row<{ json: string }>>('SELECT * FROM versions WHERE number = ?', number)
+      .toArray()[0]
+    if (!row) return null
+    return { version: toVersion(row), doc: migrate({ ...(JSON.parse(row.json) as Page), id: this.name }) }
+  }
+
+  /**
+   * Freezes the page as it is now. Refused for a page with nothing on it — there is nothing to hand
+   * over — and numbered from the last version, so numbers are never reused even after a deletion.
+   */
+  /**
+   * `status`, when given, is applied **as part of** freezing, so the version records it: "Mark it
+   * Handed off" on the version that was handed off, not the status the page had a moment before.
+   */
+  createVersion(name: unknown, note: unknown, by?: string, status?: unknown): { version: PageVersion; doc: Page } {
+    if (typeof name !== 'string' || !name.trim()) throw new Error('A version needs a name')
+    if (name.length > VERSION_NAME_LIMIT) throw new Error(`Version names are limited to ${VERSION_NAME_LIMIT} characters`)
+    const text = typeof note === 'string' ? note.trim() : ''
+    if (text.length > VERSION_NOTE_LIMIT) throw new Error(`Version notes are limited to ${VERSION_NOTE_LIMIT} characters`)
+
+    const doc = this.load()
+    if (doc.rev === 0 || !doc.root.length) throw new Error('There is nothing on this page to freeze yet')
+
+    if (isPageStatus(status) && status !== this.meta().status) {
+      this.ctx.storage.sql.exec(
+        'UPDATE meta SET status = ?, status_by = ?, status_at = ? WHERE id = 1',
+        status,
+        by ?? null,
+        Date.now(),
+      )
+      this.broadcast(this.snapshot())
+    }
+
+    const last = this.ctx.storage.sql.exec<Row<{ n: number | null }>>('SELECT MAX(number) AS n FROM versions').toArray()[0]
+    const number = (last?.n ?? 0) + 1
+    const at = Date.now()
+    this.ctx.storage.sql.exec(
+      'INSERT INTO versions (number, name, note, rev, by, at, status, json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      number, name.trim(), text, doc.rev, by ?? null, at, this.meta().status, JSON.stringify(doc),
+    )
+    this.versionsChanged()
+    return { version: this.version(number)!.version, doc }
+  }
+
+  /** Puts a version back as the newest revision. Like `restore`, it adds history rather than rewinding it. */
+  restoreVersion(number: number, by?: string): Snapshot {
+    const found = this.version(number)
+    if (!found) throw new Error(`No version ${number}`)
+    const { accepted, ...snapshot } = this.save(found.doc, this.load().rev, undefined, by)
+    void accepted
+    return snapshot
+  }
+
+  private latestVersion(): VersionSummary | null {
+    const row = this.ctx.storage.sql
+      .exec<VersionRow>('SELECT number, name, at FROM versions ORDER BY number DESC LIMIT 1')
+      .toArray()[0]
+    return row ? { number: row.number, name: row.name, at: row.at } : null
+  }
+
+  private versionsChanged(): void {
+    const message = JSON.stringify({ type: 'versions', versions: this.versions() })
+    for (const socket of this.ctx.getWebSockets()) {
+      const { canWrite } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+      if (!canWrite) continue
+      try {
+        socket.send(message)
+      } catch {
+        // Gone.
+      }
+    }
+    this.scheduleIndex()
+  }
+
+  /* ---------------------------------------------------------------- status and the library */
+
+  /**
+   * Moves the page through review. Not an edit: the revision does not move and the history does not
+   * grow. Everyone with the page open sees it change, and the library hears about it at once rather
+   * than after the save delay — a status change is the thing a colleague is watching for.
+   */
+  async setStatus(status: PageStatus, by?: string): Promise<Snapshot> {
+    if (!isPageStatus(status)) throw new Error(`No status called ${String(status)}`)
+    this.ctx.storage.sql.exec(
+      'UPDATE meta SET status = ?, status_by = ?, status_at = ? WHERE id = 1',
+      status,
+      by ?? null,
+      Date.now(),
+    )
+    const snapshot = this.snapshot()
+    this.broadcast(snapshot)
+    await this.report()
+    return snapshot
+  }
+
+  private scheduleIndex(): void {
+    void this.ctx.storage.getAlarm().then((at) => {
+      if (at === null) return this.ctx.storage.setAlarm(Date.now() + INDEX_AFTER)
+    })
+  }
+
+  /** The one thing the alarm is for. */
+  override async alarm(): Promise<void> {
+    await this.report()
+  }
+
+  /** Tells the library what this page currently is. A page nobody has written to is not listed. */
+  private async report(): Promise<void> {
+    const doc = this.load()
+    if (doc.rev === 0) return
+
+    const entry: Omit<LibraryEntry, 'indexedAt'> = {
+      ...this.meta(),
+      id: this.name,
+      title: doc.title,
+      template: doc.template ?? null,
+      colorScheme: doc.colorScheme,
+      rev: doc.rev,
+      updatedAt: doc.updatedAt,
+      sections: doc.root.length,
+      openComments: this.openThreads(),
+      latestVersion: this.latestVersion(),
+    }
+    await this.env.LIBRARY.getByName(LIBRARY_NAME).upsert(entry)
+    this.ctx.storage.sql.exec('UPDATE meta SET indexed = 1 WHERE id = 1')
   }
 
   /* ---------------------------------------------------------------- sharing */
@@ -297,7 +732,12 @@ export class PageDocument extends DurableObject<Env> {
      * field would come back `undefined` on the first message after it woke — defaulting a woken
      * viewer's socket to writable.
      */
-    pair[1].serializeAttachment({ canWrite: new URL(request.url).searchParams.get('write') === '1' })
+    const params = new URL(request.url).searchParams
+    pair[1].serializeAttachment({
+      canWrite: params.get('write') === '1',
+      // Who is on the other end, for the page's "last edited by". Set by the Worker, like `write`.
+      by: params.get('by') ?? undefined,
+    })
 
     // Everyone already in the page sees the count go up. Without this, "2 editing" only ever appears
     // for whoever arrived last, which is the wrong half of the room.
@@ -323,7 +763,7 @@ export class PageDocument extends DurableObject<Env> {
 
     if (payload.type !== 'save' || typeof payload.baseRev !== 'number') return
 
-    const { canWrite } = (ws.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+    const { canWrite, by } = (ws.deserializeAttachment() ?? {}) as { canWrite?: boolean; by?: string }
     if (!canWrite) {
       return ws.send(JSON.stringify({ type: 'error', message: 'This link is read-only' }))
     }
@@ -337,7 +777,7 @@ export class PageDocument extends DurableObject<Env> {
        * revisions. The sender learns the outcome from `saved` below, which is the only answer it
        * needs.
        */
-      const result = this.save(payload.doc, payload.baseRev, ws)
+      const result = this.save(payload.doc, payload.baseRev, ws, by)
       // This tells the sender whether their edit stuck.
       ws.send(JSON.stringify({ type: result.accepted ? 'saved' : 'rejected', ...result }))
     } catch (error) {

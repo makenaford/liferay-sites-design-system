@@ -28,6 +28,10 @@
 /** What a control can put in `props`. The catalogue's `enum`, `text`, `number` and `boolean` kinds. */
 export type PropValue = string | number | boolean
 
+/** Plain JSON — what a built-page section's `data` is. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | JsonObject
+export type JsonObject = { [key: string]: JsonValue }
+
 export interface PageNode {
   id: string
   /** A name from the generated catalogue, or one of the builder's own primitives. */
@@ -46,12 +50,33 @@ export interface PageNode {
    * this alone, because "started from Resource" stays true and is the useful thing to know.
    */
   preset?: string
+  /**
+   * Structured content, for the nodes that draw a built-page block — a `HeroSpec` or a `SectionSpec`
+   * from `src/templates/page-schema.ts`.
+   *
+   * Those are not component trees: a `cardGrid` is a title and a list of cards, and its layout belongs
+   * to the section type rather than to the page. So they are edited as data, through a form generated
+   * from the same types (`sections.generated.ts`), and they keep the rule `page-schema.ts` was written
+   * around — a page supplies content and real choices, never measurements.
+   */
+  /*
+   * Typed as a bare `object` on purpose. A recursive JSON type is the accurate one, but this document
+   * crosses Workers RPC, and the runtime's serialisability check recurses into it until the compiler
+   * gives up ("excessively deep"). The shape is enforced where it is edited — by the generated schema
+   * in `sections.generated.ts` — and read through `HeroSpec` / `SectionSpec` where it is drawn.
+   */
+  data?: object
 }
 
 export interface PageDocument {
   /** The Durable Object's name. Also the URL the designer shares. */
   id: string
   title: string
+  /**
+   * The built page this one was started from — a `BUILT_PAGES` id in `templates.ts` — so the library
+   * can say "copy of Blog Hub". Set once, when the page is first filled; absent for a blank start.
+   */
+  template?: string
   /** The library is drawn in dark, and that is the default; a page may be either. */
   colorScheme: 'dark' | 'light'
   /** Top-level nodes, in order. The page itself is the one slot with no owning node. */
@@ -238,6 +263,13 @@ export function setProp(
   return touch({ ...doc, nodes: { ...doc.nodes, [id]: { ...node, props } } })
 }
 
+/** Replaces a node's structured content wholesale. The editor builds the new value; this stores it. */
+export function setData(doc: PageDocument, id: string, data: object): PageDocument {
+  const node = doc.nodes[id]
+  if (!node) return doc
+  return touch({ ...doc, nodes: { ...doc.nodes, [id]: { ...node, data } } })
+}
+
 /**
  * Refills a node from a preset, in place.
  *
@@ -286,6 +318,8 @@ export function duplicate(doc: PageDocument, id: string): { doc: PageDocument; i
       ...node,
       id: remap.get(nodeId)!,
       props: { ...node.props },
+      // A copy, not a shared reference: editing the duplicate's cards must not edit the original's.
+      ...(node.data === undefined ? {} : { data: structuredClone(node.data) }),
       slots: Object.fromEntries(
         Object.entries(node.slots).map(([slot, ids]) => [slot, ids.map((child) => remap.get(child)!)]),
       ),

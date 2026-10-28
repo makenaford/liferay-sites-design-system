@@ -66,6 +66,10 @@ import {
   IconGlassSupport,
   IconGlassEnterpriseWebsites,
   IconGlassFinancialServices,
+  IconGlassEnergyAndUtilities,
+  IconGlassHealthcare,
+  IconGlassManufacturing,
+  IconGlassPublicSector,
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
@@ -190,6 +194,10 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   'global-services': (s) => <IconGlassGlobalServices width={s} height={s} />,
   dam: (s) => <IconGlassDam width={s} height={s} />,
   database: (s) => <IconGlassCdn width={s} height={s} />,
+  manufacturing: (s) => <IconGlassManufacturing width={s} height={s} />,
+  'public-sector': (s) => <IconGlassPublicSector width={s} height={s} />,
+  'energy-and-utilities': (s) => <IconGlassEnergyAndUtilities width={s} height={s} />,
+  healthcare: (s) => <IconGlassHealthcare width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -3071,6 +3079,28 @@ export interface BubbleOverride {
    * that is the moment to give it a name.
    */
   css?: boolean
+}
+
+/**
+ * One built-page hero, on its own — what the page builder places as a node.
+ *
+ * `PageRenderer` draws a whole `PageSpec` at once; the builder holds a page as separate nodes it can
+ * reorder and edit, so it needs the hero and each section as components in their own right. Same
+ * render functions underneath, so a section looks identical in Storybook and on the canvas.
+ */
+export function HeroBlock({ hero }: { hero: HeroSpec }) {
+  return <>{renderHero(hero)}</>
+}
+
+/** One built-page section, with its anchor wrapper when it has one. See `HeroBlock`. */
+export function SectionBlock({ section }: { section: SectionSpec }) {
+  return section.anchor ? (
+    <div id={section.anchor} className={classes.sectionAnchor}>
+      {renderSection(section, 0)}
+    </div>
+  ) : (
+    <>{renderSection(section, 0)}</>
+  )
 }
 
 export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {

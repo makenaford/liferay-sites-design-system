@@ -33,6 +33,8 @@ minimal Vite page instead, if you want to exercise the components the way a cons
 | `pnpm builder:worker` | The Worker and the Durable Objects, locally, on port 8787 |
 | `pnpm builder:catalog` | Regenerate the builder's component catalogue from the components' types |
 | `pnpm builder:catalog:check` | Fail if the catalogue is out of date (used by `pnpm build`) |
+| `pnpm builder:sections` | Regenerate the built-page section editor's schema from `page-schema.ts` |
+| `pnpm builder:sections:check` | Fail if that schema is out of date (used by `pnpm build`) |
 | `pnpm builder:build` | Build the builder app and the server-side renderer into `dist/` |
 | `pnpm builder:ssr` | Just the server-side renderer, for `/p/:id.html` |
 | `pnpm builder:deploy` | Build the app and deploy the Worker to Cloudflare |
@@ -183,6 +185,126 @@ header's nav is a list of objects rather than elements, so its items are held as
 read — not rendered — into `items`, the same way `Tabs` reads its tabs. `MegaMenu` is still out: it is
 a navigation panel several columns deep, and a component that takes twenty nodes to fill in is worse
 than no component until somebody asks for it.
+
+### Built pages in the builder
+
+The Storybook `Built Pages` open in the builder as editable copies. **Start from a built page** on the
+home screen makes a new page from one of them — Blog Hub, the partner pages, Customer Story, the page
+templates — with the site header, the hero, every section and the footer in place. The copy is the
+designer's from then on; editing it never changes the story it came from.
+
+Those pages are not component trees. A `cardGrid` is a title and a list of cards, and how the cards are
+laid out belongs to the section *type* — the rule `src/templates/page-schema.ts` is written around. So
+the builder holds each one as a node with `data` (a `HeroSpec` or a `SectionSpec`) and draws it with the
+same `PageRenderer` functions the stories use: a section on the canvas is the section in Storybook.
+
+The form that edits them is generated, like the component catalogue. `scripts/build-section-schema.mjs`
+reads `page-schema.ts` through the TypeScript compiler into `src/builder/sections.generated.ts`, and
+`src/builder/DataEditor.tsx` draws it: text for a string, a select for a union of literals, a list with
+add / reorder / remove for an array, the image uploader for an `ImageRef`. Add a field or a section type
+to the schema and it is editable on the next build; `pnpm build` fails if the generated file has
+drifted (`pnpm builder:sections` regenerates it). Changing a section's type replaces its content with a
+worked example of the new type — the catalogue's blank, or the first one on any built page.
+
+Not yet editable: `Home` and `Japan Home`, which are drawn by the bespoke `HomePage.tsx` rather than a
+`PageSpec`, and the Blog Hub's jump-to-section menu in the blog nav.
+
+The renderer in the Worker is an SSR build rather than a `lib` build since this change. Library mode
+inlines every imported asset as base64, and the section heroes import footage — the Worker went from
+2MB to 17MB. An SSR build turns an import into its content-hashed URL, which is the file the client build
+already ships.
+
+### The library
+
+Signed in, the home screen is **the library**: every page the team has made, newest first, with its
+status, its owner, who edited it last and which built page it started from. It is live — a colleague
+moving a page to *In review* changes the row on everyone's screen — and it filters by status, by
+"only mine", and by a search over title, owner and template.
+
+There is no way to ask Cloudflare for "every Durable Object", so the pages report in. Each page's
+object pushes its listing to one `PageLibrary` object (`worker/PageLibrary.ts`) a couple of seconds
+after a burst of saves — an alarm, so typing is one report rather than one per keystroke — and that
+object keeps a row per page and pushes changes to every open library over a hibernatable WebSocket.
+The rows are derived: a page made before the library existed reports in the first time it is opened,
+and deleting a page removes its row.
+
+**Statuses** are *Draft*, *In review*, *Approved*, *Handed off* and *Archived*, changed from the
+library row or the builder's toolbar. A status lives **beside** the document in the page's object,
+not in it, so restoring an old revision cannot un-approve a page and a status change is not an edit in
+the history. Who set it and when are kept with it. The **owner** is the first person to save a page
+and **last edited by** the most recent; pages from before this have no owner recorded.
+
+The library is Access-only. A share code opens one page and says nothing about which others exist, so
+a reader without a sign-in still gets the old home screen: the pages opened in that browser.
+
+| Route | Who |
+| --- | --- |
+| `GET /api/library` | Access. Every page's listing |
+| `GET /api/library/socket` | Access. Live changes |
+| `POST /api/pages/:id/status` | Access. `{ status }` |
+
+### Comments
+
+Press **C** (or **Comment**) and click anywhere on a page to pin a comment there. Threads take replies,
+are resolved and reopened by anyone signed in, and can be edited or deleted only by whoever wrote them.
+They work in two places: the builder, where the right rail switches between **Inspect** and
+**Comments**, and the shared page `/p/:id`, which for anyone signed in opens with the conversation in a
+panel beside it — so a reviewer never needs the editor, only the link. Everything is live: a reply or a
+resolution appears on every open copy of the page, and the library shows each page's open threads.
+
+A comment is pinned to a **node id and a point inside that node**, as fractions of its width and height,
+not to a position on the page. Node ids survive reordering and editing, so the pin stays on the third
+card when the cards are shuffled, and on the same spot of that card when the preview goes from desktop to
+mobile. Each comment records the revision it was written against. When its component is deleted the
+thread is kept under **On deleted components** rather than dropped.
+
+Comments live in the page's own Durable Object (a `comments` table beside the document), so they are
+ordered with everything else that happens to the page and pushed over the sockets it already holds —
+only to signed-in sockets. **Comments are internal:** a share code opens the page, not the conversation
+about it. Pins are measured against a component's outer box, not everything inside it: a marquee's track
+is screens wide and always moving, and a pin measured through it drifted off the page.
+
+| Route | Who |
+| --- | --- |
+| `GET`/`POST /api/pages/:id/comments` | Access. `POST` takes `{ node, point, body }` or `{ thread, body }` |
+| `PATCH /api/pages/:id/comments/:c` | Access. `{ body }` for your own, `{ resolved }` for any thread |
+| `DELETE /api/pages/:id/comments/:c` | Access. Your own; a thread's first comment takes the thread |
+
+### Versions: the deliverable
+
+A revision is a moment; a **version** is a decision. **Versions** in the builder's right rail freezes the
+page as it is now under a name and a note — "Approved for build", "what changed and what to look at" —
+and can move the page's status in the same step, so the version records the status it was made to mark.
+Above the button is what has changed since the last version, block by block, and the button stays off
+when nothing has.
+
+A version is frozen three ways, and kept for as long as the page is:
+
+- **the document**, copied out of the history (which is trimmed) into the page's own `versions` table;
+- **the HTML**, rendered then and stored in the bucket, so a later change to a component cannot change
+  what was signed off — unlike `/p/:id.html`, which is rendered on request from the live page;
+- **the files that HTML uses.** The library's images, footage and fonts are served under
+  content-hashed names that disappear on the next deploy that changes them, so each one is copied
+  beside the version and the HTML is rewritten to point there, with absolute URLs, so a downloaded
+  copy opened from disk still finds them. Those copies are ungated, like uploaded images: they are the
+  design system's own public files.
+
+The React handoff is frozen with it. `/p/:id/v/:n` shows a version (drawn live from its frozen
+document, with a bar holding the HTML, the React and what changed since the one before), and
+`/p/:id/compare/:a/:b` shows two versions' frozen HTML side by side at desktop width, scrolling together.
+**Restore** puts a version back as the newest revision; like restoring a revision, it adds history
+rather than rewinding it. The library shows each page's newest version.
+
+"What changed" compares the top-level blocks by node id. *Moved* means outside the longest run of blocks
+that kept their order — so dragging one section to the top reports one move, not a shift of all the rest.
+
+| Route | Who |
+| --- | --- |
+| `GET /api/pages/:id/versions`, `GET …/versions/:n` | Access, or the page's code |
+| `POST /api/pages/:id/versions` | Access. `{ name, note, status? }` |
+| `POST /api/pages/:id/versions/:n/restore` | Access |
+| `GET /p/:id/v/:n.html`, `/p/:id/v/:n.tsx` | Access, or the page's code |
+| `GET /p/:id/v/:n/assets/:file` | anyone |
 
 ### Why a Durable Object per page
 

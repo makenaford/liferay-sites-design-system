@@ -8,6 +8,14 @@
         "storybook:6007"
       ],
       "port": 6007
+    },
+    {
+      "name": "page-builder",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "builder:worker"
+      ],
+      "port": 8787
     }
   ]
 }

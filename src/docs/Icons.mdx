@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks'
 import { IconGallery } from './IconGallery'
-import { GlassIconGallery } from './GlassIconGallery'
+import { GlassIconGallery, GlassIconLibraryGallery } from './GlassIconGallery'
 
 <Meta title="Overview/Icons" />
 
@@ -75,3 +75,26 @@ does not exist fails the build with suggestions, and two icons whose file names 
 is in both Education and Industries — fail until one is given an `as` name.
 
 <GlassIconGallery />
+
+### The Marketing Assets library
+
+Every glass icon in the [Marketing Assets library](https://liferaymarketingassets-site-prod-2qfx7w3joykiv547.liferaydesign.workers.dev/library?kind=icon)
+ships too, mirrored from its source repository, `liferay-illustration-system`, into
+`assets/glass-icons/library/` (dark) and `assets/glass-icons-light/library/` (light). That folder belongs to
+the sync — never edit it by hand. To bring it up to date:
+
+```bash
+pnpm glass-icons:sync
+```
+
+It reads a checkout of `liferay-illustration-system` beside this one (or `--from <dir>`, or
+`$GLASS_ICON_LIBRARY`), or fetches it with `--github` through the GitHub CLI's sign-in. It adds, updates and
+removes files until the folder matches, fits each viewBox to its artwork, regenerates the components, and
+records the source commit in `library/SOURCE.json`. `pnpm glass-icons:sync:check` fails if the mirror is
+behind.
+
+A library icon is named from its category **and** its name — `Product Modules - DXP` is
+`IconGlassProductModulesDxp` — so it never takes a curated icon's name. Where both sets have an icon for the
+same thing, they are different drawings: pick one where it is used.
+
+<GlassIconLibraryGallery />

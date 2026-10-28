@@ -36,19 +36,29 @@ import {
   move,
   refill,
   remove,
+  setData,
   setProp,
+  type JsonObject,
+  type PageDocument,
   type PropValue,
 } from './document'
 import { entryFor } from './registry'
 import { presetsFor } from './presets'
 import { isNew, starterContent } from './starter'
+import { builtPageContent, builtPageFor } from './templates'
+import { Library, StatusMenu } from './LibraryScreen'
+import { CommentLayer, type Draft } from './CommentLayer'
+import { CommentsPanel, pinnedThreads } from './CommentsPanel'
+import { VersionsPanel } from './VersionsPanel'
+import { CompareView, VersionView } from './VersionScreens'
 import { placementFor, refusal } from './placement'
-import { usePage } from './usePage'
+import { usePage, type Page } from './usePage'
+import type { CommentsState } from './comments'
 import { Canvas } from './Canvas'
 import { CodePanel, type View } from './CodePanel'
 import { Inspector } from './Inspector'
 import { Layers, Palette } from './Panels'
-import { Renderer } from './Renderer'
+import { NODE_ATTR, Renderer } from './Renderer'
 import { PageTheme } from './PageTheme'
 
 import '@mantine/core/styles.css'
@@ -63,6 +73,8 @@ type Route =
   | { screen: 'home' }
   | { screen: 'edit'; id: string }
   | { screen: 'view'; id: string; key: string | null }
+  | { screen: 'version'; id: string; number: number }
+  | { screen: 'compare'; id: string; from: number; to: number }
 
 /**
  * Three routes do not need a router.
@@ -71,8 +83,14 @@ type Route =
  * builder already loads the whole component library.
  */
 function routeOf(location: Location): Route {
-  const [first, second] = location.pathname.split('/').filter(Boolean)
+  const [first, second, third, fourth, fifth] = location.pathname.split('/').filter(Boolean)
   if (first === 'edit' && second) return { screen: 'edit', id: second }
+  if (first === 'p' && second && third === 'v' && /^\d+$/.test(fourth ?? '')) {
+    return { screen: 'version', id: second, number: Number(fourth) }
+  }
+  if (first === 'p' && second && third === 'compare' && /^\d+$/.test(fourth ?? '') && /^\d+$/.test(fifth ?? '')) {
+    return { screen: 'compare', id: second, from: Number(fourth), to: Number(fifth) }
+  }
   if (first === 'p' && second) {
     return { screen: 'view', id: second, key: new URLSearchParams(location.search).get('k') }
   }
@@ -111,9 +129,17 @@ export function App() {
       {route.screen === 'home' ? <Home /> : null}
       {route.screen === 'edit' ? <Builder id={route.id} /> : null}
       {route.screen === 'view' ? <Published id={route.id} shareKey={route.key} /> : null}
+      {route.screen === 'version' ? <VersionView page={route.id} number={route.number} /> : null}
+      {route.screen === 'compare' ? <CompareView page={route.id} from={route.from} to={route.to} /> : null}
     </MantineProvider>
   )
 }
+
+/**
+ * Where a key belongs to the field rather than to the builder's shortcuts. Text entry only: a segmented
+ * control is a set of radio inputs, and focus left on one after a click must not swallow `C` or `Delete`.
+ */
+const TYPING = 'textarea, [contenteditable="true"], input:not([type="radio"]):not([type="checkbox"])'
 
 /* ------------------------------------------------------------------ home */
 
@@ -178,6 +204,10 @@ function Home() {
   const me = useMe()
   const [recent] = useState(readRecent)
 
+  // The team's library, for anyone signed in. What follows is for everyone else: a reader who holds
+  // share links, and the way in for someone who has not signed in yet.
+  if (me?.authed) return <Library email={me.email} />
+
   return (
     <Box maw={640} mx="auto" p="xl">
       <Text fz={32} fw={700}>
@@ -238,7 +268,8 @@ function Home() {
 /* ------------------------------------------------------------------ the published page */
 
 function Published({ id, shareKey }: { id: string; shareKey: string | null }) {
-  const { doc, status } = usePage(id, shareKey)
+  const page = usePage(id, shareKey)
+  const { doc, status } = page
 
   useEffect(() => {
     if (!doc) return
@@ -254,13 +285,153 @@ function Published({ id, shareKey }: { id: string; shareKey: string | null }) {
   /*
    * No frame, no toolbar, no marker attributes — the components and nothing else, at the browser's own
    * width. This is the artefact the mock exists to produce.
+   *
+   * Signed in, it is also where a page is **reviewed**: the same page, with comment pins over it and
+   * the conversation beside it. A reviewer never needs the editor — they open the link they were sent.
+   * A share-code reader gets the bare page, because comments are internal.
    */
+  if (page.comments) return <Review page={page as Page & { doc: PageDocument; comments: CommentsState }} />
+
   return (
     <PageTheme colorScheme={doc.colorScheme} style={{ minBlockSize: '100vh' }}>
       <Renderer doc={doc} />
     </PageTheme>
   )
 }
+
+/** The shared page with its comments: pins on the page, the conversation in a panel on the right. */
+function Review({ page }: { page: Page & { doc: PageDocument; comments: CommentsState } }) {
+  const me = useMe()
+  const { doc, comments } = page
+  const [open, setOpen] = useState(true)
+  const [commenting, setCommenting] = useState(false)
+  const [activeThread, setActiveThread] = useState<string | null>(null)
+  const [draft, setDraft] = useState<Draft | null>(null)
+  const pageArea = useRef<HTMLDivElement>(null)
+
+  const openThreads = comments.comments.filter((c) => c.thread === c.id && c.resolvedAt === null).length
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.target as HTMLElement).closest(TYPING)) return
+      if (event.key === 'Escape') {
+        setCommenting(false)
+        setDraft(null)
+      }
+      if (event.key.toLowerCase() === 'c' && !event.metaKey && !event.ctrlKey) {
+        setCommenting((was) => !was)
+        setOpen(true)
+      }
+    }
+    addEventListener('keydown', onKey)
+    return () => removeEventListener('keydown', onKey)
+  }, [])
+
+  const reveal = (node: string) => {
+    const marker = pageArea.current?.querySelector(`[${NODE_ATTR}="${CSS.escape(node)}"]`)
+    marker?.firstElementChild?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+
+  return (
+    <>
+      <Box ref={pageArea} style={{ position: 'relative', marginInlineEnd: open ? PANEL_WIDTH : 0 }}>
+        <PageTheme colorScheme={doc.colorScheme} style={{ minBlockSize: '100vh' }}>
+          <Renderer doc={doc} marked editing={false} />
+        </PageTheme>
+        <CommentLayer
+          doc={doc}
+          threads={pinnedThreads(doc, comments, activeThread)}
+          activeThread={activeThread}
+          commenting={commenting}
+          draft={draft}
+          onPlace={(placed) => {
+            setDraft(placed)
+            setActiveThread(null)
+            setCommenting(false)
+            setOpen(true)
+          }}
+          onOpen={(thread) => {
+            setActiveThread(thread)
+            setOpen(true)
+          }}
+        />
+      </Box>
+
+      {open ? (
+        <Stack
+          gap={0}
+          style={{
+            position: 'fixed',
+            insetBlock: 0,
+            insetInlineEnd: 0,
+            width: PANEL_WIDTH,
+            zIndex: 1000,
+            background: 'var(--mantine-color-dark-7)',
+            borderInlineStart: '1px solid var(--mantine-color-dark-4)',
+          }}
+        >
+          <Group justify="space-between" p="sm" wrap="nowrap">
+            <Box style={{ minWidth: 0 }}>
+              <Text fw={700} size="sm" truncate>
+                {doc.title}
+              </Text>
+              <Group gap={6}>
+                {page.meta ? <StatusMenu status={page.meta.status} onChange={(status) => void page.setStatus(status)} /> : null}
+                <Anchor href={`/edit/${doc.id}`} size="xs">
+                  Open in the builder
+                </Anchor>
+              </Group>
+            </Box>
+            <ActionIcon variant="subtle" aria-label="Hide comments" onClick={() => setOpen(false)}>
+              ×
+            </ActionIcon>
+          </Group>
+          <Box px="sm" pb="xs">
+            <Button
+              fullWidth
+              size="xs"
+              variant={commenting ? 'filled' : 'default'}
+              color={commenting ? 'orange' : undefined}
+              onClick={() => setCommenting((was) => !was)}
+            >
+              {commenting ? 'Click the page to place it — Esc to cancel' : 'Add a comment (C)'}
+            </Button>
+          </Box>
+          <Divider />
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+            <CommentsPanel
+              doc={doc}
+              state={comments}
+              me={me?.email ?? null}
+              actions={page.commentActions}
+              activeThread={activeThread}
+              onActivate={setActiveThread}
+              draft={draft}
+              onDraftDone={() => setDraft(null)}
+              onReveal={reveal}
+            />
+          </ScrollArea>
+          {page.error ? (
+            <Text size="xs" c="red" p="xs">
+              {page.error}
+            </Text>
+          ) : null}
+        </Stack>
+      ) : (
+        <Button
+          onClick={() => setOpen(true)}
+          size="sm"
+          style={{ position: 'fixed', insetInlineEnd: 20, insetBlockEnd: 20, zIndex: 1000 }}
+        >
+          Comments{openThreads ? ` · ${openThreads}` : ''}
+        </Button>
+      )}
+    </>
+  )
+}
+
+/** The review panel's width. The page gives up exactly this much, so nothing hides under it. */
+const PANEL_WIDTH = 340
 
 /**
  * The refusal, written for the person who hit it.
@@ -319,6 +490,16 @@ function Builder({ id }: { id: string }) {
    */
   const [reveal, setReveal] = useState(0)
 
+  /*
+   * Comments. `commenting` is the mode in which a click on the canvas places a comment rather than
+   * selecting; it ends after one placement, the way a comment tool does in any design app, so the
+   * next click goes back to editing.
+   */
+  const [commenting, setCommenting] = useState(false)
+  const [rail, setRail] = useState<'inspect' | 'comments' | 'versions'>('inspect')
+  const [activeThread, setActiveThread] = useState<string | null>(null)
+  const [draft, setDraft] = useState<Draft | null>(null)
+
   useEffect(() => {
     if (doc) {
       document.title = `${doc.title} — Page builder`
@@ -337,7 +518,16 @@ function Builder({ id }: { id: string }) {
   useEffect(() => {
     if (seeded.current || !doc || !isNew(doc)) return
     seeded.current = true
-    edit((current) => ({ ...current, ...starterContent() }))
+
+    // `/edit/new?template=blog-hub` starts the page as a copy of that built page instead.
+    const built = builtPageFor(new URLSearchParams(location.search).get('template'))
+    if (location.search) history.replaceState({}, '', location.pathname)
+
+    edit((current) =>
+      built
+        ? { ...current, title: built.label, template: built.id, ...builtPageContent(built) }
+        : { ...current, ...starterContent() },
+    )
   }, [doc, edit])
 
   useEffect(() => {
@@ -366,6 +556,11 @@ function Builder({ id }: { id: string }) {
   const onProp = useCallback(
     (nodeId: string, name: string, value: PropValue | undefined) =>
       edit((current) => setProp(current, nodeId, name, value)),
+    [edit],
+  )
+
+  const onData = useCallback(
+    (nodeId: string, data: JsonObject) => edit((current) => setData(current, nodeId, data)),
     [edit],
   )
 
@@ -425,7 +620,7 @@ function Builder({ id }: { id: string }) {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
       // Never steal a key from a field or from text being edited on the canvas.
-      if (target.closest('input, textarea, [contenteditable="true"]')) return
+      if (target.closest(TYPING)) return
 
       const meta = event.metaKey || event.ctrlKey
       if (meta && event.key.toLowerCase() === 'z') {
@@ -436,7 +631,18 @@ function Builder({ id }: { id: string }) {
         event.preventDefault()
         return page.redo()
       }
-      if (event.key === 'Escape') return setSelectedId(null)
+      if (event.key === 'Escape') {
+        if (commenting || draft) {
+          setCommenting(false)
+          return setDraft(null)
+        }
+        return setSelectedId(null)
+      }
+      if (!meta && event.key.toLowerCase() === 'c' && page.comments) {
+        event.preventDefault()
+        setCommenting((was) => !was)
+        return setRail('comments')
+      }
       if ((event.key === 'Backspace' || event.key === 'Delete') && selectedId) {
         event.preventDefault()
         onRemove(selectedId)
@@ -444,9 +650,13 @@ function Builder({ id }: { id: string }) {
     }
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
-  }, [page, selectedId, onRemove])
+  }, [page, selectedId, onRemove, commenting, draft])
 
   /* ---------------------------------------------------------------- render */
+
+  const openThreads = page.comments
+    ? page.comments.comments.filter((comment) => comment.thread === comment.id && comment.resolvedAt === null).length
+    : 0
 
   if (me === null || page.status === 'loading') return <Centered>Loading…</Centered>
   if (page.status === 'denied' || !me.authed) return <NoAccess />
@@ -524,6 +734,10 @@ function Builder({ id }: { id: string }) {
           </Group>
 
           <Group gap="xs" wrap="nowrap">
+            {page.meta ? (
+              /* Not an edit: it does not save the page, move the revision, or join the undo stack. */
+              <StatusMenu status={page.meta.status} onChange={(status) => void page.setStatus(status)} />
+            ) : null}
             <SaveState saving={page.saving} error={page.error} rev={doc.rev} />
             {page.editors > 1 ? (
               <Tooltip label="People with this page open">
@@ -539,6 +753,21 @@ function Builder({ id }: { id: string }) {
             >
               Code
             </Button>
+            {page.comments ? (
+              <Tooltip label="Click anywhere on the page to comment there (C)">
+                <Button
+                  size="xs"
+                  variant={commenting ? 'filled' : 'default'}
+                  color={commenting ? 'orange' : undefined}
+                  onClick={() => {
+                    setCommenting((was) => !was)
+                    setRail('comments')
+                  }}
+                >
+                  Comment{openThreads ? ` · ${openThreads}` : ''}
+                </Button>
+              </Tooltip>
+            ) : null}
             <Share id={doc.id} onNotice={setNotice} />
           </Group>
         </Group>
@@ -571,6 +800,27 @@ function Builder({ id }: { id: string }) {
                   add(component, overId)
                   setDragging(null)
                 }}
+                overlay={
+                  page.comments ? (
+                    <CommentLayer
+                      doc={doc}
+                      threads={pinnedThreads(doc, page.comments, activeThread)}
+                      activeThread={activeThread}
+                      commenting={commenting}
+                      draft={draft}
+                      onPlace={(placed) => {
+                        setDraft(placed)
+                        setActiveThread(null)
+                        setCommenting(false)
+                        setRail('comments')
+                      }}
+                      onOpen={(thread) => {
+                        setActiveThread(thread)
+                        setRail('comments')
+                      }}
+                    />
+                  ) : null
+                }
               />
             </Box>
           </ScrollArea>
@@ -594,12 +844,51 @@ function Builder({ id }: { id: string }) {
       </Stack>
 
       {/* ------------------------------------------------ right rail */}
-      <Box w={300} style={{ borderLeft: '1px solid var(--mantine-color-dark-4)', flex: 'none' }}>
+      <Stack gap={0} w={300} style={{ borderLeft: '1px solid var(--mantine-color-dark-4)', flex: 'none' }}>
+        <Box p="xs" pb={0}>
+          <SegmentedControl
+            size="xs"
+            fullWidth
+            value={rail}
+            onChange={(value) => setRail(value as typeof rail)}
+            data={[
+              { value: 'inspect', label: 'Inspect' },
+              ...(page.comments
+                ? [{ value: 'comments', label: openThreads ? `Comments ${openThreads}` : 'Comments' }]
+                : []),
+              { value: 'versions', label: page.versions?.length ? `Versions ${page.versions.length}` : 'Versions' },
+            ]}
+          />
+        </Box>
+        {rail === 'versions' ? (
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+            <VersionsPanel page={page as typeof page & { doc: PageDocument }} />
+          </ScrollArea>
+        ) : rail === 'comments' && page.comments ? (
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+            <CommentsPanel
+              doc={doc}
+              state={page.comments}
+              me={me.email}
+              actions={page.commentActions}
+              activeThread={activeThread}
+              onActivate={setActiveThread}
+              draft={draft}
+              onDraftDone={() => setDraft(null)}
+              onReveal={(node) => {
+                setSelectedId(node)
+                setReveal((n) => n + 1)
+              }}
+            />
+          </ScrollArea>
+        ) : (
+        <Box style={{ flex: 1, minHeight: 0 }}>
         <Inspector
           doc={doc}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onProp={onProp}
+          onData={onData}
           onPreset={onPreset}
           onAdd={(parentId, slot, component) => {
             const entry = entryFor(component)
@@ -612,7 +901,9 @@ function Builder({ id }: { id: string }) {
           onMoveWithin={onMoveWithin}
           onDuplicate={onDuplicate}
         />
-      </Box>
+        </Box>
+        )}
+      </Stack>
     </Group>
   )
 }

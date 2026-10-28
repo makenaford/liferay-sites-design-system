@@ -173,7 +173,7 @@ function Branch({
       >
         <UnstyledButton style={{ flex: 1, minWidth: 0 }} onClick={() => onSelect(id)}>
           <Text size="xs" truncate fw={selected ? 600 : 400}>
-            {summarise(node.component, node.props)}
+            {summarise(node.component, node.props, node.data)}
           </Text>
           <Text size="9px" c="dimmed">
             {entry?.label ?? node.component}

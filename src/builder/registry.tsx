@@ -43,6 +43,7 @@ import * as allIcons from '../icons'
 import { CATALOG, type ComponentSpec, type PropSpec } from './catalog.generated'
 import { Grid, Heading, Paragraph, Plain, Row, Spacer, Stack } from './primitives'
 import { createNode, type PageNode, type PropValue } from './document'
+import { BLOCK_ENTRIES, type DataRoot } from './blocks'
 
 /* ------------------------------------------------------------------ the icon sets */
 
@@ -141,7 +142,7 @@ const OVERRIDES: Record<string, PropSpec[]> = {
 
 /* ------------------------------------------------------------------ entries */
 
-export type Group = 'Structure' | 'Text' | 'Content' | 'Media' | 'Controls'
+export type Group = 'Built pages' | 'Structure' | 'Text' | 'Content' | 'Media' | 'Controls'
 
 /** What the renderer hands a custom `render`. */
 export interface RenderContext {
@@ -153,6 +154,8 @@ export interface RenderContext {
   renderNode: (id: string) => ReactNode
   node: PageNode
   props: Record<string, PropValue>
+  /** Drawing into the builder's canvas rather than a published page. */
+  editing: boolean
 }
 
 export interface Entry {
@@ -181,6 +184,11 @@ export interface Entry {
   parentOnly?: string[]
   /** Slots that accept only certain components — the other half of the same rule. */
   accepts?: Record<string, string[]>
+  /**
+   * A node whose content is structured data rather than slots — a built-page hero or section. Names
+   * the generated shape its `data` is edited against; see `blocks.tsx`.
+   */
+  dataRoot?: DataRoot
   /** The prop a designer edits by typing on the canvas, when there is one. */
   textProp?: string
   /** A freshly dropped node, with real placeholder content rather than an empty shell. */
@@ -1034,6 +1042,8 @@ function tabSeed(label: string): Seed {
 
 /* ------------------------------------------------------------------ lookups */
 
+entries.push(...BLOCK_ENTRIES)
+
 export const REGISTRY: Record<string, Entry> = Object.fromEntries(
   entries.map((entry) => [entry.name, entry]),
 )
@@ -1042,7 +1052,7 @@ export const entryFor = (component: string): Entry | undefined => REGISTRY[compo
 
 /** The palette, grouped, with the subcomponents left out — they are offered by their parent's slot. */
 export const PALETTE: { group: Group; entries: Entry[] }[] = (
-  ['Structure', 'Text', 'Content', 'Media', 'Controls'] as Group[]
+  ['Built pages', 'Structure', 'Text', 'Content', 'Media', 'Controls'] as Group[]
 ).map((group) => ({
   group,
   entries: entries.filter((entry) => entry.group === group && !entry.parentOnly),
