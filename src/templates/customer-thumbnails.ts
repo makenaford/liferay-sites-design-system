@@ -22,6 +22,10 @@ import macdon from '../../assets/home/customers/macdon.jpg'
 import mueller from '../../assets/home/customers/mueller.jpg'
 import sky from '../../assets/home/customers/sky.jpg'
 import unilever from '../../assets/home/customers/unilever.jpg'
+/* The partner quotes' tiles — Partner Pages -> `Partner Home` (node `212:26649`). */
+import puntus from '../../assets/partner-home/puntus.png'
+import vai from '../../assets/partner-home/vai.png'
+import demandbase from '../../assets/partner-home/demandbase.png'
 
 /** Keyed by the `customer` field on a story, which is what both the page data and the story hold. */
 export const CUSTOMER_THUMBNAILS: Record<string, string> = {
@@ -35,6 +39,9 @@ export const CUSTOMER_THUMBNAILS: Record<string, string> = {
   MacDon: macdon,
   /* From the catalog frame (node `24581:69993`), a 1x render: softer than the 820x547 set above. */
   'AGIA Affinity': agiaAffinity,
+  puntus,
+  VAI: vai,
+  Demandbase: demandbase,
 }
 
 /** The alt a thumbnail wants: it is the customer's mark, and that is the whole of what it shows. */

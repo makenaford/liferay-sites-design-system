@@ -1,20 +1,25 @@
-import aiHubFilm from '../../assets/solutions/ai-hub.webm'
-import aiHubStill from '../../assets/solutions/ai-hub-poster.jpg'
+import heroPhoto from '../../assets/technology-partner/hero.png'
+import agentBuilder from '../../assets/industry/hero-media.jpg'
+import capabilityMedia from '../../assets/home/capability-media.png'
 import type { PageSpec } from './page-schema'
 
 /*
- * The Technology Partner page, as data — `Partner Pages` -> `Technology Partner` (node `106:25461`).
+ * The Technology Partner page, as data — Partner Pages -> `Technology` (node `272:35757` on `Mockups for
+ * review`; formerly `106:25461`).
  *
  * The OEM page's template with the technology program's case: reach Liferay's customers, sell alongside
- * Liferay, and connect your product without forking it. It adds the three partnership models and the
- * support partners get, and ends on the same application band.
+ * Liferay, and connect your product without forking it. The three partnership models sit behind a pill
+ * bar, then the support partners get, and it ends on the same application band.
  *
- * Where the frame still carries the OEM page's copy — the first FAQ answer, the form's title and the
- * last step — it is rewritten for this program. Those, and the answers the file leaves closed, are
- * drafts.
+ * The copy follows the frame. Where the frame still carries the OEM page's words — `Define the
+ * Partnership`'s `OEM partnership structure` — it is rewritten for this program. The answers the file
+ * leaves closed are drafts, as is the new `Does the partnership require a connector?`.
  */
 
-const STILL = { src: aiHubStill, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
+/* The partnership models' picture — a stand-in for the frame's placeholder. */
+const MODELS = { src: capabilityMedia, alt: 'Liferay DXP capabilities connected around a partner product' }
+
+const STILL = { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
 
 export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
   hero: {
@@ -24,7 +29,11 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
       text: 'Connect your product with Liferay DXP, reach enterprise buyers, and create new opportunities through referrals, Marketplace visibility, and joint selling.',
     },
     buttons: [{ label: 'Become a Technology Partner', href: '#apply' }],
-    media: { src: aiHubFilm, poster: aiHubStill, alt: STILL.alt, ratio: '3:2' },
+    media: {
+      src: heroPhoto,
+      alt: 'Two colleagues at a laptop beside the Liferay Marketplace, a partner’s listing with its apps, rating and downloads',
+      ratio: '3:2',
+    },
   },
   sections: [
     {
@@ -44,25 +53,25 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
             items: [
               {
                 question: 'Reach Enterprise Buyers',
-                icon: 'direction-arrow',
+                icon: 'cart',
                 answer:
                   'Connect your technology with organizations using Liferay DXP to power customer, partner, and employee experiences, from enterprise businesses to public-sector institutions and regulated industries.',
               },
               {
                 question: 'Sell Alongside Liferay',
-                icon: 'dashboard',
+                icon: 'refund-dollar',
                 answer:
                   'Exchange referrals and work shared accounts with Liferay’s sales teams, so your product is part of the conversation when customers plan their next digital experience.',
               },
               {
                 question: 'Integrate Without Forking',
-                icon: 'pig-money',
+                icon: 'plugin',
                 answer:
                   'Build on Client Extensions and headless APIs instead of modifying the core, so your integration keeps working as customers upgrade Liferay DXP.',
               },
               {
                 question: 'Start Simple, Scale Together',
-                icon: 'tag',
+                icon: 'scale',
                 answer:
                   'Begin with referrals or a connector and grow into a strategic partnership as joint customers and pipeline grow.',
               },
@@ -93,69 +102,105 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
         {
           quote:
             '“With Liferay, we’re enabling customers to activate account intelligence where digital experiences begin, making every engagement more impactful.”',
-          name: 'Jason Fahy',
-          role: 'VP of Experience and Change Management',
+          name: 'Christopher Amabile',
+          role: 'VP, Global Ecosystem, Demandbase',
           link: { label: 'Read the Story', href: '#' },
         },
       ],
     },
 
     {
-      type: 'contentBlock',
+      /* One tab: the heading over both columns, the checked points beside the photograph. */
+      type: 'tabbedContent',
       title: 'Is Liferay the Right Partner to Grow Your Business?',
       titleHighlight: 'Grow Your Business?',
       description:
         'Technology partnerships work best when there is a clear opportunity to create value together. See what we look for in a strong partner:',
-      points: [
+      tabs: [
         {
-          title: 'Technology & Product',
-          description:
-            'Software products, platforms, services, or add-ons that complement Liferay DXP and address needs beyond its core capabilities.',
-        },
-        {
-          title: 'Market Presence & Customer Base',
-          description:
-            'An established presence in the market and a customer base that can benefit from connecting complementary technologies with Liferay.',
-        },
-        {
-          title: 'Partnership & Integration Readiness',
-          description:
-            'A commitment to collaboration, with the business and technical resources needed to support the partnership and, where applicable, its integration.',
+          value: 'fit',
+          label: 'Right partner',
+          content: {
+            title: '',
+            description: '',
+            points: [
+              {
+                title: 'Technology & Product',
+                description:
+                  'Software products, platforms, services, or add-ons that complement Liferay DXP and address needs beyond its core capabilities.',
+              },
+              {
+                title: 'Market Presence & Customer Base',
+                description:
+                  'An established presence in the market and a customer base that can benefit from connecting complementary technologies with Liferay.',
+              },
+              {
+                title: 'Partnership & Integration Readiness',
+                description:
+                  'A commitment to collaboration, with the business and technical resources needed to support the partnership and, where applicable, its integration.',
+              },
+            ],
+            media: STILL,
+          },
         },
       ],
-      media: STILL,
     },
 
     {
-      type: 'partnershipModels',
+      /*
+       * The three models behind a pill bar (node `272:35811`): each its name, what it is, and what Liferay
+       * looks for in a partner, beside one picture — a stand-in, since the frame's is a placeholder.
+       */
+      type: 'tabbedContent',
       title: 'A Partnership Model for Every Opportunity',
       titleHighlight: 'Every Opportunity',
       description:
         'Whether the goal is to exchange referrals, connect products, or build a deeper strategic relationship, there’s a partnership model designed to fit the opportunity.',
-      note: 'Not sure where you fit? Apply, and we’ll recommend the right starting point.',
-      action: { label: 'Apply Now', href: '#apply' },
-      models: [
+      tabs: [
         {
-          icon: 'add-user',
-          title: 'Referral Partnership',
-          description:
-            'The starting point for complementary products. Exchange qualified referrals, align our sales teams on shared accounts, and build the joint track record that leads to a deeper partnership.',
-          lookFor: 'Active referral sharing and a sales contact who understands when Liferay is a good fit for their customers.',
+          value: 'referral',
+          label: 'Referral Partnership',
+          icon: 'share-forward',
+          content: {
+            title: 'Referral Partnership',
+            description:
+              'The starting point for complementary products. Exchange qualified referrals, align our sales teams on shared accounts, and build the joint track record that leads to a deeper partnership.',
+            note: {
+              label: 'What we look for in a partner:',
+              text: 'Active referral sharing and a sales contact who understands when Liferay is a good fit for their customers.',
+            },
+            media: MODELS,
+          },
         },
         {
-          icon: 'integration',
-          title: 'Connector Partnership',
-          description:
-            'For products customers want to use with Liferay DXP. Build a Client Extension or Marketplace app with our developer resources and development license, then publish it on the Liferay Marketplace with announcement support.',
-          lookFor:
-            'A well-maintained, documented integration, with published support information and compatibility with current Liferay DXP releases.',
+          value: 'connector',
+          label: 'Connector Partnership',
+          icon: 'plugin',
+          content: {
+            title: 'Connector Partnership',
+            description:
+              'For products customers want to use with Liferay DXP. Build a Client Extension or Marketplace app with our developer resources and development license, then publish it on the Liferay Marketplace with announcement support.',
+            note: {
+              label: 'What we look for in a partner:',
+              text: 'A well-maintained, documented integration, with published support information and compatibility with current Liferay DXP releases.',
+            },
+            media: MODELS,
+          },
         },
         {
-          icon: 'user-validation',
-          title: 'Strategic Partnership',
-          description:
-            'For partners where our products and customers overlap significantly. Plan joint solutions, co-sell on shared opportunities, and run coordinated launches with a named Liferay partnership lead.',
-          lookFor: 'Executive sponsorship, a shared business plan, and regular reviews of joint pipeline goals.',
+          value: 'strategic',
+          label: 'Strategic Partnership',
+          icon: 'git-compare',
+          content: {
+            title: 'Strategic Partnership',
+            description:
+              'For partners where our products and customers overlap significantly. Plan joint solutions, co-sell on shared opportunities, and run coordinated launches with a named Liferay partnership lead.',
+            note: {
+              label: 'What we look for in a partner:',
+              text: 'Executive sponsorship, a shared business plan, and regular reviews of joint pipeline goals.',
+            },
+            media: MODELS,
+          },
         },
       ],
     },
@@ -165,29 +210,31 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
       title: 'How We Support Our Partners',
       description:
         'From building your integration to bringing it to market, get the resources and support to make the most of your partnership with Liferay.',
+      align: 'center',
+      surface: 'glass',
       columns: 3,
       cards: [
-        { icon: 'security', title: 'Marketplace Visibility', description: 'Get your technology in front of Liferay customers through a Marketplace listing.' },
+        { icon: 'commerce', title: 'Marketplace Visibility', description: 'Get your technology in front of Liferay customers through a Marketplace listing.' },
         {
-          icon: 'integration',
+          icon: 'module-integration',
           title: 'Developer Resources',
           description:
             'Everything needed to start building and testing, including Client Extensions, headless APIs, and Marketplace publishing guidance.',
         },
         {
-          icon: 'ai',
+          icon: 'user-validation',
           title: 'Partner Enablement',
           description:
             'Access onboarding, product training, and positioning guidance to help teams understand and communicate the value of the partnership.',
         },
         {
-          icon: 'security',
+          icon: 'analytics',
           title: 'Co-Marketing Opportunities',
           description:
-            'Collaborate with Liferay on joint marketing activities and channels to promote the partnership and expand your reach.',
+            'Bring the partnership to market with launch announcements, co-branded content, webinars, and other joint marketing opportunities.',
         },
-        { icon: 'integration', title: 'Partner Portal', description: 'Access partner collateral, submit referrals, and track opportunities in one place.' },
-        { icon: 'ai', title: 'Development Environment', description: 'Use a Liferay DXP development license to build and test the integration.' },
+        { icon: 'add-user', title: 'Partner Portal', description: 'Access partner collateral, submit referrals, and track opportunities in one place.' },
+        { icon: 'security', title: 'Development Environment', description: 'Use a Liferay DXP development license to build and test the integration.' },
       ],
     },
 
@@ -197,8 +244,13 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
       items: [
         {
           question: 'Is there a fee to become a Technology Partner?',
+          answer: 'There is no fee to join the Technology Partner Program.',
+        },
+        {
+          question: 'Does the partnership require a connector?',
+          /* Draft — the frame leaves this row closed. */
           answer:
-            'There is no fee to apply. The right partnership model — referral, connector or strategic — and any commercial terms are agreed together once we understand your product and goals.',
+            'No. A referral partnership needs no integration at all; a connector is what the Connector Partnership adds, and many partners start with referrals and build one later.',
         },
         {
           question: 'Who builds the integration?',
@@ -226,13 +278,13 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
     {
       type: 'stepsForm',
       anchor: 'apply',
-      backdrop: 'mesh',
+      backdrop: 'glow',
       title: 'Path to Partnership',
       subtitle: 'What Happens Next?',
       steps: [
         {
           title: 'Meet with Liferay',
-          body: 'After submitting your application, a Liferay team member will reach out within 5 business days to schedule a meeting and learn more about your business and solution.',
+          body: 'After submitting your application, a Liferay Sales team member will reach out to schedule a meeting and discuss the use case, customer opportunities, and value for both sides.',
         },
         {
           title: 'Discuss the Opportunity',
@@ -242,10 +294,14 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
           title: 'Define the Partnership',
           body: 'Together, we’ll determine the right technology partnership model and next steps.',
         },
+        {
+          title: 'Launch the Partnership',
+          body: 'Bring the partnership to market with a Marketplace listing, launch announcement, and enablement for both sales teams.',
+        },
       ],
       form: {
         title: 'Become a Technology Partner',
-        description: 'Fill out the form below to initiate your application',
+        description: 'Fill out the form below to initiate your application.',
         rows: [
           [
             { label: 'First Name', required: true },
@@ -270,44 +326,24 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
     },
 
     {
+      /* Title-only cards, as the frame draws both rows; the icons are the frame's too. */
       type: 'cardGrid',
       title: 'Discover the Liferay Ecosystem',
       columns: 2,
       cards: [
-        {
-          icon: 'partner-portals',
-          title: 'Partner Directory',
-          description: 'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',
-          href: '#',
-        },
-        {
-          icon: 'commerce',
-          title: 'Liferay Marketplace',
-          description: 'Discover apps, integrations, and solutions that extend Liferay DXP.',
-          href: '#',
-        },
+        { icon: 'dam', title: 'Partner Directory', href: '#' },
+        { icon: 'dam', title: 'Liferay Marketplace', href: '#' },
       ],
     },
 
     {
+      /* The frame lists this page's own program first; the other two programs are the ways on. */
       type: 'cardGrid',
       title: 'Other Ways to Partner with Liferay',
       columns: 2,
       cards: [
-        {
-          icon: 'integration',
-          title: 'Technology Partner',
-          description:
-            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
-          href: '#',
-        },
-        {
-          icon: 'enterprise-websites',
-          title: 'OEM Partner',
-          description:
-            'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
-          href: '#',
-        },
+        { icon: 'user-cubes', title: 'Solution Partner', href: '#' },
+        { icon: 'user-cubes', title: 'OEM Partner', href: '#' },
       ],
     },
   ],

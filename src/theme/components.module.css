@@ -12378,6 +12378,132 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* The catalog card's `Stats Bar` at its foot: a full-width `Neutral/03` rule, 16 above the figure. */
+/* `Type=Industry`'s figures: the row across the card's foot. `StatBar` draws the rules between them. */
+.cardStats {
+  width: 100%;
+}
+
+/*
+ * Partner Home's figures (node `148:32227`): 64px SemiBold over a 400-wide sentence of 18px Regular in
+ * secondary — the label says what is counted, so it reads as text rather than as a small-caps tag. The
+ * unit beside the figure goes to 32, as the `Stat Icon` there draws it — set in `renderStat`, since the
+ * unit carries its size inline.
+ */
+.statsBarLarge .statValue {
+  font-size: 64px;
+  line-height: 1.25;
+}
+
+.statsBarLarge .statLabel {
+  max-width: 400px;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.25;
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+@container sds-section (max-width: 767px) {
+  .statsBarLarge .statValue {
+    font-size: 48px;
+  }
+}
+
+/* `What we look for in a partner:` — the label in accent small caps over the answer. */
+.panelNote {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.panelNote > span {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-brand-primary-lighten-3, #70a2ff);
+}
+
+/* Who said it, on its own line under a quote card's quote. */
+.cardAttribution {
+  display: block;
+  margin-block-start: 4px;
+}
+
+.cardAttribution strong {
+  font-weight: 600;
+}
+
+/* Solution Partner's two tracks (node `205:11785`): `Desktop/Heading/H4/Heavier`. */
+.trackHeading {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * `Still Evaluating?` as a bar (node `205:12359`): a glass card 40/24 padded, 16px corners, the icon at
+ * 64 leading, the copy taking the room, the outline button on the trailing edge. Stacks under 768.
+ */
+.highlightBar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 40px 24px;
+  border: 1px solid var(--sds-glass-line-from);
+  border-radius: 16px;
+  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+  backdrop-filter: blur(50px);
+}
+
+.highlightBarIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.highlightBarText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.highlightBarText h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.highlightBarText p {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+@media (max-width: 767px) {
+  .highlightBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* A row of story cards: equal heights, so the attributions line up along the bottom. */
+.storyGrid > * {
+  height: 100%;
+}
+
 .cardStat {
   width: 100%;
   padding-block-start: 16px;
@@ -12541,6 +12667,32 @@ a.secondaryNavTitle:focus-visible {
   padding: 24px;
   border: 1px solid var(--sds-card-static-line);
   border-radius: 8px;
+}
+
+.faqTakeaways[data-layout='side'] {
+  margin-block-end: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/*
+ * The Solutions Library's FAQ (node `25092:75670`): the questions 900 wide and the takeaways a 320 column
+ * 48 beside them, both from the top. Under 992 the takeaways drop under the questions.
+ */
+.faqSide {
+  display: grid;
+  grid-template-columns: minmax(0, 900px) minmax(0, 320px);
+  justify-content: space-between;
+  align-items: start;
+  gap: 48px;
+}
+
+@media (max-width: 991px) {
+  .faqSide {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
 }
 
 .faqTakeawaysLabel {
@@ -13005,6 +13157,23 @@ a.secondaryNavTitle:focus-visible {
   background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
 }
 
+/* The quote mark and, opposite it, the partner's logo — 48 tall at most, held to the trailing edge. */
+.quoteCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.quoteCardLogo {
+  display: block;
+  max-height: 48px;
+  max-width: 50%;
+  width: auto;
+  height: auto;
+}
+
 .quoteCardMark {
   font-size: 56px;
   line-height: 0.6;
@@ -13020,8 +13189,9 @@ a.secondaryNavTitle:focus-visible {
 
 .quoteCard blockquote p {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.45;
+  /* `Paragraph/Large/Regular` — 21/1.25, as the Partner Pages quote cards set the quote. */
+  font-size: 21px;
+  line-height: 1.25;
   color: var(--sds-surfaces-text-primary);
 }
 
@@ -13047,11 +13217,65 @@ a.secondaryNavTitle:focus-visible {
 }
 
 .quoteCardRole {
-  font-size: 14px;
+  /* `Small Caps/Small Caps Smaller/Semi Bold`. */
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--sds-surfaces-text-secondary);
 }
 
+/*
+ * `Path to Partnership` on a still corner glow (node `245:11603`): brand purple in the top-right corner,
+ * running through deep blue into the page by about 40% of the way across.
+ */
+.glowBand {
+  background-image: linear-gradient(
+    225deg,
+    var(--sds-gradient-card-purple) 0%,
+    var(--sds-gradient-card-blue) 14%,
+    transparent 42%
+  );
+}
+
 /* A band with the footer's mesh behind it: the field is the bottom layer, the content above it. */
+/*
+ * `Ready for the future?` as a panel (node `25092:74309`) — the closing band inset by the page gutter,
+ * 16px corners, the glass line round it. `isolation` keeps the mesh behind the content without a z-index
+ * on every child.
+ */
+.ctaCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(40px, 6cqi, 64px) clamp(20px, 4cqi, 40px);
+  border: 1px solid var(--sds-card-static-line);
+  border-radius: 16px;
+  background-color: var(--sds-surfaces-card-bg-grey);
+}
+
+.ctaCard[data-backdrop='mesh'] {
+  border-color: transparent;
+}
+
+/* The footer's field, unmasked: the footer lets it rise from the foot; the panel is all colour. */
+.ctaCardMesh {
+  z-index: -1;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/*
+ * Hung higher and taller than the footer's, so the colour pools — drawn at 68–88% down the field, for the
+ * foot of a page — land across the middle and lower panel instead, and the top left stays dark as the
+ * frame draws it.
+ */
+.ctaCardMesh > * {
+  top: -110%;
+  height: 220%;
+}
+
 .meshBand {
   position: relative;
   isolation: isolate;
@@ -13289,6 +13513,173 @@ a.secondaryNavTitle:focus-visible {
 
 .tierCard[data-tier='3'] {
   --sds-tier-colour: var(--sds-accent-product-accent);
+}
+
+/*
+ * Partner Pages' tier card (node `255:17286`): a glass panel, no top rule, 32 between its parts — the
+ * name, the score, the certified headcount, the line, and the fee pushed to the foot.
+ */
+.tierCard[data-detailed] {
+  gap: 32px;
+  border-block-start-width: 1px;
+  border-block-start-color: var(--sds-glass-line-from);
+}
+
+.tierCard[data-detailed] > p {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+/* The tier names in the file's metal: silver, gold into magenta, platinum pink into blue. */
+.tierCard[data-detailed][data-tier='1'] .tierName {
+  background-image: linear-gradient(92deg, var(--sds-neutral-08, #acb4c2) 0%, var(--sds-neutral-06, #758096) 100%);
+}
+
+.tierCard[data-detailed][data-tier='2'] .tierName {
+  background-image: linear-gradient(92deg, #e6a900 0%, #d2137f 100%);
+}
+
+.tierCard[data-detailed][data-tier='3'] .tierName {
+  background-image: linear-gradient(93deg, #ea81bc 0%, var(--sds-brand-primary-lighten-2, #6399ff) 100%);
+}
+
+.tierCard[data-detailed]:not([data-tier='0']) .tierName {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.tierPoints {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierPoints strong {
+  font-size: 49px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* `Certified` in tertiary small caps over the headcount in primary small caps. */
+.tierFact,
+.tierFactLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierFact > span,
+.tierFactLabel {
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+.tierFee {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tierFeeRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-secondary);
+}
+
+.tierFeeRow strong {
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierNote {
+  margin: -24px 0 0;
+  font-size: 16px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--sds-surfaces-text-tertiary);
+}
+
+/* The comparison behind its toggle: a small-caps row with the compare icon, the chevron turning open. */
+.compareFold > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 12px;
+  border-block-end: 1px solid var(--sds-neutral-01, #1f2531);
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.compareFold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.compareFold > summary > span {
+  flex: 1;
+}
+
+.compareFold > summary > svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.compareFoldChevron {
+  color: var(--sds-brand-primary-lighten-2, #6399ff);
+  transition: transform var(--sds-motion-medium) var(--sds-motion-ease-out);
+}
+
+.compareFold[open] .compareFoldChevron {
+  transform: rotate(180deg);
+}
+
+.compareFold[open] > summary {
+  margin-block-end: 16px;
+}
+
+/* The tier columns' headers in the file's metals, 12px corners on top. */
+.comparisonTable thead th[data-tier] {
+  border-start-start-radius: 12px;
+  border-start-end-radius: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.comparisonTable thead th[data-tier='0'] {
+  background-color: var(--sds-surfaces-card-bg-grey);
+}
+
+.comparisonTable thead th[data-tier='1'] {
+  background-image: linear-gradient(93deg, var(--sds-neutral-06, #758096) 0%, var(--sds-neutral-03, #404b5d) 100%);
+}
+
+.comparisonTable thead th[data-tier='2'] {
+  background-image: linear-gradient(93deg, #cc9600 0%, #b30065 100%);
+}
+
+.comparisonTable thead th[data-tier='3'] {
+  background-image: linear-gradient(93deg, #990057 0%, #0017e5 100%);
 }
 
 .tierCard > p {

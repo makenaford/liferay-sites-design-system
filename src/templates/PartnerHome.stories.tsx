@@ -8,7 +8,8 @@ function PartnerHome() {
     <>
       <SiteHeader />
       <PageRenderer page={PARTNER_HOME_PAGE} />
-      <SiteFooter />
+      {/* No `Ready for the future?` band: the frame goes from the ecosystem cards straight to the links. */}
+      <SiteFooter cta={false} />
     </>
   )
 }
@@ -22,15 +23,14 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay partner home page — Grow more. Deliver faster. Rendered from `partner-home-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
+          'The Liferay partner home page — Partner Pages -> `Partner Home` (node `148:32204`). Rendered from `partner-home-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'The page is the reason four section types grew a little: a `tabbedContent` with one tab leaves its pill bar out, a `statsBar` can take a centred heading, a story can be a quote with no figure, and a `cardGrid` can be two across with a button on each card.',
+          'A left-aligned hero with the handshake photograph; `Why Partner` as a one-tab `tabbedContent` — the accordion led by a UI icon per row, beside one picture; the three programs and the two ecosystem destinations as glass card grids; the figures band; and the partner quotes on their own logo tiles.',
           '',
           '## Not final yet',
           '',
-          '- **The partner logos are wordmarks**, not the partners’ own marks.',
-          '- **The program images are stand-ins** from `assets/home/`, and the panel heading over the three programs is ours — the draft has none.',
-          '- **The partner quotes use generated tiles**, since there are no partner thumbnails yet.',
+          '- **The partner logos are wordmarks**, not the partners’ own marks; the frame’s strip is a placeholder set.',
+          '- **`Reach Enterprise Customers` is a draft answer** — the frame leaves that row closed.',
           '- **Every link is `href="#"`**, as on every other built page.',
         ].join('\n'),
       },

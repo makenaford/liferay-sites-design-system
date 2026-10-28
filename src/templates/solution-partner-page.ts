@@ -1,19 +1,24 @@
-import aiHubFilm from '../../assets/solutions/ai-hub.webm'
-import aiHubStill from '../../assets/solutions/ai-hub-poster.jpg'
-import storyInfographic from '../../assets/home/trending/digital-strategy.jpg'
-import storyInterview from '../../assets/home/trending/web-portals.jpg'
+import heroPhoto from '../../assets/solution-partner/hero.jpg'
+import americaneagle from '../../assets/solution-partner/americaneagle.jpg'
+import inetum from '../../assets/solution-partner/inetum.jpg'
+import globalquark from '../../assets/solution-partner/globalquark-infographic.jpg'
+import vass from '../../assets/solution-partner/vass-interview.jpg'
+import agentBuilder from '../../assets/industry/hero-media.jpg'
 import type { PageSpec } from './page-schema'
 
 /*
  * The Solution Partner page, as data — the `COPY - Solutions` tab of `LRDC Partner Pages Revamp`, with
- * its partner-level tables from `COPY - Solutions 5. Partnership`, on the OEM page's template.
+ * its partner-level tables from `COPY - Solutions 5. Partnership`, laid out as Partner Pages ->
+ * `Solutions` (node `272:38182`, formerly `205:11746`).
  *
- * The copy is the sheet's, section for section. The pictures are stand-ins (the AI Hub film and a still
- * from it; the success stories borrow the Home trending images); the quotes' video thumbnails are not
- * drawn yet. Every link is `#`.
+ * The copy is the sheet's, section for section; the frame is the layout. Where the two disagree — the
+ * frame repeats the OEM page's `Why Partner` line and its first step, names Steven LaGow under both
+ * quotes, and labels every card `Read the Story` — the sheet's words stand. The pictures are the frame's
+ * own; the agent-builder photograph is the library's `industry/hero-media.jpg`, the same picture. Every
+ * link is `#`.
  */
 
-const STILL = { src: aiHubStill, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
+const STILL = { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
 
 /** `Authorized`, `Silver`, `Gold`, `Platinum` — the sheet's ✔️ and — as booleans, its coins as levels. */
 const yes = true
@@ -28,50 +33,61 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       text: 'Partner with Liferay to unlock new opportunities, expand your services offering, and build long-term customer relationships.',
     },
     buttons: [{ label: 'Become a Solution Partner', href: '#apply' }],
-    media: { src: aiHubFilm, poster: aiHubStill, alt: STILL.alt, ratio: '3:2' },
+    media: { src: heroPhoto, alt: 'Two people shaking hands across a desk, one of them smiling', ratio: '3:2' },
   },
   sections: [
     {
-      type: 'cardGrid',
+      /* One tab, so no pill bar: the six reasons are the accordion's rows, beside one photograph. */
+      type: 'tabbedContent',
       title: 'Why Partner with Liferay?',
       description: 'Discover the technology, support, and business opportunities that make Liferay a Partner-First choice.',
-      columns: 3,
-      cards: [
+      tabs: [
         {
-          tag: 'Partner-First',
-          title: 'A Partner-First Approach',
-          description:
-            'Liferay never competes with our partners. You lead delivery, while we work together to grow accounts and build long-term customer relationships.',
-        },
-        {
-          tag: 'Services Opportunity',
-          title: 'Turn Every Deal into a Services Opportunity',
-          description:
-            'For every $1 in Liferay software sold, Solution Partners generate an average of $5 in implementation and services revenue.',
-        },
-        {
-          tag: 'Revenue Streams',
-          title: 'Create New Revenue Streams',
-          description:
-            'Expand your business model with recurring services like optimization, support, and digital growth consulting beyond initial implementation.',
-        },
-        {
-          tag: 'Flexible Platform',
-          title: 'Win Regulated Enterprise Deals',
-          description:
-            'Expand into regulated industries with an enterprise-ready platform designed to support your customers’ security, governance, and compliance requirements.',
-        },
-        {
-          tag: 'Dedicated Support',
-          title: 'Get the Support You Need, Where You Need It',
-          description:
-            'Work with Liferay teams in your region for local sales, technical, and partner support throughout the opportunity and delivery lifecycle.',
-        },
-        {
-          tag: 'Partner Rewards',
-          title: 'Get Rewarded for Your Success',
-          description:
-            'Take advantage of incentive programs designed to recognize partner performance and support your business goals.',
+          value: 'why',
+          label: 'Why partner',
+          content: {
+            title: '',
+            description: '',
+            media: STILL,
+            items: [
+              {
+                question: 'A Partner-First Approach',
+                icon: 'heart-hand',
+                answer:
+                  'Liferay never competes with our partners. You lead delivery, while we work together to grow accounts and build long-term customer relationships.',
+              },
+              {
+                question: 'Turn Every Deal into a Services Opportunity',
+                icon: 'briefcase',
+                answer:
+                  'For every $1 in Liferay software sold, Solution Partners generate an average of $5 in implementation and services revenue.',
+              },
+              {
+                question: 'Create New Revenue Streams',
+                icon: 'pig-money',
+                answer:
+                  'Expand your business model with recurring services like optimization, support, and digital growth consulting beyond initial implementation.',
+              },
+              {
+                question: 'Win Regulated Enterprise Deals',
+                icon: 'office-building',
+                answer:
+                  'Expand into regulated industries with an enterprise-ready platform designed to support your customers’ security, governance, and compliance requirements.',
+              },
+              {
+                question: 'Get the Support You Need, Where You Need It',
+                icon: 'headphone',
+                answer:
+                  'Work with Liferay teams in your region for local sales, technical, and partner support throughout the opportunity and delivery lifecycle.',
+              },
+              {
+                question: 'Get Rewarded for Your Success',
+                icon: 'trophy',
+                answer:
+                  'Take advantage of incentive programs designed to recognize partner performance and support your business goals.',
+              },
+            ],
+          },
         },
       ],
     },
@@ -83,47 +99,46 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
     },
 
     {
-      type: 'quotes',
+      /*
+       * The partners' quotes and their success stories as one row of four (node `217:27595`): each card
+       * a picture, the words, and one link at the foot. A quote card has no title — the attribution
+       * follows the quote.
+       */
+      type: 'cardGrid',
       title: 'Join the Liferay Global Partner Ecosystem',
       description:
         'Join a global community of partners working with Liferay to deliver successful digital experiences and create lasting customer value.',
-      quotes: [
-        {
-          quote:
-            '“It’s been easy for us to onboard ourselves. With the help of the Liferay team, we are able to better articulate and deliver the Liferay story.”',
-          name: 'Steven LaGow',
-          role: 'Partner Director, Americaneagle.com',
-          link: { label: 'Watch the interview', href: '#' },
-        },
-        {
-          quote:
-            '“Growth does not happen without customer satisfaction. While we develop large accounts together, we can only do this if we repeatedly deliver successful projects.”',
-          name: 'Tanguy Commault',
-          role: 'Group VP - Digital eXperience Platforms, Inetum',
-          link: { label: 'Watch the interview', href: '#' },
-        },
-      ],
-    },
-
-    {
-      /* The two partner success stories under the quotes — a card each, with its own call to action. */
-      type: 'cardGrid',
-      title: 'Partner Success Stories',
-      columns: 2,
+      align: 'center',
+      columns: 4,
       cards: [
         {
-          tag: 'Success Story',
-          image: { src: storyInfographic, alt: '' },
-          title: '17 Years of Partnership, 30+ New Clients and $3.5M in Annual Revenue: Growing Together with Liferay',
-          action: { label: 'Access the infographic', href: '#' },
+          image: { src: americaneagle, alt: 'Americaneagle.com' },
+          title: '',
+          description:
+            '“It’s been easy for us to onboard ourselves. With the help of the Liferay team, we are able to better articulate and deliver the Liferay story.”',
+          attribution: { name: 'Steven LaGow', role: 'Partner Director, Americaneagle.com' },
+          cta: { label: 'Watch the interview', href: '#' },
         },
         {
-          tag: 'Success Story',
-          image: { src: storyInterview, alt: '' },
-          title: 'How VASS is Navigating LATAM’s Digital Divide',
+          image: { src: inetum, alt: 'Inetum' },
+          title: '',
+          description:
+            '“Growth does not happen without customer satisfaction. While we develop large accounts together, we can only do this if we repeatedly deliver successful projects.”',
+          attribution: { name: 'Tanguy Commault', role: 'Group VP - Digital eXperience Platforms, Inetum' },
+          cta: { label: 'Watch the interview', href: '#' },
+        },
+        {
+          image: { src: globalquark, alt: '17+ Years of Growth: How GlobalQuark Scaled to $3.5M+ with Liferay' },
+          title: '17 Years of Partnership, 30+ New Clients and $3.5M in Annual Revenue:',
+          description: 'Growing Together with Liferay',
+          cta: { label: 'Access the infographic', href: '#' },
+        },
+        {
+          image: { src: vass, alt: 'Partner Pulse — VASS & Liferay: Leading the Digital Change in LATAM' },
+          title: 'How VASS is Navigating LATAM’s Digital Divide:',
           description:
             'Sergio Rojas of VASS LATAM shares digital transformation insights and why VASS won Liferay’s LATAM Partner of the Year Award again.',
-          action: { label: 'Read the interview', href: '#' },
+          cta: { label: 'Read the interview', href: '#' },
         },
       ],
     },
@@ -134,6 +149,8 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       titleHighlight: 'Grow Your Business?',
       description:
         'We collaborate with top systems integrators and digital agencies to deliver exceptional digital experiences. Choose your partner track below to explore our core requirements and see where your expertise aligns with our ecosystem.',
+      /* The two tracks side by side, as the frame draws them, rather than behind a pill bar. */
+      layout: 'columns',
       tabs: [
         {
           value: 'system-integrators',
@@ -141,7 +158,6 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
           content: {
             title: '',
             description: '',
-            media: STILL,
             items: [
               {
                 question: 'Company Profile & Market Focus',
@@ -183,7 +199,6 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
           content: {
             title: '',
             description: '',
-            media: STILL,
             items: [
               {
                 question: 'Company Profile & Market Focus',
@@ -226,16 +241,43 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       titleHighlight: 'Designed for Growth',
       description:
         'A successful partnership is built on mutual investment and shared success. Explore the specific technical expectations, commercial commitments, and exclusive benefits associated with each partner tier.',
+      /* The requirements table's figures, carried on the cards now, as the frame draws them. */
       tiers: [
-        { name: 'Authorized', description: 'For companies beginning to grow their Liferay practice or focusing on deal referrals.' },
-        { name: 'Silver', description: 'For partners with proven commitment, certified staff, and consistent engagement.' },
-        { name: 'Gold', description: 'For established experts driving new subscriptions and demonstrating strong growth.' },
-        { name: 'Platinum', description: 'Reserved for Liferay’s most strategic, highest-performing, and committed partners.' },
+        {
+          name: 'Authorized',
+          points: '0',
+          certified: 'No certified headcount minimum',
+          description: 'For companies beginning to grow their Liferay practice or focusing on deal referrals.',
+          fee: '—',
+        },
+        {
+          name: 'Silver',
+          points: '5-6',
+          certified: '1 Sales · 1 Pre-Sales · 2 Developers',
+          description: 'For partners with proven commitment, certified staff, and consistent engagement.',
+          fee: '2,500 USD',
+        },
+        {
+          name: 'Gold',
+          points: '7-9',
+          certified: '2 Sales · 2 Pre-Sales · 3 Developers',
+          description: 'For established experts driving new subscriptions and demonstrating strong growth.',
+          fee: '2,500 USD',
+        },
+        {
+          name: 'Platinum',
+          points: '10+',
+          certified: '4 Sales · 3 Pre-Sales · 5 Developers',
+          description: 'Reserved for Liferay’s most strategic, highest-performing, and committed partners.',
+          fee: '2,500 USD',
+        },
       ],
-      overviewTitle: 'Program Overview',
+      tiersNote:
+        '*Partner tiers are earned through a points-based score evaluating four metrics: Growth ARR, NRR, Marketing & Demand Generation, and Certified Headcount.',
+      compareLabel: 'Compare every benefit and requirement',
       tables: [
         {
-          label: 'Program Benefits',
+          label: 'Benefit Category & Feature',
           tab: 'Benefits',
           groups: [
             {
@@ -265,28 +307,6 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
               ],
             },
           ],
-        },
-        {
-          label: 'Program Requirements',
-          tab: 'Requirements',
-          groups: [
-            {
-              label: 'Program Performance',
-              rows: [
-                { label: 'Annual Fee', values: ['—', '2,500 USD', '2,500 USD', '2,500 USD'] },
-                { label: 'Minimum Total Point Score*', values: ['0 Points', '5 – 6 Points', '7 – 9 Points', '10+ Points'] },
-              ],
-            },
-            {
-              label: 'Certified Headcount Minimums',
-              rows: [
-                { label: 'Sales', values: ['—', '1.0', '2.0', '4.0'] },
-                { label: 'Pre-Sales', values: ['—', '1.0', '2.0', '3.0'] },
-                { label: 'Developers', values: ['—', '2.0', '3.0', '5.0'] },
-              ],
-            },
-          ],
-          note: '*Partner tiers are earned through a points-based score evaluating four metrics: Growth ARR, NRR, Marketing & Demand Generation, and Certified Headcount.',
         },
       ],
     },
@@ -331,7 +351,7 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
     {
       type: 'stepsForm',
       anchor: 'apply',
-      backdrop: 'mesh',
+      backdrop: 'glow',
       title: 'Path to Partnership',
       subtitle: 'What Happens Next?',
       steps: [
@@ -381,28 +401,20 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
     {
       type: 'highlightText',
       icon: 'documentation',
+      surface: 'glass',
       title: 'Still Evaluating?',
       body: 'Check out key resources to help you learn about Liferay’s partner program and solutions.',
       action: { label: 'Download the Info Kit', href: '#', style: 'button' },
     },
 
     {
+      /* Title-only cards, as the frame draws both rows; the icons are the frame's too. */
       type: 'cardGrid',
       title: 'Discover the Liferay Ecosystem',
       columns: 2,
       cards: [
-        {
-          icon: 'partner-portals',
-          title: 'Partner Directory',
-          description: 'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',
-          action: { label: 'Find a Partner', href: '#' },
-        },
-        {
-          icon: 'commerce',
-          title: 'Liferay Marketplace',
-          description: 'Discover apps, integrations, and solutions that extend Liferay DXP.',
-          action: { label: 'Visit Marketplace', href: '#' },
-        },
+        { icon: 'dam', title: 'Partner Directory', href: '#' },
+        { icon: 'dam', title: 'Liferay Marketplace', href: '#' },
       ],
     },
 
@@ -411,20 +423,8 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       title: 'Other Ways to Partner with Liferay',
       columns: 2,
       cards: [
-        {
-          icon: 'enterprise-websites',
-          title: 'OEM Partner',
-          description:
-            'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
-          action: { label: 'Learn More', href: '#' },
-        },
-        {
-          icon: 'integration',
-          title: 'Technology Partner',
-          description:
-            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
-          action: { label: 'Learn More', href: '#' },
-        },
+        { icon: 'user-cubes', title: 'Technology Partner', href: '#' },
+        { icon: 'user-cubes', title: 'OEM Partner', href: '#' },
       ],
     },
   ],

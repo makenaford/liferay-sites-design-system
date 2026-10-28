@@ -23,16 +23,15 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay Solution Partner page — the `COPY - Solutions` tab of `LRDC Partner Pages Revamp`, on the OEM Partner page’s template, rendered from `solution-partner-page.ts` through `PageRenderer`.',
+          'The Liferay Solution Partner page — the copy of the `COPY - Solutions` sheet, laid out as Partner Pages -> `Solutions` (node `272:38182`). Rendered from `solution-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'It adds `tierTable` — `Partner Levels Designed for Growth`: the four tiers as cards, then the program overview, with the Program Benefits and Program Requirements tables behind a pill bar (the sheet’s `COPY - Solutions 5. Partnership` tab). The partner tracks are two tabs whose accordion rows carry bullet lists. `Become a Solution Partner` jumps to the application band, on the darkened mesh.',
+          '`Why Partner` as a one-tab accordion beside a photograph; the partner quotes and success stories as one row of four picture cards; the two partner tracks side by side (`tabbedContent` `layout: \'columns\'`); the tier cards carrying each level’s points, certified headcount and fee over a foldable benefits table (`compareLabel`); `Path to Partnership` on the corner glow; and `Still Evaluating?` as a glass bar (`highlightText` `surface: \'glass\'`).',
           '',
           '## Not final yet',
           '',
-          '- **The pictures are stand-ins** — the AI Hub film and a still from it, and Home’s trending images on the two success stories. The quotes’ video thumbnails are not drawn yet.',
-          '- **The `Why Partner` layout is ours** — the sheet leaves it to design; here it is six tagged cards.',
-          '- **The `Other Ways to Partner` descriptions are the OEM page’s**; the sheet gives only names and `Learn More`.',
-          '- **The logo strip is wordmarks**, and every link is `href="#"`. The form and the Info Kit download do nothing.',
+          '- **Where the frame and the copy sheet disagree, the sheet’s words stand**: the frame repeats the OEM page’s `Why Partner` line and first step, names Steven LaGow under both quotes, labels every card `Read the Story`, and draws five `Why Partner` rows to the sheet’s six.',
+          '- **The ecosystem cards repeat the frame’s icons** — DAM on both destinations, the person-and-cubes mark on both programs.',
+          '- **Every link is `href="#"`**, as on every other built page. The form sends nothing.',
         ].join('\n'),
       },
     },

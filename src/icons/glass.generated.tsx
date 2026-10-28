@@ -23311,6 +23311,61 @@ export function IconGlassUserAddUser({ size = 48, ...props }: GlassIconProps) {
   )
 }
 
+/** Glass icon `user/user-cubes`. Dark artwork only — see the note above. */
+export function IconGlassUserCubes({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="1 1 46 46"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <svg x="3.408" y="3" width="34.537" height="38.375" viewBox="0 0 34.5372 38.3747" overflow="visible"><g id={`${uid}-d-person-Group`}>
+<path id={`${uid}-d-person-Vector`} d="M17.2686 21.1061C21.8659 21.1061 26.0468 22.4377 29.1226 24.3142C30.6576 25.2506 31.97 26.3558 32.9178 27.5569C33.8503 28.7369 34.5372 30.1491 34.5372 31.6591C34.5372 33.2805 33.7486 34.5584 32.6128 35.4698C31.5383 36.3332 30.1203 36.905 28.6141 37.3041C25.5863 38.1042 21.5455 38.3747 17.2686 38.3747C12.9918 38.3747 8.9509 38.1061 5.92314 37.3041C4.41693 36.905 2.99898 36.3332 1.92449 35.4698C0.786681 34.5564 0 33.2805 0 31.6591C0 30.1491 0.686908 28.7369 1.61941 27.555C2.56727 26.3558 3.87777 25.2525 5.41467 24.3123C8.49041 22.4396 12.6733 21.1061 17.2686 21.1061ZM17.2686 0C19.813 0 22.2532 1.01076 24.0524 2.80992C25.8515 4.60909 26.8623 7.04928 26.8623 9.59368C26.8623 12.1381 25.8515 14.5783 24.0524 16.3774C22.2532 18.1766 19.813 19.1874 17.2686 19.1874C14.7242 19.1874 12.284 18.1766 10.4849 16.3774C8.6857 14.5783 7.67494 12.1381 7.67494 9.59368C7.67494 7.04928 8.6857 4.60909 10.4849 2.80992C12.284 1.01076 14.7242 0 17.2686 0Z" fillRule="evenodd" clipRule="evenodd" fill={`url(#${uid}-d-person-paint0_linear_0_967)`}/>
+</g>
+<defs>
+<linearGradient id={`${uid}-d-person-paint0_linear_0_967`} x1="30.6691" y1="1.91874" x2="13.1702" y2="34.2456" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.485577" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+</defs></svg>
+<svg x="14.818" y="19.008" width="33.391" height="33.215" viewBox="0 0 33.3905 33.2146" overflow="visible"><g id={`${uid}-d-cubes-Group`} filter={`url(#${uid}-d-cubes-filter0_dii_0_965)`}>
+<path id={`${uid}-d-cubes-Vector`} d="M15.3409 0.362858C15.7173 0.145547 16.1405 0.0220105 16.5747 0.0026804C17.0089 -0.0166497 17.4414 0.0687945 17.8357 0.251797L18.0497 0.362858L22.5598 2.96602C22.9391 3.1851 23.2596 3.49289 23.4938 3.86301C23.7281 4.23312 23.8691 4.65452 23.9047 5.09107L23.9142 5.31184V10.5209L28.4244 13.124C28.8037 13.3431 29.1242 13.6509 29.3584 14.021C29.5926 14.3911 29.7336 14.8125 29.7693 15.2491L29.7788 15.4699V20.6789C29.7788 21.1166 29.6727 21.5479 29.4696 21.9356C29.2665 22.3234 28.9725 22.6562 28.6126 22.9055L28.4244 23.0247L23.9142 25.6279C23.5376 25.8454 23.1142 25.9691 22.6797 25.9884C22.2452 26.0077 21.8125 25.9222 21.4181 25.7389L21.2054 25.6279L16.6953 23.0247L12.1851 25.6279C11.8085 25.8454 11.3851 25.9691 10.9506 25.9884C10.5161 26.0077 10.0834 25.9222 9.68894 25.7389L9.4763 25.6279L4.96614 23.0247C4.58704 22.8058 4.26665 22.4982 4.03242 22.1283C3.79819 21.7584 3.65709 21.3373 3.62122 20.901L3.61174 20.6789V15.4699C3.61173 15.0321 3.71782 14.6009 3.92091 14.2131C4.124 13.8253 4.41805 13.4925 4.77788 13.2432L4.96614 13.124L9.4763 10.5209V5.31184C9.47629 4.87409 9.58238 4.44286 9.78547 4.05508C9.98856 3.66729 10.2826 3.3345 10.6424 3.08521L10.8307 2.96602L15.3409 0.362858ZM22.5598 12.8667L18.2312 15.3656L22.5598 17.8644L26.8885 15.3656L22.5598 12.8667ZM10.8307 12.8667L6.50203 15.3656L10.8307 17.8644L15.1594 15.3656L10.8307 12.8667ZM16.6953 2.70868L12.3666 5.20755L16.6953 7.70642L21.0239 5.20755L16.6953 2.70868Z" fillRule="evenodd" clipRule="evenodd" fill="#70A1FF" fillOpacity="0.3"/>
+</g>
+<defs>
+<filter id={`${uid}-d-cubes-filter0_dii_0_965`} x="-1.80587" y="-5.41761" width="37.0023" height="38.6322" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="3.61174"/>
+<feGaussianBlur stdDeviation="1.80587"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_965"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_965" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="2.7088"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_0_965"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.80587"/>
+<feGaussianBlur stdDeviation="1.80587"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_0_965" result="effect3_innerShadow_0_965"/>
+</filter>
+</defs></svg>
+    </svg>
+  )
+}
+
 /** Glass icon `user/user-heart`. */
 export function IconGlassUserHeart({ size = 48, ...props }: GlassIconProps) {
   const uid = useId().replace(/:/g, '')
