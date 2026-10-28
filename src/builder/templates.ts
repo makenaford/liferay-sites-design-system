@@ -16,6 +16,7 @@ import { BLOG_HUB_PAGE } from '../templates/blog-hub-page'
 import { OEM_PARTNER_PAGE } from '../templates/oem-partner-page'
 import { PARTNER_HOME_PAGE } from '../templates/partner-home-page'
 import { SOLUTION_PARTNER_PAGE } from '../templates/solution-partner-page'
+import { SOLUTIONS_HUB_PAGE } from '../templates/solutions-hub-page'
 import { TECHNOLOGY_PARTNER_PAGE } from '../templates/technology-partner-page'
 import { PAGE_PRESETS, presetFor } from '../templates/page-presets'
 import { SECTION_TYPES } from '../templates/section-catalog'
@@ -26,7 +27,7 @@ export interface BuiltPage {
   id: string
   label: string
   /** The Storybook folder it lives in, so the picker reads like the sidebar. */
-  group: 'Assets to Web' | 'Partner Pages' | 'Page templates'
+  group: 'Assets to Web' | 'Partner Pages' | 'Product Pages' | 'Page templates'
   hint?: string
   page: () => PageSpec
   /** The `Ready for the future?` band — off on the pages that close on their own ask. */
@@ -58,6 +59,7 @@ export const BUILT_PAGES: BuiltPage[] = [
     page: fixed(TECHNOLOGY_PARTNER_PAGE),
     footerCta: false,
   },
+  { id: 'solutions-hub', label: 'Solutions Hub', group: 'Product Pages', page: fixed(SOLUTIONS_HUB_PAGE), footerCta: false },
   /* The page templates, less the two already listed above under their built page's name. */
   ...PAGE_PRESETS.filter((one) => one.id !== 'blog' && one.id !== 'customer-story').map(
     (one): BuiltPage => ({

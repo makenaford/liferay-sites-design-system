@@ -475,7 +475,11 @@ export const DEFS: Record<string, Shape> = {
       "database",
       "add-user",
       "user-validation",
-      "ai"
+      "ai",
+      "manufacturing",
+      "public-sector",
+      "energy-and-utilities",
+      "healthcare"
     ]
   },
   "Headline": {

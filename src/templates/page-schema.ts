@@ -354,6 +354,11 @@ export type GlassIconName =
   | 'add-user'
   | 'user-validation'
   | 'ai'
+  /* The industries the Solutions hub's tabs lead with; `financial-services` is above. */
+  | 'manufacturing'
+  | 'public-sector'
+  | 'energy-and-utilities'
+  | 'healthcare'
 
 export interface CardSpec {
   title: string

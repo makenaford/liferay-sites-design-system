@@ -66,6 +66,10 @@ import {
   IconGlassSupport,
   IconGlassEnterpriseWebsites,
   IconGlassFinancialServices,
+  IconGlassEnergyAndUtilities,
+  IconGlassHealthcare,
+  IconGlassManufacturing,
+  IconGlassPublicSector,
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
@@ -190,6 +194,10 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   'global-services': (s) => <IconGlassGlobalServices width={s} height={s} />,
   dam: (s) => <IconGlassDam width={s} height={s} />,
   database: (s) => <IconGlassCdn width={s} height={s} />,
+  manufacturing: (s) => <IconGlassManufacturing width={s} height={s} />,
+  'public-sector': (s) => <IconGlassPublicSector width={s} height={s} />,
+  'energy-and-utilities': (s) => <IconGlassEnergyAndUtilities width={s} height={s} />,
+  healthcare: (s) => <IconGlassHealthcare width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
