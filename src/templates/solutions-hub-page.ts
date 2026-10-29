@@ -30,9 +30,14 @@ const DASHBOARD = {
 }
 
 export const SOLUTIONS_HUB_PAGE: PageSpec = {
+  /*
+   * The frame's `Hero` (node `24920:87684`): one column — the heading, the value props, the email field,
+   * the links, then the rating beside the badges with the marks under it — beside the picture. The
+   * `Solutions` bar above it is the story's, since the page's chrome is.
+   */
   hero: {
     background: 'corner',
-    layout: 'media-proof',
+    layout: 'stacked',
     breadcrumbs: [
       { label: 'Home', href: '#' },
       { label: 'Solutions', href: '#' },
@@ -74,6 +79,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
     },
     {
       type: 'contentBlock',
+      anchor: 'overview',
       label: 'Overview',
       title: 'What can you build on Liferay DXP?',
       description:
@@ -262,6 +268,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
     },
     {
       type: 'customerStories',
+      anchor: 'customer-stories',
       title: '1,200+ Enterprises Move the Needle With Liferay',
       titleHighlight: '1,200+ Enterprises',
       align: 'left',
@@ -363,7 +370,8 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'closingCta',
       surface: 'card',
       backdrop: 'mesh',
-      title: 'See the solution you need, built on the platform you’ll keep',
+      /* Broken after the comma, as the frame draws it — the panel keeps a title's line breaks. */
+      title: 'See the solution you need,\nbuilt on the platform you’ll keep',
       description:
         'Talk to a Liferay specialist about your portal, website, commerce, or intranet goals and get a tailored walkthrough with your use case in mind.',
       placeholder: 'Work email',
@@ -374,6 +382,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
     },
     {
       type: 'resourceGrid',
+      anchor: 'resources',
       title: 'Plan your next solution',
       description:
         'Free guides and checklists to help you scope requirements, compare architectures, and build the business case. No forms required.',

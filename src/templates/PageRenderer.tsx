@@ -558,7 +558,7 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
        */
       background={background}
       align={hero.align}
-      data-layout={hero.layout === 'media-proof' ? 'media-proof' : undefined}
+      data-layout={hero.layout && hero.layout !== 'default' ? hero.layout : undefined}
       drawn={bubble?.css || undefined}
       video={bubble?.video ?? (background === 'full' ? bubbleFull : bubbleCorner)}
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
@@ -2820,7 +2820,8 @@ function PartnershipModelsSection({ spec }: { spec: Extract<SectionSpec, { type:
 
 /**
  * `Path to Partnership` — the steps after applying, numbered down a rule, beside the application form.
- * With `backdrop: 'mesh'` the footer's colour field drifts behind it, so the ask closes the page lit.
+ * With `backdrop: 'mesh'` the footer's colour field drifts behind it, so the ask closes the page lit;
+ * `glow` keeps the colour to the top-right corner, drifting in the hero bubble's colours.
  */
 function StepsFormSection({ spec }: { spec: Extract<SectionSpec, { type: 'stepsForm' }> }) {
   return (
@@ -2828,6 +2829,8 @@ function StepsFormSection({ spec }: { spec: Extract<SectionSpec, { type: 'stepsF
       className={spec.backdrop === 'mesh' ? classes.meshBand : spec.backdrop === 'glow' ? classes.glowBand : undefined}
     >
       {spec.backdrop === 'mesh' ? <Footer.Mesh className={classes.meshBandField} aria-hidden /> : null}
+      {/* The corner glow, drifting in the hero bubble's colours on the dark canvas — see `.glowBandField`. */}
+      {spec.backdrop === 'glow' ? <Footer.Mesh className={classes.glowBandField} aria-hidden /> : null}
       <div className={classes.stepsForm}>
         <div className={classes.stepsFormCopy}>
           <SectionTitle title={spec.title} description={spec.subtitle} />
@@ -3160,6 +3163,35 @@ function CostCalculatorSection({ spec }: { spec: Extract<SectionSpec, { type: 'c
  * heading with its gradient phrase, a line, the email field and its button, the arrow links, and the
  * quieter way out underneath. A page with this turns the footer's band off.
  */
+/** The panel's outline buttons — `Book a custom demo`. */
+function renderCtaButtons(buttons: LinkRef[]) {
+  return buttons.map((button) => (
+    <MantineButton key={button.label} component="a" href={button.href} variant="outline" size="sm">
+      {button.label}
+    </MantineButton>
+  ))
+}
+
+/** The way to stay in touch — after a lead such as `Not ready yet?`, or the quiet link on its own. */
+function renderCtaAside(spec: Extract<SectionSpec, { type: 'closingCta' }>) {
+  if (!spec.aside) return null
+  return spec.asideLead ? (
+    /* `Not ready yet?` in primary, then the way to stay in touch as a small link. */
+    <Group gap={8} justify="center" wrap="wrap">
+      <Text fz={16} fw={600} lh={1.25} c="var(--sds-surfaces-text-primary)">
+        {spec.asideLead}
+      </Text>
+      <Link href={spec.aside.href} size="sm" rightSection={<IconArrowRight />}>
+        {spec.aside.label}
+      </Link>
+    </Group>
+  ) : (
+    <Link href={spec.aside.href} size="sm" variant="secondary">
+      {spec.aside.label}
+    </Link>
+  )
+}
+
 function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closingCta' }> }) {
   const content = (
     /*
@@ -3209,32 +3241,25 @@ function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closi
           ))}
         </Group>
       ) : null}
-      {spec.buttons?.length ? (
-        <Group gap={16} justify="center" wrap="wrap">
-          {spec.buttons.map((button) => (
-            <MantineButton key={button.label} component="a" href={button.href} variant="outline" size="sm">
-              {button.label}
-            </MantineButton>
-          ))}
+      {spec.surface === 'card' && spec.buttons?.length && spec.aside ? (
+        /*
+         * The panel's foot (node `25113:53301`): the button at the field's start and `Not ready yet?` at
+         * its end, one row the field's width. They stack once the row runs out of room.
+         */
+        <Group gap={16} wrap="wrap" w="100%" maw={600} className={classes.ctaCardFoot}>
+          {renderCtaButtons(spec.buttons)}
+          {renderCtaAside(spec)}
         </Group>
-      ) : null}
-      {spec.aside ? (
-        spec.asideLead ? (
-          /* `Not ready yet?` in primary, then the way to stay in touch as a small link. */
-          <Group gap={8} justify="center" wrap="wrap">
-            <Text fz={16} fw={600} lh={1.25} c="var(--sds-surfaces-text-primary)">
-              {spec.asideLead}
-            </Text>
-            <Link href={spec.aside.href} size="sm" rightSection={<IconArrowRight />}>
-              {spec.aside.label}
-            </Link>
-          </Group>
-        ) : (
-          <Link href={spec.aside.href} size="sm" variant="secondary">
-            {spec.aside.label}
-          </Link>
-        )
-      ) : null}
+      ) : (
+        <>
+          {spec.buttons?.length ? (
+            <Group gap={16} justify="center" wrap="wrap">
+              {renderCtaButtons(spec.buttons)}
+            </Group>
+          ) : null}
+          {renderCtaAside(spec)}
+        </>
+      )}
     </Stack>
   )
 

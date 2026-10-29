@@ -994,7 +994,8 @@ export const DEFS: Record<string, Shape> = {
           "kind": "enum",
           "options": [
             "default",
-            "media-proof"
+            "media-proof",
+            "stacked"
           ]
         },
         "doc": "How the hero's pieces are arranged."
@@ -2914,7 +2915,7 @@ export const DEFS: Record<string, Shape> = {
                 "glow"
               ]
             },
-            "doc": "`mesh` lays the footer's drifting colour field behind the band. `glow` is Partner Pages' OEM `Path to Partnership` (node `245:11603`): a still corner of brand purple into blue, from the top right, fading into the page."
+            "doc": "`mesh` lays the footer's drifting colour field behind the band. `glow` is Partner Pages' OEM `Path to Partnership` (node `245:11603`): a corner of colour from the top right, fading into the page. On the dark canvas it d…"
           },
           {
             "name": "anchor",
