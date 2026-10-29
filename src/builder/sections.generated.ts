@@ -560,7 +560,9 @@ export const DEFS: Record<string, Shape> = {
       "general-personalization",
       "partners",
       "general-ai",
-      "user-cubes"
+      "user-cubes",
+      "user-badge",
+      "user-screen"
     ]
   },
   "Headline": {
@@ -1533,6 +1535,18 @@ export const DEFS: Record<string, Shape> = {
             "doc": "`glass` gives every card the glass surface even when it is not a link — Partner Pages' feature cards, which are panels drawn in glass. Without it a card is glass only when it goes somewhere."
           },
           {
+            "name": "cardHeader",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "vertical",
+                "horizontal"
+              ]
+            },
+            "doc": "`horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node `25120:53447`), which are a title and nothing else."
+          },
+          {
             "name": "cards",
             "optional": true,
             "shape": {
@@ -1588,6 +1602,37 @@ export const DEFS: Record<string, Shape> = {
                 ]
               }
             }
+          },
+          {
+            "name": "groups",
+            "optional": true,
+            "shape": {
+              "kind": "array",
+              "of": {
+                "kind": "object",
+                "fields": [
+                  {
+                    "name": "title",
+                    "optional": false,
+                    "shape": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "name": "cards",
+                    "optional": false,
+                    "shape": {
+                      "kind": "array",
+                      "of": {
+                        "kind": "ref",
+                        "name": "CardSpec"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "doc": "Further rows under the first, each under its own smaller heading, 64 below the row above — `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section."
           },
           {
             "name": "anchor",

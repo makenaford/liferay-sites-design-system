@@ -405,6 +405,10 @@ export type GlassIconName =
   /* OEM Partner's — the library's `General / ai`, and the frame's own person-and-cubes mark. */
   | 'general-ai'
   | 'user-cubes'
+  /** The person with an ID badge — the Partner Directory card. */
+  | 'user-badge'
+  /** The person with a screen — the Technology Partner card. */
+  | 'user-screen'
 
 export interface CardSpec {
   title: string
@@ -589,9 +593,19 @@ type SectionBody =
        * cards, which are panels drawn in glass. Without it a card is glass only when it goes somewhere.
        */
       surface?: 'glass'
+      /**
+       * `horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node
+       * `25120:53447`), which are a title and nothing else. @default 'vertical'
+       */
+      cardHeader?: 'vertical' | 'horizontal'
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
+      /**
+       * Further rows under the first, each under its own smaller heading, 64 below the row above —
+       * `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section.
+       */
+      groups?: { title: string; cards: CardSpec[] }[]
     }
   /**
    * Figma `Type=Resources` / `Card Grid- Non Clickable`. Three columns at a 24px gap, each card led by

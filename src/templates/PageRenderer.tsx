@@ -101,7 +101,9 @@ import {
   IconGlassGeneralPersonalization,
   IconGlassGeneralPartners,
   IconGlassGeneralAi,
+  IconGlassUserBadge,
   IconGlassUserCubes,
+  IconGlassUserScreen,
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
@@ -260,6 +262,8 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   partners: (s) => <IconGlassGeneralPartners width={s} height={s} />,
   'general-ai': (s) => <IconGlassGeneralAi width={s} height={s} />,
   'user-cubes': (s) => <IconGlassUserCubes width={s} height={s} />,
+  'user-badge': (s) => <IconGlassUserBadge width={s} height={s} />,
+  'user-screen': (s) => <IconGlassUserScreen width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -891,7 +895,15 @@ function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> })
  * tag — and each brings the padding the file draws with it: an image card pads all round, an icon or
  * tag card takes the default.
  */
-function GridCard({ card, surface }: { card: CardSpec; surface?: 'glass' }) {
+function GridCard({
+  card,
+  surface,
+  header,
+}: {
+  card: CardSpec
+  surface?: 'glass'
+  header?: 'vertical' | 'horizontal'
+}) {
   /*
    * A picture over an icon is the Solutions Library's `Type=Industry`: the picture sits *inside* the
    * card's 20px, rounded on its own, with the glass icon under it. A picture alone keeps the older cell's
@@ -929,9 +941,10 @@ function GridCard({ card, surface }: { card: CardSpec; surface?: 'glass' }) {
           <Image src={card.image.src} alt={card.image.alt} ratio="3:2" radius={inset ? 'sm' : undefined} />
         ) : undefined
       }
+      headerAlign={header === 'horizontal' ? 'horizontal' : undefined}
       hero={
         card.icon ? (
-          GLASS[card.icon](card.points || card.links ? 48 : 40)
+          GLASS[card.icon](card.points || card.links || header === 'horizontal' ? 48 : 40)
         ) : card.tag ? (
           <Label variant="gradient" size="md">
             {card.tag}
@@ -1016,10 +1029,19 @@ function Section({ reveal = true, ...props }: SectionProps) {
 function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGrid' }> }) {
   const [tab, setTab] = useState(spec.tabs?.[0]?.value ?? '')
   const cards = spec.tabs ? (spec.tabs.find((t) => t.value === tab)?.content ?? []) : (spec.cards ?? [])
+  const grid = (row: CardSpec[]) => (
+    <SimpleGrid cols={{ base: 1, sm: 2, md: spec.columns ?? 4 }} spacing={24}>
+      {row.map((card, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <GridCard key={`${card.title}-${i}`} card={card} surface={spec.surface} header={spec.cardHeader} />
+      ))}
+    </SimpleGrid>
+  )
 
   return (
     <Section
-      gap={32}
+      /* 24 to the cards when the section is rows under headings, as the ecosystem frame draws it. */
+      gap={spec.groups?.length ? 24 : 32}
       title={
         <SectionTitle
           align={spec.align}
@@ -1042,12 +1064,19 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
         />
       }
     >
-      <SimpleGrid cols={{ base: 1, sm: 2, md: spec.columns ?? 4 }} spacing={24}>
-        {cards.map((card, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <GridCard key={`${card.title}-${i}`} card={card} surface={spec.surface} />
-        ))}
-      </SimpleGrid>
+      {spec.groups?.length ? (
+        <Stack gap={64}>
+          {grid(cards)}
+          {spec.groups.map((group) => (
+            <div key={group.title} className={classes.cardGridGroup}>
+              <h3 className={classes.cardGridGroupTitle}>{group.title}</h3>
+              {grid(group.cards)}
+            </div>
+          ))}
+        </Stack>
+      ) : (
+        grid(cards)
+      )}
     </Section>
   )
 }

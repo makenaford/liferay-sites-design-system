@@ -1003,6 +1003,48 @@
   justify-content: center;
 }
 
+/*
+ * `Align=Horizontal` — the ecosystem cards (node `25120:53447`): the hero beside the title, 16 apart and
+ * centred on each other, the title in `Desktop/Heading/H6/Semi Bold` (24/1.25). The hero keeps its size
+ * however long the title runs.
+ */
+.cardHeader[data-header-align='horizontal'] {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.cardHeader[data-header-align='horizontal'] > .cardHero {
+  flex-shrink: 0;
+}
+
+.cardHeader[data-header-align='horizontal'] .cardTitle {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+@container sds-section (max-width: 767px) {
+  .cardHeader[data-header-align='horizontal'] .cardTitle {
+    font-size: 20px;
+  }
+}
+
+/* A card grid's further rows, each under its own heading — `Other Ways to Partner with Liferay`. */
+.cardGridGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* `Desktop/Heading/H5/Semi Bold`: 28/1.25. */
+.cardGridGroupTitle {
+  margin: 0;
+  font-size: clamp(22px, 2.4cqi, 28px);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
 /* ---------------------------------------------------------------------- surfaces
  *
  * Read from the card instances, not from the `Surface` set: the set's own rectangle carries a
