@@ -123,6 +123,8 @@
     "user/user-star",
     "user/user-validation",
     "user/user-cubes",
+    "user/user-badge",
+    "user/user-screen",
     "user/user-world",
     "user/users"
   ]

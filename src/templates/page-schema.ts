@@ -234,13 +234,18 @@ export interface HeroSpec {
    * How the hero's pieces are arranged.
    *
    * - `default` — copy beside the media, the proof under the copy.
-   * - `media-proof` — the solution page's second option (node `24920:87684`): two aligned rows. The
+   * - `media-proof` — the solution page's second option, as node `24920:87684` first drew it (it now draws `default`): two aligned rows. The
    *   heading and value props beside the media; then the email field and links beside the proof, which
    *   sits under the media. The field and the rating start on the same line whatever the copy's length.
    *
+   * - `stacked` — the Solutions hub's hero (node `24920:87684`): everything in one column beside the
+   *   media — heading, value props, email field, links, then the rating beside the badges with the marks
+   *   under it. The media starts level with the heading, and the field and the proof row take the
+   *   column's width (596 at most), so the badges sit at the column's end.
+   *
    * @default 'default'
    */
-  layout?: 'default' | 'media-proof'
+  layout?: 'default' | 'media-proof' | 'stacked'
   /**
    * The value props under the description — a solution page's three bullets, each a UI icon and the
    * answer to a buyer's question.
@@ -400,6 +405,10 @@ export type GlassIconName =
   /* OEM Partner's — the library's `General / ai`, and the frame's own person-and-cubes mark. */
   | 'general-ai'
   | 'user-cubes'
+  /** The person with an ID badge — the Partner Directory card. */
+  | 'user-badge'
+  /** The person with a screen — the Technology Partner card. */
+  | 'user-screen'
 
 export interface CardSpec {
   title: string
@@ -584,9 +593,19 @@ type SectionBody =
        * cards, which are panels drawn in glass. Without it a card is glass only when it goes somewhere.
        */
       surface?: 'glass'
+      /**
+       * `horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node
+       * `25120:53447`), which are a title and nothing else. @default 'vertical'
+       */
+      cardHeader?: 'vertical' | 'horizontal'
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
+      /**
+       * Further rows under the first, each under its own smaller heading, 64 below the row above —
+       * `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section.
+       */
+      groups?: { title: string; cards: CardSpec[] }[]
     }
   /**
    * Figma `Type=Resources` / `Card Grid- Non Clickable`. Three columns at a 24px gap, each card led by
@@ -825,8 +844,9 @@ type SectionBody =
       form: NonNullable<HeroSpec['formCard']>
       /**
        * `mesh` lays the footer's drifting colour field behind the band. `glow` is Partner Pages' OEM
-       * `Path to Partnership` (node `245:11603`): a still corner of brand purple into blue, from the top
-       * right, fading into the page.
+       * `Path to Partnership` (node `245:11603`): a corner of colour from the top right, fading into the
+       * page. On the dark canvas it drifts in the hero bubble's colours, as the Solutions hub's closing
+       * panel does; on the light canvas it is the drawn still gradient, purple into blue.
        */
       backdrop?: 'mesh' | 'glow'
     }

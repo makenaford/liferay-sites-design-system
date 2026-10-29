@@ -1003,6 +1003,48 @@
   justify-content: center;
 }
 
+/*
+ * `Align=Horizontal` — the ecosystem cards (node `25120:53447`): the hero beside the title, 16 apart and
+ * centred on each other, the title in `Desktop/Heading/H6/Semi Bold` (24/1.25). The hero keeps its size
+ * however long the title runs.
+ */
+.cardHeader[data-header-align='horizontal'] {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.cardHeader[data-header-align='horizontal'] > .cardHero {
+  flex-shrink: 0;
+}
+
+.cardHeader[data-header-align='horizontal'] .cardTitle {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+@container sds-section (max-width: 767px) {
+  .cardHeader[data-header-align='horizontal'] .cardTitle {
+    font-size: 20px;
+  }
+}
+
+/* A card grid's further rows, each under its own heading — `Other Ways to Partner with Liferay`. */
+.cardGridGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* `Desktop/Heading/H5/Semi Bold`: 28/1.25. */
+.cardGridGroupTitle {
+  margin: 0;
+  font-size: clamp(22px, 2.4cqi, 28px);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
 /* ---------------------------------------------------------------------- surfaces
  *
  * Read from the card instances, not from the `Surface` set: the set's own rectangle carries a
@@ -13027,7 +13069,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* =====================================================================================
- * Hero `layout="media-proof"` — the solution page's second option (node `24920:87684`).
+ * Hero `layout="media-proof"` — the solution page's second option (node `24920:87684` as first drawn).
  *
  * Two aligned rows: the heading and value props beside the media, then the email field and links
  * beside the proof, which sits under the media, 16 below. The copy column steps out of the way
@@ -13124,6 +13166,30 @@ a.secondaryNavTitle:focus-visible {
   .hero[data-layout='media-proof'] .heroProof {
     margin-block-start: 24px;
   }
+}
+
+/* =====================================================================================
+ * Hero `layout="stacked"` — the Solutions hub's hero (node `24920:87684`).
+ *
+ * The default hero's one column of copy, form, links and proof, but with the media starting level with
+ * the heading rather than centred on the column, and the field and the proof row at the column's width
+ * (the file's 596) so the badges sit at its end, not beside the rating.
+ * ===================================================================================== */
+
+.hero[data-layout='stacked'] .heroInner {
+  align-items: flex-start;
+}
+
+.hero[data-layout='stacked'] .heroForm,
+.hero[data-layout='stacked'] .heroProof {
+  width: 100%;
+  max-width: 596px;
+}
+
+.hero[data-layout='stacked'] .heroProof {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 
 /* The rating beside the analyst badges. */
@@ -13227,16 +13293,52 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * `Path to Partnership` on a still corner glow (node `245:11603`): brand purple in the top-right corner,
+ * `Path to Partnership` on a corner glow (node `245:11603`): brand purple in the top-right corner,
  * running through deep blue into the page by about 40% of the way across.
+ *
+ * On the light canvas that is the still gradient the file draws, and the drifting field is not shown.
  */
 .glowBand {
+  position: relative;
+  isolation: isolate;
   background-image: linear-gradient(
     225deg,
     var(--sds-gradient-card-purple) 0%,
     var(--sds-gradient-card-blue) 14%,
     transparent 42%
   );
+}
+
+.glowBandField {
+  z-index: -1;
+  display: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/*
+ * On the dark canvas the corner moves: the Solutions hub's closing panel (`.ctaCardMesh`) in the same
+ * corner the still glow lit — violet in the very corner, electric blue and the bubble's cyan rim under
+ * it, deep indigo spreading toward the middle — on the footer's field, blur and flow. The rest of the
+ * band stays the page's own dark, so the steps and the form card keep their contrast; under reduced
+ * motion it holds still, as the footer's does.
+ *
+ * Field positions are `(band% + 20) / 140`, the field being 140% of the band hung 20% off its top left.
+ */
+:where([data-mantine-color-scheme='dark']) .glowBand {
+  background-image: none;
+}
+
+:where([data-mantine-color-scheme='dark']) .glowBandField {
+  display: block;
+}
+
+:where([data-mantine-color-scheme='dark']) .glowBandField > * {
+  background-image:
+    radial-gradient(20% 13% at 88% 14%, #8c2bff 0%, #8c2bff 35%, transparent 100%),
+    radial-gradient(26% 17% at 78% 21%, #1f3dff 0%, #1f3dff 25%, transparent 100%),
+    radial-gradient(14% 14% at 86% 34%, #2a9dff 0%, transparent 100%),
+    radial-gradient(28% 20% at 70% 24%, #1a0b6e 0%, transparent 100%);
 }
 
 /* A band with the footer's mesh behind it: the field is the bottom layer, the content above it. */
@@ -13249,10 +13351,36 @@ a.secondaryNavTitle:focus-visible {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: clamp(40px, 6cqi, 64px) clamp(20px, 4cqi, 40px);
+  /* `Page Action Section` (node `25113:53301`): 60 by 40 inside, 24 round. */
+  padding: clamp(40px, 6cqi, 60px) clamp(20px, 4cqi, 40px);
   border: 1px solid var(--sds-card-static-line);
-  border-radius: 16px;
+  border-radius: 24px;
   background-color: var(--sds-surfaces-card-bg-grey);
+}
+
+/*
+ * The heading at the frame's 800, keeping a line break the copy asks for — `…you need, / built on the
+ * platform you'll keep` — and balancing whatever else wraps.
+ */
+.ctaCard h2 {
+  max-width: 800px;
+  margin-inline: auto;
+  white-space: pre-line;
+  text-wrap: balance;
+}
+
+/*
+ * The foot's two ends, set here rather than on the `Group` so the phone can change them. Stacked on a
+ * phone, the button and `Not ready yet?` both centre, as the rest of the panel does.
+ */
+.ctaCard .ctaCardFoot {
+  justify-content: space-between;
+}
+
+@media (max-width: 36em) {
+  .ctaCard .ctaCardFoot {
+    justify-content: center;
+  }
 }
 
 .ctaCard[data-backdrop='mesh'] {
@@ -13274,6 +13402,42 @@ a.secondaryNavTitle:focus-visible {
 .ctaCardMesh > * {
   top: -110%;
   height: 220%;
+}
+
+/*
+ * On the dark canvas the panel is the hero's bubble, dimmed: a near-black ground, and the bubble's own
+ * colours — deep indigo, electric blue, its cyan rim and violet — pooled down the right-hand side, where
+ * the frame draws its sweep, drifting as the footer's do. The field is the footer's (same blur, same
+ * flow); only its colours and where they pool are the panel's.
+ *
+ * Over it, the frame's vignette: black at 80% in the middle easing to 16% at the edges, so the copy and
+ * the field sit on the darkest part and the colour reads round the rim.
+ *
+ * Field positions are `(panel% + 20) / 140`, the field being 140% of the panel hung 20% off its top left.
+ */
+:where([data-mantine-color-scheme='dark']) .ctaCard[data-backdrop='mesh'] {
+  background-color: #02030a;
+}
+
+:where([data-mantine-color-scheme='dark']) .ctaCardMesh > * {
+  top: -20%;
+  height: 140%;
+  opacity: 1;
+  background-image:
+    radial-gradient(34% 30% at 78% 22%, #1f3dff 0%, #1f3dff 25%, transparent 100%),
+    radial-gradient(22% 30% at 86% 52%, #2a9dff 0%, #2a9dff 20%, transparent 100%),
+    radial-gradient(30% 26% at 80% 84%, #8c2bff 0%, #8c2bff 25%, transparent 100%),
+    radial-gradient(40% 40% at 52% 30%, #1a0b6e 0%, transparent 100%),
+    radial-gradient(26% 22% at 18% 82%, #0d2a6e 0%, transparent 100%);
+}
+
+:where([data-mantine-color-scheme='dark']) .ctaCard[data-backdrop='mesh']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(64% 59% at 50% 50%, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.16));
 }
 
 .meshBand {

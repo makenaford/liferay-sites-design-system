@@ -184,7 +184,7 @@ export const CATALOG: ComponentSpec[] = [
       { name: "imageRatio", kind: "enum", options: ["3:2", "16:9"], default: "3:2", doc: "Figma's `Aspect Ratio` axis on `card-image`." },
       { name: "top", kind: "slot", doc: "`Show Top Content` — above the header. A `Stat` in the quote card." },
       { name: "hero", kind: "slot", doc: "`Card hero` — the thing above the title: a `Label`, a glass icon, a `Stat`, a date. Figma's `Show` axis lists Label, Icon, Blog, Tag, Events and Stat; all six are just different content here." },
-      { name: "headerAlign", kind: "enum", options: ["vertical", "center"], default: "vertical", doc: "Figma `header-alignment` `Align`. `center` centres the hero and the title." },
+      { name: "headerAlign", kind: "enum", options: ["vertical", "center", "horizontal"], default: "vertical", doc: "Figma `header-alignment` `Align`. `center` centres the hero and the title; `horizontal` sets the hero beside the title, 16 apart, with the title at 24." },
       { name: "title", kind: "slot", doc: "`Show title` + the `Title Card` text. Named for the slot, not the HTML attribute." },
       { name: "titleSize", kind: "enum", options: ["small", "full"], default: "small", doc: "Figma `Content Text` `Size`." },
       { name: "description", kind: "slot", doc: "`Show description`." },

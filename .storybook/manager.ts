@@ -56,3 +56,31 @@ addons.register('liferay-sites/landing', (api) => {
   api.on(SET_INDEX, land)
   api.on(CURRENT_STORY_WAS_SET, land)
 })
+
+/*
+ * Open a built page on the page, not its docs.
+ *
+ * Every story file is `autodocs`, and the sidebar opens a component on its first entry — the docs. For
+ * the library that is the right arrival; for a built page it is a description of a page you came to
+ * see. So a click (or Enter) on a page under `Built Pages` selects its first story — `Page` — instead.
+ * The `Docs` entry stays in the sidebar under it, a click away, and a link to it is left alone.
+ */
+const BUILT_PAGE = '[data-nodetype="component"][data-item-id^="built-pages-"]'
+
+addons.register('liferay-sites/built-pages-open-on-page', (api) => {
+  const openOnPage = (event: Event) => {
+    const node = (event.target as Element | null)?.closest?.(BUILT_PAGE)
+    if (!node) return
+    if (event instanceof KeyboardEvent && event.key !== 'Enter') return
+    /* `resolveStory`, not `getData`: the latter returns only stories and docs, never the component. */
+    const entry = api.resolveStory(node.getAttribute('data-item-id') ?? '') as { children?: string[] } | undefined
+    const stories = entry?.children?.filter((id) => !id.endsWith('--docs')) ?? []
+    const target = stories.find((id) => id.endsWith('--page')) ?? stories[0]
+    if (!target) return
+    event.preventDefault()
+    event.stopPropagation()
+    api.selectStory(target)
+  }
+  document.addEventListener('click', openOnPage, true)
+  document.addEventListener('keydown', openOnPage, true)
+})

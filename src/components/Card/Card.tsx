@@ -42,8 +42,11 @@ export type CardRadius = 'card' | 'pill'
  */
 export type CardPadding = 'all' | 'content' | 'full' | 'none'
 
-/** Figma `header-alignment` `Align`. */
-export type CardHeaderAlign = 'vertical' | 'center'
+/**
+ * Figma `header-alignment` `Align`. `horizontal` is the ecosystem cards' header (Solutions Library node
+ * `25120:53447`): the hero beside the title rather than over it.
+ */
+export type CardHeaderAlign = 'vertical' | 'center' | 'horizontal'
 
 /**
  * Figma `Content Text` `Size`. `small` is the card set's own size; `full` is the `Full Card` cell the
@@ -116,7 +119,10 @@ export interface CardProps
    * axis lists Label, Icon, Blog, Tag, Events and Stat; all six are just different content here.
    */
   hero?: ReactNode
-  /** Figma `header-alignment` `Align`. `center` centres the hero and the title. @default 'vertical' */
+  /**
+   * Figma `header-alignment` `Align`. `center` centres the hero and the title; `horizontal` sets the
+   * hero beside the title, 16 apart, with the title at 24. @default 'vertical'
+   */
   headerAlign?: CardHeaderAlign
   /** `Show title` + the `Title Card` text. Named for the slot, not the HTML attribute. */
   title?: ReactNode
@@ -284,7 +290,7 @@ const CardBase = forwardRef<HTMLDivElement, CardProps>(function Card(
  * | `Show Image` + `card-image`, `Aspect Ratio` | `image`, `imageRatio` |
  * | `Show Top Content` + `Top Content` | `top` |
  * | `Card hero` `Show` — Label / Icon / Blog / Tag / Events / Stat | `hero` |
- * | `header-alignment` `Align` — Vertical / Center | `headerAlign` |
+ * | `header-alignment` `Align` — Vertical / Center / Horizontal | `headerAlign` |
  * | `Show title` + `Title Card`, `Content Text` `Size` | `title`, `titleSize` |
  * | `Show description` | `description` |
  * | `Show Main Content 1` / `2` | `main`, `secondary` |
