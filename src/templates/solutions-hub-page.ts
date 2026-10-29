@@ -1,31 +1,47 @@
 import commerceDashboard from '../../assets/solutions/commerce-dashboard.webp'
-import financialMedia from '../../assets/home/industry-media.png'
-import manufacturingMedia from '../../assets/customer-story/hero-media.jpg'
-import publicSectorMedia from '../../assets/home/trending/web-portals.jpg'
-import energyMedia from '../../assets/home/teams/b2b-commerce.png'
-import healthcareMedia from '../../assets/industry/hero-media.jpg'
+import permitApplication from '../../assets/solutions-hub/permit-application.png'
+import ssoSignIn from '../../assets/solutions-hub/sso-sign-in.png'
+import gartnerBadge from '../../assets/home/badges/gartner-peer-insights-customers-choice-2026-white.png'
+import g2Badge from '../../assets/home/badges/g2-leader-enterprise-fall-2026.png'
+import workflowStill from '../../assets/home/teams/b2b-commerce.png'
+import agentBuilder from '../../assets/industry/hero-media.jpg'
+import webPortals from '../../assets/home/trending/web-portals.jpg'
+import digitalStrategy from '../../assets/home/trending/digital-strategy.jpg'
+import b2bEcommerce from '../../assets/home/trending/b2b-ecommerce.jpg'
 import type { PageSpec } from './page-schema'
 
 /*
- * The Solutions hub, as data — liferay.com/solutions, as the solutions-and-capabilities mockup lays it
- * out (liferay-solutions-capabilities-indu.vercel.app/solutions).
+ * The Solutions hub, as data — laid out as the Solutions Library's `Solutions Hub` frame (Figma
+ * `Solutions-Library--2026`, node `24920:83473`), with the words of liferay.com/solutions as the
+ * solutions-and-capabilities mockup has them (liferay-solutions-capabilities-indu.vercel.app/solutions).
  *
- * The order is the hub's argument: what you can build, then each solution with one customer's figure,
- * then the industries, the proof and the platform underneath every solution, and last the ask, the
- * reading and the questions.
+ * The frame is the layout and the mockup is the copy: where the two disagree — the frame's placeholder
+ * `Ready for the future?` band, its second row of industry cards repeating the first — the mockup's
+ * words win and the frame's shape holds them.
  *
- * Every picture is one the library already holds, standing in for the mockup's own — the hero's portal
- * screen is the commerce dashboard, and each industry tab borrows a photograph from another page.
+ * Pictures: the hero's permit application and the first industry card's SSO sign-in are the frame's own;
+ * the operator at the orders dashboard is the library's `commerce-dashboard`, the same picture. The
+ * frame draws three industries, so the other three cards borrow a photograph from elsewhere in the library.
  */
+
+const DASHBOARD = {
+  src: commerceDashboard,
+  alt: 'An operator at a control desk, beside an open-orders dashboard of totals, channels and inventory turnover',
+}
 
 export const SOLUTIONS_HUB_PAGE: PageSpec = {
   hero: {
     background: 'corner',
-    title: { text: 'Build the Digital Solutions', highlight: 'Your Business Runs On' },
+    layout: 'media-proof',
+    breadcrumbs: [
+      { label: 'Home', href: '#' },
+      { label: 'Solutions', href: '#' },
+    ],
+    title: { text: 'Build the Digital Solutions Your', highlight: 'Business Runs On' },
     points: [
-      { icon: 'monitor', text: 'Portals, websites, commerce, and intranets on one composable platform' },
-      { icon: 'search', text: 'AI-assisted content, search, and personalization built into every solution' },
-      { icon: 'brackets-angle', text: 'Connect ERP, CRM, and legacy systems with headless APIs and low-code' },
+      { icon: 'file-code', text: 'Portals, websites, commerce, and intranets on one composable platform' },
+      { icon: 'sparkles', text: 'AI-assisted content, search, and personalization built into every solution' },
+      { icon: 'list-check', text: 'Connect ERP, CRM, and legacy systems with headless APIs and low-code' },
     ],
     form: { placeholder: 'Work email', submit: 'Contact Sales' },
     links: [
@@ -39,10 +55,14 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
         source: 'by 233 verified users as of September 2026, Source: Gartner Peer Insights™',
       },
       marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
+      badges: [
+        { src: gartnerBadge, alt: 'Gartner Peer Insights Customers’ Choice 2026' },
+        { src: g2Badge, alt: 'G2 Leader, Enterprise, Fall 2026' },
+      ],
     },
     media: {
-      src: commerceDashboard,
-      alt: 'An operator at a control desk, beside an open-orders dashboard of totals, channels and inventory turnover',
+      src: permitApplication,
+      alt: 'A man reading his phone beside a permit application form: permit type, name, location and project description',
       ratio: '3:2',
     },
   },
@@ -53,11 +73,15 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       logos: ['Lenovo', 'BROADCOM', 'Hewlett Packard Enterprise', 'AT&T', 'Sky', 'AIRBUS'],
     },
     {
-      type: 'highlightText',
-      icon: 'dxp',
+      type: 'contentBlock',
+      label: 'Overview',
       title: 'What can you build on Liferay DXP?',
-      body: 'Liferay solutions are proven blueprints for the experiences enterprises depend on most: authenticated portals for customers, partners, and suppliers; high-performing public websites; B2B and B2C commerce; and modern intranets. Each one is built on the same composable platform, so content, identity, integrations, and AI are shared across every experience. Start with the solution you need today and expand without re-platforming tomorrow.',
-      action: { label: 'Looking for individual features instead? Switch to the Platform Capabilities hub', href: '#' },
+      description:
+        'Liferay solutions are proven blueprints for the experiences enterprises depend on most: authenticated portals for customers, partners, and suppliers; high-performing public websites; B2B and B2C commerce; and modern intranets. Each one is built on the same composable platform, so content, identity, integrations, and AI are shared across every experience. Start with the solution you need today and expand without re-platforming tomorrow.',
+      actionLead: 'Looking for individual features instead?',
+      action: { label: 'Switch to the Platform Capabilities hub', href: '#' },
+      media: DASHBOARD,
+      mediaSide: 'right',
     },
     {
       type: 'cardGrid',
@@ -67,28 +91,40 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       columns: 3,
       cards: [
         {
-          icon: 'customer-portals',
+          icon: 'user-validation',
           title: 'Customer Portals',
-          description:
-            'Give customers fast self-service and one place for every resource they need — dashboards, tickets, a knowledge base with AI-assisted search, and one view of orders and documents.',
+          description: 'Give customers fast self-service and one place for every resource they need.',
+          points: [
+            'Personalized dashboards, tickets, and account management',
+            'Knowledge base and AI-assisted search for deflection',
+            'Unified view of orders, documents, and back-end data',
+          ],
+          stat: { value: '750', prefix: '+', suffix: '%', label: 'Processed requests per month' },
           href: '#',
-          stat: { value: '750', prefix: '+', suffix: '%', label: 'Processed requests per month', sentiment: 'positive' },
         },
         {
-          icon: 'partner-portals',
+          icon: 'partner-portals-2',
           title: 'Partner Portals',
-          description:
-            'Run complex partner relationships from one collaborative platform — deal registration, MDF and lead distribution, role-based training, and co-branded assets from a central library.',
+          description: 'Run complex partner relationships from one collaborative platform.',
+          points: [
+            'Deal registration, MDF, and lead distribution workflows',
+            'Role-based content, training, and certification',
+            'Co-branded assets synced from a central library',
+          ],
+          stat: { value: '96', suffix: '%', label: 'Less consulting time' },
           href: '#',
-          stat: { value: '96', suffix: '%', label: 'Less consulting time', sentiment: 'positive' },
         },
         {
-          icon: 'supplier-portals',
+          icon: 'supplier-portals-3',
           title: 'Supplier Portals',
-          description:
-            'Simplify supplier management with a single window into your processes — onboarding and approvals, live POs, invoices and shipments, and integrations with ERP, PLM and procurement.',
+          description: 'Simplify supplier management with a single window into your processes.',
+          points: [
+            'Onboarding, compliance documents, and approvals',
+            'Real-time visibility into POs, invoices, and shipments',
+            'Integrations with ERP, PLM, and procurement systems',
+          ],
+          stat: { value: '80', suffix: '%', label: 'Faster registration and onboarding' },
           href: '#',
-          stat: { value: '80', suffix: '%', label: 'Faster registration and onboarding', sentiment: 'positive' },
         },
       ],
     },
@@ -100,114 +136,127 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       columns: 2,
       cards: [
         {
-          icon: 'enterprise-websites',
+          icon: 'user-validation',
           title: 'Enterprise-Grade Websites',
-          description:
-            'Engage prospects with fast, personalized sites built to rank and convert — drag-and-drop pages on brand-safe templates, multi-site localization, and built-in SEO/AEO, A/B testing and segmentation.',
+          description: 'Engage prospects with fast, personalized sites built to rank and convert.',
+          points: [
+            'Drag-and-drop page building with brand-safe templates',
+            'Localization and multi-site management at global scale',
+            'Built-in SEO/AEO, A/B testing, and segmentation',
+          ],
+          stat: { value: '45', suffix: '%', label: 'Faster page loading time' },
           href: '#',
-          stat: { value: '45', suffix: '%', label: 'Faster page loading time', sentiment: 'positive' },
         },
         {
-          icon: 'commerce',
+          icon: 'partner-portals-2',
           title: 'Digital Commerce',
-          description:
-            'Grow revenue with B2B buying that is simple to start and easy to repeat — account-specific catalogs and pricing, quick reorder, punchout and approvals, and 24/7 self-serve purchasing on your ERP.',
+          description: 'Grow revenue with B2B buying that is simple to start and easy to repeat.',
+          points: [
+            'Account-specific catalogs, pricing, and contracts',
+            'Quick reorder, punchout, and approval workflows',
+            '24/7 self-serve purchasing with ERP integration',
+          ],
+          stat: { value: '50', prefix: '+', suffix: '%', label: 'Increase in online transactions' },
           href: '#',
-          stat: { value: '50', prefix: '+', suffix: '%', label: 'Increase in online transactions', sentiment: 'positive' },
         },
       ],
     },
     {
-      type: 'tabbedContent',
+      type: 'cardGrid',
       anchor: 'industries',
       title: 'Designed for Your Industry. Built for Growth.',
       titleHighlight: 'Built for Growth.',
-      mediaSide: 'right',
-      tabs: [
+      align: 'center',
+      columns: 3,
+      cards: [
         {
-          value: 'financial-services',
-          label: 'Financial Services',
-          content: {
-            eyebrow: 'financial-services',
-            title: 'Financial Services',
-            description:
-              'Unify client and advisor data, personalize every financial journey, strengthen security, and simplify compliance to build lasting trust and a competitive edge.',
-            action: { label: 'Financial Services Solutions', href: '#' },
-            media: { src: financialMedia, alt: 'A client signing in to a secure account on his phone' },
-            stats: [
-              { value: '45', suffix: '%', label: 'Faster loading time', sentiment: 'positive' },
-              { value: '96', suffix: '%', label: 'Less consulting time', sentiment: 'positive' },
-              { value: '30', suffix: '%', label: 'Less data entry time', sentiment: 'positive' },
-            ],
-          },
+          image: { src: ssoSignIn, alt: 'A man signing in on his phone through an enterprise SSO login with Okta and MFA' },
+          icon: 'financial-services-2',
+          title: 'Financial Services',
+          description:
+            'Unify client and advisor data, personalize every financial journey, strengthen security, and simplify compliance to build lasting trust and a competitive edge.',
+          links: [
+            { label: 'Financial Services Solutions', href: '#' },
+            { label: 'Digital transformation in Financial Services', href: '#' },
+          ],
+          stats: [
+            { value: '45', suffix: '%', label: 'Faster loading time' },
+            { value: '96', suffix: '%', label: 'Less consulting time' },
+            { value: '30', suffix: '%', label: 'Less data entry time' },
+          ],
         },
         {
-          value: 'manufacturing',
-          label: 'Manufacturing',
-          content: {
-            eyebrow: 'manufacturing',
-            title: 'Manufacturing',
-            description:
-              'Digitize operations, simplify B2B purchasing, and strengthen your supply chain to cut costs, boost revenue, and stay resilient amid market disruption.',
-            action: { label: 'Manufacturing Solutions', href: '#' },
-            media: { src: manufacturingMedia, alt: 'A container ship under way, guided by a tug' },
-            stats: [
-              { value: '80', suffix: '%', label: 'Faster registration & onboarding', sentiment: 'positive' },
-              { value: '50', prefix: '+', suffix: '%', label: 'In online transactions', sentiment: 'positive' },
-              { value: '50', suffix: '%', label: 'Less catalog production time', sentiment: 'positive' },
-            ],
-          },
+          image: DASHBOARD,
+          icon: 'manufacturing-2',
+          title: 'Manufacturing',
+          description:
+            'Digitize operations, simplify B2B purchasing, and strengthen your supply chain to cut costs, boost revenue, and stay resilient amid market disruption.',
+          links: [
+            { label: 'Manufacturing Solutions', href: '#' },
+            { label: 'Digital transformation in Manufacturing', href: '#' },
+          ],
+          stats: [
+            { value: '80', suffix: '%', label: 'Faster registration & onboarding' },
+            /* The frame draws the rise as an arrow before the figure, where the mockup writes `+50%`. */
+            { value: '50', suffix: '%', label: 'In online transactions', sentiment: 'positive' },
+            { value: '50', suffix: '%', label: 'Less catalog production time' },
+          ],
         },
         {
-          value: 'public-sector',
-          label: 'Public Sector',
-          content: {
-            eyebrow: 'public-sector',
-            title: 'Public Sector',
-            description:
-              'Deliver self-service citizen portals, protect sensitive data, and modernize legacy systems to cut wait times, ease workloads, and build lasting public trust.',
-            action: { label: 'Public Sector Solutions', href: '#' },
-            media: { src: publicSectorMedia, alt: 'A portal at the centre of create, find, share, trust and improve' },
-            stats: [
-              { value: '200', suffix: '+', label: 'Integrated applications', sentiment: 'positive' },
-              { value: '25,000', label: 'Intranet users per day', sentiment: 'positive' },
-              { value: '256K', label: 'Page views / month', sentiment: 'positive' },
-            ],
-          },
+          image: { src: permitApplication, alt: 'A man reading his phone beside a permit application form' },
+          icon: 'government',
+          title: 'Public Sector',
+          description:
+            'Deliver self-service citizen portals, protect sensitive data, and modernize legacy systems to cut wait times, ease workloads, and build lasting public trust.',
+          links: [
+            { label: 'Public Sector Solutions', href: '#' },
+            { label: 'Digital transformation in the Public Sector', href: '#' },
+          ],
+          stats: [
+            { value: '200', suffix: '+', label: 'Integrated applications' },
+            { value: '25,000', label: 'Intranet users per day' },
+            { value: '256K', label: 'Page views / month' },
+          ],
         },
         {
-          value: 'energy-utilities',
-          label: 'Energy & Utilities',
-          content: {
-            eyebrow: 'energy-and-utilities',
-            title: 'Energy & Utilities',
-            description:
-              'Empower customers with self-service tools, unify data across systems, and streamline your digital workplace to boost satisfaction and lower costs to serve.',
-            action: { label: 'Energy & Utilities Solutions', href: '#' },
-            media: { src: energyMedia, alt: 'Two colleagues at a tablet, a validated workflow beside them' },
-            stats: [
-              { value: '1.7M', label: 'Customers served', sentiment: 'positive' },
-              { value: '50', prefix: '+', suffix: '%', label: 'In online payments', sentiment: 'positive' },
-              { value: '750', prefix: '+', suffix: '%', label: 'Processed requests / month', sentiment: 'positive' },
-            ],
-          },
+          image: { src: workflowStill, alt: 'Two colleagues at a tablet, a validated workflow beside them' },
+          icon: 'energy-and-supply',
+          title: 'Energy & Utilities',
+          description:
+            'Empower customers with self-service tools, unify data across systems, and streamline your digital workplace to boost satisfaction and lower costs to serve.',
+          links: [
+            { label: 'Energy & Utilities Solutions', href: '#' },
+            { label: 'Digital transformation in Energy & Utilities', href: '#' },
+          ],
+          stats: [
+            { value: '1.7M', label: 'Customers served' },
+            { value: '50', prefix: '+', suffix: '%', label: 'In online payments' },
+            { value: '750', prefix: '+', suffix: '%', label: 'Processed requests / month' },
+          ],
         },
         {
-          value: 'healthcare',
-          label: 'Healthcare',
-          content: {
-            eyebrow: 'healthcare',
-            title: 'Healthcare',
-            description:
-              'Deliver secure, personalized patient and provider self-service portals, integrate legacy systems, and simplify compliance to improve health outcomes and care.',
-            action: { label: 'Healthcare Solutions', href: '#' },
-            media: { src: healthcareMedia, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' },
-            stats: [
-              { value: '10', suffix: 'x', label: 'Faster go-to-market', sentiment: 'positive' },
-              { value: '8', label: 'Month implementation' },
-              { value: '0', label: 'Migration downtime', sentiment: 'positive' },
-            ],
-          },
+          image: { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' },
+          icon: 'healthcare-2',
+          title: 'Healthcare',
+          description:
+            'Deliver secure, personalized patient and provider self-service portals, integrate legacy systems, and simplify compliance to improve health outcomes and care.',
+          links: [
+            { label: 'Healthcare Solutions', href: '#' },
+            { label: 'Digital transformation in Healthcare', href: '#' },
+          ],
+          stats: [
+            { value: '10', suffix: 'x', label: 'Faster go-to-market' },
+            { value: '8', label: 'Month implementation' },
+            { value: '0', label: 'Migration downtime' },
+          ],
+        },
+        {
+          image: { src: webPortals, alt: 'A portal at the centre of create, find, share, trust and improve' },
+          icon: 'industries-integration',
+          title: 'All Industries',
+          description:
+            'Explore flexible digital solutions built for financial services, manufacturing, public sector, healthcare, energy, education, insurance, and far beyond.',
+          links: [{ label: 'Browse all industries', href: '#' }],
         },
       ],
     },
@@ -215,8 +264,12 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'customerStories',
       title: '1,200+ Enterprises Move the Needle With Liferay',
       titleHighlight: '1,200+ Enterprises',
+      align: 'left',
+      surface: 'glass',
+      action: { label: 'Browse all customer stories', href: '#' },
       stories: [
         {
+          /* `Sky TV` and `City of Vienna` are the keys the library's logo tiles are filed under. */
           customer: 'Sky TV',
           value: '140',
           suffix: '%',
@@ -234,7 +287,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
           quote:
             'Liferay’s out-of-the-box features mean we can offer state-of-the-art communication trends and methods, quickly and conveniently.',
           name: 'Nikolaus Reisel',
-          role: 'GBS Group Leader: Basic Systems and platforms',
+          role: 'GBS Group Leader: Basic Systems and Platforms',
         },
         {
           customer: 'Broadcom',
@@ -261,7 +314,8 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'capabilityMap',
       anchor: 'platform',
       title: 'Every solution runs on one AI-enhanced platform',
-      titleHighlight: 'one AI-enhanced platform',
+      description:
+        'The same capabilities that power your portal also power your website, storefront, and intranet. Explore the building blocks behind every Liferay solution.',
       hub: { icon: 'dxp', label: 'DXP' },
       clusters: [
         {
@@ -305,30 +359,50 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       ],
     },
     {
+      /* The frame's `Ready for the future?` panel, on the footer's drifting mesh, holding the mockup's ask. */
       type: 'closingCta',
+      surface: 'card',
+      backdrop: 'mesh',
       title: 'See the solution you need, built on the platform you’ll keep',
-      titleHighlight: 'the platform you’ll keep',
       description:
         'Talk to a Liferay specialist about your portal, website, commerce, or intranet goals and get a tailored walkthrough with your use case in mind.',
       placeholder: 'Work email',
       submit: 'Contact Sales',
-      links: [{ label: 'Book a custom demo', href: '#' }],
-      aside: { label: 'Not ready yet? Get monthly DXP insights in your inbox', href: '#' },
+      buttons: [{ label: 'Book a custom demo', href: '#' }],
+      asideLead: 'Not ready yet?',
+      aside: { label: 'Get monthly DXP insights in your inbox', href: '#' },
     },
     {
       type: 'resourceGrid',
       title: 'Plan your next solution',
       description:
         'Free guides and checklists to help you scope requirements, compare architectures, and build the business case. No forms required.',
+      card: 'resource',
       cards: [
-        { tag: 'Guide', title: 'Web portals explained: types, features, and how to choose a platform', href: '#' },
-        { tag: 'Article', title: 'DXP vs. CMS vs. portal: which architecture fits your roadmap?', href: '#' },
-        { tag: 'Checklist', title: 'The B2B commerce requirements checklist for manufacturers', href: '#' },
+        {
+          image: { src: webPortals, alt: '' },
+          tag: 'Guide',
+          title: 'Web portals explained: types, features, and how to choose a platform',
+          href: '#',
+        },
+        {
+          image: { src: digitalStrategy, alt: '' },
+          tag: 'Article',
+          title: 'DXP vs. CMS vs. portal: which architecture fits your roadmap?',
+          href: '#',
+        },
+        {
+          image: { src: b2bEcommerce, alt: '' },
+          tag: 'Checklist',
+          title: 'The B2B commerce requirements checklist for manufacturers',
+          href: '#',
+        },
       ],
     },
     {
       type: 'faq',
       anchor: 'faq',
+      layout: 'side',
       title: 'Frequently asked questions',
       takeaways: [
         'Liferay DXP powers portals, websites, commerce, and intranets on one platform.',

@@ -43,6 +43,27 @@ export type IconName =
   | 'pig-money'
   | 'tag'
   | 'barbell'
+  /* The Solutions hub's value props: a code file, the AI sparkle and a checklist. */
+  | 'file-code'
+  | 'sparkles'
+  | 'list-check'
+  /* Partner Home's `Why Partner` rows. */
+  | 'world'
+  | 'office-building'
+  | 'settings'
+  | 'safety-certificate'
+  | 'rocket'
+  /* Solution Partner's `Why Partner` rows. */
+  | 'heart-hand'
+  | 'briefcase'
+  | 'headphone'
+  | 'trophy'
+  /* Technology Partner's `Why Partner` rows and partnership-model tabs. */
+  | 'refund-dollar'
+  | 'scale'
+  | 'plugin'
+  | 'share-forward'
+  | 'git-compare'
 
 export interface ImageRef {
   /**
@@ -359,11 +380,35 @@ export type GlassIconName =
   | 'public-sector'
   | 'energy-and-utilities'
   | 'healthcare'
+  /*
+   * The Solutions Library's `Common Cards` (Portal and Industry types) lead with the Marketing Assets
+   * library's icons — `Solutions / Partner Portals 2`, `Industries / Government` — which the curated
+   * set does not draw. Named for the library file they come from.
+   */
+  | 'partner-portals-2'
+  | 'supplier-portals-3'
+  | 'financial-services-2'
+  | 'manufacturing-2'
+  | 'government'
+  | 'energy-and-supply'
+  | 'healthcare-2'
+  | 'industries-integration'
+  /* Partner Home's program and ecosystem cards — the library's own drawings of these three. */
+  | 'module-integration'
+  | 'general-personalization'
+  | 'partners'
+  /* OEM Partner's — the library's `General / ai`, and the frame's own person-and-cubes mark. */
+  | 'general-ai'
+  | 'user-cubes'
 
 export interface CardSpec {
   title: string
   description?: string
-  /** The three decorations a card can lead with. A card uses at most one. */
+  /**
+   * The decorations a card can lead with. `icon` and `tag` are alternatives; `image` can sit over an
+   * `icon`, as the Solutions Library's `Common Cards` `Type=Industry` draws: the picture inset in the
+   * card, then the glass icon over the title.
+   */
   image?: ImageRef
   icon?: GlassIconName
   tag?: string
@@ -380,6 +425,25 @@ export interface CardSpec {
   action?: LinkRef
   /** A figure at the card's foot, under a rule — the catalog's `845 Months to Launch`. */
   stat?: StatSpec
+  /**
+   * A checked list under the description — `Common Cards` `Type=Portal`: what the solution does, a
+   * claim per line. Strings rather than `KeyPoints`' titled points, because the card draws one line each.
+   */
+  points?: string[]
+  /** Arrow links under the description, stacked — `Type=Industry`'s two ways on. */
+  links?: LinkRef[]
+  /**
+   * Who said it, under a quote set as the `description` — `Steven LaGow, Partner Director`: the name in
+   * semibold, then the role. Partner Pages' ecosystem cards (node `217:27595`) give a quote card no title.
+   */
+  attribution?: { name: string; role?: string }
+  /** One arrow link at the card's foot, pushed to the bottom so a row of cards lines them up. */
+  cta?: LinkRef
+  /**
+   * A row of figures at the card's foot, ruled apart — `Type=Industry`'s three. `stat` is the single
+   * figure under a rule; this is the row.
+   */
+  stats?: StatSpec[]
 }
 
 /** A figure and its unit — `140` + `%`, `+` + `100M`. */
@@ -471,6 +535,11 @@ export interface PanelSpec {
   media?: ImageRef
   /** A stat row under the media, inside the same column. */
   stats?: StatSpec[]
+  /**
+   * A labelled line under the description — `What we look for in a partner:` and its answer, the label in
+   * accent small caps. Technology Partner's partnership models (node `272:35811`).
+   */
+  note?: { label: string; text: string }
   /** A customer's proof under the points — `140% increase in customer self-service · Sky`, and its story. */
   proof?: { customer: string; value: string; label: string; href?: string; linkLabel?: string }
 }
@@ -493,6 +562,10 @@ type SectionBody =
   | {
       type: 'cardGrid'
       title: string
+      /** The phrase inside `title` that carries the brand gradient — see `customerStories`. */
+      titleHighlight?: string
+      /** `center` for a grid that introduces a set rather than continuing the page's argument. @default 'left' */
+      align?: 'left' | 'center'
       description?: string
       /**
        * How many across at desktop.
@@ -506,6 +579,11 @@ type SectionBody =
        * @default 4
        */
       columns?: 2 | 3 | 4
+      /**
+       * `glass` gives every card the glass surface even when it is not a link — Partner Pages' feature
+       * cards, which are panels drawn in glass. Without it a card is glass only when it goes somewhere.
+       */
+      surface?: 'glass'
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
@@ -583,6 +661,14 @@ type SectionBody =
       align?: 'left' | 'center'
       /** `glass` is the catalog's card; the Home carousel's is the flat `static` one. @default 'static' */
       surface?: 'glass' | 'static'
+      /** The outline button on the heading's trailing edge — `Browse All Customer Stories`. */
+      action?: LinkRef
+      /**
+       * `carousel` bleeds off both edges behind arrows. `grid` is Partner Home's (node `212:26649`): the
+       * cards side by side across the content width, at most three, no arrows — for a set small enough to
+       * read at once. @default 'carousel'
+       */
+      layout?: 'carousel' | 'grid'
       stories: StorySpec[]
     }
   /**
@@ -626,6 +712,8 @@ type SectionBody =
       description?: string
       points?: { title: string; description?: string }[]
       action?: LinkRef
+      /** A line over the `action` link — `Looking for individual features instead?`. */
+      actionLead?: string
       /**
        * A button row instead of the link — `Find a Partner` and `Become a Partner` on the catalog's
        * partner band. The same shape as the hero's, Medium as drawn.
@@ -649,6 +737,12 @@ type SectionBody =
       description?: string
       /** `Key takeaways` — the claims the questions add up to, checked, over the accordion. */
       takeaways?: string[]
+      /**
+       * `stacked` is the centred 780 column, the takeaways over the questions. `side` is the Solutions
+       * Library's (node `25092:75670`): the heading on the content edge, the questions 900 wide and the
+       * takeaways in a 320 column beside them, top-aligned. @default 'stacked'
+       */
+      layout?: 'stacked' | 'side'
       items: { question: string; answer: string }[]
       /** The sources for the page's figures, small, under the accordion. */
       footnotes?: string[]
@@ -663,7 +757,11 @@ type SectionBody =
       title: string
       titleHighlight?: string
       description?: string
-      quotes: { quote: string; name: string; role?: string; link?: LinkRef }[]
+      /**
+       * `logo` is the partner's mark, opposite the quote mark at the card's head — Partner Pages' OEM quote
+       * cards (node `212:27313`). Drawn at most 48 tall, right-aligned.
+       */
+      quotes: { quote: string; name: string; role?: string; link?: LinkRef; logo?: ImageRef }[]
     }
   /**
    * `Partner Levels Designed for Growth` — the tiers as cards, then the program overview: a table per
@@ -676,7 +774,19 @@ type SectionBody =
       title: string
       titleHighlight?: string
       description?: string
-      tiers: { name: string; description: string }[]
+      /**
+       * Each tier's card. `points` is the score the tier starts at (`5-6`, `10+`), `certified` the
+       * certified headcount it needs, and `fee` its annual fee — Partner Pages' tier cards (node
+       * `255:17286`), which carry the requirements so the table below can be all benefits.
+       */
+      tiers: { name: string; description: string; points?: string; certified?: string; fee?: string }[]
+      /** The fine print under the tier cards — how the points are earned. */
+      tiersNote?: string
+      /**
+       * Folds the table away behind a toggle with this label — `Compare every benefit and requirement`.
+       * Open to start. Without it the table is always shown.
+       */
+      compareLabel?: string
       overviewTitle?: string
       tables: {
         label: string
@@ -713,7 +823,12 @@ type SectionBody =
       subtitle?: string
       steps: { title: string; body: string }[]
       form: NonNullable<HeroSpec['formCard']>
-      backdrop?: 'mesh'
+      /**
+       * `mesh` lays the footer's drifting colour field behind the band. `glow` is Partner Pages' OEM
+       * `Path to Partnership` (node `245:11603`): a still corner of brand purple into blue, from the top
+       * right, fading into the page.
+       */
+      backdrop?: 'mesh' | 'glow'
     }
   /**
    * `Built on Liferay` — a gallery that scrolls sideways, led by large screenshots of real customer
@@ -792,7 +907,18 @@ type SectionBody =
       placeholder: string
       submit: string
       links?: LinkRef[]
+      /** Outline buttons under the field, instead of or beside the links — `Book a Custom Demo`. */
+      buttons?: LinkRef[]
       aside?: LinkRef
+      /** Plain text before the `aside` link, on the same line — `Not ready yet?`. */
+      asideLead?: string
+      /**
+       * `card` puts the band in a rounded panel inset by the page gutter — the Solutions Library's
+       * `Ready for the future?` (node `25092:74309`) — rather than straight on the page. @default 'none'
+       */
+      surface?: 'none' | 'card'
+      /** `mesh` fills the panel with the footer's drifting colour field. Meant for `surface: 'card'`. */
+      backdrop?: 'mesh'
       /**
        * The fine print under the field — a newsletter's consent line, as `Page Action Section` draws it
        * (node `25037:46647`): `Paragraph/XX-Small` 11/16, 8px under the field. `link` follows `text`.
@@ -821,6 +947,12 @@ type SectionBody =
       body: string
       icon?: GlassIconName
       /**
+       * `glass` is Partner Pages' `Still Evaluating?` bar (node `205:12359`): a glass card, the icon at 64
+       * leading, the heading and line beside it, and an outline button on the trailing edge. Without it the
+       * card stacks on the brand gradient. @default 'gradient'
+       */
+      surface?: 'gradient' | 'glass'
+      /**
        * One way on from the paragraph. `button` when it is the thing the card asks for — Learn's
        * sign-in prompt — and `link` when it is somewhere to read more, which is the default.
        */
@@ -835,6 +967,12 @@ type SectionBody =
       /** A centred heading over the figures — Partner Home's `Join a Growing Global Ecosystem`. */
       title?: string
       description?: string
+      /**
+       * `lg` is Partner Home's (node `148:32227`): 64px figures, each over a sentence of plain 18px text
+       * rather than a small-caps label — for figures that need a line to say what they count.
+       * @default 'md'
+       */
+      size?: 'md' | 'lg'
       stats: StatSpec[]
     }
   /**
@@ -957,6 +1095,12 @@ type SectionBody =
        * sanctions, so it belongs in the data — unlike a gap, which does not. @default 'right'
        */
       mediaSide?: 'left' | 'right'
+      /**
+       * `columns` lays the tabs side by side instead of behind a pill bar: each tab's label as a heading
+       * over its accordion, no media — Solution Partner's two partner tracks (node `205:11785`), which a
+       * reader compares rather than chooses between. @default 'tabs'
+       */
+      layout?: 'tabs' | 'columns'
       /** With a single tab there is nothing to switch, so the pill bar is left out. */
       tabs: TabGroup<PanelSpec>[]
     }
@@ -1007,6 +1151,8 @@ type SectionBody =
       title: string
   /** The phrase inside `title` that carries the brand gradient — see `customerStories`. */
   titleHighlight?: string
+      /** The line under the heading, centred with it. */
+      description?: string
       hub: { icon: GlassIconName; label: string; href?: string }
       clusters: {
         label: string

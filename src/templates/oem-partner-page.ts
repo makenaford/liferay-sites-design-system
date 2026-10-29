@@ -1,36 +1,41 @@
-import aiHubFilm from '../../assets/solutions/ai-hub.webm'
-import aiHubStill from '../../assets/solutions/ai-hub-poster.jpg'
+import heroPhoto from '../../assets/oem-partner/hero.jpg'
+import vaiLogo from '../../assets/oem-partner/vai-logo.png'
+import placecubeLogo from '../../assets/oem-partner/placecube.svg'
+import agentBuilder from '../../assets/industry/hero-media.jpg'
 import type { PageSpec } from './page-schema'
 
 /*
- * The OEM partner page, as data — `Partner Pages` -> `OEM Partner` (node `87:20818`).
+ * The OEM partner page, as data — `Partner Pages` -> `OEM` (node `148:27740`).
  *
  * The case for building on Liferay rather than from scratch, then who it suits, then the application.
  * `Become an OEM Partner` in the hero jumps to the form at the foot of the page, where the steps after
- * applying sit beside it on the footer's drifting mesh.
+ * applying sit beside it on a still corner glow.
  *
- * The photographs are the AI Hub film and a still from it, standing in for the frame's own; the answers
- * the file leaves closed — four of the five `Why Partner` rows and two of the three FAQs — are drafts.
+ * The hero photograph and the partners' logos are the frame's own; the agent-builder photograph is the
+ * library's `industry/hero-media.jpg`, the same picture. The answers the file leaves closed — four of
+ * the five `Why Partner` rows and two of the three FAQs — are drafts.
  */
 
-const STILL = { src: aiHubStill, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
+const STILL = { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
 
 export const OEM_PARTNER_PAGE: PageSpec = {
   hero: {
     background: 'corner',
     title: { text: 'Scale Faster with an', highlight: 'Enterprise-Grade DXP' },
     description: {
-      text: 'No more building from scratch. Partner with Liferay and build on a leading and trusted DXP platform that brings your product visions to market faster',
+      text: 'No more building from scratch. Extend your software with enterprise-grade digital experiences and bring your product visions to market faster.',
     },
     buttons: [{ label: 'Become an OEM Partner', href: '#apply' }],
-    media: { src: aiHubFilm, poster: aiHubStill, alt: STILL.alt, ratio: '3:2' },
+    media: { src: heroPhoto, alt: 'Two colleagues talking across a laptop at a meeting table', ratio: '3:2' },
   },
   sections: [
     {
       type: 'cardGrid',
       title: 'Everything You Need to Move Faster',
       description:
-        'Liferay DXP combines enterprise-grade security, seamless integration, and flexible capabilities to help you bring your product visions within a modern digital experience to market faster.',
+        'Liferay DXP combines security, integration, and flexible capabilities to help you create modern digital experiences around your products.',
+      align: 'center',
+      surface: 'glass',
       cards: [
         {
           icon: 'security',
@@ -39,19 +44,19 @@ export const OEM_PARTNER_PAGE: PageSpec = {
             'Deliver secure digital experiences with built-in identity management, role-based access, auditing, and compliance capabilities designed for complex enterprise and regulated environments.',
         },
         {
-          icon: 'integration',
+          icon: 'module-integration',
           title: 'Seamless Integration',
           description:
             'Connect with existing systems and technologies through a headless, API-first architecture, REST and GraphQL APIs, and flexible integration capabilities.',
         },
         {
-          icon: 'low-code',
+          icon: 'general-personalization',
           title: 'Built for Flexibility',
           description:
             'Customize and extend the platform to fit your product with modular architecture, low-code tools, custom theming, and composable capabilities.',
         },
         {
-          icon: 'ai-hub',
+          icon: 'general-ai',
           title: 'Modern, AI-Powered Experiences',
           description:
             'Personalization, self-service, omnichannel experiences, and AI capabilities to deliver modern digital experiences from day one.',
@@ -78,7 +83,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
                 question: 'Focus on Your Core Product',
                 icon: 'direction-arrow',
                 answer:
-                  'Go beyond your core software to deliver more value, reach new opportunities, and bring modern digital experiences to market faster.',
+                  'Keep your engineering resources focused on what makes your software unique while Liferay provides the digital experience layer.',
               },
               {
                 question: 'Accelerate Time to Market',
@@ -118,54 +123,71 @@ export const OEM_PARTNER_PAGE: PageSpec = {
 
     {
       type: 'quotes',
-      title: 'What Partners Are Saying',
-      description: 'Discover the people, expertise, and solutions driving success across the Liferay partner ecosystem.',
+      title: 'Join the Liferay Global Partner Ecosystem',
+      description:
+        'Connect with a community of partners, developers, and enterprise teams building what’s next with Liferay.',
       quotes: [
         {
+          logo: { src: vaiLogo, alt: 'VAI' },
           quote:
             '“It’s taking about half the number of man-hours to get a Liferay system up and running compared to our previous software. Support tickets for Liferay almost go to zero because customers are just doing everything themselves.”',
           name: 'Ralph Sosebee',
-          role: 'Chief Executive Officer, Placecube',
+          role: 'Director of Ecommerce, VAI',
           link: { label: 'Read the Story', href: '#' },
         },
         {
+          logo: { src: placecubeLogo, alt: 'Placecube' },
           quote:
-            '“Liferay’s commitment to openness, interoperability, and long-term digital sustainability complements Placecube’s mission to give customers choice and control over their digital futures. The Liferay team has been supportive as we collaboratively and consistently focus on delivering real-world outcomes.”',
+            '“Liferay’s commitment to openness, interoperability, and long-term digital sustainability complements Placecube’s mission to give customers choice and control over their digital futures. Our partnership continues to evolve as we explore new capabilities and markets.”',
           name: 'Jason Fahy',
-          role: 'VP of Experience and Change Management',
+          role: 'Chief Executive Officer, Placecube',
           link: { label: 'Read the Story', href: '#' },
         },
       ],
     },
 
     {
-      type: 'contentBlock',
+      /*
+       * The heading over both columns, as the frame draws it, so a one-tab `tabbedContent`: the checked
+       * points on the left, the photograph on the right, no pill bar and no panel heading.
+       */
+      type: 'tabbedContent',
       title: 'Is Liferay the Right Partner to Grow Your Business?',
       titleHighlight: 'Grow Your Business?',
       description: 'See if an OEM partnership is right for your business.',
-      points: [
+      tabs: [
         {
-          title: 'Established Software Products',
-          description:
-            'Established Independent Software Vendors (ISVs) or niche market leaders with proven software solutions and existing customers.',
-        },
-        {
-          title: 'Ready to Modernize',
-          description:
-            'Companies looking to enhance their software with modern, AI-powered, self-service, and on-brand digital experiences.',
-        },
-        {
-          title: 'Industry & Market Expertise',
-          description:
-            'A strong presence in industries where customers increasingly expect modern, secure, and self-service digital experiences — including but not limited to financial services, government, healthcare, insurance, and manufacturing.',
-        },
-        {
-          title: 'A Unique Product Vision',
-          description:
-            'Teams that want to keep engineering focused on their core technology while using a flexible digital experience platform to extend and differentiate their offering.',
+          value: 'fit',
+          label: 'Right partner',
+          content: {
+            title: '',
+            description: '',
+            points: [
+              {
+                title: 'Established Software Products',
+                description:
+                  'Established Independent Software Vendors (ISVs) or niche market leaders with proven software solutions and existing customers.',
+              },
+              {
+                title: 'Ready to Modernize',
+                description:
+                  'Companies looking to enhance their software with modern, AI-powered, self-service, and on-brand digital experiences.',
+              },
+              {
+                title: 'Industry & Market Expertise',
+                description:
+                  'A strong presence in industries where customers increasingly expect modern, secure, and self-service digital experiences — including but not limited to financial services, government, healthcare, insurance, and manufacturing.',
+              },
+              {
+                title: 'A Unique Product Vision',
+                description:
+                  'Teams that want to keep engineering focused on their core technology while using a flexible digital experience platform to extend and differentiate their offering.',
+              },
+            ],
+            media: STILL,
+          },
         },
       ],
-      media: STILL,
     },
 
     {
@@ -175,7 +197,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
         {
           question: 'How are OEM fees, pricing and commercial terms structured?',
           answer:
-            'The Liferay OEM program is governed by a revenue-sharing model with terms negotiated on a case-by-case basis. Due to the high-volume sales capability of our partners, the financial scope of these agreements frequently surpasses that of standard enterprise license costs.',
+            'The Liferay OEM program is governed by a revenue-sharing model tailored to partner sales volume and integration scope. Fees are normally negotiated individually, and, in most cases, will consist of two parts: OEM Annual Fee and OEM Subscription. As partners scale their sales volume, total contract often surpasses standard enterprise license costs.',
         },
         {
           question: 'Can Liferay DXP be fully white-labeled?',
@@ -193,13 +215,13 @@ export const OEM_PARTNER_PAGE: PageSpec = {
     {
       type: 'stepsForm',
       anchor: 'apply',
-      backdrop: 'mesh',
+      backdrop: 'glow',
       title: 'Path to Partnership',
       subtitle: 'What Happens Next?',
       steps: [
         {
           title: 'Meet with Liferay',
-          body: 'After submitting your application, a Liferay team member will reach out within 5 business days to schedule a meeting and learn more about your business and solution.',
+          body: 'After submitting your application, a Liferay Sales team member will reach out to schedule a meeting and discuss the use case, customer opportunities, and value for both sides.',
         },
         {
           title: 'Discuss the Opportunity',
@@ -212,7 +234,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
       ],
       form: {
         title: 'Become an OEM Partner',
-        description: 'Fill out the form below to initiate your application',
+        description: 'Fill out the form below to initiate your application.',
         rows: [
           [
             { label: 'First Name', required: true },
@@ -237,22 +259,13 @@ export const OEM_PARTNER_PAGE: PageSpec = {
     },
 
     {
+      /* Title-only cards, as the frame draws both rows; the icons are the frame's too. */
       type: 'cardGrid',
       title: 'Discover the Liferay Ecosystem',
       columns: 2,
       cards: [
-        {
-          icon: 'partner-portals',
-          title: 'Partner Directory',
-          description: 'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',
-          href: '#',
-        },
-        {
-          icon: 'commerce',
-          title: 'Liferay Marketplace',
-          description: 'Discover apps, integrations, and solutions that extend Liferay DXP.',
-          href: '#',
-        },
+        { icon: 'dam', title: 'Partner Directory', href: '#' },
+        { icon: 'dam', title: 'Liferay Marketplace', href: '#' },
       ],
     },
 
@@ -261,20 +274,8 @@ export const OEM_PARTNER_PAGE: PageSpec = {
       title: 'Other Ways to Partner with Liferay',
       columns: 2,
       cards: [
-        {
-          icon: 'integration',
-          title: 'Technology Partner',
-          description:
-            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
-          href: '#',
-        },
-        {
-          icon: 'enterprise-websites',
-          title: 'Solution Partner',
-          description:
-            'Turn every Liferay deal into a 5x services opportunity: Deliver digital transformation solutions and build a strong services business around DXP.',
-          href: '#',
-        },
+        { icon: 'user-cubes', title: 'Technology Partner', href: '#' },
+        { icon: 'user-cubes', title: 'Solution Partner', href: '#' },
       ],
     },
 

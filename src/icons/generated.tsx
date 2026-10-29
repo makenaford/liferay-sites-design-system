@@ -234,6 +234,23 @@ export function IconBuilding2(props: IconProps) {
   )
 }
 
+/** MingCute `building_5` (regular, buildings). */
+export function IconBuilding5(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 20h18M8 20V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v15m0-10h3a1 1 0 0 1 1 1v9M8 8H5a1 1 0 0 0-1 1v11m7.5-12h1m-1 4h1m-1 4h1"/>
+    </svg>
+  )
+}
+
 /** MingCute `bulb` (regular, devices). */
 export function IconBulb(props: IconProps) {
   return (
@@ -557,6 +574,23 @@ export function IconFactory(props: IconProps) {
   )
 }
 
+/** MingCute `file_code` (regular, files). */
+export function IconFileCode(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 3v5.5a.5.5 0 0 0 .5.5H19m-8.5 3.88L8.379 15l2.121 2.121m3-4.242L15.621 15 13.5 17.122M13.586 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.414a1 1 0 0 0-.293-.707l-4.414-4.414A1 1 0 0 0 13.586 3"/>
+    </svg>
+  )
+}
+
 /** MingCute `file_search` (regular, files). */
 export function IconFileSearch(props: IconProps) {
   return (
@@ -587,6 +621,23 @@ export function IconFolder2(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeWidth="2" d="M3 10h18M9.52 4H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7.5a1 1 0 0 0-1-1h-7.52a1 1 0 0 1-.78-.375l-1.4-1.75A1 1 0 0 0 9.52 4Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `git_compare` (regular, development). */
+export function IconGitCompare(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M11.207 15.172a1 1 0 1 0-1.414 1.414l.707-.707zM12.621 18l.707.707a1 1 0 0 0 0-1.414zm-2.828 1.414a1 1 0 0 0 1.414 1.415l-.707-.707zm3-10.585a1 1 0 1 0 1.414-1.415l-.707.707zM11.379 6l-.707-.707a1 1 0 0 0 0 1.414zm2.828-1.414a1 1 0 1 0-1.414-1.414l.707.707zM8 6H7a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3zM6 8V7a1 1 0 0 1-1-1H3a3 3 0 0 0 3 3zM4 6h1a1 1 0 0 1 1-1V3a3 3 0 0 0-3 3zm2-2v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3zm0 12h1V8H5v8zm2 2v1h4v-2H8zm2.5-2.121-.707.707 2.121 2.121.707-.707.707-.707-2.12-2.121zM12.621 18l-.707-.707-2.121 2.121.707.707.707.708 2.121-2.122zM16 18h1a1 1 0 0 1 1-1v-2a3 3 0 0 0-3 3zm2-2v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3zm2 2h-1a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3zm-2 2v-1a1 1 0 0 1-1-1h-2a3 3 0 0 0 3 3zm0-12h-1v8h2V8zm-2-2V5h-4v2h4zm-2.5 2.121.707-.707-2.121-2.12-.707.706-.707.707 2.12 2.122zm-2.121-2.12.707.706 2.121-2.121-.707-.707-.707-.707-2.121 2.121zM18 8h1a3 3 0 0 0-3-3v2a1 1 0 0 1 1 1zM6 16H5a3 3 0 0 0 3 3v-2a1 1 0 0 1-1-1z"/>
     </svg>
   )
 }
@@ -655,6 +706,40 @@ export function IconGroup3(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M4.135 14.1C2.9 14.39 2 15.25 2 15.93c0 .501.493.789 1.25.937M19.865 14.1C21.1 14.39 22 15.25 22 15.93c0 .501-.493.789-1.25.937M20 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-13 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm11 7.357C18 18.514 15.314 19 12 19s-6-.486-6-2.143S8.686 13 12 13s6 2.2 6 3.857ZM15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `headphone_2` (regular, media). */
+export function IconHeadphone2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M18 14v-3a6 6 0 0 0-12 0v3m12 0v4.25c0 .414.336.75.75.75A2.25 2.25 0 0 0 21 16.75v-.25a2.5 2.5 0 0 0-2.5-2.5zM6 14v4.25a.75.75 0 0 1-.75.75A2.25 2.25 0 0 1 3 16.75v-.25A2.5 2.5 0 0 1 5.5 14z"/>
+    </svg>
+  )
+}
+
+/** MingCute `heart_hand` (regular, body). */
+export function IconHeartHand(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="m3.002 10.37 1-.022zm8.866-4.802-.71.704zm9.13 4.803 1 .022zm-8.866-4.803.71.704zm-1.94 13.603.51-.86zm3.617 0-.511-.86zM12.715 6.417A1 1 0 1 0 11.3 5.003l.708.707zm8.402 6.87a1 1 0 1 0-1.235-1.574l.618.787zm-4.955-1.048.707-.707zm-2.5-1.293-.708-.707zm1.207 0 .707-.707zM8.49 9.229l-.708-.707zM3 10.371l1-.023c-.047-2.19 1.07-3.977 2.514-4.818 1.394-.812 3.136-.783 4.644.743l.711-.704.711-.703c-2.178-2.203-4.927-2.314-7.073-1.064-2.095 1.221-3.569 3.7-3.504 6.592zm17.997 0 1 .022c.065-2.892-1.409-5.37-3.504-6.592-2.146-1.25-4.895-1.139-7.073 1.064l.71.703.712.704c1.508-1.526 3.25-1.555 4.644-.743 1.444.842 2.56 2.628 2.511 4.82zM12 20v-1c.05 0 .039.01-.061-.026a3 3 0 0 1-.346-.153c-.287-.146-.59-.33-.891-.51l-.51.86-.511.86c.267.159.644.389 1.007.573.183.093.385.186.588.258.193.067.449.138.724.138zm-1.809-.829.511-.86c-4.66-2.768-6.644-5.45-6.7-7.963l-1 .023-1 .022c.081 3.61 2.89 6.794 7.679 9.638zM12 20v1c.275 0 .531-.071.723-.138.204-.072.406-.165.59-.258.362-.184.739-.414 1.006-.573l-.51-.86-.511-.86c-.302.18-.604.364-.891.51a3 3 0 0 1-.346.153c-.1.036-.111.026-.061.026zm1.809-.829.51.86c4.788-2.844 7.598-6.029 7.679-9.638l-1-.022-1-.023c-.056 2.512-2.04 5.195-6.7 7.963zm-1.94-13.603-.712.704a1.19 1.19 0 0 0 1.686 0l-.711-.704-.711-.703a.81.81 0 0 1 1.158 0zm.139.142-.707-.707-3.518 3.52.708.706.707.707 3.517-3.52zm.788 6.102.707.707.865-.866-.707-.707-.707-.707-.865.865zm2.073-.866-.707.707 1.293 1.294.707-.708.707-.707-1.293-1.293zm1.293 1.293-.707.708a4.275 4.275 0 0 0 5.662.34L20.5 12.5l-.617-.787c-.906.711-2.2.633-3.014-.18zm-2.5-1.293.706.707a.146.146 0 0 1-.207 0l.708-.707.707-.707a1.854 1.854 0 0 0-2.622 0zm-5.171.866-.707.707a4.044 4.044 0 0 0 5.719 0l-.707-.707-.707-.708a2.044 2.044 0 0 1-2.89 0zm0-2.583-.708-.707a2.826 2.826 0 0 0 0 3.997l.708-.707.707-.708a.826.826 0 0 1 0-1.168z"/>
     </svg>
   )
 }
@@ -740,6 +825,23 @@ export function IconLinkedin(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 8h.002M8 11v5m3-6v2m0 0v4m0-4c0-.5.917-1.783 2-2 1.38-.276 3 .5 3 2v4M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/>
+    </svg>
+  )
+}
+
+/** MingCute `list_check` (regular, editing). */
+export function IconListCheck(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M5 5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 7a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 7a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/><path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M9 5h11M9 12h11M9 19h11M5 5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Zm0 7a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Zm0 7a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z"/>
     </svg>
   )
 }
@@ -897,6 +999,23 @@ export function IconPlay(props: IconProps) {
   )
 }
 
+/** MingCute `plugin` (regular, devices). */
+export function IconPlugin(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M9 3v4m6-4v4M9 21h6m-5-3h4a5 5 0 0 0 5-5V8a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v5a5 5 0 0 0 5 5Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `plugin_2` (regular, devices). */
 export function IconPlugin2(props: IconProps) {
   return (
@@ -965,6 +1084,23 @@ export function IconRefresh2(props: IconProps) {
   )
 }
 
+/** MingCute `refund_dollar` (regular, business). */
+export function IconRefundDollar(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.04 16.203a9 9 0 0 0 10.29 4.49 9 9 0 1 0-11.332-8.58l3.266-2.2-2.224.497M9 15h5a1.5 1.5 0 0 0 0-3h-4a1.5 1.5 0 0 1 0-3h5m-3 0V7m0 8v2"/>
+    </svg>
+  )
+}
+
 /** MingCute `right` (regular, arrow). */
 export function IconRight(props: IconProps) {
   return (
@@ -995,6 +1131,40 @@ export function IconRocket(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 14.829c-1.181-1.18-3.779-1.945-5.14-2.28a.733.733 0 0 1-.499-1.006l.873-1.904a1 1 0 0 1 1.05-.573l1.126.16c.374.054.747-.113.973-.416 4.909-6.56 10.875-5.03 12.026-4.657a.42.42 0 0 1 .269.266c.392 1.162 2.032 7.238-4.655 12.038-.305.22-.48.587-.436.96l.128 1.092a1 1 0 0 1-.553 1.015l-1.864.913a.733.733 0 0 1-1.025-.491c-.337-1.367-1.099-3.943-2.273-5.117m0 0a2 2 0 0 0-2.829 0c-.78.781-1.414 4.243-1.414 4.243s3.462-.633 4.243-1.415a2 2 0 0 0 0-2.828m5.656-4.241a1 1 0 1 1-1.415-1.414 1 1 0 0 1 1.415 1.414"/>
+    </svg>
+  )
+}
+
+/** MingCute `safety_certificate` (regular, system). */
+export function IconSafetyCertificate(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m8.36 12.166 2.475 2.475 5.305-5.305M8.422 19.21l3.354 1.677a.5.5 0 0 0 .448 0l3.354-1.677A8 8 0 0 0 20 12.056V6.693a1 1 0 0 0-.649-.936l-7-2.625a1 1 0 0 0-.702 0l-7 2.625A1 1 0 0 0 4 6.693v5.363a8 8 0 0 0 4.422 7.155"/>
+    </svg>
+  )
+}
+
+/** MingCute `scale` (regular, design). */
+export function IconScale(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6m9 4V4h-4m4 0L10 14m0-4v4h4"/>
     </svg>
   )
 }
@@ -1080,6 +1250,40 @@ export function IconSettings5(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M4.29 7.357A9 9 0 0 0 3.262 9.83c.762.547 1.237 1.317 1.237 2.17s-.475 1.623-1.237 2.169a9 9 0 0 0 1.026 2.475c.925-.153 1.805.056 2.408.659s.812 1.483.66 2.407a9 9 0 0 0 2.474 1.026c.546-.762 1.316-1.236 2.169-1.236s1.623.474 2.17 1.236a9 9 0 0 0 2.474-1.026c-.152-.924.056-1.804.66-2.407.602-.603 1.482-.812 2.407-.66a9 9 0 0 0 1.026-2.474c-.762-.546-1.237-1.316-1.237-2.17 0-.852.475-1.622 1.237-2.169a9 9 0 0 0-1.026-2.474c-.925.152-1.805-.057-2.408-.66s-.812-1.483-.659-2.407a9 9 0 0 0-2.475-1.026C13.623 4.026 12.853 4.5 12 4.5s-1.623-.475-2.17-1.237A9 9 0 0 0 7.357 4.29c.153.924-.056 1.804-.66 2.407-.602.603-1.482.812-2.407.66Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `settings_6` (regular, system). */
+export function IconSettings6(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M18 6a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0m4 0h2m-6 0H4m14 12a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0m4 0h2m-6 0H4m6-6a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0m4 0h10M6 12H4"/>
+    </svg>
+  )
+}
+
+/** MingCute `share_forward` (regular, system). */
+export function IconShareForward(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M16.207 7.726c-2.398-1.894-4.233-2.99-4.845-3.338-.106-.06-.238.044-.252.2-.059.61-.182 2.335-.255 4.403a.01.01 0 0 1-.01.01C6.432 9.006 3 12.586 3 17.001q0 .615.09 1.207a.01.01 0 0 0 .018.005q.413-.492.892-.92A8.97 8.97 0 0 1 10 15h.845a.01.01 0 0 1 .01.01c.076 2.158.207 3.909.262 4.469.013.13.115.197.217.14.576-.325 2.403-1.405 4.873-3.356 2.405-1.9 3.982-3.488 4.52-4.05.109-.114.12-.31.024-.41-.52-.543-2.134-2.175-4.544-4.078Z" clipRule="evenodd"/>
     </svg>
   )
 }
@@ -1186,6 +1390,23 @@ export function IconSocialX(props: IconProps) {
   )
 }
 
+/** MingCute `sparkles` (regular, weather). */
+export function IconSparkles(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M6 14.806a9.7 9.7 0 0 0 2.33 2.52A9.7 9.7 0 0 0 6 19.846a9.7 9.7 0 0 0-2.33-2.52A9.7 9.7 0 0 0 6 14.806ZM14.774 4.4a16.2 16.2 0 0 0 5.374 5.893 16.2 16.2 0 0 0-5.374 5.892 16.2 16.2 0 0 0-5.372-5.892A16.2 16.2 0 0 0 14.774 4.4Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `star` (filled, shapes). */
 export function IconStarFilled(props: IconProps) {
   return (
@@ -1284,6 +1505,23 @@ export function IconTranslate2Ai(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h9M9 4v2m3 0c0 4-3 8-8 10m2.559-7c.985 2.628 3.237 5.024 6.441 6.561M11 20l4.5-10L20 20m-7.65-3h6.3M19 2l.13.378a4 4 0 0 0 2.492 2.493L22 5l-.378.13a4 4 0 0 0-2.493 2.492L19 8l-.13-.378a4 4 0 0 0-2.492-2.493L16 5l.378-.13a4 4 0 0 0 2.493-2.492z"/>
+    </svg>
+  )
+}
+
+/** MingCute `trophy` (regular, business). */
+export function IconTrophy(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M8 20h8M6 7H4.574a1.29 1.29 0 0 0-1.265 1.543l.299 1.496A2.44 2.44 0 0 0 6 12m12-5h1.426a1.29 1.29 0 0 1 1.265 1.543l-.299 1.496A2.44 2.44 0 0 1 18 12m-6 4v4m0-4c3.717 0 6.593-3.258 6.132-6.946l-.523-4.178A1 1 0 0 0 16.618 4H7.383a1 1 0 0 0-.992.876l-.523 4.178C5.408 12.742 8.283 16 12 16Z"/>
     </svg>
   )
 }

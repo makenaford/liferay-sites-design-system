@@ -386,7 +386,7 @@ export const DEFS: Record<string, Shape> = {
           "kind": "ref",
           "name": "ImageRef"
         },
-        "doc": "The three decorations a card can lead with. A card uses at most one."
+        "doc": "The decorations a card can lead with. `icon` and `tag` are alternatives; `image` can sit over an `icon`, as the Solutions Library's `Common Cards` `Type=Industry` draws: the picture inset in the card, then the glass ico…"
       },
       {
         "name": "icon",
@@ -435,6 +435,74 @@ export const DEFS: Record<string, Shape> = {
           "name": "StatSpec"
         },
         "doc": "A figure at the card's foot, under a rule — the catalog's `845 Months to Launch`."
+      },
+      {
+        "name": "points",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "string"
+          }
+        },
+        "doc": "A checked list under the description — `Common Cards` `Type=Portal`: what the solution does, a claim per line. Strings rather than `KeyPoints`' titled points, because the card draws one line each."
+      },
+      {
+        "name": "links",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "ref",
+            "name": "LinkRef"
+          }
+        },
+        "doc": "Arrow links under the description, stacked — `Type=Industry`'s two ways on."
+      },
+      {
+        "name": "attribution",
+        "optional": true,
+        "shape": {
+          "kind": "object",
+          "fields": [
+            {
+              "name": "name",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "role",
+              "optional": true,
+              "shape": {
+                "kind": "string"
+              }
+            }
+          ]
+        },
+        "doc": "Who said it, under a quote set as the `description` — `Steven LaGow, Partner Director`: the name in semibold, then the role. Partner Pages' ecosystem cards (node `217:27595`) give a quote card no title."
+      },
+      {
+        "name": "cta",
+        "optional": true,
+        "shape": {
+          "kind": "ref",
+          "name": "LinkRef"
+        },
+        "doc": "One arrow link at the card's foot, pushed to the bottom so a row of cards lines them up."
+      },
+      {
+        "name": "stats",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "ref",
+            "name": "StatSpec"
+          }
+        },
+        "doc": "A row of figures at the card's foot, ruled apart — `Type=Industry`'s three. `stat` is the single figure under a rule; this is the row."
       }
     ]
   },
@@ -479,7 +547,20 @@ export const DEFS: Record<string, Shape> = {
       "manufacturing",
       "public-sector",
       "energy-and-utilities",
-      "healthcare"
+      "healthcare",
+      "partner-portals-2",
+      "supplier-portals-3",
+      "financial-services-2",
+      "manufacturing-2",
+      "government",
+      "energy-and-supply",
+      "healthcare-2",
+      "industries-integration",
+      "module-integration",
+      "general-personalization",
+      "partners",
+      "general-ai",
+      "user-cubes"
     ]
   },
   "Headline": {
@@ -1054,7 +1135,24 @@ export const DEFS: Record<string, Shape> = {
       "dashboard",
       "pig-money",
       "tag",
-      "barbell"
+      "barbell",
+      "file-code",
+      "sparkles",
+      "list-check",
+      "world",
+      "office-building",
+      "settings",
+      "safety-certificate",
+      "rocket",
+      "heart-hand",
+      "briefcase",
+      "headphone",
+      "trophy",
+      "refund-dollar",
+      "scale",
+      "plugin",
+      "share-forward",
+      "git-compare"
     ]
   },
   "ImageRatio": {
@@ -1288,6 +1386,30 @@ export const DEFS: Record<string, Shape> = {
         "doc": "A stat row under the media, inside the same column."
       },
       {
+        "name": "note",
+        "optional": true,
+        "shape": {
+          "kind": "object",
+          "fields": [
+            {
+              "name": "label",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "text",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            }
+          ]
+        },
+        "doc": "A labelled line under the description — `What we look for in a partner:` and its answer, the label in accent small caps. Technology Partner's partnership models (node `272:35811`)."
+      },
+      {
         "name": "proof",
         "optional": true,
         "shape": {
@@ -1359,6 +1481,26 @@ export const DEFS: Record<string, Shape> = {
             }
           },
           {
+            "name": "titleHighlight",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "The phrase inside `title` that carries the brand gradient — see `customerStories`."
+          },
+          {
+            "name": "align",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "left",
+                "center"
+              ]
+            },
+            "doc": "`center` for a grid that introduces a set rather than continuing the page's argument."
+          },
+          {
             "name": "description",
             "optional": true,
             "shape": {
@@ -1377,6 +1519,17 @@ export const DEFS: Record<string, Shape> = {
               ]
             },
             "doc": "How many across at desktop."
+          },
+          {
+            "name": "surface",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "glass"
+              ]
+            },
+            "doc": "`glass` gives every card the glass surface even when it is not a link — Partner Pages' feature cards, which are panels drawn in glass. Without it a card is glass only when it goes somewhere."
           },
           {
             "name": "cards",
@@ -1606,7 +1759,7 @@ export const DEFS: Record<string, Shape> = {
                       "kind": "ref",
                       "name": "ImageRef"
                     },
-                    "doc": "The three decorations a card can lead with. A card uses at most one."
+                    "doc": "The decorations a card can lead with. `icon` and `tag` are alternatives; `image` can sit over an `icon`, as the Solutions Library's `Common Cards` `Type=Industry` draws: the picture inset in the card, then the glass ico…"
                   },
                   {
                     "name": "icon",
@@ -1655,6 +1808,74 @@ export const DEFS: Record<string, Shape> = {
                       "name": "StatSpec"
                     },
                     "doc": "A figure at the card's foot, under a rule — the catalog's `845 Months to Launch`."
+                  },
+                  {
+                    "name": "points",
+                    "optional": true,
+                    "shape": {
+                      "kind": "array",
+                      "of": {
+                        "kind": "string"
+                      }
+                    },
+                    "doc": "A checked list under the description — `Common Cards` `Type=Portal`: what the solution does, a claim per line. Strings rather than `KeyPoints`' titled points, because the card draws one line each."
+                  },
+                  {
+                    "name": "links",
+                    "optional": true,
+                    "shape": {
+                      "kind": "array",
+                      "of": {
+                        "kind": "ref",
+                        "name": "LinkRef"
+                      }
+                    },
+                    "doc": "Arrow links under the description, stacked — `Type=Industry`'s two ways on."
+                  },
+                  {
+                    "name": "attribution",
+                    "optional": true,
+                    "shape": {
+                      "kind": "object",
+                      "fields": [
+                        {
+                          "name": "name",
+                          "optional": false,
+                          "shape": {
+                            "kind": "string"
+                          }
+                        },
+                        {
+                          "name": "role",
+                          "optional": true,
+                          "shape": {
+                            "kind": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "doc": "Who said it, under a quote set as the `description` — `Steven LaGow, Partner Director`: the name in semibold, then the role. Partner Pages' ecosystem cards (node `217:27595`) give a quote card no title."
+                  },
+                  {
+                    "name": "cta",
+                    "optional": true,
+                    "shape": {
+                      "kind": "ref",
+                      "name": "LinkRef"
+                    },
+                    "doc": "One arrow link at the card's foot, pushed to the bottom so a row of cards lines them up."
+                  },
+                  {
+                    "name": "stats",
+                    "optional": true,
+                    "shape": {
+                      "kind": "array",
+                      "of": {
+                        "kind": "ref",
+                        "name": "StatSpec"
+                      }
+                    },
+                    "doc": "A row of figures at the card's foot, ruled apart — `Type=Industry`'s three. `stat` is the single figure under a rule; this is the row."
                   },
                   {
                     "name": "facets",
@@ -1736,6 +1957,27 @@ export const DEFS: Record<string, Shape> = {
               ]
             },
             "doc": "`glass` is the catalog's card; the Home carousel's is the flat `static` one."
+          },
+          {
+            "name": "action",
+            "optional": true,
+            "shape": {
+              "kind": "ref",
+              "name": "LinkRef"
+            },
+            "doc": "The outline button on the heading's trailing edge — `Browse All Customer Stories`."
+          },
+          {
+            "name": "layout",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "carousel",
+                "grid"
+              ]
+            },
+            "doc": "`carousel` bleeds off both edges behind arrows. `grid` is Partner Home's (node `212:26649`): the cards side by side across the content width, at most three, no arrows — for a set small enough to read at once."
           },
           {
             "name": "stories",
@@ -1908,6 +2150,14 @@ export const DEFS: Record<string, Shape> = {
             }
           },
           {
+            "name": "actionLead",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "A line over the `action` link — `Looking for individual features instead?`."
+          },
+          {
             "name": "buttons",
             "optional": true,
             "shape": {
@@ -2017,6 +2267,18 @@ export const DEFS: Record<string, Shape> = {
               }
             },
             "doc": "`Key takeaways` — the claims the questions add up to, checked, over the accordion."
+          },
+          {
+            "name": "layout",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "stacked",
+                "side"
+              ]
+            },
+            "doc": "`stacked` is the centred 780 column, the takeaways over the questions. `side` is the Solutions Library's (node `25092:75670`): the heading on the content edge, the questions 900 wide and the takeaways in a 320 column be…"
           },
           {
             "name": "items",
@@ -2134,10 +2396,19 @@ export const DEFS: Record<string, Shape> = {
                       "kind": "ref",
                       "name": "LinkRef"
                     }
+                  },
+                  {
+                    "name": "logo",
+                    "optional": true,
+                    "shape": {
+                      "kind": "ref",
+                      "name": "ImageRef"
+                    }
                   }
                 ]
               }
-            }
+            },
+            "doc": "`logo` is the partner's mark, opposite the quote mark at the card's head — Partner Pages' OEM quote cards (node `212:27313`). Drawn at most 48 tall, right-aligned."
           },
           {
             "name": "anchor",
@@ -2203,10 +2474,48 @@ export const DEFS: Record<string, Shape> = {
                     "shape": {
                       "kind": "string"
                     }
+                  },
+                  {
+                    "name": "points",
+                    "optional": true,
+                    "shape": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "name": "certified",
+                    "optional": true,
+                    "shape": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "name": "fee",
+                    "optional": true,
+                    "shape": {
+                      "kind": "string"
+                    }
                   }
                 ]
               }
-            }
+            },
+            "doc": "Each tier's card. `points` is the score the tier starts at (`5-6`, `10+`), `certified` the certified headcount it needs, and `fee` its annual fee — Partner Pages' tier cards (node `255:17286`), which carry the requireme…"
+          },
+          {
+            "name": "tiersNote",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "The fine print under the tier cards — how the points are earned."
+          },
+          {
+            "name": "compareLabel",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "Folds the table away behind a toggle with this label — `Compare every benefit and requirement`. Open to start. Without it the table is always shown."
           },
           {
             "name": "overviewTitle",
@@ -2601,9 +2910,11 @@ export const DEFS: Record<string, Shape> = {
             "shape": {
               "kind": "enum",
               "options": [
-                "mesh"
+                "mesh",
+                "glow"
               ]
-            }
+            },
+            "doc": "`mesh` lays the footer's drifting colour field behind the band. `glow` is Partner Pages' OEM `Path to Partnership` (node `245:11603`): a still corner of brand purple into blue, from the top right, fading into the page."
           },
           {
             "name": "anchor",
@@ -3243,12 +3554,55 @@ export const DEFS: Record<string, Shape> = {
             }
           },
           {
+            "name": "buttons",
+            "optional": true,
+            "shape": {
+              "kind": "array",
+              "of": {
+                "kind": "ref",
+                "name": "LinkRef"
+              }
+            },
+            "doc": "Outline buttons under the field, instead of or beside the links — `Book a Custom Demo`."
+          },
+          {
             "name": "aside",
             "optional": true,
             "shape": {
               "kind": "ref",
               "name": "LinkRef"
             }
+          },
+          {
+            "name": "asideLead",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "Plain text before the `aside` link, on the same line — `Not ready yet?`."
+          },
+          {
+            "name": "surface",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "none",
+                "card"
+              ]
+            },
+            "doc": "`card` puts the band in a rounded panel inset by the page gutter — the Solutions Library's `Ready for the future?` (node `25092:74309`) — rather than straight on the page."
+          },
+          {
+            "name": "backdrop",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "mesh"
+              ]
+            },
+            "doc": "`mesh` fills the panel with the footer's drifting colour field. Meant for `surface: 'card'`."
           },
           {
             "name": "consent",
@@ -3399,6 +3753,18 @@ export const DEFS: Record<string, Shape> = {
             }
           },
           {
+            "name": "surface",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "gradient",
+                "glass"
+              ]
+            },
+            "doc": "`glass` is Partner Pages' `Still Evaluating?` bar (node `205:12359`): a glass card, the icon at 64 leading, the heading and line beside it, and an outline button on the trailing edge. Without it the card stacks on the b…"
+          },
+          {
             "name": "action",
             "optional": true,
             "shape": {
@@ -3469,6 +3835,18 @@ export const DEFS: Record<string, Shape> = {
             "shape": {
               "kind": "string"
             }
+          },
+          {
+            "name": "size",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "md",
+                "lg"
+              ]
+            },
+            "doc": "`lg` is Partner Home's (node `148:32227`): 64px figures, each over a sentence of plain 18px text rather than a small-caps label — for figures that need a line to say what they count."
           },
           {
             "name": "stats",
@@ -3965,6 +4343,18 @@ export const DEFS: Record<string, Shape> = {
             "doc": "Figma's `Content Left Image` / `Content- Right Image` cells. A **named** choice the file sanctions, so it belongs in the data — unlike a gap, which does not."
           },
           {
+            "name": "layout",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "tabs",
+                "columns"
+              ]
+            },
+            "doc": "`columns` lays the tabs side by side instead of behind a pill bar: each tab's label as a heading over its accordion, no media — Solution Partner's two partner tracks (node `205:11785`), which a reader compares rather th…"
+          },
+          {
             "name": "tabs",
             "optional": false,
             "shape": {
@@ -4188,6 +4578,14 @@ export const DEFS: Record<string, Shape> = {
               "kind": "string"
             },
             "doc": "The phrase inside `title` that carries the brand gradient — see `customerStories`."
+          },
+          {
+            "name": "description",
+            "optional": true,
+            "shape": {
+              "kind": "string"
+            },
+            "doc": "The line under the heading, centred with it."
           },
           {
             "name": "hub",

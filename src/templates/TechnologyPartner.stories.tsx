@@ -23,15 +23,17 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay Technology Partner page — `Partner Pages` -> `Technology Partner` (node `106:25461`). The OEM Partner page’s template, rendered from `technology-partner-page.ts` through `PageRenderer`.',
+          'The Liferay Technology Partner page — Partner Pages -> `Technology` (node `272:35757`). Rendered from `technology-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'It adds `partnershipModels` — the three partnership models down the right, each with what Liferay looks for in a partner — and a card grid of the support partners get. `Become a Technology Partner` and `Apply Now` both jump to the application band, on the darkened mesh.',
+          '`Why Partner` and `Is Liferay the Right Partner` as one-tab `tabbedContent`s beside a photograph; the three partnership models behind a pill bar, each with what Liferay looks for in a partner (`PanelSpec.note`); the support partners get as glass cards; and `Path to Partnership` on the corner glow.',
           '',
           '## Not final yet',
           '',
-          '- **The pictures are stand-ins** — the AI Hub film in the hero and a still from it in the two media sections.',
-          '- **Copy the frame carried over from the OEM page is rewritten here**: the first FAQ answer, the form’s title and the last step. Those, three of the four `Why Partner` answers and four of the five FAQ answers are drafts.',
-          '- **The logo strip is wordmarks**, and every link is `href="#"`, as on every other built page. The form sends nothing.',
+          '- **The copy has not been checked against the `COPY - Technology` sheet yet.**',
+          '- **The partnership models’ picture is a stand-in** — the frame draws a placeholder.',
+          '- **The quote cards have no logos**: the frame’s are VAI and Placecube under SugarAI and Demandbase quotes.',
+          '- **Three of the four `Why Partner` answers and five of the six FAQ answers are drafts**; the file shows only the open rows.',
+          '- **Every link is `href="#"`**, as on every other built page. The form sends nothing.',
         ].join('\n'),
       },
     },

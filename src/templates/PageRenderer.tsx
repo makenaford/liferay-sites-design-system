@@ -40,6 +40,25 @@ import { Select, Textarea, TextInput } from '../components/Input'
 import {
   IconArrowDown,
   IconBarbell,
+  IconFileCode,
+  IconSparkles,
+  IconListCheck,
+  IconWorld2,
+  IconBuilding5,
+  IconSettings6,
+  IconSafetyCertificate,
+  IconRocket,
+  IconHeartHand,
+  IconBriefcase,
+  IconHeadphone2,
+  IconTrophy,
+  IconRefundDollar,
+  IconScale,
+  IconPlugin,
+  IconShareForward,
+  IconGitCompare,
+  IconCheck,
+  IconDown,
   IconDashboard,
   IconDirectionArrow,
   IconPigMoney,
@@ -70,6 +89,19 @@ import {
   IconGlassHealthcare,
   IconGlassManufacturing,
   IconGlassPublicSector,
+  IconGlassSolutionsPartnerPortals2,
+  IconGlassSolutionsSupplierPortals3,
+  IconGlassIndustriesFinancialServices2,
+  IconGlassIndustriesManufacturing2,
+  IconGlassIndustriesGovernment,
+  IconGlassIndustriesEnergyAndSupply,
+  IconGlassIndustriesHealthcare2,
+  IconGlassIndustriesIntegration,
+  IconGlassProductModulesIntegration,
+  IconGlassGeneralPersonalization,
+  IconGlassGeneralPartners,
+  IconGlassGeneralAi,
+  IconGlassUserCubes,
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
@@ -156,6 +188,23 @@ const ICONS: Record<IconName, ReactNode> = {
   'pig-money': <IconPigMoney />,
   tag: <IconTag />,
   barbell: <IconBarbell />,
+  'file-code': <IconFileCode />,
+  sparkles: <IconSparkles />,
+  'list-check': <IconListCheck />,
+  world: <IconWorld2 />,
+  'office-building': <IconBuilding5 />,
+  settings: <IconSettings6 />,
+  'safety-certificate': <IconSafetyCertificate />,
+  rocket: <IconRocket />,
+  'heart-hand': <IconHeartHand />,
+  briefcase: <IconBriefcase />,
+  headphone: <IconHeadphone2 />,
+  trophy: <IconTrophy />,
+  'refund-dollar': <IconRefundDollar />,
+  scale: <IconScale />,
+  plugin: <IconPlugin />,
+  'share-forward': <IconShareForward />,
+  'git-compare': <IconGitCompare />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -198,6 +247,19 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   'public-sector': (s) => <IconGlassPublicSector width={s} height={s} />,
   'energy-and-utilities': (s) => <IconGlassEnergyAndUtilities width={s} height={s} />,
   healthcare: (s) => <IconGlassHealthcare width={s} height={s} />,
+  'partner-portals-2': (s) => <IconGlassSolutionsPartnerPortals2 width={s} height={s} />,
+  'supplier-portals-3': (s) => <IconGlassSolutionsSupplierPortals3 width={s} height={s} />,
+  'financial-services-2': (s) => <IconGlassIndustriesFinancialServices2 width={s} height={s} />,
+  'manufacturing-2': (s) => <IconGlassIndustriesManufacturing2 width={s} height={s} />,
+  government: (s) => <IconGlassIndustriesGovernment width={s} height={s} />,
+  'energy-and-supply': (s) => <IconGlassIndustriesEnergyAndSupply width={s} height={s} />,
+  'healthcare-2': (s) => <IconGlassIndustriesHealthcare2 width={s} height={s} />,
+  'industries-integration': (s) => <IconGlassIndustriesIntegration width={s} height={s} />,
+  'module-integration': (s) => <IconGlassProductModulesIntegration width={s} height={s} />,
+  'general-personalization': (s) => <IconGlassGeneralPersonalization width={s} height={s} />,
+  partners: (s) => <IconGlassGeneralPartners width={s} height={s} />,
+  'general-ai': (s) => <IconGlassGeneralAi width={s} height={s} />,
+  'user-cubes': (s) => <IconGlassUserCubes width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -219,7 +281,11 @@ function renderStat(
   stat: StatSpec,
   align?: 'center',
   index = 0,
-  { size, iconSide = 'left' }: { size?: 'sm'; iconSide?: 'left' | 'right' } = {},
+  {
+    size,
+    iconSide = 'left',
+    unitSize,
+  }: { size?: 'sm'; iconSide?: 'left' | 'right'; /** The unit's px size — 32 beside a 64px figure. */ unitSize?: number } = {},
 ) {
   const icon =
     stat.sentiment === 'negative' ? <IconArrowDown /> : stat.sentiment === 'positive' ? <IconArrowUp /> : undefined
@@ -230,7 +296,7 @@ function renderStat(
       size={size}
       value={
         <>
-          {stat.prefix ? unit(stat.prefix) : null}
+          {stat.prefix ? unit(stat.prefix, unitSize) : null}
           {/*
            * Counted when the figure is a number, printed when it is not.
            *
@@ -239,7 +305,7 @@ function renderStat(
            * gets the animation by writing a number rather than by remembering a flag.
            */}
           {countable(stat.value) ? <CountUp value={Number(stat.value.replace(/,/g, ''))} /> : stat.value}
-          {stat.suffix ? unit(stat.suffix) : null}
+          {stat.suffix ? unit(stat.suffix, unitSize) : null}
         </>
       }
       label={stat.label}
@@ -825,7 +891,22 @@ function SolutionFinder({ banner }: { banner: NonNullable<HeroSpec['banner']> })
  * tag — and each brings the padding the file draws with it: an image card pads all round, an icon or
  * tag card takes the default.
  */
-function GridCard({ card }: { card: CardSpec }) {
+function GridCard({ card, surface }: { card: CardSpec; surface?: 'glass' }) {
+  /*
+   * A picture over an icon is the Solutions Library's `Type=Industry`: the picture sits *inside* the
+   * card's 20px, rounded on its own, with the glass icon under it. A picture alone keeps the older cell's
+   * face — run to the card's edges, only the text inset.
+   */
+  /* Partner Pages' ecosystem cards inset their picture the same way, over a quote or a story and its link. */
+  const inset = Boolean(card.image && (card.icon || card.cta || card.attribution))
+  /*
+   * A card is a target when it has an `href`, and a panel otherwise — but a panel holding links (or a
+   * list and a figure) is still the file's glass surface, just not one that lifts as a whole.
+   */
+  const glass = Boolean(
+    surface === 'glass' || card.href || card.cta || card.links?.length || card.points?.length || card.stats?.length,
+  )
+
   return (
     <Card
       component={card.href ? 'a' : 'div'}
@@ -835,29 +916,61 @@ function GridCard({ card }: { card: CardSpec }) {
        * panel and wears `static`. Previously both were glass and only the hover differed, so a card
        * with nowhere to go looked exactly like one that had somewhere.
        */
-      surface={card.href ? 'glass' : 'static'}
+      surface={glass ? 'glass' : 'static'}
+      interactive={card.href ? undefined : false}
       /*
        * `content`, not `all`: the image runs to the card's edges and only the text is inset. `all` pads
        * the image too, which put a 20px frame of card around every thumbnail and made the picture look
        * like it had been pasted in rather than like it was the card's face.
        */
-      padding={card.image ? 'content' : undefined}
+      padding={card.image && !inset ? 'content' : undefined}
       image={
         card.image ? (
-          <Image src={card.image.src} alt={card.image.alt} ratio="3:2" />
+          <Image src={card.image.src} alt={card.image.alt} ratio="3:2" radius={inset ? 'sm' : undefined} />
         ) : undefined
       }
       hero={
         card.icon ? (
-          GLASS[card.icon](40)
+          GLASS[card.icon](card.points || card.links ? 48 : 40)
         ) : card.tag ? (
           <Label variant="gradient" size="md">
             {card.tag}
           </Label>
         ) : undefined
       }
-      title={card.title}
-      description={card.description}
+      title={card.title || undefined}
+      description={
+        card.attribution ? (
+          <>
+            {card.description}
+            {/* Who said it: the name in semibold, then the role, on the line under the quote. */}
+            <span className={classes.cardAttribution}>
+              <strong>{card.attribution.name}</strong>
+              {card.attribution.role ? `, ${card.attribution.role}` : null}
+            </span>
+          </>
+        ) : (
+          card.description
+        )
+      }
+      main={
+        card.points?.length ? (
+          /* `Type=Portal`'s `Main List Item` run: a 24px check, then the line, 16 apart. */
+          <List marker="check" spacing={16}>
+            {card.points.map((point) => (
+              <List.Item key={point}>{point}</List.Item>
+            ))}
+          </List>
+        ) : card.links?.length ? (
+          <Stack gap={16} align="flex-start">
+            {card.links.map((link) => (
+              <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+                {link.label}
+              </Link>
+            ))}
+          </Stack>
+        ) : undefined
+      }
       bottom={
         card.progress !== undefined ? (
           <Progress value={card.progress} label={`${card.title} progress`} />
@@ -865,9 +978,21 @@ function GridCard({ card }: { card: CardSpec }) {
           <Button variant="outline" size="md" rightSection={<IconArrowRight />}>
             {card.action.label}
           </Button>
+        ) : card.cta ? (
+          <Link href={card.cta.href} size="md" rightSection={<IconArrowRight />}>
+            {card.cta.label}
+          </Link>
+        ) : card.stats?.length ? (
+          /* `Type=Industry`'s `Stats Bar`: the figures side by side, ruled apart. */
+          /* The full-size figure and small-caps label the frame draws, not the catalog card's compact one. */
+          <StatBar className={classes.cardStats}>
+            {card.stats.map((stat, i) => renderStat(stat, undefined, i))}
+          </StatBar>
         ) : card.stat ? (
-          /* The catalog card's `Stats Bar`: one figure under a full-width rule. */
-          <div className={classes.cardStat}>{renderStat(card.stat, undefined, 0, { size: 'sm' })}</div>
+          /* The catalog card's `Stats Bar`: one figure under a full-width rule. Full size on a Portal card. */
+          <div className={classes.cardStat}>
+            {renderStat(card.stat, undefined, 0, card.points?.length ? {} : { size: 'sm' })}
+          </div>
         ) : undefined
       }
     />
@@ -897,7 +1022,8 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
       gap={32}
       title={
         <SectionTitle
-          title={spec.title}
+          align={spec.align}
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
           description={spec.description}
           actions={
             spec.tabs ? (
@@ -919,7 +1045,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
       <SimpleGrid cols={{ base: 1, sm: 2, md: spec.columns ?? 4 }} spacing={24}>
         {cards.map((card, i) => (
           // eslint-disable-next-line react/no-array-index-key
-          <GridCard key={`${card.title}-${i}`} card={card} />
+          <GridCard key={`${card.title}-${i}`} card={card} surface={spec.surface} />
         ))}
       </SimpleGrid>
     </Section>
@@ -1473,20 +1599,37 @@ function CustomerStoriesSection({
 }) {
   return (
     <Section
-      bleed
+      bleed={spec.layout !== 'grid'}
       title={
         <SectionTitle
           align={spec.align ?? 'center'}
           title={highlightPhrase(spec.title, spec.titleHighlight, true)}
           description={spec.description}
+          actions={
+            spec.action ? (
+              /* Mantine's `Button`, as the hero's: a destination has to be an anchor. */
+              <MantineButton component="a" href={spec.action.href} variant="outline" size="sm" rightSection={<IconArrowRight />}>
+                {spec.action.label}
+              </MantineButton>
+            ) : undefined
+          }
         />
       }
     >
-      <Carousel label={spec.title} gutter={80} indicators="none" arrows>
-        {spec.stories.map((story) => (
-          <StoryCard key={story.customer} story={story} surface={spec.surface} />
-        ))}
-      </Carousel>
+      {spec.layout === 'grid' ? (
+        /* Inside the content width, unlike the carousel, so the row lines up with the sections around it. */
+        <SimpleGrid cols={{ base: 1, sm: 2, md: Math.min(spec.stories.length, 3) }} spacing={13} className={classes.storyGrid}>
+          {spec.stories.map((story) => (
+            <StoryCard key={story.customer} story={story} surface={spec.surface} />
+          ))}
+        </SimpleGrid>
+      ) : (
+        <Carousel label={spec.title} gutter={80} indicators="none" arrows>
+          {spec.stories.map((story) => (
+            <StoryCard key={story.customer} story={story} surface={spec.surface} />
+          ))}
+        </Carousel>
+      )}
     </Section>
   )
 }
@@ -1530,6 +1673,51 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
   const activeRow = panel?.items?.find((item) => item.question === openRow) ?? panel?.items?.[0]
   const media = activeRow?.media ?? panel?.media
 
+  if (spec.layout === 'columns') {
+    return (
+      <Section
+        title={
+          <SectionTitle
+            align="center"
+            title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+            description={spec.description}
+          />
+        }
+      >
+        {/*
+         * The tracks side by side, 40 apart, each its label as a heading over its own accordion — read and
+         * compared, so neither autoplays and each opens its first row. Stacked under 992.
+         */}
+        <SimpleGrid cols={{ base: 1, md: spec.tabs.length }} spacing={40} verticalSpacing={48}>
+          {spec.tabs.map((track) => (
+            <Stack key={track.value} gap={24}>
+              <h3 className={classes.trackHeading}>{track.label}</h3>
+              <Accordion size="lg" order={4} defaultValue={track.content.items?.[0]?.question}>
+                {(track.content.items ?? []).map((item) => (
+                  <Accordion.Item key={item.question} value={item.question}>
+                    <Accordion.Control icon={item.icon ? ICONS[item.icon] : undefined}>
+                      {item.question}
+                    </Accordion.Control>
+                    <Accordion.Panel>
+                      <p>{item.answer}</p>
+                      {item.list?.length ? (
+                        <ul className={classes.accList}>
+                          {item.list.map((line) => (
+                            <li key={line}>{line}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
+            </Stack>
+          ))}
+        </SimpleGrid>
+      </Section>
+    )
+  }
+
   return (
     <Section
       title={
@@ -1561,7 +1749,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         {spec.tabs.length > 1 ? (
         <Tabs
           variant="pills"
-          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
+          /* An icon on each pill costs about 40 a tab, so three with icons need 900 to keep their labels whole. */
+          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : spec.tabs.some((t) => t.icon) ? 900 : 776 }}
           maw="100%"
           value={tab}
           onChange={(v) => {
@@ -1582,6 +1771,11 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
 
         {panel ? (
           <ContentMedia
+            /*
+             * Full width, always. The stack centres its children, which sizes them to their content — so
+             * with every row closed the panel shrank to its shortest question and the media went with it.
+             */
+            w="100%"
             mediaSide={spec.mediaSide ?? 'right'}
             /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
             stickyMedia
@@ -1633,6 +1827,12 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             }
           >
             {panel.points?.length ? <KeyPoints points={panel.points} /> : null}
+            {panel.note ? (
+              <p className={classes.panelNote}>
+                <span>{panel.note.label}</span>
+                {panel.note.text}
+              </p>
+            ) : null}
             {panel.proof ? (
               /* The tab's proof: the figure in the accent, what it measures, the customer, its story. */
               <p className={classes.panelProof}>
@@ -1775,7 +1975,11 @@ function CapabilityMapSection({ spec }: { spec: Extract<SectionSpec, { type: 'ca
       bleed
       gap={40}
       title={
-        <SectionTitle align="center" title={highlightPhrase(spec.title, spec.titleHighlight, true)} />
+        <SectionTitle
+          align="center"
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
       }
     >
       <CapabilityMap
@@ -1947,9 +2151,16 @@ function ContentBlockSection({ spec }: { spec: Extract<SectionSpec, { type: 'con
               ))}
             </Group>
           ) : spec.action ? (
-            <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
-              {spec.action.label}
-            </Link>
+            <Stack gap={8} align="flex-start">
+              {spec.actionLead ? (
+                <Text fz={18} lh={1.25} c="var(--sds-surfaces-text-secondary)">
+                  {spec.actionLead}
+                </Text>
+              ) : null}
+              <Link href={spec.action.href} size="md" rightSection={<IconArrowRight />}>
+                {spec.action.label}
+              </Link>
+            </Stack>
           ) : undefined
         }
         media={
@@ -1965,45 +2176,65 @@ function ContentBlockSection({ spec }: { spec: Extract<SectionSpec, { type: 'con
 }
 
 function FaqSection({ spec }: { spec: Extract<SectionSpec, { type: 'faq' }> }) {
+  const side = spec.layout === 'side'
+  const takeaways = spec.takeaways?.length ? (
+    /* `Key takeaways` — what the answers add up to, for the reader who reads nothing else. */
+    <div className={classes.faqTakeaways} data-layout={side ? 'side' : undefined}>
+      <span className={classes.faqTakeawaysLabel}>Key takeaways</span>
+      <List marker="check" spacing={12}>
+        {spec.takeaways.map((line) => (
+          <List.Item key={line}>{line}</List.Item>
+        ))}
+      </List>
+    </div>
+  ) : null
+  const questions = (
+    <Accordion size="lg" order={3} defaultValue={spec.items[0]?.question}>
+      {spec.items.map((item) => (
+        <Accordion.Item key={item.question} value={item.question}>
+          <Accordion.Control>{item.question}</Accordion.Control>
+          <Accordion.Panel>
+            <p>{item.answer}</p>
+          </Accordion.Panel>
+        </Accordion.Item>
+      ))}
+    </Accordion>
+  )
+  const footnotes = spec.footnotes?.length ? (
+    <ol className={classes.footnotes}>
+      {spec.footnotes.map((note) => (
+        <li key={note}>{note}</li>
+      ))}
+    </ol>
+  ) : null
+
   return (
     <Section
-      maxWidth={780}
+      maxWidth={side ? undefined : 780}
       title={
         <SectionTitle
-          align="center"
+          align={side ? 'left' : 'center'}
           title={highlightPhrase(spec.title, spec.titleHighlight, true)}
           description={spec.description}
         />
       }
     >
-      {spec.takeaways?.length ? (
-        /* `Key takeaways` — what the answers add up to, for the reader who reads nothing else. */
-        <div className={classes.faqTakeaways}>
-          <span className={classes.faqTakeawaysLabel}>Key takeaways</span>
-          <List marker="check" spacing={12}>
-            {spec.takeaways.map((line) => (
-              <List.Item key={line}>{line}</List.Item>
-            ))}
-          </List>
+      {side ? (
+        /* The questions 900 wide, the takeaways a 320 column 48 beside them; stacked under 992. */
+        <div className={classes.faqSide}>
+          <div>
+            {questions}
+            {footnotes}
+          </div>
+          {takeaways}
         </div>
-      ) : null}
-      <Accordion size="lg" order={3} defaultValue={spec.items[0]?.question}>
-        {spec.items.map((item) => (
-          <Accordion.Item key={item.question} value={item.question}>
-            <Accordion.Control>{item.question}</Accordion.Control>
-            <Accordion.Panel>
-              <p>{item.answer}</p>
-            </Accordion.Panel>
-          </Accordion.Item>
-        ))}
-      </Accordion>
-      {spec.footnotes?.length ? (
-        <ol className={classes.footnotes}>
-          {spec.footnotes.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ol>
-      ) : null}
+      ) : (
+        <>
+          {takeaways}
+          {questions}
+          {footnotes}
+        </>
+      )}
     </Section>
   )
 }
@@ -2072,6 +2303,32 @@ function QuickLinksSection({ spec }: { spec: Extract<SectionSpec, { type: 'quick
  * before and after than a section would.
  */
 function HighlightTextSection({ spec }: { spec: Extract<SectionSpec, { type: 'highlightText' }> }) {
+  if (spec.surface === 'glass') {
+    return (
+      <Section spacing="tight">
+        {/* `Still Evaluating?` (node `205:12359`): one glass bar — icon, heading and line, then the ask. */}
+        <div className={classes.highlightBar}>
+          {spec.icon ? <span className={classes.highlightBarIcon}>{GLASS[spec.icon](64)}</span> : null}
+          <div className={classes.highlightBarText}>
+            <h2>{spec.title}</h2>
+            <p>{spec.body}</p>
+          </div>
+          {spec.action ? (
+            <MantineButton
+              component="a"
+              href={spec.action.href}
+              variant="outline"
+              size="md"
+              rightSection={<IconArrowRight />}
+            >
+              {spec.action.label}
+            </MantineButton>
+          ) : null}
+        </div>
+      </Section>
+    )
+  }
+
   return (
     <Section spacing="tight">
       <Card
@@ -2316,8 +2573,11 @@ function QuotesSection({ spec }: { spec: Extract<SectionSpec, { type: 'quotes' }
       <SimpleGrid cols={{ base: 1, md: spec.quotes.length >= 3 ? 3 : 2 }} spacing={24}>
         {spec.quotes.map((item) => (
           <figure key={item.name} className={classes.quoteCard}>
-            <span className={classes.quoteCardMark} aria-hidden>
-              “
+            <span className={classes.quoteCardHead}>
+              <span className={classes.quoteCardMark} aria-hidden>
+                “
+              </span>
+              {item.logo ? <img className={classes.quoteCardLogo} src={item.logo.src} alt={item.logo.alt} /> : null}
             </span>
             <blockquote>
               <p>{item.quote}</p>
@@ -2345,25 +2605,25 @@ function TierCell({ value }: { value: boolean | string | { level: number } }) {
   if (typeof value === 'string') return <span className={classes.tierText}>{value}</span>
   if (typeof value === 'boolean') {
     return value ? (
-      <span className={classes.verdict} data-value="yes">
-        <span className={classes.verdictMark} aria-hidden>
-          ✓
-        </span>
+      <span className={classes.tierYes}>
+        <IconCheck aria-hidden />
         <span className={classes.visuallyHidden}>Included</span>
       </span>
     ) : (
-      <span className={classes.verdict} data-value="no">
-        <span className={classes.verdictMark} aria-hidden>
-          –
-        </span>
+      /* A quiet dash rather than a mark: the row reads as the ticks, and absence should not compete. */
+      <span className={classes.tierNo}>
+        <span aria-hidden>—</span>
         <span className={classes.visuallyHidden}>Not included</span>
       </span>
     )
   }
+  /* The margin as stacked coins — one per level, overlapping, as the file draws them. */
   return (
     <span className={classes.tierLevel} aria-label={`Level ${value.level} of 4`} role="img">
       {Array.from({ length: value.level }, (_, i) => (
-        <span key={i} aria-hidden />
+        <span key={i} aria-hidden>
+          $
+        </span>
       ))}
     </span>
   )
@@ -2379,6 +2639,76 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
   const table = spec.tables.find((t) => t.label === view) ?? spec.tables[0]
   const tiers = spec.tiers.map((tier) => tier.name)
 
+  /*
+   * The comparison, laid out once whether or not it folds. Fixed columns — the feature a third of the
+   * width, the tiers sharing the rest equally — so the marks line up down every column, whatever the
+   * length of a tier's name.
+   */
+  const comparison = table ? (
+    <div className={classes.comparison}>
+      {spec.overviewTitle || spec.tables.length > 1 ? (
+        <Group justify="space-between" align="center" wrap="wrap" gap={16}>
+          {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
+          {spec.tables.length > 1 ? (
+            /* Full width on a phone, so the two pills share the row instead of pushing past it. */
+            <Tabs variant="pills" w={{ base: '100%', sm: 360 }} value={view} onChange={(v) => setView(v ?? view)}>
+              <Tabs.List grow>
+                {spec.tables.map((t) => (
+                  <Tabs.Tab key={t.label} value={t.label}>
+                    {t.tab ?? t.label}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+          ) : null}
+        </Group>
+      ) : null}
+      <div className={classes.comparisonScroll} data-variant="tiers">
+        <table className={`${classes.comparisonTable} ${classes.tierTable}`}>
+          <caption className={classes.visuallyHidden}>{table.label}</caption>
+          <colgroup>
+            <col className={classes.tierTableFeature} />
+            {tiers.map((tier) => (
+              <col key={tier} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">{table.label}</th>
+              {tiers.map((tier, i) => (
+                <th key={tier} scope="col" data-tier={i}>
+                  <span>{tier}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          {table.groups.map((group) => (
+            <tbody key={group.label}>
+              <tr className={classes.tierGroup}>
+                <th scope="colgroup" colSpan={tiers.length + 1}>
+                  {/* Its own sticky box, so the label stays in view while a phone scrolls the tiers. */}
+                  <span className={classes.tierGroupLabel}>{group.label}</span>
+                </th>
+              </tr>
+              {group.rows.map((row) => (
+                <tr key={row.label}>
+                  <th scope="row">{row.label}</th>
+                  {row.values.map((value, i) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <td key={i} data-tier={i}>
+                      <TierCell value={value} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      </div>
+      {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
+    </div>
+  ) : null
+
   return (
     <Section
       title={
@@ -2392,73 +2722,53 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
       <Stack gap={48}>
         <SimpleGrid cols={{ base: 1, sm: 2, md: spec.tiers.length }} spacing={24}>
           {spec.tiers.map((tier, i) => (
-            <div key={tier.name} className={classes.tierCard} data-tier={i}>
+            <div
+              key={tier.name}
+              className={classes.tierCard}
+              data-tier={i}
+              data-detailed={tier.points || tier.certified || tier.fee ? '' : undefined}
+            >
               <span className={classes.tierName}>{tier.name}</span>
+              {tier.points ? (
+                /* `0 Points`, `10 + Points` — the score as a 49px figure, the unit beside it at 24. */
+                <span className={classes.tierPoints}>
+                  <strong>{tier.points}</strong> Points
+                </span>
+              ) : null}
+              {tier.certified ? (
+                <span className={classes.tierFact}>
+                  <span>Certified</span>
+                  {tier.certified}
+                </span>
+              ) : null}
               <p>{tier.description}</p>
+              {tier.fee ? (
+                <span className={classes.tierFee}>
+                  <span className={classes.tierFactLabel}>Program Performance</span>
+                  <span className={classes.tierFeeRow}>
+                    <span>Annual Fee</span>
+                    <strong>{tier.fee}</strong>
+                  </span>
+                </span>
+              ) : null}
             </div>
           ))}
         </SimpleGrid>
+        {spec.tiersNote ? <p className={classes.tierNote}>{spec.tiersNote}</p> : null}
 
-        {table ? (
-          <div className={classes.comparison}>
-            <Group justify="space-between" align="center" wrap="wrap" gap={16}>
-              {spec.overviewTitle ? <h3 className={classes.tierOverviewTitle}>{spec.overviewTitle}</h3> : null}
-              {spec.tables.length > 1 ? (
-                /* Full width on a phone, so the two pills share the row instead of pushing past it. */
-                <Tabs
-                  variant="pills"
-                  w={{ base: '100%', sm: 360 }}
-                  value={view}
-                  onChange={(v) => setView(v ?? view)}
-                >
-                  <Tabs.List grow>
-                    {spec.tables.map((t) => (
-                      <Tabs.Tab key={t.label} value={t.label}>
-                        {t.tab ?? t.label}
-                      </Tabs.Tab>
-                    ))}
-                  </Tabs.List>
-                </Tabs>
-              ) : null}
-            </Group>
-            <div className={classes.comparisonScroll}>
-              <table className={classes.comparisonTable}>
-                <caption className={classes.visuallyHidden}>{table.label}</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">{table.label}</th>
-                    {tiers.map((tier) => (
-                      <th key={tier} scope="col">
-                        {tier}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                {table.groups.map((group) => (
-                  <tbody key={group.label}>
-                    <tr className={classes.tierGroup}>
-                      <th scope="colgroup" colSpan={tiers.length + 1}>
-                        {group.label}
-                      </th>
-                    </tr>
-                    {group.rows.map((row) => (
-                      <tr key={row.label}>
-                        <th scope="row">{row.label}</th>
-                        {row.values.map((value, i) => (
-                          // eslint-disable-next-line react/no-array-index-key
-                          <td key={i}>
-                            <TierCell value={value} />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                ))}
-              </table>
-            </div>
-            {table.note ? <p className={classes.comparisonNote}>{table.note}</p> : null}
-          </div>
-        ) : null}
+        {comparison && spec.compareLabel ? (
+          /* Folded away behind its own toggle, open to start — the cards above are the summary. */
+          <details className={classes.compareFold} open>
+            <summary>
+              <IconGitCompare aria-hidden />
+              <span>{spec.compareLabel}</span>
+              <IconDown aria-hidden className={classes.compareFoldChevron} />
+            </summary>
+            {comparison}
+          </details>
+        ) : (
+          comparison
+        )}
       </Stack>
     </Section>
   )
@@ -2514,7 +2824,9 @@ function PartnershipModelsSection({ spec }: { spec: Extract<SectionSpec, { type:
  */
 function StepsFormSection({ spec }: { spec: Extract<SectionSpec, { type: 'stepsForm' }> }) {
   return (
-    <Section className={spec.backdrop === 'mesh' ? classes.meshBand : undefined}>
+    <Section
+      className={spec.backdrop === 'mesh' ? classes.meshBand : spec.backdrop === 'glow' ? classes.glowBand : undefined}
+    >
       {spec.backdrop === 'mesh' ? <Footer.Mesh className={classes.meshBandField} aria-hidden /> : null}
       <div className={classes.stepsForm}>
         <div className={classes.stepsFormCopy}>
@@ -2849,61 +3161,96 @@ function CostCalculatorSection({ spec }: { spec: Extract<SectionSpec, { type: 'c
  * quieter way out underneath. A page with this turns the footer's band off.
  */
 function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closingCta' }> }) {
-  return (
-    <Section>
-      {/*
-       * 1000 wide, as `Page Action Section` draws its title block (node `25037:46647`); the heading and
-       * line still keep `SectionTitle`'s own 900 measure, and the field its 600.
-       */}
-      <Stack gap={24} align="center" maw={1000} mx="auto">
-        <SectionTitle
-          align="center"
-          order={2}
-          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
-          description={spec.description}
-        />
-        {/* The consent line sits 8px under the field, so the two are one group inside the 24px stack. */}
-        <Stack gap={8} w="100%" maw={600}>
-          <Box component="form" onSubmit={(event) => event.preventDefault()}>
-            <TextInput
-              type="email"
-              aria-label="Work email"
-              placeholder={spec.placeholder}
-              containedButton={
-                <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
-                  {spec.submit}
-                </Button>
-              }
-            />
-          </Box>
-          {spec.consent ? (
-            /* `Paragraph/XX-Small` — 11/16 in primary text, the policy link underlined. */
-            <Text fz={11} lh="16px" c="var(--sds-surfaces-text-primary)" className={classes.closingConsent}>
-              {spec.consent.text}
-              {spec.consent.link ? (
-                <>
-                  {' '}
-                  <a href={spec.consent.link.href}>{spec.consent.link.label}</a>.
-                </>
-              ) : null}
-            </Text>
-          ) : null}
-        </Stack>
-        {spec.links?.length ? (
-          <Group gap={24} justify="center" wrap="wrap">
-            {spec.links.map((link) => (
-              <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
-                {link.label}
-              </Link>
-            ))}
-          </Group>
+  const content = (
+    /*
+     * 1000 wide, as `Page Action Section` draws its title block (node `25037:46647`); the heading and
+     * line still keep `SectionTitle`'s own 900 measure, and the field its 600.
+     */
+    <Stack gap={24} align="center" maw={1000} mx="auto">
+      <SectionTitle
+        align="center"
+        order={2}
+        title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+        description={spec.description}
+      />
+      {/* The consent line sits 8px under the field, so the two are one group inside the 24px stack. */}
+      <Stack gap={8} w="100%" maw={600}>
+        <Box component="form" onSubmit={(event) => event.preventDefault()}>
+          <TextInput
+            type="email"
+            aria-label="Work email"
+            placeholder={spec.placeholder}
+            containedButton={
+              <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+                {spec.submit}
+              </Button>
+            }
+          />
+        </Box>
+        {spec.consent ? (
+          /* `Paragraph/XX-Small` — 11/16 in primary text, the policy link underlined. */
+          <Text fz={11} lh="16px" c="var(--sds-surfaces-text-primary)" className={classes.closingConsent}>
+            {spec.consent.text}
+            {spec.consent.link ? (
+              <>
+                {' '}
+                <a href={spec.consent.link.href}>{spec.consent.link.label}</a>.
+              </>
+            ) : null}
+          </Text>
         ) : null}
-        {spec.aside ? (
+      </Stack>
+      {spec.links?.length ? (
+        <Group gap={24} justify="center" wrap="wrap">
+          {spec.links.map((link) => (
+            <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+              {link.label}
+            </Link>
+          ))}
+        </Group>
+      ) : null}
+      {spec.buttons?.length ? (
+        <Group gap={16} justify="center" wrap="wrap">
+          {spec.buttons.map((button) => (
+            <MantineButton key={button.label} component="a" href={button.href} variant="outline" size="sm">
+              {button.label}
+            </MantineButton>
+          ))}
+        </Group>
+      ) : null}
+      {spec.aside ? (
+        spec.asideLead ? (
+          /* `Not ready yet?` in primary, then the way to stay in touch as a small link. */
+          <Group gap={8} justify="center" wrap="wrap">
+            <Text fz={16} fw={600} lh={1.25} c="var(--sds-surfaces-text-primary)">
+              {spec.asideLead}
+            </Text>
+            <Link href={spec.aside.href} size="sm" rightSection={<IconArrowRight />}>
+              {spec.aside.label}
+            </Link>
+          </Group>
+        ) : (
           <Link href={spec.aside.href} size="sm" variant="secondary">
             {spec.aside.label}
           </Link>
-        ) : null}
-      </Stack>
+        )
+      ) : null}
+    </Stack>
+  )
+
+  if (spec.surface !== 'card') return <Section>{content}</Section>
+
+  return (
+    <Section>
+      {/*
+       * `Ready for the future?` (node `25092:74309`): the band in a rounded panel. With `mesh`, the
+       * footer's drifting colour field fills it at full strength, unmasked — the panel *is* the colour,
+       * where the footer only lets it rise up the foot of the page. It holds still under reduced motion.
+       */}
+      <div className={classes.ctaCard} data-backdrop={spec.backdrop}>
+        {spec.backdrop === 'mesh' ? <Footer.Mesh className={classes.ctaCardMesh} aria-hidden /> : null}
+        {content}
+      </div>
     </Section>
   )
 }
@@ -2916,7 +3263,9 @@ function StatsBarSection({ spec }: { spec: Extract<SectionSpec, { type: 'statsBa
         spec.title ? <SectionTitle align="center" title={spec.title} description={spec.description} /> : undefined
       }
     >
-      <StatBar align="center">{spec.stats.map((st, i) => renderStat(st, 'center', i))}</StatBar>
+      <StatBar align="center" className={spec.size === 'lg' ? classes.statsBarLarge : undefined}>
+        {spec.stats.map((st, i) => renderStat(st, 'center', i, spec.size === 'lg' ? { unitSize: 32 } : {}))}
+      </StatBar>
     </Section>
   )
 }

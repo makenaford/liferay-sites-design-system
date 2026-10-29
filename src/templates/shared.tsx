@@ -122,8 +122,8 @@ export function MeshBackdrop({ tone = 'hero' }: { tone?: 'hero' | 'wash' } = {})
 }
 
 /** The small unit that rides beside a `Stat`'s figure — the `%` in `140%`, the `+` in `+100M`. */
-export const unit = (u: string) => (
-  <Text span inherit fz={20} fw={600}>
+export const unit = (u: string, size = 20) => (
+  <Text span inherit fz={size} fw={600}>
     {u}
   </Text>
 )

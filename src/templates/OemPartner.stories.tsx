@@ -23,15 +23,15 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay OEM partner page — `Partner Pages` -> `OEM Partner` (node `87:20818`). Rendered from `oem-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
+          'The Liferay OEM partner page — Partner Pages -> `OEM` (node `148:27740`). Rendered from `oem-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'It brought two section types: `quotes`, the partner quote cards, and `stepsForm`, the `Path to Partnership` band — the steps after applying beside the application form, on the footer’s drifting mesh (`backdrop: \'mesh\'`). `Become an OEM Partner` in the hero jumps to it.',
+          'The feature cards in glass; `Why Partner` and `Is Liferay the Right Partner` as one-tab `tabbedContent`s beside the agent-builder photograph; the partner quotes with each partner’s logo opposite the quote mark; and `Path to Partnership` on a still corner glow (`backdrop: \'glow\'`). `Become an OEM Partner` in the hero jumps to the form.',
           '',
           '## Not final yet',
           '',
-          '- **The pictures are stand-ins** — the AI Hub film in the hero and a still from it in the two media sections.',
           '- **Four of the five `Why Partner` answers and two of the three FAQ answers are drafts**; the file shows only the open rows.',
-          '- **The logo strip is wordmarks**, and every link is `href="#"`, as on every other built page. The form sends nothing.',
+          '- **The ecosystem cards repeat the frame’s icons** — DAM on both destinations, the person-and-cubes mark on both programs.',
+          '- **Every link is `href="#"`**, as on every other built page. The form sends nothing.',
         ].join('\n'),
       },
     },
