@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createContext, Fragment, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import {
@@ -281,6 +281,21 @@ const countable = (value: string) => /^\d[\d,]*(\.\d+)?$/.test(value.trim())
  * `size` and `iconSide` are for the `Key Metrics` panel, whose `Stats Item` draws the arrow after the
  * figure (`Show Stat Icon Right`) at the small size; everywhere else the arrow leads.
  */
+/** Whether this page's figures count up — `PageSpec.countUp`, read where the figure is drawn. */
+const CountUpContext = createContext(true)
+
+/**
+ * A figure: counted when it is a number, printed when it is not.
+ *
+ * `StatSpec.value` is a string, and most of them are figures — but not all: a spec is free to say `24/7`
+ * or `A+`, and counting up to those means nothing. Parsing is the test, so a page gets the animation by
+ * writing a number rather than by remembering a flag — and opts out for the whole page with `countUp`.
+ */
+function StatFigure({ value }: { value: string }) {
+  const countUp = useContext(CountUpContext)
+  return countUp && countable(value) ? <CountUp value={Number(value.replace(/,/g, ''))} /> : <>{value}</>
+}
+
 function renderStat(
   stat: StatSpec,
   align?: 'center',
@@ -301,14 +316,7 @@ function renderStat(
       value={
         <>
           {stat.prefix ? unit(stat.prefix, unitSize) : null}
-          {/*
-           * Counted when the figure is a number, printed when it is not.
-           *
-           * `StatSpec.value` is a string, and most of them are figures — but not all: a spec is free to
-           * say `24/7` or `A+`, and counting up to those means nothing. Parsing is the test, so a page
-           * gets the animation by writing a number rather than by remembering a flag.
-           */}
-          {countable(stat.value) ? <CountUp value={Number(stat.value.replace(/,/g, ''))} /> : stat.value}
+          <StatFigure value={stat.value} />
           {stat.suffix ? unit(stat.suffix, unitSize) : null}
         </>
       }
@@ -2156,7 +2164,7 @@ function ContentBlockSection({ spec }: { spec: Extract<SectionSpec, { type: 'con
         order={2}
         eyebrow={
           spec.label ? (
-            <Label variant="gradient" size="sm">
+            <Label variant="gradient" size={spec.labelSize ?? 'sm'}>
               {spec.label}
             </Label>
           ) : undefined
@@ -3222,7 +3230,76 @@ function renderCtaAside(spec: Extract<SectionSpec, { type: 'closingCta' }>) {
 }
 
 function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closingCta' }> }) {
-  const content = (
+  /* The consent line sits 8px under the field, so the two are one group wherever the field goes. */
+  const field = (
+    <Stack gap={8} w="100%" maw={600}>
+      <Box component="form" onSubmit={(event) => event.preventDefault()}>
+        <TextInput
+          type="email"
+          aria-label="Work email"
+          placeholder={spec.placeholder}
+          containedButton={
+            <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
+              {spec.submit}
+            </Button>
+          }
+        />
+      </Box>
+      {spec.consent ? (
+        /* `Paragraph/XX-Small` — 11/16 in primary text, the policy link underlined. */
+        <Text fz={11} lh="16px" c="var(--sds-surfaces-text-primary)" className={classes.closingConsent}>
+          {spec.consent.text}
+          {spec.consent.link ? (
+            <>
+              {' '}
+              <a href={spec.consent.link.href}>{spec.consent.link.label}</a>.
+            </>
+          ) : null}
+        </Text>
+      ) : null}
+    </Stack>
+  )
+
+  const content =
+    spec.layout === 'split' ? (
+      /*
+       * `split`: the ask on the left, read like the hero, and the field with its ways on — the button at
+       * its start, the link at its end — on the right. One column under 992.
+       */
+      <div className={classes.ctaSplit}>
+        <SectionTitle
+          order={2}
+          title={highlightPhrase(spec.title, spec.titleHighlight, true)}
+          description={spec.description}
+        />
+        <Stack gap={16}>
+          {field}
+          {spec.buttons?.length || spec.aside ? (
+            <Group gap={16} wrap="wrap" className={classes.ctaSplitFoot}>
+              {spec.buttons?.length ? renderCtaButtons(spec.buttons) : null}
+              {spec.aside ? (
+                /*
+                 * The row's end (node `25122:54773`): `Not ready yet?` in white at 80%, then the way to
+                 * stay in touch as a white underlined link — quieter than the button, still a link.
+                 */
+                <Group gap={4} wrap="wrap" className={classes.ctaSplitAside}>
+                  {spec.asideLead ? <span className={classes.ctaSplitLead}>{spec.asideLead}</span> : null}
+                  <Link
+                    href={spec.aside.href}
+                    size="sm"
+                    variant="secondary"
+                    underline="always"
+                    rightSection={<IconArrowRight />}
+                  >
+                    {spec.aside.label}
+                  </Link>
+                </Group>
+              ) : null}
+            </Group>
+          ) : null}
+        </Stack>
+      </div>
+    ) : (
     /*
      * 1000 wide, as `Page Action Section` draws its title block (node `25037:46647`); the heading and
      * line still keep `SectionTitle`'s own 900 measure, and the field its 600.
@@ -3234,33 +3311,7 @@ function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closi
         title={highlightPhrase(spec.title, spec.titleHighlight, true)}
         description={spec.description}
       />
-      {/* The consent line sits 8px under the field, so the two are one group inside the 24px stack. */}
-      <Stack gap={8} w="100%" maw={600}>
-        <Box component="form" onSubmit={(event) => event.preventDefault()}>
-          <TextInput
-            type="email"
-            aria-label="Work email"
-            placeholder={spec.placeholder}
-            containedButton={
-              <Button type="submit" size="sm" rightSection={<IconArrowRight />}>
-                {spec.submit}
-              </Button>
-            }
-          />
-        </Box>
-        {spec.consent ? (
-          /* `Paragraph/XX-Small` — 11/16 in primary text, the policy link underlined. */
-          <Text fz={11} lh="16px" c="var(--sds-surfaces-text-primary)" className={classes.closingConsent}>
-            {spec.consent.text}
-            {spec.consent.link ? (
-              <>
-                {' '}
-                <a href={spec.consent.link.href}>{spec.consent.link.label}</a>.
-              </>
-            ) : null}
-          </Text>
-        ) : null}
-      </Stack>
+      {field}
       {spec.links?.length ? (
         <Group gap={24} justify="center" wrap="wrap">
           {spec.links.map((link) => (
@@ -3301,7 +3352,7 @@ function ClosingCtaSection({ spec }: { spec: Extract<SectionSpec, { type: 'closi
        * footer's drifting colour field fills it at full strength, unmasked — the panel *is* the colour,
        * where the footer only lets it rise up the foot of the page. It holds still under reduced motion.
        */}
-      <div className={classes.ctaCard} data-backdrop={spec.backdrop}>
+      <div className={classes.ctaCard} data-backdrop={spec.backdrop} data-layout={spec.layout}>
         {spec.backdrop === 'mesh' ? <Footer.Mesh className={classes.ctaCardMesh} aria-hidden /> : null}
         {content}
       </div>
@@ -3508,7 +3559,7 @@ export function SectionBlock({ section }: { section: SectionSpec }) {
 
 export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {
   return (
-    <>
+    <CountUpContext.Provider value={page.countUp ?? true}>
       {renderHero(page.hero, bubble)}
       {page.sections.map((section, index) =>
         /*
@@ -3523,7 +3574,7 @@ export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: Bubble
           renderSection(section, index)
         ),
       )}
-    </>
+    </CountUpContext.Provider>
   )
 }
 

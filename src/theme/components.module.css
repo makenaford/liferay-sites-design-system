@@ -13383,6 +13383,79 @@ a.secondaryNavTitle:focus-visible {
   }
 }
 
+/*
+ * `layout: 'split'` — the heading and line on the left, the field on the right at up to 520, 80 apart and
+ * centred on each other; the button at the foot's start and the link at its end. One column under 992,
+ * where the panel's centred heading rules give way to the left edge.
+ */
+.ctaSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 596px);
+  gap: 32px 40px;
+  align-items: center;
+  text-align: start;
+}
+
+/*
+ * The split panel (node `25122:54773`) runs out to the page's content edges — the section's gutter —
+ * and pads back in by the same, so its copy starts on the line every other section's does. 16 round.
+ */
+.ctaCard[data-layout='split'] {
+  margin-inline: calc(-1 * var(--sds-section-gutter, 80px));
+  padding: clamp(40px, 6cqi, 80px) var(--sds-section-gutter, 80px);
+  border-radius: 16px;
+}
+
+.ctaCard .ctaSplit h2 {
+  margin-inline: 0;
+  max-width: none;
+  /* Filled to the column's width, as drawn, rather than balanced into two short lines. */
+  text-wrap: wrap;
+}
+
+/* 24 between the heading and the line, as the frame's `Content Block` sets it. */
+.ctaCard .ctaSplit h2 + p,
+.ctaCard .ctaSplit h2 + * {
+  margin-block-start: 16px;
+}
+
+/* `Paragraph/Large/Regular` (21/1.25), 24 under the heading; no one-word last line. */
+.ctaCard .ctaSplit h2 + p,
+.ctaCard .ctaSplit h2 + * p {
+  font-size: clamp(18px, 1.6cqi, 21px);
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+
+.ctaCard .ctaSplitFoot {
+  justify-content: space-between;
+}
+
+.ctaSplitAside {
+  justify-content: flex-end;
+}
+
+.ctaSplitLead {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:where([data-mantine-color-scheme='light']) .ctaSplitLead {
+  color: var(--sds-surfaces-text-secondary);
+}
+
+@media (max-width: 62em) {
+  .ctaSplit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ctaCard .ctaSplitFoot {
+    justify-content: flex-start;
+  }
+}
+
 .ctaCard[data-backdrop='mesh'] {
   border-color: transparent;
 }

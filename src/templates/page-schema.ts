@@ -726,6 +726,11 @@ type SectionBody =
   | {
       type: 'contentBlock'
       label?: string
+      /**
+       * The label's size. `lg` is the 40px pill the Solutions hub's overview draws (node `24920:83477`);
+       * `sm` the catalog's small tag. @default 'sm'
+       */
+      labelSize?: 'sm' | 'lg'
       title: string
       titleHighlight?: string
       description?: string
@@ -939,6 +944,12 @@ type SectionBody =
       surface?: 'none' | 'card'
       /** `mesh` fills the panel with the footer's drifting colour field. Meant for `surface: 'card'`. */
       backdrop?: 'mesh'
+      /**
+       * `split` sets the heading and line on the left and the field on the right, the buttons and the
+       * `aside` link in one row under it — read left to right like a hero, at about two thirds the height
+       * of the centred band. One column on a narrow screen. @default 'center'
+       */
+      layout?: 'center' | 'split'
       /**
        * The fine print under the field — a newsletter's consent line, as `Page Action Section` draws it
        * (node `25037:46647`): `Paragraph/XX-Small` 11/16, 8px under the field. `link` follows `text`.
@@ -1208,4 +1219,10 @@ type SectionBody =
 export interface PageSpec {
   hero: HeroSpec
   sections: SectionSpec[]
+  /**
+   * Whether the page's figures count up as they arrive. `false` prints every figure as written — for a
+   * page whose figures sit in cards read side by side, where a row of numbers ticking up competes with
+   * the reading. @default true
+   */
+  countUp?: boolean
 }
