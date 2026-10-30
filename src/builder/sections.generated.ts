@@ -2141,6 +2141,18 @@ export const DEFS: Record<string, Shape> = {
             }
           },
           {
+            "name": "labelSize",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "sm",
+                "lg"
+              ]
+            },
+            "doc": "The label's size. `lg` is the 40px pill the Solutions hub's overview draws (node `24920:83477`); `sm` the catalog's small tag."
+          },
+          {
             "name": "title",
             "optional": false,
             "shape": {
@@ -3649,6 +3661,18 @@ export const DEFS: Record<string, Shape> = {
               ]
             },
             "doc": "`mesh` fills the panel with the footer's drifting colour field. Meant for `surface: 'card'`."
+          },
+          {
+            "name": "layout",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "center",
+                "split"
+              ]
+            },
+            "doc": "`split` sets the heading and line on the left and the field on the right, the buttons and the `aside` link in one row under it — read left to right like a hero, at about two thirds the height of the centred band. One co…"
           },
           {
             "name": "consent",

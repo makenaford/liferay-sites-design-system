@@ -9,6 +9,7 @@ import webPortals from '../../assets/home/trending/web-portals.jpg'
 import digitalStrategy from '../../assets/home/trending/digital-strategy.jpg'
 import b2bEcommerce from '../../assets/home/trending/b2b-ecommerce.jpg'
 import type { PageSpec } from './page-schema'
+import { CUSTOMER_STORIES } from './customer-stories'
 
 /*
  * The Solutions hub, as data — laid out as the Solutions Library's `Solutions Hub` frame (Figma
@@ -30,6 +31,8 @@ const DASHBOARD = {
 }
 
 export const SOLUTIONS_HUB_PAGE: PageSpec = {
+  /* The figures print as written: they sit in cards read side by side, not in a band of their own. */
+  countUp: false,
   /*
    * The frame's `Hero` (node `24920:87684`): one column — the heading, the value props, the email field,
    * the links, then the rating beside the badges with the marks under it — beside the picture. The
@@ -81,13 +84,15 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'contentBlock',
       anchor: 'overview',
       label: 'Overview',
+      labelSize: 'lg',
       title: 'What can you build on Liferay DXP?',
       description:
         'Liferay solutions are proven blueprints for the experiences enterprises depend on most: authenticated portals for customers, partners, and suppliers; high-performing public websites; B2B and B2C commerce; and modern intranets. Each one is built on the same composable platform, so content, identity, integrations, and AI are shared across every experience. Start with the solution you need today and expand without re-platforming tomorrow.',
       actionLead: 'Looking for individual features instead?',
       action: { label: 'Switch to the Platform Capabilities hub', href: '#' },
       media: DASHBOARD,
-      mediaSide: 'right',
+      /* The picture leads, as node `24920:83477` draws it. */
+      mediaSide: 'left',
     },
     {
       type: 'cardGrid',
@@ -274,48 +279,13 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       align: 'left',
       surface: 'glass',
       action: { label: 'Browse all customer stories', href: '#' },
-      stories: [
-        {
-          /* `Sky TV` and `City of Vienna` are the keys the library's logo tiles are filed under. */
-          customer: 'Sky TV',
-          value: '140',
-          suffix: '%',
-          label: 'Increase in customer self-service',
-          quote:
-            'With Liferay, [Sky can] scale automatically or on a schedule a lot quicker than we could do before.',
-          name: 'Jacques Hefer',
-          role: 'Solution Architect',
-        },
-        {
-          customer: 'City of Vienna',
-          value: '100M',
-          prefix: '+',
-          label: 'Site views per month',
-          quote:
-            'Liferay’s out-of-the-box features mean we can offer state-of-the-art communication trends and methods, quickly and conveniently.',
-          name: 'Nikolaus Reisel',
-          role: 'GBS Group Leader: Basic Systems and Platforms',
-        },
-        {
-          customer: 'Broadcom',
-          value: '845',
-          label: 'Features implemented',
-          quote:
-            'We don’t look at Liferay as the vendor. We see them as a partner. Everything we wanted to do in terms of providing customer self-service has been realized.',
-          name: 'Erica Callaghan',
-          role: 'Communications and UX Officer, Global Technology Organization',
-        },
-        {
-          customer: 'Meridian Bank',
-          value: '62',
-          suffix: '%',
-          label: 'Fewer service calls',
-          quote:
-            'Clients now open accounts, upload documents, and track requests in one place, and our advisors finally see the same picture they do.',
-          name: 'Dana Whitfield',
-          role: 'VP Digital Channels',
-        },
-      ],
+      /*
+       * liferay.com's own eight, as its home page tells them. Mueller's figure is the live site's 70%;
+       * the testimonials sheet the Home page follows says 73.
+       */
+      stories: CUSTOMER_STORIES.map((story) =>
+        story.customer === 'Mueller, Inc.' ? { ...story, value: '70' } : story,
+      ),
     },
     {
       type: 'capabilityMap',
@@ -370,8 +340,9 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'closingCta',
       surface: 'card',
       backdrop: 'mesh',
-      /* Broken after the comma, as the frame draws it — the panel keeps a title's line breaks. */
-      title: 'See the solution you need,\nbuilt on the platform you’ll keep',
+      /* The frame's `Section` (node `25122:54773`): the ask beside the field rather than over it. */
+      layout: 'split',
+      title: 'See the solution you need, built on the platform you’ll keep',
       description:
         'Talk to a Liferay specialist about your portal, website, commerce, or intranet goals and get a tailored walkthrough with your use case in mind.',
       placeholder: 'Work email',
