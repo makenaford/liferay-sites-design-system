@@ -16,6 +16,14 @@
         "builder:worker"
       ],
       "port": 8787
+    },
+    {
+      "name": "page-builder-ui",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "builder:dev"
+      ],
+      "port": 5173
     }
   ]
 }
