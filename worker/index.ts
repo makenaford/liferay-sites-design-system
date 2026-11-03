@@ -29,6 +29,7 @@
  * | Route | Who |
  * | --- | --- |
  * | `GET /edit/new` | Access. Names a page and redirects into it |
+ * | `GET /edit/sign-in` | Access. Signs in and redirects to the library |
  * | `GET /api/me` | anyone — reports whether you are signed in |
  * | `GET /api/pages/:id` | Access, or the page's code |
  * | `PUT /api/pages/:id` | Access |
@@ -211,6 +212,16 @@ export default {
      * "new page" is a single link a signed-out person can follow, rather than a button that only
      * appears after signing in somewhere else.
      */
+    /*
+     * Signing in, and nothing else: Access covers `/edit/*`, so reaching this path means a login has
+     * happened, and the editor is sent on to the library. Kept apart from `/edit/new`, which signing
+     * in used to be — that left everyone who only meant to sign in on a brand-new empty page.
+     */
+    if (url.pathname === '/edit/sign-in') {
+      if (!who.authed) return signInNeeded(url)
+      return Response.redirect(new URL('/', url).toString(), 302)
+    }
+
     if (url.pathname === '/edit/new') {
       if (!who.authed) return signInNeeded(url)
       /*
@@ -758,7 +769,7 @@ async function deleteAssets(env: Env, page: string): Promise<void> {
  * login screen rather than another 401.
  */
 const signInNeeded = (url: URL) =>
-  json({ error: 'Sign in to edit', signIn: new URL('/edit/new', url).toString() }, 401)
+  json({ error: 'Sign in to edit', signIn: new URL('/edit/sign-in', url).toString() }, 401)
 
 /* ------------------------------------------------------------------ the builder's own files */
 
