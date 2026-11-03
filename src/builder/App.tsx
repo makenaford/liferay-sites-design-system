@@ -154,8 +154,11 @@ const TYPING = 'textarea, [contenteditable="true"], input:not([type="radio"]):no
  */
 const RECENT_KEY = 'sds-builder-recent'
 
-/** Where an unauthenticated visitor is sent to sign in — a path the Access application covers. */
-const SIGN_IN = '/edit/new'
+/**
+ * Where an unauthenticated visitor is sent to sign in — a path the Access application covers, which
+ * the Worker answers by sending a signed-in editor on to the library.
+ */
+const SIGN_IN = '/edit/sign-in'
 
 interface Me {
   authed: boolean
@@ -220,20 +223,13 @@ function Home() {
       </Text>
 
       {/*
-        * One link either way. Signing in *is* creating a page: `/edit/new` is covered by the Access
-        * application, so following it produces the one-time-code screen for anyone who has not signed
-        * in, and lands on a fresh page for anyone who has. A separate "sign in" button would be a
-        * second way to reach the same screen.
+        * Signed in, this screen is never shown — the library is. So the one thing to offer here is
+        * the way in: `/edit/sign-in` is covered by the Access application, so following it produces
+        * the one-time-code screen, and the Worker then sends the editor back to the library.
         */}
       <Button component="a" href={SIGN_IN} size="md" disabled={me === null}>
-        {me?.authed ? 'New page' : 'Sign in to create a page'}
+        Sign in
       </Button>
-
-      {me?.authed && me.email ? (
-        <Text size="xs" c="dimmed" mt="8">
-          Signed in as {me.email}
-        </Text>
-      ) : null}
 
       {recent.length ? (
         <Box mt="40">
