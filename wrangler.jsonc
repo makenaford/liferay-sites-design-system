@@ -78,5 +78,15 @@
     "ACCESS_AUD": "6d25b3a25bce831e42953ef64e9683cb1bf451c0ab45c56b43de51f86563749b"
   },
 
+  /*
+   * Cloudflare Email Service, for "you were mentioned" and "a page was shared with you".
+   *
+   * Sending also needs `MAIL_FROM`, an address on a domain onboarded to Email Sending
+   * (`wrangler email sending enable <domain>`). Until that is set, the Worker sends nothing and the
+   * comments work exactly the same — see `worker/mail.ts`. `wrangler dev` simulates the binding and
+   * prints each email to the console rather than sending it.
+   */
+  "send_email": [{ "name": "EMAIL" }],
+
   "observability": { "enabled": true }
 }

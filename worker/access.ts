@@ -189,7 +189,12 @@ const isLocal = (url: URL) =>
 
 export async function identify(request: Request, env: AccessConfig, url: URL): Promise<Identity> {
   if (env.ACCESS_DEV_OPEN === 'true' && isLocal(url)) {
-    return { authed: true, email: 'dev@localhost' }
+    /*
+     * A `dev_as` cookie signs in as someone else, so sharing and mentions can be tried with more than
+     * one person on one machine. Behind the same two locks as the bypass itself.
+     */
+    const as = decodeURIComponent(cookie(request, 'dev_as') ?? '')
+    return { authed: true, email: /^[^\s@;]+@[^\s@;]+$/.test(as) ? as : 'dev@localhost' }
   }
 
   const domain = env.ACCESS_TEAM_DOMAIN

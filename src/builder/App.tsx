@@ -49,6 +49,7 @@ import { builtPageContent, builtPageFor } from './templates'
 import { Library, StatusMenu } from './LibraryScreen'
 import { CommentLayer, type Draft } from './CommentLayer'
 import { CommentsPanel, pinnedThreads } from './CommentsPanel'
+import { markMentionsSeen, mentioning, mentionsSeenAt } from './Mentions'
 import { VersionsPanel } from './VersionsPanel'
 import { CompareView, VersionView } from './VersionScreens'
 import { placementFor, refusal } from './placement'
@@ -500,6 +501,37 @@ function Builder({ id }: { id: string }) {
   const [activeThread, setActiveThread] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
 
+  /*
+   * `/edit/:id?thread=…` — the link in a mention email. Once the conversation has loaded, the thread
+   * is opened in the rail and its component brought into view, and the query is taken off the address.
+   */
+  const linkedThread = useRef(new URLSearchParams(location.search).get('thread'))
+  useEffect(() => {
+    const thread = linkedThread.current
+    if (!thread || !doc || !page.comments) return
+    linkedThread.current = null
+    history.replaceState({}, '', location.pathname)
+    const root = page.comments.comments.find((comment) => comment.id === thread)
+    if (!root) return setNotice('That thread has since been deleted')
+    setRail('comments')
+    setActiveThread(thread)
+    if (root.node && doc.nodes[root.node]) {
+      setSelectedId(root.node)
+      setReveal((n) => n + 1)
+    }
+  }, [doc, page.comments])
+
+  /* Mentions of you since you last had the comments open. Looking at the rail counts as reading them. */
+  const [seenAt, setSeenAt] = useState(() => mentionsSeenAt(id))
+  useEffect(() => {
+    if (rail !== 'comments' || !page.comments) return
+    markMentionsSeen(id)
+    setSeenAt(Date.now())
+  }, [rail, page.comments, id])
+  const unreadMentions = page.comments
+    ? mentioning(page.comments, me?.email?.toLowerCase() ?? null).filter((comment) => comment.at > seenAt).length
+    : 0
+
   useEffect(() => {
     if (doc) {
       document.title = `${doc.title} — Page builder`
@@ -854,7 +886,12 @@ function Builder({ id }: { id: string }) {
             data={[
               { value: 'inspect', label: 'Inspect' },
               ...(page.comments
-                ? [{ value: 'comments', label: openThreads ? `Comments ${openThreads}` : 'Comments' }]
+                ? [
+                    {
+                      value: 'comments',
+                      label: `Comments${openThreads ? ` ${openThreads}` : ''}${unreadMentions ? ` · @${unreadMentions}` : ''}`,
+                    },
+                  ]
                 : []),
               { value: 'versions', label: page.versions?.length ? `Versions ${page.versions.length}` : 'Versions' },
             ]}

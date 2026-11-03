@@ -4,11 +4,15 @@
  * Three groups, in the order someone reviewing wants them: **open** threads, numbered to match their
  * pins; **detached** ones, whose component has since been deleted — kept, because the conversation
  * about a removed section is often why it was removed; and **resolved**, folded away.
+ *
+ * Above them, who the page is shared with (`PeopleBar`), and a switch to just the threads that
+ * @mention you. Every comment box offers the page's members as soon as `@` is typed.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ActionIcon, Box, Button, Divider, Group, Menu, Stack, Text, Textarea, Tooltip, UnstyledButton } from '@mantine/core'
+import { ActionIcon, Box, Button, Divider, Group, Menu, SegmentedControl, Stack, Text, Tooltip, UnstyledButton } from '@mantine/core'
 import type { PageDocument } from './document'
-import { handle, threadsOf, type CommentsState, type PageComment, type Thread } from './comments'
+import { handle, threadsOf, type CommentsState, type PageComment, type PageMember, type Thread } from './comments'
+import { CommentText, MentionTextarea, PeopleBar, mentioning } from './Mentions'
 import type { CommentActions } from './usePage'
 import type { Draft } from './CommentLayer'
 import { summarise } from './Inspector'
@@ -50,9 +54,16 @@ const submitOnShortcut = (send: () => void) => (event: React.KeyboardEvent) => {
   }
 }
 
-export function CommentsPanel({ doc, state, me, actions, activeThread, onActivate, draft, onDraftDone, onReveal }: CommentsPanelProps) {
+export function CommentsPanel({ doc, state, me: signedIn, actions, activeThread, onActivate, draft, onDraftDone, onReveal }: CommentsPanelProps) {
   const [showResolved, setShowResolved] = useState(false)
-  const threads = useMemo(() => threadsOf(state.comments), [state])
+  const [only, setOnly] = useState<'all' | 'mentions'>('all')
+  // Members are stored lower-cased; so is the comparison.
+  const me = signedIn?.toLowerCase() ?? null
+  const mentionsOfMe = useMemo(() => mentioning(state, me), [state, me])
+  const all = useMemo(() => threadsOf(state.comments), [state])
+  // Back to everything once nothing mentions you, rather than an empty filter with no switch to leave it.
+  const filtering = only === 'mentions' && mentionsOfMe.length > 0
+  const threads = filtering ? all.filter(({ root }) => mentionsOfMe.some((comment) => comment.thread === root.id)) : all
   // The same list the pins are drawn from, so a thread's number here matches its pin on the page.
   const pinned = useMemo(() => pinnedThreads(doc, state, activeThread), [doc, state, activeThread])
 
@@ -72,6 +83,7 @@ export function CommentsPanel({ doc, state, me, actions, activeThread, onActivat
       thread={thread}
       number={number(thread.root.id)}
       me={me}
+      members={state.members}
       actions={actions}
       active={thread.root.id === activeThread}
       onActivate={() => {
@@ -83,10 +95,29 @@ export function CommentsPanel({ doc, state, me, actions, activeThread, onActivat
 
   return (
     <Stack gap="sm" p="sm">
-      {draft ? <Composer doc={doc} draft={draft} actions={actions} onDone={onDraftDone} /> : null}
+      <PeopleBar state={state} me={me} actions={actions} />
+
+      {mentionsOfMe.length ? (
+        <SegmentedControl
+          size="xs"
+          fullWidth
+          value={only}
+          onChange={(value) => setOnly(value as typeof only)}
+          data={[
+            { value: 'all', label: 'All threads' },
+            { value: 'mentions', label: `Mentioning me ${mentionsOfMe.length}` },
+          ]}
+        />
+      ) : null}
+
+      {draft ? <Composer doc={doc} draft={draft} actions={actions} members={state.members} me={me} onDone={onDraftDone} /> : null}
 
       {open.length ? (
         open.map(card)
+      ) : filtering ? (
+        <Text size="xs" c="dimmed">
+          No open threads mention you.
+        </Text>
       ) : !draft ? (
         <Text size="xs" c="dimmed">
           No open comments. Press <b>C</b> or use <b>Comment</b>, then click anywhere on the page to start
@@ -121,7 +152,21 @@ export function CommentsPanel({ doc, state, me, actions, activeThread, onActivat
 
 /* ------------------------------------------------------------------ writing a new thread */
 
-function Composer({ doc, draft, actions, onDone }: { doc: PageDocument; draft: Draft; actions: CommentActions; onDone: () => void }) {
+function Composer({
+  doc,
+  draft,
+  actions,
+  members,
+  me,
+  onDone,
+}: {
+  doc: PageDocument
+  draft: Draft
+  actions: CommentActions
+  members: PageMember[]
+  me: string | null
+  onDone: () => void
+}) {
   const [body, setBody] = useState('')
   const [busy, setBusy] = useState(false)
   const field = useRef<HTMLTextAreaElement>(null)
@@ -147,14 +192,16 @@ function Composer({ doc, draft, actions, onDone }: { doc: PageDocument; draft: D
       <Text size="10px" c="dimmed" mb={4}>
         New comment on <b>{anchorLabel(doc, draft.node)}</b>
       </Text>
-      <Textarea
+      <MentionTextarea
         ref={field}
         size="xs"
         autosize
         minRows={2}
-        placeholder="What should change?"
+        placeholder={members.length ? 'What should change? @ to mention someone' : 'What should change?'}
         value={body}
-        onChange={(event) => setBody(event.currentTarget.value)}
+        onChange={setBody}
+        members={members}
+        self={me}
         onKeyDown={submitOnShortcut(() => void send())}
       />
       <Group justify="flex-end" gap="xs" mt={6}>
@@ -176,6 +223,7 @@ function ThreadCard({
   thread,
   number,
   me,
+  members,
   actions,
   active,
   onActivate,
@@ -184,6 +232,7 @@ function ThreadCard({
   thread: Thread
   number: number | null
   me: string | null
+  members: PageMember[]
   actions: CommentActions
   active: boolean
   onActivate: () => void
@@ -227,21 +276,23 @@ function ThreadCard({
       </Group>
 
       <Stack gap={8} onClick={active ? undefined : onActivate} style={{ cursor: active ? undefined : 'pointer' }}>
-        <CommentView comment={root} doc={doc} me={me} actions={actions} />
+        <CommentView comment={root} doc={doc} me={me} members={members} actions={actions} />
         {replies.map((comment) => (
-          <CommentView key={comment.id} comment={comment} doc={doc} me={me} actions={actions} />
+          <CommentView key={comment.id} comment={comment} doc={doc} me={me} members={members} actions={actions} />
         ))}
       </Stack>
 
       {active ? (
         <Box mt={8}>
-          <Textarea
+          <MentionTextarea
             size="xs"
             autosize
             minRows={1}
             placeholder={resolved ? 'Reply to reopen…' : 'Reply…'}
             value={reply}
-            onChange={(event) => setReply(event.currentTarget.value)}
+            onChange={setReply}
+            members={members}
+            self={me}
             onKeyDown={submitOnShortcut(() => void send())}
           />
           {reply.trim() ? (
@@ -257,10 +308,22 @@ function ThreadCard({
   )
 }
 
-function CommentView({ comment, doc, me, actions }: { comment: PageComment; doc: PageDocument; me: string | null; actions: CommentActions }) {
+function CommentView({
+  comment,
+  doc,
+  me,
+  members,
+  actions,
+}: {
+  comment: PageComment
+  doc: PageDocument
+  me: string | null
+  members: PageMember[]
+  actions: CommentActions
+}) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(comment.body)
-  const mine = me !== null && comment.author === me
+  const mine = me !== null && comment.author.toLowerCase() === me
 
   const save = async () => {
     if (await actions.edit(comment.id, draft)) setEditing(false)
@@ -300,7 +363,7 @@ function CommentView({ comment, doc, me, actions }: { comment: PageComment; doc:
       </Group>
       {editing ? (
         <Box mt={4}>
-          <Textarea size="xs" autosize value={draft} onChange={(event) => setDraft(event.currentTarget.value)} onKeyDown={submitOnShortcut(() => void save())} />
+          <MentionTextarea size="xs" autosize value={draft} onChange={setDraft} members={members} self={me} onKeyDown={submitOnShortcut(() => void save())} />
           <Group justify="flex-end" gap="xs" mt={4}>
             <Button size="compact-xs" variant="subtle" color="gray" onClick={() => { setEditing(false); setDraft(comment.body) }}>
               Cancel
@@ -311,9 +374,7 @@ function CommentView({ comment, doc, me, actions }: { comment: PageComment; doc:
           </Group>
         </Box>
       ) : (
-        <Text size="xs" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-          {comment.body}
-        </Text>
+        <CommentText body={comment.body} members={members} me={me} />
       )}
     </Box>
   )

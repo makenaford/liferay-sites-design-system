@@ -31,6 +31,10 @@ export interface CommentActions {
   edit: (id: string, body: string) => Promise<boolean>
   resolve: (thread: string, resolved: boolean) => Promise<boolean>
   remove: (id: string) => Promise<boolean>
+  /** Shares the conversation with a colleague, by email. They are emailed a link. */
+  share: (email: string) => Promise<boolean>
+  /** Takes someone off the page's conversation. */
+  unshare: (email: string) => Promise<boolean>
 }
 
 export type Status = 'loading' | 'ready' | 'denied' | 'error'
@@ -102,7 +106,9 @@ export function usePage(id: string | null, key?: string | null): Page {
 
   /* The fetch and the socket can deliver the conversation in either order; the newer copy wins. */
   const takeComments = useCallback((next: CommentsState) => {
-    setComments((current) => (current && current.version > next.version ? current : next))
+    // `members` is optional only because an older Worker did not send it.
+    const state = { ...next, members: next.members ?? [] }
+    setComments((current) => (current && current.version > state.version ? current : state))
   }, [])
   const [saving, setSaving] = useState(false)
   const [depth, setDepth] = useState({ undo: 0, redo: 0 })
@@ -270,13 +276,16 @@ export function usePage(id: string | null, key?: string | null): Page {
         message?: string
         version?: number
         comments?: CommentsState['comments']
+        members?: CommentsState['members']
       }
       if (message.type === 'versions' && Array.isArray((message as { versions?: unknown }).versions)) {
         return setVersions((message as unknown as { versions: PageVersion[] }).versions)
       }
       if (message.type === 'comments' && message.comments && typeof message.version === 'number') {
-        return takeComments({ version: message.version, comments: message.comments })
+        return takeComments({ version: message.version, comments: message.comments, members: message.members ?? [] })
       }
+      // Taken off the page: the conversation is no longer this person's to see.
+      if (message.type === 'comments-closed') return setComments(null)
       if (message.type === 'error') return setError(message.message ?? 'Save failed')
       if (!message.doc) return
 
@@ -373,19 +382,20 @@ export function usePage(id: string | null, key?: string | null): Page {
   )
 
   const commentActions = useMemo<CommentActions>(() => {
-    const call = async (path: string, method: string, body?: unknown): Promise<boolean> => {
+    const call = async (path: string, method: string, body?: unknown, base = 'comments'): Promise<boolean> => {
       if (!id) return false
-      const response = await fetch(`/api/pages/${id}/comments${path}`, {
+      const response = await fetch(`/api/pages/${id}/${base}${path}`, {
         method,
         headers: body ? { 'content-type': 'application/json' } : undefined,
         body: body ? JSON.stringify(body) : undefined,
       })
-      const answer = (await response.json().catch(() => ({}))) as CommentsState & { error?: string }
+      const answer = (await response.json().catch(() => ({}))) as CommentsState & { error?: string; closed?: boolean }
       if (!response.ok) {
         setError(answer.error ?? 'That comment did not go through')
         return false
       }
-      takeComments(answer)
+      if (answer.closed) setComments(null)
+      else takeComments(answer)
       return true
     }
     return {
@@ -393,6 +403,8 @@ export function usePage(id: string | null, key?: string | null): Page {
       edit: (commentId, body) => call(`/${commentId}`, 'PATCH', { body }),
       resolve: (thread, resolved) => call(`/${thread}`, 'PATCH', { resolved }),
       remove: (commentId) => call(`/${commentId}`, 'DELETE'),
+      share: (email) => call('', 'POST', { email }, 'members'),
+      unshare: (email) => call(`/${encodeURIComponent(email)}`, 'DELETE', undefined, 'members'),
     }
   }, [id, takeComments])
 
