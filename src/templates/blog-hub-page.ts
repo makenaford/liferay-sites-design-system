@@ -3,7 +3,7 @@ import authorPhoto2 from '../../assets/blog/authors/author-2.webp'
 import authorPhoto3 from '../../assets/blog/authors/author-3.webp'
 import authorPhoto4 from '../../assets/blog/authors/author-4.webp'
 import liferayTeamMark from '../../assets/blog/authors/liferay-team.png'
-import type { BlogPostSpec, PageSpec } from './page-schema'
+import type { BlogPostSpec, PageSpec, SectionSpec } from './page-schema'
 
 /*
  * The blog hub, as data.
@@ -448,6 +448,17 @@ export const POSTS = Object.fromEntries(
  */
 const CARD = { card: 'plain', byline: 'stacked', tagPosition: 'top', tagStyle: 'pill' } as const
 
+type TopicShelf = Extract<SectionSpec, { type: 'blogFeature' }>
+
+/**
+ * A topic shelf whose cards are tagged with the shelf's own name, so a card says the topic it is filed
+ * under here rather than whatever tags its post carries.
+ */
+const topicShelf = (shelf: Omit<TopicShelf, 'type'>): TopicShelf => {
+  const tagged = (post: BlogPostSpec): BlogPostSpec => ({ ...post, tags: [shelf.title] })
+  return { type: 'blogFeature', ...shelf, lead: tagged(shelf.lead), posts: shelf.posts.map(tagged) }
+}
+
 export const BLOG_HUB_PAGE: PageSpec = {
   /* No description, no ask: the hub's heading says what the blog is for, and the shelves do the rest. */
   hero: {
@@ -479,8 +490,7 @@ export const BLOG_HUB_PAGE: PageSpec = {
         POSTS.vibeCodingDebt,
       ],
     },
-    {
-      type: 'blogFeature',
+    topicShelf({
       title: 'Digital Experience',
       anchor: 'digital-experience',
       ...CARD,
@@ -489,9 +499,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       action: { label: 'View All', href: '#' },
       lead: POSTS.modernizeLegacy,
       posts: [POSTS.cmsMcpServer, POSTS.whatIsLiferay, POSTS.netwaysPartnerPulse],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'AI and Automation',
       anchor: 'ai-and-automation',
       ...CARD,
@@ -500,9 +509,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       action: { label: 'View All', href: '#' },
       lead: POSTS.aiAgentsInAction,
       posts: [POSTS.translationNotEnough, POSTS.agentGovernanceAccess, POSTS.solvingAiGovernance],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'Customer Experience',
       anchor: 'customer-experience',
       ...CARD,
@@ -511,9 +519,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       action: { label: 'View All', href: '#' },
       lead: POSTS.structuredContent,
       posts: [POSTS.evaluateCms, POSTS.webtownPartnerPulse, POSTS.intranetContentManagement],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'Digital Commerce',
       anchor: 'digital-commerce',
       ...CARD,
@@ -523,9 +530,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       /* The first four blogs in the Resource Hub's Blog + Commerce filter, in its order. */
       lead: POSTS.webtownPartnerPulse,
       posts: [POSTS.composableVsHeadless, POSTS.headlessVsTraditional, POSTS.b2bDataQuestions],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'Industry and Public Sector',
       anchor: 'industry-and-public-sector',
       ...CARD,
@@ -535,9 +541,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       /* The Resource Hub's Blog + every-industry filter returns these three, in this order. */
       lead: POSTS.ecmHigherEducation,
       posts: [POSTS.ecmGovernment, POSTS.ecmHealthcare],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'Developer',
       anchor: 'developer',
       ...CARD,
@@ -546,9 +551,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       /* The first four in the Resource Hub's Blog + Developer filter, in its order. */
       lead: POSTS.vibeCodingExamples,
       posts: [POSTS.vibeCodingDebt, POSTS.vibeCodingVsLowCode, POSTS.agenticAiMarketing],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'Marketing Automation',
       anchor: 'marketing-automation',
       ...CARD,
@@ -558,9 +562,8 @@ export const BLOG_HUB_PAGE: PageSpec = {
       /* The first four in the Resource Hub's Blog + Marketing Automation filter, in its order. */
       lead: POSTS.buyersWantFromAi,
       posts: [POSTS.technopolisPartnerPulse, POSTS.europeanAccessibilityAct, POSTS.skodaEmployeeValue],
-    },
-    {
-      type: 'blogFeature',
+    }),
+    topicShelf({
       title: 'SEO and Analytics',
       anchor: 'seo-and-analytics',
       ...CARD,
@@ -570,7 +573,7 @@ export const BLOG_HUB_PAGE: PageSpec = {
       /* The first four in the Resource Hub's Blog + SEO & Analytics filter, in its order. */
       lead: POSTS.skodaEmployeeValue,
       posts: [POSTS.innovativeStudentExperiences, POSTS.selfServiceBanking, POSTS.implementingStudentPortals],
-    },
+    }),
     /*
      * The page's closing ask, in place of the footer's `Ready for the future?` band —
      * `Page Action Section` (node `25037:46647`).

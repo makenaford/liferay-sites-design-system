@@ -1394,7 +1394,7 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
 /** A topic shelf: the lead post beside a stack of the next ones, the two columns ending together. */
 function BlogFeatureSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogFeature' }> }) {
   return (
-    <Section title={blogShelfTitle(spec)}>
+    <Section title={blogShelfTitle(spec)} className={classes.blogShelf}>
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing={24}>
         <BlogPostCard
           post={spec.lead}
