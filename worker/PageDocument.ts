@@ -32,7 +32,18 @@ import {
   type PageVersion,
   type VersionSummary,
 } from '../src/builder/versions'
-import { COMMENT_LIMIT, type CommentsState, type PageComment, type PagePoint } from '../src/builder/comments'
+import {
+  COMMENT_LIMIT,
+  MEMBER_LIMIT,
+  cleanEmail,
+  handle,
+  mentionsIn,
+  type CommentsState,
+  type PageComment,
+  type PageMember,
+  type PagePoint,
+} from '../src/builder/comments'
+import { mentionEmail, sharedEmail, type Mail } from './mail'
 
 /** How many past versions to keep. Roughly a working day of edits at the rate a person makes them. */
 const HISTORY = 200
@@ -45,6 +56,12 @@ export interface Env extends AccessConfig {
   ASSETS: Fetcher
   /** Uploaded images. Named for what a designer does, to keep it apart from `ASSETS`. */
   UPLOADS: R2Bucket
+  /**
+   * Mention and sharing emails. Both are optional: with no binding, or no `MAIL_FROM` on a domain
+   * onboarded to Cloudflare Email Service, the conversation works exactly the same and nothing is sent.
+   */
+  EMAIL?: SendEmail
+  MAIL_FROM?: string
 }
 
 /** What a client is told after a write, and what a broadcast carries. */
@@ -88,7 +105,10 @@ type CommentRow = Row<{
   edited_at: number | null
   resolved_at: number | null
   resolved_by: string | null
+  mentions: string | null
 }>
+
+type MemberRow = Row<{ email: string; added_by: string | null; added_at: number }>
 
 type VersionRow = Row<{
   number: number
@@ -122,6 +142,7 @@ const toComment = (row: CommentRow): PageComment => ({
   editedAt: row.edited_at,
   resolvedAt: row.resolved_at,
   resolvedBy: row.resolved_by,
+  mentions: row.mentions ? (JSON.parse(row.mentions) as string[]) : [],
 })
 
 /** A comment's body, trimmed and bounded, or an error a person can act on. */
@@ -247,6 +268,22 @@ export class PageDocument extends DurableObject<Env> {
           edited_at INTEGER,
           resolved_at INTEGER,
           resolved_by TEXT
+        )
+      `)
+      // Added after the table: a page made before mentions has the column added on its next wake.
+      const columns = ctx.storage.sql.exec<Row<{ name: string }>>('PRAGMA table_info(comments)').toArray()
+      if (!columns.some((column) => column.name === 'mentions')) {
+        ctx.storage.sql.exec('ALTER TABLE comments ADD COLUMN mentions TEXT')
+      }
+      /*
+       * Who the page is shared with — whose conversation it is. The page's maker is a member without
+       * a row (`meta.created_by`), so they can never be removed from their own page.
+       */
+      ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS members (
+          email TEXT PRIMARY KEY,
+          added_by TEXT,
+          added_at INTEGER NOT NULL
         )
       `)
       /*
@@ -434,7 +471,94 @@ export class PageDocument extends DurableObject<Env> {
   async comments(): Promise<CommentsState> {
     if (!this.commentsVersion) this.commentsVersion = (await this.ctx.storage.get<number>('commentsVersion')) ?? 0
     const rows = this.ctx.storage.sql.exec<CommentRow>('SELECT * FROM comments ORDER BY at').toArray()
-    return { version: this.commentsVersion, comments: rows.map(toComment) }
+    return { version: this.commentsVersion, comments: rows.map(toComment), members: this.members() }
+  }
+
+  /**
+   * The page's maker first, then everyone added, in the order they were. Empty until somebody is
+   * added: a page nobody has shared yet is the whole team's, as every page was before members.
+   */
+  members(): PageMember[] {
+    const rows = this.ctx.storage.sql.exec<MemberRow>('SELECT * FROM members ORDER BY added_at').toArray()
+    if (!rows.length) return []
+    const meta = this.metaRow()
+    const owner = meta.created_by?.toLowerCase() ?? null
+    const added = rows
+      .filter((row) => row.email !== owner)
+      .map((row): PageMember => ({ email: row.email, owner: false, addedBy: row.added_by, addedAt: row.added_at }))
+    return owner ? [{ email: owner, owner: true, addedBy: null, addedAt: meta.created_at }, ...added] : added
+  }
+
+  /** Whether `email` may see and join the conversation: a member, or anyone signed in on an unshared page. */
+  mayComment(email: string | undefined): boolean {
+    const members = this.members()
+    if (!members.length) return true
+    return !!email && members.some((member) => member.email === email.toLowerCase())
+  }
+
+  /**
+   * Shares the page with a colleague and emails them a link. Any member may add another. Whoever adds
+   * the first person is added with them — otherwise, on a page somebody else made, sharing it would
+   * lock them out of the conversation they were just in.
+   */
+  async addMember(input: unknown, by: string, origin: string): Promise<CommentsState> {
+    const email = cleanEmail(input)
+    if (!email) throw new Error('That is not an email address')
+    const members = this.members()
+    if (members.some((member) => member.email === email)) return this.comments()
+    if (members.length >= MEMBER_LIMIT) throw new Error(`A page can be shared with ${MEMBER_LIMIT} people at most`)
+
+    const at = Date.now()
+    if (!members.length && by.toLowerCase() !== email) {
+      this.ctx.storage.sql.exec('INSERT OR IGNORE INTO members (email, added_by, added_at) VALUES (?, ?, ?)', by.toLowerCase(), by, at)
+    }
+    this.ctx.storage.sql.exec('INSERT OR IGNORE INTO members (email, added_by, added_at) VALUES (?, ?, ?)', email, by, at + 1)
+
+    if (email !== by.toLowerCase()) this.mail([email], sharedEmail({ page: this.load().title, by: handle(by), link: `${origin}/edit/${this.name}` }))
+    return this.commentsChanged()
+  }
+
+  /** Any member may take someone off the page — or leave it. The maker stays. */
+  async removeMember(input: unknown): Promise<CommentsState> {
+    // Not `cleanEmail`: whatever is on the list must be removable, even an address it would now refuse.
+    const email = typeof input === 'string' ? input.trim().toLowerCase() : ''
+    if (!email) throw new Error('Whom to remove?')
+    if (email === this.metaRow().created_by?.toLowerCase()) throw new Error('The person who made a page cannot be removed from it')
+    this.ctx.storage.sql.exec('DELETE FROM members WHERE email = ?', email)
+    return this.commentsChanged()
+  }
+
+  /**
+   * Emails each newly mentioned member, other than whoever wrote the comment. The link opens the page
+   * with the thread selected.
+   */
+  private notifyMentions(mentions: string[], already: string[], by: string, body: string, thread: string, origin: string): void {
+    const to = mentions.filter((email) => !already.includes(email) && email !== by.toLowerCase())
+    if (!to.length) return
+    this.mail(to, mentionEmail({
+      page: this.load().title,
+      by: handle(by),
+      body,
+      link: `${origin}/edit/${this.name}?thread=${encodeURIComponent(thread)}`,
+    }))
+  }
+
+  /**
+   * Sends in the background: the comment is saved whether or not the email goes. One message per
+   * person, so nobody's address is shown to anybody else.
+   */
+  private mail(to: string[], mail: Mail): void {
+    const { EMAIL, MAIL_FROM } = this.env
+    if (!EMAIL || !MAIL_FROM) return
+    this.ctx.waitUntil(
+      Promise.all(
+        to.map((email) =>
+          EMAIL.send({ to: email, from: { email: MAIL_FROM, name: 'Page builder' }, ...mail }).catch((error: Error & { code?: string }) =>
+            console.error('Could not email', email, error.code, error.message),
+          ),
+        ),
+      ),
+    )
   }
 
   /**
@@ -444,8 +568,10 @@ export class PageDocument extends DurableObject<Env> {
   async addComment(
     input: { thread?: string; node?: string | null; point?: PagePoint | null; body?: unknown },
     by: string,
+    origin: string,
   ): Promise<CommentsState> {
     const body = cleanBody(input.body)
+    const mentions = mentionsIn(body, this.members())
     const id = crypto.randomUUID()
     const at = Date.now()
     const rev = this.load().rev
@@ -456,8 +582,8 @@ export class PageDocument extends DurableObject<Env> {
         .toArray()[0]
       if (!root) throw new Error('No such thread')
       this.ctx.storage.sql.exec(
-        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?, ?)',
-        id, root.id, rev, body, by, at,
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at, mentions) VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?, ?, ?)',
+        id, root.id, rev, body, by, at, JSON.stringify(mentions),
       )
       // Replying to a resolved thread reopens it: somebody evidently has more to say.
       this.ctx.storage.sql.exec('UPDATE comments SET resolved_at = NULL, resolved_by = NULL WHERE id = ?', root.id)
@@ -465,17 +591,25 @@ export class PageDocument extends DurableObject<Env> {
       const node = typeof input.node === 'string' && input.node.length <= 64 ? input.node : null
       const point = input.point && fraction(input.point.x) && fraction(input.point.y) ? input.point : null
       this.ctx.storage.sql.exec(
-        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        id, id, node, point?.x ?? null, point?.y ?? null, rev, body, by, at,
+        'INSERT INTO comments (id, thread, node, x, y, rev, body, author, at, mentions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        id, id, node, point?.x ?? null, point?.y ?? null, rev, body, by, at, JSON.stringify(mentions),
       )
     }
+    this.notifyMentions(mentions, [], by, body, input.thread ? input.thread : id, origin)
     return this.commentsChanged()
   }
 
   /** Only the author may reword a comment — it is their name on it. */
-  async editComment(id: string, body: unknown, by: string): Promise<CommentsState> {
+  async editComment(id: string, body: unknown, by: string, origin: string): Promise<CommentsState> {
     const row = this.ownComment(id, by)
-    this.ctx.storage.sql.exec('UPDATE comments SET body = ?, edited_at = ? WHERE id = ?', cleanBody(body), Date.now(), row.id)
+    const text = cleanBody(body)
+    const mentions = mentionsIn(text, this.members())
+    this.ctx.storage.sql.exec(
+      'UPDATE comments SET body = ?, edited_at = ?, mentions = ? WHERE id = ?',
+      text, Date.now(), JSON.stringify(mentions), row.id,
+    )
+    // Only someone the edit newly mentions hears about it; the rest were told the first time.
+    this.notifyMentions(mentions, toComment(row).mentions, by, text, row.thread, origin)
     return this.commentsChanged()
   }
 
@@ -504,15 +638,25 @@ export class PageDocument extends DurableObject<Env> {
     return row
   }
 
-  /** After any change: everyone signed in sees it, and the library's open-thread count follows. */
+  /** After any change: every member with the page open sees it, and the library's open-thread count follows. */
   private async commentsChanged(): Promise<CommentsState> {
     this.touchComments()
     const state = await this.comments()
     const message = JSON.stringify({ type: 'comments', ...state })
+    // Someone just removed is told the conversation is gone, rather than keeping a stale copy of it.
+    const gone = JSON.stringify({ type: 'comments-closed' })
     for (const socket of this.ctx.getWebSockets()) {
       // Only signed-in sockets: a share code opens the page, not the conversation about it.
-      const { canWrite } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean }
+      const { canWrite, by } = (socket.deserializeAttachment() ?? {}) as { canWrite?: boolean; by?: string }
       if (!canWrite) continue
+      if (!this.mayComment(by)) {
+        try {
+          socket.send(gone)
+        } catch {
+          // Gone.
+        }
+        continue
+      }
       try {
         socket.send(message)
       } catch {

@@ -40,8 +40,10 @@
  * | `POST /api/pages/:id/restore` | Access |
  * | `POST /api/pages/:id/share` | Access. `{ rotate: true }` replaces the code |
  * | `POST /api/pages/:id/status` | Access. `{ status }` moves the page through review |
- * | `GET`/`POST /api/pages/:id/comments` | Access. The conversation; `POST` adds a thread or a reply |
- * | `PATCH`/`DELETE /api/pages/:id/comments/:c` | Access. Reword or delete your own; resolve any |
+ * | `GET`/`POST /api/pages/:id/comments` | A member. The conversation; `POST` adds a thread or a reply |
+ * | `PATCH`/`DELETE /api/pages/:id/comments/:c` | A member. Reword or delete your own; resolve any |
+ * | `POST /api/pages/:id/members` | A member. `{ email }` shares the page and emails them |
+ * | `DELETE /api/pages/:id/members/:email` | A member. Takes someone off the page |
  * | `GET /api/pages/:id/versions` | Access, or the code. The named versions |
  * | `POST /api/pages/:id/versions` | Access. `{ name, note, status? }` freezes the page as a version |
  * | `GET /api/pages/:id/versions/:n` | Access, or the code. A version's frozen document |
@@ -583,12 +585,28 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
 
     /*
      * The conversation. Access-only in both directions: comments are internal, and a share code
-     * opens the page without opening what the team said about it.
+     * opens the page without opening what the team said about it. Once a page is shared with named
+     * people, only they get in — see `comments.ts`.
      */
-    case 'comments': {
+    case 'comments':
+    case 'members': {
       const refused = editorOnly()
       if (refused) return refused
       const by = who.email ?? 'unknown'
+      if (!(await page.mayComment(who.email))) return oops('This page’s comments are shared with named people only', 403)
+
+      if (action === 'members') {
+        if (request.method === 'POST') {
+          const body = (await request.json().catch(() => ({}))) as { email?: unknown }
+          return json(await page.addMember(body.email, by, url.origin), 201)
+        }
+        if (request.method === 'DELETE' && rest) {
+          const state = await page.removeMember(decodeURIComponent(rest))
+          // Someone who just left is not sent the conversation they left.
+          return json((await page.mayComment(who.email)) ? state : { closed: true })
+        }
+        return oops('Method not allowed', 405)
+      }
 
       if (!rest) {
         if (request.method === 'GET') return json(await page.comments())
@@ -599,7 +617,7 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
           point?: { x: number; y: number } | null
           body?: unknown
         }
-        return json(await page.addComment(body, by), 201)
+        return json(await page.addComment(body, by, url.origin), 201)
       }
 
       if (request.method === 'DELETE') return json(await page.deleteComment(rest, by))
@@ -607,7 +625,7 @@ async function api(request: Request, env: Env, url: URL, who: Identity): Promise
 
       const body = (await request.json().catch(() => ({}))) as { body?: unknown; resolved?: unknown }
       if (typeof body.resolved === 'boolean') return json(await page.resolveThread(rest, body.resolved, by))
-      return json(await page.editComment(rest, body.body, by))
+      return json(await page.editComment(rest, body.body, by, url.origin))
     }
 
     /*
