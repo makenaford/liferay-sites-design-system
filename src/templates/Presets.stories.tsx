@@ -244,7 +244,7 @@ export const Blog: Story = {
       <SiteHeader />
       {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
       <SecondaryNav
-        title="Blogs"
+        title="Liferay Blog"
         icon={<IconGlassBlogs size={32} />}
         titleHref="#"
         items={BLOG_NAV}

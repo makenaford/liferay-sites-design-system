@@ -15,6 +15,7 @@
  * Their editor is generated too: `sections.generated.ts` is read off `page-schema.ts`, so adding a
  * section type there makes it editable here with nothing to keep in step.
  */
+import { AnchorNav, type AnchorNavItem } from '../components/AnchorNav'
 import { SecondaryNav } from '../components/SecondaryNav'
 import { IconGlassBlogs } from '../icons'
 import { HeroBlock, SectionBlock } from '../templates/PageRenderer'
@@ -23,7 +24,7 @@ import { BLOG_NAV } from '../templates/blog-nav'
 import { SECTION_TYPES } from '../templates/section-catalog'
 import type { HeroSpec, SectionSpec } from '../templates/page-schema'
 import type { ComponentSpec } from './catalog.generated'
-import { createNode, type JsonObject } from './document'
+import { createNode, type JsonObject, type PageDocument } from './document'
 import type { Entry } from './registry'
 
 /** Which generated shape a data node is edited against. */
@@ -51,6 +52,21 @@ const BLANK_HERO: HeroSpec = {
     { label: 'Primary action', href: '#' },
     { label: 'Secondary action', href: '#', variant: 'outline' },
   ],
+}
+
+/**
+ * The blog hub's `Jump to` links: one per page section that carries an `anchor`, labelled with the
+ * section's own title, in page order — read off the document, so a shelf added, renamed or moved on the
+ * canvas is in the menu with nothing to keep in step. The story builds the same list from `BLOG_HUB_PAGE`.
+ */
+export function jumpLinks(doc: PageDocument): AnchorNavItem[] {
+  return doc.root.flatMap((id) => {
+    const node = doc.nodes[id]
+    const section = node?.component === 'PageSection' ? (node.data as Partial<SectionSpec> | undefined) : undefined
+    return section?.anchor && 'title' in section && typeof section.title === 'string' && section.title
+      ? [{ label: section.title, href: `#${section.anchor}` as const }]
+      : []
+  })
 }
 
 export const BLOCK_ENTRIES: Entry[] = [
@@ -85,18 +101,27 @@ export const BLOCK_ENTRIES: Entry[] = [
     hint: 'The Blogs sub-navigation under the site header.',
     spec: spec('BlogNav', [
       { name: 'progress', kind: 'boolean', doc: 'A reading-progress bar along the bottom — for a post, not the hub.' },
+      {
+        name: 'jumpLinks',
+        kind: 'boolean',
+        doc: 'A `Jump to` menu at the end of the bar, onto every page section with an anchor. On unless turned off; absent on a page with no anchored sections.',
+      },
     ]),
     blank: () => ({ node: createNode('BlogNav'), extra: [] }),
-    render: ({ props }) => (
-      <SecondaryNav
-        title="Blogs"
-        icon={<IconGlassBlogs size={32} />}
-        titleHref="#"
-        items={BLOG_NAV}
-        progress={Boolean(props.progress)}
-        mt={65}
-      />
-    ),
+    render: ({ props, doc }) => {
+      const links = props.jumpLinks === false ? [] : jumpLinks(doc)
+      return (
+        <SecondaryNav
+          title="Liferay Blog"
+          icon={<IconGlassBlogs size={32} />}
+          titleHref="#"
+          items={BLOG_NAV}
+          action={links.length ? <AnchorNav variant="menu" items={links} /> : undefined}
+          progress={Boolean(props.progress)}
+          mt={65}
+        />
+      )
+    },
   },
   {
     name: 'PageHero',

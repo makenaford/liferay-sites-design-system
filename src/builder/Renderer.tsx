@@ -88,6 +88,7 @@ function renderNode(
     node,
     props: node.props,
     editing,
+    doc,
     children: (slot) => (node.slots[slot] ?? []).map((child) => doc.nodes[child]).filter(Boolean),
     renderNode: (child) => renderNode(doc, child, marked, path, editing),
     slot: (slot) => {

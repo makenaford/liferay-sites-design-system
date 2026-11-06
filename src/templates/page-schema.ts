@@ -65,6 +65,12 @@ export type IconName =
   | 'share-forward'
   | 'git-compare'
 
+/** One slide of a carousel hero after the first — the copy and media a lead story carries. */
+export type HeroSlide = Pick<
+  HeroSpec,
+  'label' | 'title' | 'description' | 'byline' | 'tags' | 'buttons' | 'action' | 'media'
+>
+
 export interface ImageRef {
   /**
    * A picture or a video. `.webm` and `.mp4` render as video, inferred from the extension rather than
@@ -263,6 +269,12 @@ export interface HeroSpec {
   byline?: { name: string; avatar?: ImageRef; date?: string; readTime?: string }
   /** The post's topics, as glass tags in a row under the byline. */
   tags?: string[]
+  /**
+   * Further slides after this one, which make the hero a carousel — the `Blog Hub` hero's `Carousel`
+   * (node `25184:65528`): one slide at a time, the arrows and a dot per slide centred under it. This
+   * hero's own copy and media are the first slide; the bubble stays put while the slides move.
+   */
+  slides?: HeroSlide[]
   /**
    * The customer's logo over the heading — the customer story's `Logo Container` (48px tall). Drawn
    * white for the dark canvas; on light it is darkened, so one file serves both.
@@ -1030,9 +1042,15 @@ type SectionBody =
       card?: 'glass' | 'plain' | 'overlay' | 'blog' | 'blogGlass'
       /**
        * `horizontal` lays the grid out as two columns of the shelf's compact horizontal cards — a list
-       * that fits more posts in less height. @default 'vertical'
+       * that fits more posts in less height. `Blog Hub` -> `AI And Automation` (node `25133:47480`): with
+       * the `plain` or `blog` card the rows are ruled off, as `blogFeature`'s stack is. @default 'vertical'
        */
       align?: 'vertical' | 'horizontal'
+      /**
+       * How many cards a row holds at full width, vertical only — `4` for a shelf of four posts that
+       * would leave one alone on a second row of three. @default 3
+       */
+      columns?: 3 | 4
       /**
        * Where a post's topics sit. `bottom` is the frame's — under the byline. `top` puts them over the
        * title, where they read as the post's kind before its headline. @default 'bottom'
@@ -1072,6 +1090,11 @@ type SectionBody =
       tagStyle?: 'text' | 'pill' | 'caps'
       /** See `blogGrid`. @default 'stacked' */
       byline?: 'stacked' | 'inline'
+      /**
+       * The lead on the right and the stack on the left, so a run of shelves need not all lean the same
+       * way. A phone still puts the lead first. @default false
+       */
+      reverse?: boolean
       lead: BlogPostSpec
       posts: BlogPostSpec[]
     }

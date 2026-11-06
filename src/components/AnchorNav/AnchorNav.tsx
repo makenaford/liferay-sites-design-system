@@ -12,6 +12,7 @@ import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import { IconDown } from '../../icons'
 import classes from '../../theme/components.module.css'
+import { onAnyScroll, scrollerOf } from '../scroller'
 
 export interface AnchorNavItem {
   label: ReactNode
@@ -59,7 +60,12 @@ export interface AnchorNavProps extends BoxProps, Omit<ElementProps<'nav'>, 'onC
  * The section under the line. The current one is the last whose top has passed `line()` — measured
  * fresh each time, so it holds whether the header is showing, condensed, or replaced by the product bar.
  */
-function useCurrentSection(items: AnchorNavItem[], spy: boolean, line: () => number) {
+function useCurrentSection(
+  items: AnchorNavItem[],
+  spy: boolean,
+  line: () => number,
+  navRef: { current: HTMLElement | null },
+) {
   const [current, setCurrent] = useState<string | null>(null)
   const lineRef = useRef(line)
   lineRef.current = line
@@ -70,6 +76,7 @@ function useCurrentSection(items: AnchorNavItem[], spy: boolean, line: () => num
 
     const update = () => {
       frame = 0
+      const scroller = scrollerOf(navRef.current)
       const at = lineRef.current()
       let next: string | null = null
       for (const item of items) {
@@ -77,7 +84,7 @@ function useCurrentSection(items: AnchorNavItem[], spy: boolean, line: () => num
         if (el && el.getBoundingClientRect().top <= at) next = item.href
       }
       /* At the very bottom the last section may be too short ever to reach the line; give it the bar. */
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+      if (scroller.viewHeight() + scroller.top() >= scroller.scrollHeight() - 2) {
         next = items[items.length - 1]?.href ?? next
       }
       setCurrent(next)
@@ -87,11 +94,9 @@ function useCurrentSection(items: AnchorNavItem[], spy: boolean, line: () => num
     }
 
     update()
-    window.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
+    const off = onAnyScroll(schedule)
     return () => {
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
+      off()
       if (frame) cancelAnimationFrame(frame)
     }
   }, [items, spy])
@@ -135,7 +140,7 @@ export const AnchorNav = forwardRef<HTMLElement, AnchorNavProps>(function Anchor
     if (!menu) return (navRef.current?.getBoundingClientRect().bottom ?? 0) + 8
     const host = navRef.current?.parentElement?.closest('nav') ?? navRef.current
     return (host?.getBoundingClientRect().bottom ?? 0) + 96
-  })
+  }, navRef)
 
   /* The menu closes on a click outside it and on Escape, which hands focus back to its button. */
   useEffect(() => {

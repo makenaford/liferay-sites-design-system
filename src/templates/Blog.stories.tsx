@@ -11,7 +11,7 @@ function BlogPost() {
     <>
       <SiteHeader />
       {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
-      <SecondaryNav title="Blogs" icon={<IconGlassBlogs size={32} />} titleHref="#" items={BLOG_NAV} progress mt={65} />
+      <SecondaryNav title="Liferay Blog" icon={<IconGlassBlogs size={32} />} titleHref="#" items={BLOG_NAV} progress mt={65} />
       <PageRenderer page={presetFor('blog')!.create()} />
       {/* No `Ready for the future?` band: the post makes its own ask, in the article's CTA card. */}
       <SiteFooter cta={false} />

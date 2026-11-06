@@ -42,7 +42,7 @@ import {
 import * as allIcons from '../icons'
 import { CATALOG, type ComponentSpec, type PropSpec } from './catalog.generated'
 import { Grid, Heading, Paragraph, Plain, Row, Spacer, Stack } from './primitives'
-import { createNode, type PageNode, type PropValue } from './document'
+import { createNode, type PageDocument, type PageNode, type PropValue } from './document'
 import { BLOCK_ENTRIES, type DataRoot } from './blocks'
 
 /* ------------------------------------------------------------------ the icon sets */
@@ -156,6 +156,8 @@ export interface RenderContext {
   props: Record<string, PropValue>
   /** Drawing into the builder's canvas rather than a published page. */
   editing: boolean
+  /** The whole page — for a block that reads its siblings, as the blog bar lists the anchored sections. */
+  doc: PageDocument
 }
 
 export interface Entry {

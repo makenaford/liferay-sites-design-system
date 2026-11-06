@@ -558,8 +558,181 @@ function HeroFormCard({ spec }: { spec: NonNullable<HeroSpec['formCard']> }) {
   )
 }
 
+/**
+ * The copy and media of one hero — shared by the single hero and each slide of a carousel hero, so a
+ * slide is drawn exactly as the hero it stands in for.
+ */
+function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
+  return {
+    label: (
+      hero.logo ? (
+        <img className={classes.heroLogo} src={hero.logo.src} alt={hero.logo.alt} />
+      ) : hero.label ? (
+        <Label variant="gradient" size="lg">
+          {hero.label}
+        </Label>
+      ) : undefined
+    ),
+    title: (
+      <Heading style={hero.titleMaxWidth ? { maxWidth: hero.titleMaxWidth } : undefined}>
+        {hero.title.text}
+        {hero.title.highlight ? (
+          <>
+            {' '}
+            <GradientText>{hero.title.highlight}</GradientText>
+          </>
+        ) : null}
+      </Heading>
+    ),
+    description: (
+      hero.description || hero.points?.length ? (
+        <>
+          {hero.description ? (
+            <p>
+              {hero.description.text}
+              {hero.description.emphasis ? (
+                <>
+                  {' '}
+                  <Text span inherit fw={700} c="var(--sds-surfaces-text-primary)">
+                    {hero.description.emphasis}
+                  </Text>
+                </>
+              ) : null}
+            </p>
+          ) : null}
+          {hero.points?.length ? (
+            /* The value props: a UI icon in a small glass tile, and the answer beside it. */
+            <ul className={classes.heroPoints}>
+              {hero.points.map((point) => (
+                <li key={point.text}>
+                  {point.icon ? (
+                    <span className={classes.heroPointIcon} aria-hidden>
+                      {ICONS[point.icon]}
+                    </span>
+                  ) : null}
+                  {point.text}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : undefined
+    ),
+    form: (
+      hero.form ? (
+        <TextInput
+          aria-label="Work email"
+          type="email"
+          placeholder={hero.form.placeholder}
+          containedButton={
+            /* Small, so the label and padding suit the 32px the field's 8px inset leaves. */
+            <Button size="sm" rightSection={<IconArrowRight />}>
+              {hero.form.submit}
+            </Button>
+          }
+        />
+      ) : hero.search ? (
+        <HeroSearch search={hero.search} />
+      ) : undefined
+    ),
+    actions: (
+      hero.buttons?.length || hero.action || hero.links?.length ? (
+        <>
+          {hero.buttons?.map((button) => (
+            /*
+             * Mantine's `Button` rather than the library's, on its own advice: the wrapper is
+             * deliberately non-polymorphic, and a hero CTA has to be an anchor. The theme keys on
+             * `Button`, so the appearance is identical either way.
+             */
+            <MantineButton
+              key={button.label}
+              component="a"
+              href={button.href}
+              /* The file draws Medium in every hero, so this is the type's, not the page's. */
+              size="md"
+              variant={button.variant === 'outline' ? 'outline' : 'filled'}
+            >
+              {button.label}
+            </MantineButton>
+          ))}
+          {hero.action ? (
+            <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
+              {hero.action.label}
+            </Link>
+          ) : null}
+          {hero.links?.map((link) => (
+            <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
+              {link.label}
+            </Link>
+          ))}
+        </>
+      ) : undefined
+    ),
+    proof: (
+      hero.proof ? (
+        renderProof(hero.proof)
+      ) : hero.readTime ? (
+        <Label variant="glass" size="md">
+          {hero.readTime}
+        </Label>
+      ) : hero.byline || hero.tags?.length ? (
+        <Stack gap={12}>
+          {hero.byline ? <Byline byline={hero.byline} /> : null}
+          {hero.tags?.length ? (
+            <Group gap={8}>
+              {hero.tags.map((tag) => (
+                <Label key={tag} variant="glass" size="sm">
+                  {tag}
+                </Label>
+              ))}
+            </Group>
+          ) : null}
+        </Stack>
+      ) : undefined
+    ),
+    /* A form card takes the media column: the file draws one or the other there, never both. */
+    media: (
+      hero.formCard ? (
+        <HeroFormCard spec={hero.formCard} />
+      ) : hero.media ? (
+        <HeroMedia media={hero.media} />
+      ) : undefined
+    ),
+  }
+}
+
+/**
+ * A carousel hero's slides — this hero first, then `slides`. Each is the hero's own two columns, drawn
+ * from `heroCopy`, so a slide reads exactly as the single hero would. Only the first heading is the
+ * page's `h1`; the rest are `h2`, one per story.
+ */
+function HeroCarousel({ hero }: { hero: HeroSpec }) {
+  const slides: HeroSpec[] = [hero, ...(hero.slides ?? [])]
+  return (
+    <Carousel label="Featured stories" slideSize="100%" gap={80} fade={false} indicators="dots">
+      {slides.map((slide, index) => {
+        const copy = heroCopy(slide, index === 0 ? 'h1' : 'h2')
+        return (
+          <div key={slide.title.text} className={classes.heroSlide}>
+            <div className={classes.heroContent}>
+              {copy.label ? <div className={classes.heroLabel}>{copy.label}</div> : null}
+              <div className={classes.heroTitle}>{copy.title}</div>
+              {copy.description ? <div className={classes.heroDescription}>{copy.description}</div> : null}
+              {copy.actions ? <div className={classes.heroActions}>{copy.actions}</div> : null}
+              {copy.proof ? <div className={classes.heroProof}>{copy.proof}</div> : null}
+            </div>
+            {copy.media ? <div className={classes.heroMedia}>{copy.media}</div> : null}
+          </div>
+        )
+      })}
+    </Carousel>
+  )
+}
+
 function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
+  const carousel = Boolean(hero.slides?.length)
+  const copy = heroCopy(hero)
 
   return (
     <Hero
@@ -576,147 +749,23 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       videoLight={bubble?.videoLight ?? (background === 'full' ? bubbleFullLight : bubbleCornerLight)}
       banner={hero.banner ? <SolutionFinder banner={hero.banner} /> : undefined}
       breadcrumb={hero.breadcrumbs?.length ? <Breadcrumbs trail={hero.breadcrumbs} /> : undefined}
-      label={
-        hero.logo ? (
-          <img className={classes.heroLogo} src={hero.logo.src} alt={hero.logo.alt} />
-        ) : hero.label ? (
-          <Label variant="gradient" size="lg">
-            {hero.label}
-          </Label>
-        ) : undefined
-      }
+      label={carousel ? undefined : copy.label}
       /*
        * The page's own arrival. A rendered page is a marketing page by definition — it is what this
        * renderer is for — so the hero's entrance is on here rather than left to each spec to remember,
        * the same way sections carry their reveal.
        */
       entrance
-      title={
-        <h1 style={hero.titleMaxWidth ? { maxWidth: hero.titleMaxWidth } : undefined}>
-          {hero.title.text}
-          {hero.title.highlight ? (
-            <>
-              {' '}
-              <GradientText>{hero.title.highlight}</GradientText>
-            </>
-          ) : null}
-        </h1>
-      }
-      description={
-        hero.description || hero.points?.length ? (
-          <>
-            {hero.description ? (
-              <p>
-                {hero.description.text}
-                {hero.description.emphasis ? (
-                  <>
-                    {' '}
-                    <Text span inherit fw={700} c="var(--sds-surfaces-text-primary)">
-                      {hero.description.emphasis}
-                    </Text>
-                  </>
-                ) : null}
-              </p>
-            ) : null}
-            {hero.points?.length ? (
-              /* The value props: a UI icon in a small glass tile, and the answer beside it. */
-              <ul className={classes.heroPoints}>
-                {hero.points.map((point) => (
-                  <li key={point.text}>
-                    {point.icon ? (
-                      <span className={classes.heroPointIcon} aria-hidden>
-                        {ICONS[point.icon]}
-                      </span>
-                    ) : null}
-                    {point.text}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </>
-        ) : undefined
-      }
-      form={
-        hero.form ? (
-          <TextInput
-            aria-label="Work email"
-            type="email"
-            placeholder={hero.form.placeholder}
-            containedButton={
-              /* Small, so the label and padding suit the 32px the field's 8px inset leaves. */
-              <Button size="sm" rightSection={<IconArrowRight />}>
-                {hero.form.submit}
-              </Button>
-            }
-          />
-        ) : hero.search ? (
-          <HeroSearch search={hero.search} />
-        ) : undefined
-      }
-      actions={
-        hero.buttons?.length || hero.action || hero.links?.length ? (
-          <>
-            {hero.buttons?.map((button) => (
-              /*
-               * Mantine's `Button` rather than the library's, on its own advice: the wrapper is
-               * deliberately non-polymorphic, and a hero CTA has to be an anchor. The theme keys on
-               * `Button`, so the appearance is identical either way.
-               */
-              <MantineButton
-                key={button.label}
-                component="a"
-                href={button.href}
-                /* The file draws Medium in every hero, so this is the type's, not the page's. */
-                size="md"
-                variant={button.variant === 'outline' ? 'outline' : 'filled'}
-              >
-                {button.label}
-              </MantineButton>
-            ))}
-            {hero.action ? (
-              <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
-                {hero.action.label}
-              </Link>
-            ) : null}
-            {hero.links?.map((link) => (
-              <Link key={link.label} href={link.href} size="md" rightSection={<IconArrowRight />}>
-                {link.label}
-              </Link>
-            ))}
-          </>
-        ) : undefined
-      }
-      proof={
-        hero.proof ? (
-          renderProof(hero.proof)
-        ) : hero.readTime ? (
-          <Label variant="glass" size="md">
-            {hero.readTime}
-          </Label>
-        ) : hero.byline || hero.tags?.length ? (
-          <Stack gap={12}>
-            {hero.byline ? <Byline byline={hero.byline} /> : null}
-            {hero.tags?.length ? (
-              <Group gap={8}>
-                {hero.tags.map((tag) => (
-                  <Label key={tag} variant="glass" size="sm">
-                    {tag}
-                  </Label>
-                ))}
-              </Group>
-            ) : null}
-          </Stack>
-        ) : undefined
-      }
+      title={carousel ? undefined : copy.title}
+      description={carousel ? undefined : copy.description}
+      form={carousel ? undefined : copy.form}
+      actions={carousel ? undefined : copy.actions}
+      proof={carousel ? undefined : copy.proof}
       /* A form card takes the media column: the file draws one or the other there, never both. */
-      media={
-        hero.formCard ? (
-          <HeroFormCard spec={hero.formCard} />
-        ) : hero.media ? (
-          <HeroMedia media={hero.media} />
-        ) : undefined
-      }
-    />
+      media={carousel ? undefined : copy.media}
+    >
+      {carousel ? <HeroCarousel hero={hero} /> : null}
+    </Hero>
   )
 }
 
@@ -1367,25 +1416,38 @@ function BlogPostCard({
 
 /** `Featured Blogs`, `Most Recent Blogs` — three across at 24px, or two columns of compact rows. */
 function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGrid' }> }) {
+  const horizontal = spec.align === 'horizontal'
+  /* Surfaceless rows are ruled off, as the topic shelf's stack is: nothing else tells one from the next. */
+  const divided = horizontal && (spec.card === 'plain' || spec.card === 'blog')
   return (
-    <Section title={blogShelfTitle(spec)}>
+    <Section title={blogShelfTitle(spec)} className={classes.blogShelf}>
       <SimpleGrid
-        cols={spec.align === 'horizontal' ? { base: 1, md: 2 } : { base: 1, sm: 2, md: 3 }}
-        spacing={spec.align === 'horizontal' ? 16 : 24}
+        cols={horizontal ? { base: 1, md: 2 } : { base: 1, sm: 2, md: spec.columns ?? 3 }}
+        spacing={horizontal && !divided ? 16 : 24}
         /* Rows 40 apart, so a second row of cards reads as a new row rather than more of the first. */
-        verticalSpacing={spec.align === 'horizontal' ? 16 : 40}
+        verticalSpacing={divided ? 0 : horizontal ? 16 : 40}
+        className={divided ? classes.blogList : undefined}
       >
-        {spec.posts.map((post) => (
-          <BlogPostCard
-            key={post.href}
-            post={post}
-            align={spec.align}
-            card={spec.card}
-            tagPosition={spec.tagPosition}
-            tagStyle={spec.tagStyle}
-            byline={spec.byline}
-          />
-        ))}
+        {spec.posts.map((post) => {
+          const card = (
+            <BlogPostCard
+              key={post.href}
+              post={post}
+              align={spec.align}
+              card={spec.card}
+              tagPosition={spec.tagPosition}
+              tagStyle={spec.tagStyle}
+              byline={spec.byline}
+            />
+          )
+          return divided ? (
+            <div key={post.href} className={classes.blogStackRow}>
+              {card}
+            </div>
+          ) : (
+            card
+          )
+        })}
       </SimpleGrid>
     </Section>
   )
@@ -1394,8 +1456,13 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
 /** A topic shelf: the lead post beside a stack of the next ones, the two columns ending together. */
 function BlogFeatureSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogFeature' }> }) {
   return (
-    <Section title={blogShelfTitle(spec)}>
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing={24}>
+    <Section title={blogShelfTitle(spec)} className={classes.blogShelf}>
+      <SimpleGrid
+        cols={{ base: 1, md: 2 }}
+        spacing={24}
+        className={classes.blogFeatureGrid}
+        data-reverse={spec.reverse || undefined}
+      >
         <BlogPostCard
           post={spec.lead}
           card={spec.card}

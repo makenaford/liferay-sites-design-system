@@ -12,7 +12,7 @@
  * than a `PageSpec`, so there is nothing for the builder to hold as data until they are moved onto
  * section types.
  */
-import { BLOG_HUB_PAGE } from '../templates/blog-hub-page'
+import { BLOG_HUB_CAROUSEL_PAGE, BLOG_HUB_PAGE } from '../templates/blog-hub-page'
 import { OEM_PARTNER_PAGE } from '../templates/oem-partner-page'
 import { PARTNER_HOME_PAGE } from '../templates/partner-home-page'
 import { SOLUTION_PARTNER_PAGE } from '../templates/solution-partner-page'
@@ -47,6 +47,14 @@ const preset = (id: string) => () => presetFor(id)!.create()
 
 export const BUILT_PAGES: BuiltPage[] = [
   { id: 'blog-hub', label: 'Blog Hub', group: 'Assets to Web', page: fixed(BLOG_HUB_PAGE), footerCta: false, blogNav: 'hub' },
+  {
+    id: 'blog-hub-carousel',
+    label: 'Blog Hub (carousel hero)',
+    group: 'Assets to Web',
+    page: fixed(BLOG_HUB_CAROUSEL_PAGE),
+    footerCta: false,
+    blogNav: 'hub',
+  },
   { id: 'blog', label: 'Blog', group: 'Assets to Web', page: preset('blog'), footerCta: false, blogNav: 'post' },
   { id: 'customer-story', label: 'Customer Story', group: 'Assets to Web', page: preset('customer-story'), footerCta: true },
   { id: 'partner-home', label: 'Partner Home', group: 'Partner Pages', page: fixed(PARTNER_HOME_PAGE), footerCta: false },
