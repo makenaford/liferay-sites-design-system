@@ -12708,8 +12708,12 @@ a.secondaryNavTitle:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /*
+   * 42 wide, as Figma's 16px sides draw a single digit. The sides are 8 and the 42 a minimum, so 1–9 come
+   * out exactly as drawn while `12` or `128` stay inside a phone's row instead of widening every pill.
+   */
   min-width: 42px;
-  padding: 12px 16px;
+  padding: 12px 8px;
   border-radius: var(--mantine-radius-sm);
   font-size: 18px;
   line-height: 24px;
