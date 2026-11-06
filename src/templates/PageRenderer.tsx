@@ -10,7 +10,6 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  UnstyledButton,
   useComputedColorScheme,
 } from '@mantine/core'
 import { Accordion } from '../components/Accordion'
@@ -26,6 +25,7 @@ import { Image } from '../components/Image'
 import { Label } from '../components/Label'
 import { Link } from '../components/Link'
 import { List } from '../components/List'
+import { Pagination } from '../components/Pagination'
 import { Progress } from '../components/Progress'
 import bubbleFull from '../../assets/bubbles/bubble_center.webm'
 import bubbleFullLight from '../../assets/bubbles/bubble_center_light.webm'
@@ -63,7 +63,6 @@ import {
   IconDirectionArrow,
   IconPigMoney,
   IconTag,
-  IconArrowLeft,
   IconArrowUp,
   IconArrowRight,
   IconBracketsAngle,
@@ -1419,8 +1418,41 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
   const horizontal = spec.align === 'horizontal'
   /* Surfaceless rows are ruled off, as the topic shelf's stack is: nothing else tells one from the next. */
   const divided = horizontal && (spec.card === 'plain' || spec.card === 'blog')
+  const reducedMotion = useReducedMotion()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(spec.pageSize)
+  const posts = pageSize ? spec.posts.slice((page - 1) * pageSize, page * pageSize) : spec.posts
+  /*
+   * The pager is under the grid, so a new page would otherwise start with the reader at its foot. Back to
+   * the top of the grid — only when that top has scrolled away, so a short page does not jump.
+   */
+  const rootRef = useRef<HTMLElement>(null)
+  const turn = (next: number) => {
+    setPage(next)
+    const top = rootRef.current?.getBoundingClientRect().top ?? 0
+    if (top < 0) rootRef.current?.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' })
+  }
   return (
-    <Section title={blogShelfTitle(spec)} className={classes.blogShelf}>
+    <Section
+      ref={rootRef}
+      title={spec.title ? blogShelfTitle({ ...spec, title: spec.title }) : undefined}
+      className={classes.blogShelf}
+      footer={
+        pageSize ? (
+          <Pagination
+            total={spec.posts.length}
+            page={page}
+            onPageChange={turn}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              turn(1)
+            }}
+            pageSizes={spec.pageSizes}
+          />
+        ) : undefined
+      }
+    >
       <SimpleGrid
         cols={horizontal ? { base: 1, md: 2 } : { base: 1, sm: 2, md: spec.columns ?? 3 }}
         spacing={horizontal && !divided ? 16 : 24}
@@ -1428,7 +1460,7 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
         verticalSpacing={divided ? 0 : horizontal ? 16 : 40}
         className={divided ? classes.blogList : undefined}
       >
-        {spec.posts.map((post) => {
+        {posts.map((post) => {
           const card = (
             <BlogPostCard
               key={post.href}
@@ -1613,86 +1645,15 @@ function StoryCatalogSection({ spec }: { spec: Extract<SectionSpec, { type: 'sto
         </Text>
       )}
       {spec.pageSize && matched.length ? (
-        <CatalogPagination
-          page={current}
-          pages={pages}
-          from={(current - 1) * pageSize + 1}
-          to={(current - 1) * pageSize + shown.length}
+        <Pagination
           total={matched.length}
-          onPage={setPage}
+          page={current}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          className={classes.catalogPagination}
         />
       ) : null}
     </Section>
-  )
-}
-
-/**
- * The catalog's `Pagination` (node `24581:100572`): `Showing 1 to 9` in primary and `of 68 entries` in
- * secondary on the left; on the right the carousel's 44x40 outline arrows either side of numbered
- * `Tabs Pill`s, the current page filled.
- *
- * Five numbers at most, centred on the current page where there is room, so the row never outgrows a
- * phone however long the list.
- */
-function CatalogPagination({
-  page,
-  pages,
-  from,
-  to,
-  total,
-  onPage,
-}: {
-  page: number
-  pages: number
-  from: number
-  to: number
-  total: number
-  onPage: (page: number) => void
-}) {
-  const span = Math.min(5, pages)
-  const first = Math.min(Math.max(1, page - Math.floor(span / 2)), pages - span + 1)
-  const numbers = Array.from({ length: span }, (_, i) => first + i)
-
-  return (
-    <nav className={classes.pager} aria-label="Pages">
-      <p className={classes.pagerSummary} aria-live="polite">
-        Showing {from} to {to} <span>of {total} entries</span>
-      </p>
-      <div className={classes.pagerControls}>
-        <Button
-          variant="outline"
-          size="sm"
-          className={classes.pagerArrow}
-          aria-label="Previous page"
-          disabled={page <= 1}
-          onClick={() => onPage(page - 1)}
-        >
-          <IconArrowLeft aria-hidden />
-        </Button>
-        {numbers.map((n) => (
-          <UnstyledButton
-            key={n}
-            className={classes.pagerPage}
-            data-active={n === page || undefined}
-            aria-current={n === page ? 'page' : undefined}
-            aria-label={`Page ${n}`}
-            onClick={() => onPage(n)}
-          >
-            {n}
-          </UnstyledButton>
-        ))}
-        <Button
-          variant="outline"
-          size="sm"
-          className={classes.pagerArrow}
-          aria-label="Next page"
-          disabled={page >= pages}
-          onClick={() => onPage(page + 1)}
-        >
-          <IconArrowRight aria-hidden />
-        </Button>
-      </div>
-    </nav>
   )
 }
 

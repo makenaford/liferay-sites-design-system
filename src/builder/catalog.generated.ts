@@ -414,6 +414,19 @@ export const CATALOG: ComponentSpec[] = [
     ],
   },
   {
+    name: "Pagination",
+    doc: "Pagination — Figma `Pagination` (`Size=Desktop`): `Blog Category Page` (node `25181:70081`) and the customer-story catalog (node `24581:100572`) are the same component, the first with its page-size menu.",
+    props: [
+      { name: "total", kind: "number", default: "68", doc: "How many entries there are in all — not pages: the page count follows from it and `pageSize`." },
+      { name: "page", kind: "number", doc: "The page showing, from 1. Controlled with `onPageChange`; leave both off and it keeps its own." },
+      { name: "defaultPage", kind: "number", default: "1" },
+      { name: "pageSize", kind: "number", doc: "Entries per page. Controlled with `onPageSizeChange`." },
+      { name: "defaultPageSize", kind: "number", default: "the first of `pageSizes" },
+      { name: "label", kind: "text", default: "Pagination", doc: "Names the landmark for a screen reader." },
+    ],
+    unsupported: ["onPageChange", "onPageSizeChange", "pageSizes"],
+  },
+  {
     name: "Progress",
     doc: "Progress — Figma `Progress Bar` component set, from the `Course Card` in `LEARN - New Pages` (node `7575:24403`).",
     props: [

@@ -117,6 +117,7 @@ export {
 } from './components/Input'
 export { Label, type LabelProps, type LabelSize, type LabelVariant } from './components/Label'
 export { Link, type LinkProps, type LinkSize, type LinkVariant } from './components/Link'
+export { Pagination, type PaginationProps } from './components/Pagination'
 export { Progress, type ProgressProps, type ProgressState } from './components/Progress'
 export {
   Stat,

@@ -1026,7 +1026,11 @@ type SectionBody =
    */
   | {
       type: 'blogGrid'
-      title: string
+      /**
+       * The shelf's heading. Leave it off where the page's own heading already names the posts — a blog
+       * category's grid sits straight under the hero that says which category it is.
+       */
+      title?: string
       description?: string
       action?: LinkRef
       /**
@@ -1070,6 +1074,13 @@ type SectionBody =
        * @default 'stacked'
        */
       byline?: 'stacked' | 'inline'
+      /**
+       * Show the posts a page at a time, with `Pagination` under the grid — `Blog Category Page` (node
+       * `25181:70081`): 12 to a page, four rows of three. Off, every post shows at once.
+       */
+      pageSize?: number
+      /** The page-size menu's choices, `pageSize` among them. Off, there is no menu. */
+      pageSizes?: number[]
       posts: BlogPostSpec[]
     }
   /**
