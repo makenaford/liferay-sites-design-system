@@ -7634,7 +7634,7 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 }
 
 /*
- * A run of `blogFeature` topic shelves sits 40 apart at every width, not a section's 240: the shelves are
+ * A run of `blogFeature` topic shelves sits 80 apart at every width, not a section's 240: the shelves are
  * one index of topics, and at full spacing each read as a page of its own. The run keeps the section
  * padding at its two ends. A shelf is matched bare or inside its `sectionAnchor` wrapper.
  */
@@ -7646,7 +7646,7 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 
 :is(.blogShelf, .sectionAnchor:has(> .blogShelf)) + :is(.blogShelf, .sectionAnchor:has(> .blogShelf))
   :is(.blogShelf > .sectionInner) {
-  padding-top: 40px;
+  padding-top: 80px;
 }
 
 /*
