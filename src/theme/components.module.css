@@ -12595,82 +12595,150 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The catalog's `Pagination` (node `24581:100572`): the summary at 18 on the left — `Showing 1 to 9` in
- * primary, `of 68 entries` in secondary — and the controls on the right: the carousel's 44x40 outline
- * arrows either side of 42x48 numbered pills, the current one filled `Brand/Primary/Primary`.
+ * `Pagination` (`Size=Desktop`) — `Blog Category Page` (node `25181:70081`) and the catalog's (node
+ * `24581:100572`). On the left the page-size link and the count, at 18: `Showing 1 to 12` in primary,
+ * `of 53 entries` in secondary, 16 apart. On the right the 44x40 outline arrows 8 either side of the
+ * numbered `Tabs Pill`s, 2 apart: 16x12 padding, `Action/Link/Medium Active` (18 bold), the current one
+ * filled with the primary gradient.
  */
-.pager {
+.pagination {
   display: flex;
   flex-wrap: wrap;
+  /* The full column, count left and buttons right, even in a `Section` footer, which centres its row. */
+  flex: 1 1 100%;
   align-items: center;
   justify-content: space-between;
   gap: 16px 24px;
-  margin-block-start: 24px;
 }
 
-.pagerSummary {
+.paginationSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.paginationSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.paginationSize:focus-visible {
+  outline: 2px solid var(--sds-brand-primary-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.paginationCount {
   margin: 0;
   font-size: 18px;
   line-height: 1.25;
   color: var(--sds-surfaces-text-primary);
 }
 
-.pagerSummary > span {
+.paginationCountTotal {
   color: var(--sds-surfaces-text-secondary);
 }
 
-.pagerControls {
+/*
+ * The page-size menu: the same glass panel as the `AnchorNav` menu. `[data-position]` — which Mantine
+ * always sets on the dropdown — so this outranks Mantine's own grey dropdown fill.
+ */
+.paginationMenu[data-position] {
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 10px 5px rgba(116, 164, 255, 0.1);
+}
+
+:where([data-mantine-color-scheme='light']) .paginationMenu[data-position] {
+  background-color: color-mix(in srgb, var(--sds-surfaces-page-bg-base-default) 80%, transparent);
+}
+
+.paginationMenuItem {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--sds-surfaces-text-secondary);
+  background: transparent;
+}
+
+.paginationMenuItem:hover,
+.paginationMenuItem[data-hovered] {
+  background-color: var(--sds-surfaces-card-bg-translucent);
+  color: var(--sds-surfaces-text-primary);
+}
+
+.paginationMenuItem[data-active] {
+  color: var(--sds-surfaces-text-primary);
+}
+
+.paginationPages {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 /* As `.carouselArrow`: 11px of padding lands the bordered box on Figma's 44. */
-.pagerControls .pagerArrow {
+.paginationPages .paginationStep {
   flex: none;
   padding-inline: 11px;
 }
 
-.pagerControls .pagerArrow svg {
-  width: 20px;
-  height: 20px;
+.paginationList {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.pagerControls .pagerArrow:first-child {
-  margin-inline-end: 8px;
-}
-
-.pagerControls .pagerArrow:last-child {
-  margin-inline-start: 8px;
-}
-
-.pagerPage {
+/* Qualified by the list, so the 16x12 padding outranks the zero `UnstyledButton` resets it to. */
+.paginationList .paginationPage {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 42px;
-  height: 48px;
-  padding-inline: 8px;
+  padding: 12px 16px;
   border-radius: var(--mantine-radius-sm);
-  font-size: 16px;
+  font-size: 18px;
   line-height: 24px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sds-surfaces-text-primary);
   transition: background-color var(--sds-motion-fast) var(--sds-motion-ease);
 }
 
-.pagerPage:hover {
+.paginationPage:hover:not([data-active]) {
   background-color: var(--sds-surfaces-card-bg-translucent);
 }
 
-.pagerPage:focus-visible {
+.paginationPage:focus-visible {
   outline: 2px solid var(--sds-brand-primary-primary);
   outline-offset: 2px;
 }
 
-.pagerPage[data-active] {
-  background-color: var(--sds-brand-primary-primary);
-  color: #fff;
+.paginationPage[data-active] {
+  background-image: linear-gradient(
+    252.22deg,
+    var(--sds-action-primary-hover) 37.232%,
+    var(--sds-action-primary-default) 63.409%
+  );
+  color: var(--sds-action-neutral-inverted);
+}
+
+/* The catalog keeps the 24 it always had over its pager, on top of the section's own 24-gap. */
+.catalogPagination {
+  margin-block-start: 24px;
 }
 
 /* =====================================================================================

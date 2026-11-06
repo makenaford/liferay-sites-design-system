@@ -12,6 +12,7 @@
  * than a `PageSpec`, so there is nothing for the builder to hold as data until they are moved onto
  * section types.
  */
+import { BLOG_CATEGORY_PAGE } from '../templates/blog-category-page'
 import { BLOG_HUB_CAROUSEL_PAGE, BLOG_HUB_PAGE } from '../templates/blog-hub-page'
 import { OEM_PARTNER_PAGE } from '../templates/oem-partner-page'
 import { PARTNER_HOME_PAGE } from '../templates/partner-home-page'
@@ -52,6 +53,14 @@ export const BUILT_PAGES: BuiltPage[] = [
     label: 'Blog Hub (carousel hero)',
     group: 'Assets to Web',
     page: fixed(BLOG_HUB_CAROUSEL_PAGE),
+    footerCta: false,
+    blogNav: 'hub',
+  },
+  {
+    id: 'blog-category',
+    label: 'Blog Category',
+    group: 'Assets to Web',
+    page: fixed(BLOG_CATEGORY_PAGE),
     footerCta: false,
     blogNav: 'hub',
   },

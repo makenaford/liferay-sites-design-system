@@ -4115,10 +4115,11 @@ export const DEFS: Record<string, Shape> = {
           },
           {
             "name": "title",
-            "optional": false,
+            "optional": true,
             "shape": {
               "kind": "string"
-            }
+            },
+            "doc": "The shelf's heading. Leave it off where the page's own heading already names the posts — a blog category's grid sits straight under the hero that says which category it is."
           },
           {
             "name": "description",
@@ -4210,6 +4211,25 @@ export const DEFS: Record<string, Shape> = {
               ]
             },
             "doc": "How the byline is laid out. `stacked` is the hub frame's — a 36px portrait beside the name over the date, then the read time behind a clock. `inline` is the `Common Cards` `Type=Blog` cell (node `24980:63861`) — one row…"
+          },
+          {
+            "name": "pageSize",
+            "optional": true,
+            "shape": {
+              "kind": "number"
+            },
+            "doc": "Show the posts a page at a time, with `Pagination` under the grid — `Blog Category Page` (node `25181:70081`): 12 to a page, four rows of three. Off, every post shows at once."
+          },
+          {
+            "name": "pageSizes",
+            "optional": true,
+            "shape": {
+              "kind": "array",
+              "of": {
+                "kind": "number"
+              }
+            },
+            "doc": "The page-size menu's choices, `pageSize` among them. Off, there is no menu."
           },
           {
             "name": "posts",

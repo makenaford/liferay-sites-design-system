@@ -812,6 +812,23 @@ export function IconLayoutGrid(props: IconProps) {
   )
 }
 
+/** MingCute `left` (regular, arrow). */
+export function IconLeft(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.657 17.657 9 12l5.657-5.657"/>
+    </svg>
+  )
+}
+
 /** MingCute `linkedin` (regular, brands). */
 export function IconLinkedin(props: IconProps) {
   return (

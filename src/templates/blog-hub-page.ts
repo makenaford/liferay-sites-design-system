@@ -438,7 +438,7 @@ const POST_DATA = {
  * company's — `Liferay Team` with the logo for a portrait, as the `Blog- no padding` cell draws it (node
  * `25025:53104`). The date and topics are the `Blog Hub` frame's own placeholders.
  */
-const LIFERAY_TEAM = { name: 'Liferay Team', avatar: { src: liferayTeamMark, alt: '' }, brand: true }
+export const LIFERAY_TEAM = { name: 'Liferay Team', avatar: { src: liferayTeamMark, alt: '' }, brand: true }
 
 const PLACEHOLDER = {
   date: 'October 20, 2026',
@@ -525,6 +525,23 @@ const VIEW_ALL = { label: 'View All', href: '#' }
  * `Blog Hub` (node `24944:62170`). The hero leads with one post — the CMS MCP Server field report, which
  * was the third Featured card — and the Featured row takes the new `Rethinking SEO` interview in its place.
  */
+/*
+ * The blog's closing ask, in place of the footer's `Ready for the future?` band — `Page Action Section`
+ * (node `25037:46647`). Every blog page ends on it: the hub and each category.
+ */
+export const BLOG_NEWSLETTER: SectionSpec = {
+  type: 'closingCta',
+  title: 'The Best of the Liferay Blog, Delivered Monthly.',
+  titleHighlight: 'Delivered Monthly',
+  description: 'Insights on digital experience, AI, and content. No fluff, just the ideas worth your time.',
+  placeholder: 'Enter Your Email',
+  submit: 'Subscribe',
+  consent: {
+    text: 'By subscribing, you agree to receive marketing emails from Liferay. You can unsubscribe at any time. See our',
+    link: { label: 'Privacy Policy', href: 'https://www.liferay.com/privacy-policy' },
+  },
+}
+
 export const BLOG_HUB_PAGE: PageSpec = {
   hero: {
     background: 'corner',
@@ -651,22 +668,7 @@ export const BLOG_HUB_PAGE: PageSpec = {
       lead: POSTS.skodaEmployeeValue,
       posts: [POSTS.innovativeStudentExperiences, POSTS.selfServiceBanking, POSTS.implementingStudentPortals],
     }),
-    /*
-     * The page's closing ask, in place of the footer's `Ready for the future?` band —
-     * `Page Action Section` (node `25037:46647`).
-     */
-    {
-      type: 'closingCta',
-      title: 'The Best of the Liferay Blog, Delivered Monthly.',
-      titleHighlight: 'Delivered Monthly',
-      description: 'Insights on digital experience, AI, and content. No fluff, just the ideas worth your time.',
-      placeholder: 'Enter Your Email',
-      submit: 'Subscribe',
-      consent: {
-        text: 'By subscribing, you agree to receive marketing emails from Liferay. You can unsubscribe at any time. See our',
-        link: { label: 'Privacy Policy', href: 'https://www.liferay.com/privacy-policy' },
-      },
-    },
+    BLOG_NEWSLETTER,
   ],
 }
 
