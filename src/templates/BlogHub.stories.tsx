@@ -4,7 +4,7 @@ import { SecondaryNav } from '../components/SecondaryNav'
 import { IconGlassBlogs } from '../icons'
 import { PageRenderer } from './PageRenderer'
 import { SiteFooter, SiteHeader } from './shared'
-import { BLOG_HUB_PAGE, POSTS } from './blog-hub-page'
+import { BLOG_HUB_CAROUSEL_PAGE, BLOG_HUB_PAGE, POSTS } from './blog-hub-page'
 import type { BlogPostSpec, PageSpec, SectionSpec } from './page-schema'
 import { BLOG_NAV } from './blog-nav'
 
@@ -15,20 +15,20 @@ const JUMP_LINKS: AnchorNavItem[] = BLOG_HUB_PAGE.sections.flatMap((section) =>
     : [],
 )
 
-function BlogHub() {
+function BlogHub({ page = BLOG_HUB_PAGE }: { page?: PageSpec }) {
   return (
     <>
       <SiteHeader />
       {/* `mt` 65, the header's height: the hero reaches up behind both bars from there. */}
       <SecondaryNav
-        title="Blogs"
+        title="Liferay Blog"
         icon={<IconGlassBlogs size={32} />}
         titleHref="#"
         items={BLOG_NAV}
         action={<AnchorNav variant="menu" items={JUMP_LINKS} />}
         mt={65}
       />
-      <PageRenderer page={BLOG_HUB_PAGE} />
+      <PageRenderer page={page} />
       {/* No `Ready for the future?` band: the page closes on its own newsletter sign-up, a `closingCta`. */}
       <SiteFooter cta={false} />
     </>
@@ -44,9 +44,13 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The liferay.com blog hub — `Solutions Library` -> `Blog Hub` (node `25025:51238`). Rendered from `blog-hub-page.ts` through `PageRenderer`; the page brought in the `blogGrid` and `blogFeature` section types and the hero’s `label`.',
+          'The liferay.com blog hub — `Solutions Library` -> `Blog Hub` (node `24944:62170`). Rendered from `blog-hub-page.ts` through `PageRenderer`; the page brought in the `blogGrid` and `blogFeature` section types and the hero’s `label`.',
           '',
-          'Every shelf uses the same card: no surface or padding, so the picture is the card; the topics as `Label` `Filled` `XS` pills over the headline; and the two-line byline at the foot. It was chosen from the side-by-side in `Card Styles`, which keeps every option for reference. The other options — glass and overlay cards, text and small-caps topics, the one-row byline, the two-column list — are still on `blogGrid` and `blogFeature` if a page wants them.',
+          'The hero leads with one post — the CMS MCP Server field report, with its author, read time and cover. Under it, `Featured` and `Most Recent`, then the topic shelves.',
+          '',
+          'Every shelf uses the same card — `Common Cards` `Type=Blog- no padding` (node `25025:53104`): no surface or padding, so the picture is the card; the topics in small caps over the headline; and the two-line byline at the foot. A Featured card names one category. The other options — glass and overlay cards, text and pill topics, the one-row byline — are still on `blogGrid` and `blogFeature`, side by side in `Card Styles`.',
+          '',
+          'The topic shelves take turns rather than all leaning the same way: the frame’s lead-and-stack, its mirror (`reverse`), the two-column ruled list (`align: horizontal`), and a row of three or four cards (`columns`). Each shelf keeps its posts whatever its layout.',
           '',
           'The blog’s own bar sits under the header, as on a post (`Templates/Page Templates` -> `Blog`), without the reading-progress line — there is nothing to read through yet. At its end, an `AnchorNav` menu — `Jump to` and the shelf you are in — opens onto every shelf; its links are the shelves’ own titles, read from the sections that carry an `anchor`.',
           '',
@@ -64,6 +68,13 @@ type Story = StoryObj
 
 /** The whole page. */
 export const Page: Story = { render: () => <BlogHub /> }
+
+/**
+ * Three lead stories in the hero instead of one — the frame's `Carousel` under the hero (node
+ * `25184:65528`): the arrows and a dot per story, the bubble staying put as the stories move. The rest of
+ * the page is the same.
+ */
+export const CarouselHero: Story = { render: () => <BlogHub page={BLOG_HUB_CAROUSEL_PAGE} /> }
 
 /** The same page at a phone's width: one card per row, and the shelf's stacked cards stack their pictures. */
 export const Narrow: Story = {

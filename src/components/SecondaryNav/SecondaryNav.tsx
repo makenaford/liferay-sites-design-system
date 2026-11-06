@@ -13,6 +13,7 @@ import { Box, UnstyledButton } from '@mantine/core'
 import type { BoxProps, ElementProps } from '@mantine/core'
 import classes from '../../theme/components.module.css'
 import { IconDown } from '../../icons'
+import { onAnyScroll, scrollerOf } from '../scroller'
 
 export interface SecondaryNavLink {
   /** The link's own text. */
@@ -219,20 +220,19 @@ export function SecondaryNav({
       frame = 0
       const el = progressRef.current
       if (!el) return
-      const room = document.documentElement.scrollHeight - window.innerHeight
-      const fraction = room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)) : 0
+      const scroller = scrollerOf(el)
+      const room = scroller.scrollHeight() - scroller.viewHeight()
+      const fraction = room > 0 ? Math.min(1, Math.max(0, scroller.top() / room)) : 0
       el.style.setProperty('--sds-progress', String(fraction))
     }
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update)
     }
     update()
-    window.addEventListener('scroll', schedule, { passive: true })
-    window.addEventListener('resize', schedule)
+    const off = onAnyScroll(schedule)
     return () => {
       cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
+      off()
     }
   }, [progress])
 
@@ -380,18 +380,22 @@ export function SecondaryNav({
       frame = 0
       const nav = navRef.current
       if (!nav) return
+      const scroller = scrollerOf(nav)
       const box = nav.getBoundingClientRect()
       const at = stickAt(nav)
-      const isStuck = box.top <= at + 0.5
+      /* Measured from the top of whatever scrolls — the window, or the builder's canvas. */
+      const boxTop = box.top - scroller.viewTop()
+      const scrollY = scroller.top()
+      const isStuck = boxTop <= at + 0.5
 
       /*
        * The resting place is only readable while the bar is not stuck — or on the first read, when a bar
        * placed directly under the header is "stuck" at exactly where it rests.
        */
-      if (!isStuck || restingTop.current === null) restingTop.current = box.top + window.scrollY
+      if (!isStuck || restingTop.current === null) restingTop.current = boxTop + scrollY
 
-      if (sticky) setStuck(isStuck && window.scrollY > 0)
-      setReplacing(sticky && replaceHeader && window.scrollY > restingTop.current)
+      if (sticky) setStuck(isStuck && scrollY > 0)
+      setReplacing(sticky && replaceHeader && scrollY > restingTop.current)
 
       const first = initial
       initial = false
@@ -405,9 +409,7 @@ export function SecondaryNav({
       }
 
       /* At the very bottom the last section may be too short ever to reach the line; give it the bar. */
-      const atEnd =
-        window.scrollY > 0 &&
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+      const atEnd = scrollY > 0 && scroller.viewHeight() + scrollY >= scroller.scrollHeight() - 2
       if (atEnd) next = tracked[tracked.length - 1].value
 
       if (next !== null || !first) change(next)
@@ -418,11 +420,9 @@ export function SecondaryNav({
     }
 
     read()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
+    const off = onAnyScroll(onScroll)
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
+      off()
       if (frame) cancelAnimationFrame(frame)
     }
   }, [items, spy, sticky, replaceHeader, change])
@@ -487,21 +487,26 @@ export function SecondaryNav({
 
     /* The bar and the offset it sticks at both come off, so the heading lands just below the bar. */
     const nav = navRef.current
+    const scroller = scrollerOf(nav)
     const barHeight = nav?.offsetHeight ?? 0
     const top =
-      target.getBoundingClientRect().top + window.scrollY - (nav ? stickAt(nav) : 0) - barHeight
+      target.getBoundingClientRect().top -
+      scroller.viewTop() +
+      scroller.top() -
+      (nav ? stickAt(nav) : 0) -
+      barHeight
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     settling.current = true
     const release = () => {
       settling.current = false
-      window.removeEventListener('scrollend', release)
+      off()
     }
-    window.addEventListener('scrollend', release)
+    const off = onAnyScroll(release, 'scrollend')
     /* No `scrollend` in older Safari, and none at all if the page is already there. */
     window.setTimeout(release, 1000)
 
-    window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' })
+    scroller.scrollTo(top, reduce ? 'auto' : 'smooth')
     history.replaceState(null, '', item.href)
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
     target.focus({ preventScroll: true })

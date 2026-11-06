@@ -3,7 +3,9 @@ import authorPhoto2 from '../../assets/blog/authors/author-2.webp'
 import authorPhoto3 from '../../assets/blog/authors/author-3.webp'
 import authorPhoto4 from '../../assets/blog/authors/author-4.webp'
 import liferayTeamMark from '../../assets/blog/authors/liferay-team.png'
-import type { BlogPostSpec, PageSpec, SectionSpec } from './page-schema'
+import sebastianEdgarPhoto from '../../assets/blog/authors/sebastian-edgar.jpg'
+import aiDidntKillSearch from '../../assets/blog/posts/ai-didnt-kill-search.webp'
+import type { BlogPostSpec, HeroSlide, PageSpec, SectionSpec } from './page-schema'
 
 /*
  * The blog hub, as data.
@@ -62,6 +64,19 @@ const POST_DATA = {
     },
     author: { name: 'Marc Hermann', avatar: { src: authorPhoto3, alt: '' } },
     readTime: '10 Min Read',
+  },
+  /*
+   * New in the `Blog Hub` frame's Featured row — `Common Cards` (node `25178:55754`). Not on liferay.com
+   * yet, so no link; the title spells the name `Sebastien`, the byline `Sebastian`, as the file does.
+   */
+  rethinkingSeo: {
+    title: 'Rethinking SEO in the Age of AI with Sebastien Edgar',
+    href: '#',
+    image: { src: aiDidntKillSearch, alt: 'Liferay Interviews: AI Didn’t Kill Search, It Raised the Stakes' },
+    author: { name: 'Sebastian Edgar', avatar: { src: sebastianEdgarPhoto, alt: '' } },
+    date: 'October 20, 2026',
+    readTime: '10 Min Read',
+    tags: ['AI & Automation'],
   },
   buyersWantFromAi: {
     title: 'What Buyers Actually Want From AI in Their Website Platform',
@@ -443,133 +458,195 @@ export const POSTS = Object.fromEntries(
 ) as Record<keyof typeof POST_DATA, BlogPostSpec>
 
 /*
- * The card every shelf uses — chosen from a side-by-side of eight: no surface or padding, so the picture
- * is the card; the topics as XS filled pills over the headline; the two-line byline at the foot.
+ * The card every shelf uses — `Common Cards` `Type=Blog- no padding` (node `25025:53104`): no surface or
+ * padding, so the picture is the card; the topics in small caps over the headline; the two-line byline at
+ * the foot.
  */
-const CARD = { card: 'plain', byline: 'stacked', tagPosition: 'top', tagStyle: 'pill' } as const
-
-type TopicShelf = Extract<SectionSpec, { type: 'blogFeature' }>
+const CARD = { card: 'blog', byline: 'stacked' } as const
 
 /**
- * A topic shelf whose cards are tagged with the shelf's own name, so a card says the topic it is filed
- * under here rather than whatever tags its post carries.
+ * The blog's nine categories — the taxonomy the topic shelves are built on. A card names exactly one of
+ * them, never a post's own tags: those are liferay.com's older, finer labels (`Low-Code`, `Integration`),
+ * and a second line of them made every card read differently.
  */
-const topicShelf = (shelf: Omit<TopicShelf, 'type'>): TopicShelf => {
-  const tagged = (post: BlogPostSpec): BlogPostSpec => ({ ...post, tags: [shelf.title] })
-  return { type: 'blogFeature', ...shelf, lead: tagged(shelf.lead), posts: shelf.posts.map(tagged) }
+export const BLOG_CATEGORIES = [
+  'Digital Experience',
+  'AI and Automation',
+  'Content Management',
+  'Customer Experience',
+  'Digital Commerce',
+  'Industry and Public Sector',
+  'Developer',
+  'Marketing Automation',
+  'SEO and Analytics',
+] as const
+
+export type BlogCategory = (typeof BLOG_CATEGORIES)[number]
+
+/** A card in `Featured` or `Most Recent`, labelled with the one category it is filed under. */
+const filed = (post: BlogPostSpec, category: BlogCategory): BlogPostSpec => ({ ...post, tags: [category] })
+
+type TopicFeature = Extract<SectionSpec, { type: 'blogFeature' }>
+type TopicShelf = Omit<TopicFeature, 'type'>
+
+/**
+ * How a topic shelf lays out its posts. The shelves run one after another, so they take turns rather than
+ * all drawing the frame's lead-and-stack: `feature` is that, `reverse` its mirror, `list` the `AI And
+ * Automation` two-column list, `grid` a row of cards — three across for three posts, four for four.
+ */
+type ShelfLayout = 'feature' | 'reverse' | 'list' | 'grid'
+
+/**
+ * A topic shelf. Its cards carry no category: the shelf's title already says it, and repeating it on
+ * every card was a line of noise. The same posts whatever the layout: a list or a grid simply starts with
+ * the lead.
+ */
+const topicShelf = (layout: ShelfLayout, shelf: TopicShelf): SectionSpec => {
+  const tagged = (post: BlogPostSpec): BlogPostSpec => ({ ...post, tags: [] })
+  const { lead, posts, ...rest } = shelf
+  if (layout === 'feature' || layout === 'reverse') {
+    return {
+      type: 'blogFeature',
+      ...rest,
+      ...(layout === 'reverse' ? { reverse: true } : null),
+      lead: tagged(lead),
+      posts: posts.map(tagged),
+    }
+  }
+  const all = [lead, ...posts].map(tagged)
+  return layout === 'list'
+    ? { type: 'blogGrid', ...rest, align: 'horizontal', posts: all }
+    : { type: 'blogGrid', ...rest, columns: all.length === 4 ? 4 : 3, posts: all }
 }
 
+const VIEW_ALL = { label: 'View All', href: '#' }
+
+/*
+ * `Blog Hub` (node `24944:62170`). The hero leads with one post — the CMS MCP Server field report, which
+ * was the third Featured card — and the Featured row takes the new `Rethinking SEO` interview in its place.
+ */
 export const BLOG_HUB_PAGE: PageSpec = {
-  /* No description, no ask: the hub's heading says what the blog is for, and the shelves do the rest. */
   hero: {
     background: 'corner',
-    label: 'Liferay Blogs',
-    title: { text: 'Ideas for the people building better digital experiences.' },
-    /* No media column, so the heading would otherwise run under the corner bubble. */
-    titleMaxWidth: 800,
+    label: 'Liferay Blog',
+    title: { text: POSTS.cmsMcpServer.title },
+    description: {
+      text: "A CMS MCP server lets AI agents migrate legacy content and Asset Libraries into Liferay's new CMS. A field report on how it works today. By Marc Hermann, Managing Director of Portalworks",
+    },
+    byline: {
+      name: POSTS.cmsMcpServer.author!.name,
+      avatar: POSTS.cmsMcpServer.author!.avatar,
+      date: POSTS.cmsMcpServer.date,
+      readTime: POSTS.cmsMcpServer.readTime,
+    },
+    media: { ...POSTS.cmsMcpServer.image, ratio: '3:2' },
   },
   sections: [
     {
       type: 'blogGrid',
-      title: 'Featured Blogs',
+      title: 'Featured',
       anchor: 'featured',
       ...CARD,
-      posts: [POSTS.sevenReasons, POSTS.digitalAgility, POSTS.cmsMcpServer],
+      posts: [
+        filed(POSTS.sevenReasons, 'Digital Experience'),
+        filed(POSTS.digitalAgility, 'Digital Experience'),
+        filed(POSTS.rethinkingSeo, 'AI and Automation'),
+      ],
     },
     {
       type: 'blogGrid',
-      title: 'Most Recent Blogs',
+      title: 'Most Recent',
       anchor: 'most-recent',
       ...CARD,
       posts: [
-        POSTS.buyersWantFromAi,
-        POSTS.modernizeLegacy,
-        POSTS.evaluateCms,
-        POSTS.vibeCodingExamples,
-        POSTS.aiAgentsInAction,
-        POSTS.vibeCodingDebt,
+        filed(POSTS.buyersWantFromAi, 'Digital Experience'),
+        filed(POSTS.modernizeLegacy, 'Digital Experience'),
+        filed(POSTS.evaluateCms, 'Content Management'),
+        filed(POSTS.vibeCodingExamples, 'Developer'),
+        filed(POSTS.aiAgentsInAction, 'AI and Automation'),
+        filed(POSTS.vibeCodingDebt, 'Developer'),
       ],
     },
-    topicShelf({
+    topicShelf('feature', {
       title: 'Digital Experience',
       anchor: 'digital-experience',
       ...CARD,
       description:
         'Platform strategy for the portals, sites, and digital experience platforms that connect every audience, including what Liferay DXP is and how it fits.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       lead: POSTS.modernizeLegacy,
       posts: [POSTS.cmsMcpServer, POSTS.whatIsLiferay, POSTS.netwaysPartnerPulse],
     }),
-    topicShelf({
+    topicShelf('list', {
       title: 'AI and Automation',
       anchor: 'ai-and-automation',
       ...CARD,
       description:
         'AI transformation, agentic AI, AI governance, MCP, and the automation that puts intelligent systems to work inside the enterprise.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       lead: POSTS.aiAgentsInAction,
       posts: [POSTS.translationNotEnough, POSTS.agentGovernanceAccess, POSTS.solvingAiGovernance],
     }),
-    topicShelf({
+    topicShelf('reverse', {
       title: 'Customer Experience',
       anchor: 'customer-experience',
       ...CARD,
       description:
         'CX strategy, personalization, and the customer and self-service portals that turn users into loyal customers.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       lead: POSTS.structuredContent,
       posts: [POSTS.evaluateCms, POSTS.webtownPartnerPulse, POSTS.intranetContentManagement],
     }),
-    topicShelf({
+    topicShelf('grid', {
       title: 'Digital Commerce',
       anchor: 'digital-commerce',
       ...CARD,
       description:
         'B2B and B2C commerce strategy and capability, from storefront design to the platforms that power them.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       /* The first four blogs in the Resource Hub's Blog + Commerce filter, in its order. */
       lead: POSTS.webtownPartnerPulse,
       posts: [POSTS.composableVsHeadless, POSTS.headlessVsTraditional, POSTS.b2bDataQuestions],
     }),
-    topicShelf({
+    topicShelf('grid', {
       title: 'Industry and Public Sector',
       anchor: 'industry-and-public-sector',
       ...CARD,
       description:
         'Perspectives for government, financial services, manufacturing, and healthcare, including compliance topics like NIS2 and accessibility.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       /* The Resource Hub's Blog + every-industry filter returns these three, in this order. */
       lead: POSTS.ecmHigherEducation,
       posts: [POSTS.ecmGovernment, POSTS.ecmHealthcare],
     }),
-    topicShelf({
+    topicShelf('feature', {
       title: 'Developer',
       anchor: 'developer',
       ...CARD,
       description: 'Technical deep-dives, integration patterns, and architecture guidance for the teams who build.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       /* The first four in the Resource Hub's Blog + Developer filter, in its order. */
       lead: POSTS.vibeCodingExamples,
       posts: [POSTS.vibeCodingDebt, POSTS.vibeCodingVsLowCode, POSTS.agenticAiMarketing],
     }),
-    topicShelf({
+    topicShelf('list', {
       title: 'Marketing Automation',
       anchor: 'marketing-automation',
       ...CARD,
       description:
         'The martech stack, campaign orchestration, personalization at scale, and lead nurture programs that keep pipeline moving.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       /* The first four in the Resource Hub's Blog + Marketing Automation filter, in its order. */
       lead: POSTS.buyersWantFromAi,
       posts: [POSTS.technopolisPartnerPulse, POSTS.europeanAccessibilityAct, POSTS.skodaEmployeeValue],
     }),
-    topicShelf({
+    topicShelf('reverse', {
       title: 'SEO and Analytics',
       anchor: 'seo-and-analytics',
       ...CARD,
       description:
         'SEO, AEO and GEO for AI-driven search, content performance, and the analytics that show what is actually working.',
-      action: { label: 'View All', href: '#' },
+      action: VIEW_ALL,
       /* The first four in the Resource Hub's Blog + SEO & Analytics filter, in its order. */
       lead: POSTS.skodaEmployeeValue,
       posts: [POSTS.innovativeStudentExperiences, POSTS.selfServiceBanking, POSTS.implementingStudentPortals],
@@ -591,4 +668,34 @@ export const BLOG_HUB_PAGE: PageSpec = {
       },
     },
   ],
+}
+
+/** A lead story for the carousel hero: the post's cover, byline and a line from its own page. */
+const leadStory = (post: BlogPostSpec, description: string): HeroSlide => ({
+  label: 'Liferay Blog',
+  title: { text: post.title },
+  description: { text: description },
+  byline: { name: post.author!.name, avatar: post.author!.avatar, date: post.date, readTime: post.readTime },
+  media: { ...post.image, ratio: '3:2' },
+})
+
+/**
+ * The same hub with three lead stories in the hero instead of one — the frame's `Carousel` under the
+ * hero (node `25184:65528`). The descriptions are each post's own summary on liferay.com.
+ */
+export const BLOG_HUB_CAROUSEL_PAGE: PageSpec = {
+  ...BLOG_HUB_PAGE,
+  hero: {
+    ...BLOG_HUB_PAGE.hero,
+    slides: [
+      leadStory(
+        POSTS.buyersWantFromAi,
+        'When 100 IT and marketing leaders ranked AI features for their website platform, practical tools like workflow automation beat personalization by a wide margin.',
+      ),
+      leadStory(
+        POSTS.agentGovernanceAccess,
+        'Understand robust AI agent governance. IT leaders can implement strong access, ownership, and audit controls to prevent data breaches and scale AI confidently with Liferay.',
+      ),
+    ],
+  },
 }

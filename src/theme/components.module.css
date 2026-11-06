@@ -5410,6 +5410,31 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 }
 
 /*
+ * A carousel hero's slide — the hero's own two columns, inside a `Carousel` slide that is the full
+ * content width. The arrows and dots sit 16 under it, as the `Blog Hub` frame's `Carousel` does.
+ */
+.heroSlide {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  height: 100%;
+}
+
+/*
+ * Full width at every size. Stacked under 1200 the hero's column is `align-items: flex-start`, so the
+ * column would shrink to its content — and a carousel's content is every slide side by side.
+ */
+.heroContent:has(> .carouselRoot) {
+  gap: 0;
+  align-self: stretch;
+  width: 100%;
+}
+
+.heroContent > .carouselRoot {
+  gap: 16px;
+}
+
+/*
  * The media column. Equal halves in the drawn frame, and it never shrinks below half — a hero image
  * squeezed to a sliver is worse than one that wraps.
  */
@@ -6054,7 +6079,8 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
  * measurable, which a `vw`-based one is not in a zero-width preview.
  */
 @container sds-hero (max-width: 1199px) {
-  .heroInner {
+  .heroInner,
+  .heroSlide {
     flex-direction: column;
     align-items: flex-start;
     gap: 40px;
@@ -14084,6 +14110,30 @@ a.secondaryNavTitle:focus-visible {
   border-top: 1px solid var(--sds-neutral-03);
 }
 
+/*
+ * `blogGrid`'s two-column list — `AI And Automation` (node `25133:47480`): the stack's ruled rows, laid
+ * two across. Every row has its rule under it, so the two columns end on a line together.
+ */
+.blogList > .blogStackRow {
+  padding-block: 16px;
+  border-bottom: 1px solid var(--sds-neutral-03);
+}
+
+.blogList > .blogStackRow:first-child {
+  padding-top: 0;
+}
+
+@media (min-width: 62em) {
+  .blogList > .blogStackRow:nth-child(2) {
+    padding-top: 0;
+  }
+
+  /* `reverse`: the stack first and the lead after it, at the width the two sit side by side. */
+  .blogFeatureGrid[data-reverse] > :first-child {
+    order: 2;
+  }
+}
+
 .blogCard .cardBottom {
   padding-top: 0;
   /*
@@ -14226,16 +14276,13 @@ a.secondaryNavTitle:focus-visible {
 
 /*
  * `card="blog"` — `Common Cards` `Type=Blog- no padding` (node `25025:53104`). `card-main` is one 16px
- * column — picture, topics, title and byline. The file's `Top Content` row adds 8px above and below the
- * topics; only the top 8 is kept, so the topics sit 24 from the picture, and they sit 8 over the title so
- * they read as its kicker. The date is primary text here rather than secondary.
+ * column — picture, topics, title and byline. The file's `Top Content` row pads the topics 8px above and
+ * below; both are dropped, so the category sits at the column's 16 under the picture and 4 over the title,
+ * close enough to read as the title's kicker rather than a line of its own. The date is primary text here
+ * rather than secondary.
  */
 .blogCard[data-card='blog'] .cardHeader {
-  gap: 8px;
-}
-
-.blogCard[data-card='blog'] .cardHero {
-  padding-top: 8px;
+  gap: 4px;
 }
 
 /*

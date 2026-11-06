@@ -624,6 +624,156 @@ export const DEFS: Record<string, Shape> = {
       }
     ]
   },
+  "HeroSlide": {
+    "kind": "object",
+    "fields": [
+      {
+        "name": "label",
+        "optional": true,
+        "shape": {
+          "kind": "string"
+        },
+        "doc": "The pill directly over the heading — the blog hub's `Liferay Blogs`. Drawn at the Large size."
+      },
+      {
+        "name": "title",
+        "optional": false,
+        "shape": {
+          "kind": "ref",
+          "name": "Headline"
+        }
+      },
+      {
+        "name": "description",
+        "optional": true,
+        "shape": {
+          "kind": "object",
+          "fields": [
+            {
+              "name": "text",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "emphasis",
+              "optional": true,
+              "shape": {
+                "kind": "string"
+              }
+            }
+          ]
+        },
+        "doc": "The lead paragraph. `emphasis` is the bold tail the file draws on the last clause. Optional: a solution hero answers with its value props instead."
+      },
+      {
+        "name": "byline",
+        "optional": true,
+        "shape": {
+          "kind": "object",
+          "fields": [
+            {
+              "name": "name",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "avatar",
+              "optional": true,
+              "shape": {
+                "kind": "ref",
+                "name": "ImageRef"
+              }
+            },
+            {
+              "name": "date",
+              "optional": true,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "readTime",
+              "optional": true,
+              "shape": {
+                "kind": "string"
+              }
+            }
+          ]
+        },
+        "doc": "Who wrote it and when — the blog hero's `Author` row under the lead paragraph: a small portrait, the name, the date and the read time, dot-separated. Without `avatar` the portrait is initials."
+      },
+      {
+        "name": "tags",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "string"
+          }
+        },
+        "doc": "The post's topics, as glass tags in a row under the byline."
+      },
+      {
+        "name": "buttons",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "object",
+            "fields": [
+              {
+                "name": "label",
+                "optional": false,
+                "shape": {
+                  "kind": "string"
+                }
+              },
+              {
+                "name": "href",
+                "optional": false,
+                "shape": {
+                  "kind": "string"
+                }
+              },
+              {
+                "name": "variant",
+                "optional": true,
+                "shape": {
+                  "kind": "enum",
+                  "options": [
+                    "solid",
+                    "outline"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "doc": "The button row — Figma's `Bottom` slot on the hero's content block. The Industry hero (node `24223:209534`) draws two: `Book a Demo` solid and `Contact Sales` outline."
+      },
+      {
+        "name": "action",
+        "optional": true,
+        "shape": {
+          "kind": "ref",
+          "name": "LinkRef"
+        },
+        "doc": "The secondary call to action under the form."
+      },
+      {
+        "name": "media",
+        "optional": true,
+        "shape": {
+          "kind": "ref",
+          "name": "ImageRef"
+        }
+      }
+    ]
+  },
   "HeroSpec": {
     "kind": "object",
     "fields": [
@@ -1091,6 +1241,18 @@ export const DEFS: Record<string, Shape> = {
           }
         },
         "doc": "The post's topics, as glass tags in a row under the byline."
+      },
+      {
+        "name": "slides",
+        "optional": true,
+        "shape": {
+          "kind": "array",
+          "of": {
+            "kind": "ref",
+            "name": "HeroSlide"
+          }
+        },
+        "doc": "Further slides after this one, which make the hero a carousel — the `Blog Hub` hero's `Carousel` (node `25184:65528`): one slide at a time, the arrows and a dot per slide centred under it. This hero's own copy and media…"
       },
       {
         "name": "logo",
@@ -3998,7 +4160,19 @@ export const DEFS: Record<string, Shape> = {
                 "horizontal"
               ]
             },
-            "doc": "`horizontal` lays the grid out as two columns of the shelf's compact horizontal cards — a list that fits more posts in less height."
+            "doc": "`horizontal` lays the grid out as two columns of the shelf's compact horizontal cards — a list that fits more posts in less height. `Blog Hub` -> `AI And Automation` (node `25133:47480`): with the `plain` or `blog` card…"
+          },
+          {
+            "name": "columns",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                3,
+                4
+              ]
+            },
+            "doc": "How many cards a row holds at full width, vertical only — `4` for a shelf of four posts that would leave one alone on a second row of three."
           },
           {
             "name": "tagPosition",
@@ -4143,6 +4317,14 @@ export const DEFS: Record<string, Shape> = {
               ]
             },
             "doc": "See `blogGrid`."
+          },
+          {
+            "name": "reverse",
+            "optional": true,
+            "shape": {
+              "kind": "boolean"
+            },
+            "doc": "The lead on the right and the stack on the left, so a run of shelves need not all lean the same way. A phone still puts the lead first."
           },
           {
             "name": "lead",

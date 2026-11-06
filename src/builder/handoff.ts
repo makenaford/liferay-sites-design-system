@@ -29,6 +29,7 @@
 import type { PageDocument, PageNode, PropValue } from './document'
 import { CATALOG } from './catalog.generated'
 import { entryFor } from './registry'
+import { jumpLinks } from './blocks'
 
 /** The components that really are exports of the library. Icons are exported from it too. */
 const LIBRARY = new Set(CATALOG.map((entry) => entry.name))
@@ -49,6 +50,7 @@ const TEMPLATE_IMPORTS: Record<string, string> = {
   SiteHeader: 'templates/shared',
   SiteFooter: 'templates/shared',
   SecondaryNav: '',
+  AnchorNav: '',
   IconGlassBlogs: '',
   BLOG_NAV: 'templates/blog-nav',
 }
@@ -121,10 +123,20 @@ const COMPOUND: Record<string, (ctx: Context, node: PageNode, indent: number) =>
   BlogNav: (ctx, node, indent) => {
     for (const name of ['SecondaryNav', 'IconGlassBlogs', 'BLOG_NAV']) ctx.used.add(name)
     ctx.out.push(indent, '<SecondaryNav')
-    ctx.out.push(indent + 1, 'title="Blogs"')
+    ctx.out.push(indent + 1, 'title="Liferay Blog"')
     ctx.out.push(indent + 1, 'icon={<IconGlassBlogs size={32} />}')
     ctx.out.push(indent + 1, 'titleHref="#"')
     ctx.out.push(indent + 1, 'items={BLOG_NAV}')
+    const links = node.props.jumpLinks === false ? [] : jumpLinks(ctx.doc)
+    if (links.length) {
+      ctx.used.add('AnchorNav')
+      ctx.out.push(indent + 1, 'action={')
+      ctx.out.push(indent + 2, '<AnchorNav')
+      ctx.out.push(indent + 3, 'variant="menu"')
+      dataAttribute(ctx, 'items', links, indent + 3)
+      ctx.out.push(indent + 2, '/>')
+      ctx.out.push(indent + 1, '}')
+    }
     if (node.props.progress) ctx.out.push(indent + 1, 'progress')
     ctx.out.push(indent + 1, 'mt={65}')
     ctx.out.push(indent, '/>')
@@ -384,7 +396,7 @@ export function handoff(doc: PageDocument): Handoff {
     const from = TEMPLATE_IMPORTS[name]
     if (from) templates.set(from, [...(templates.get(from) ?? []), name])
   }
-  // `SecondaryNav` and the glass icon are library exports, reached through the blog nav block.
+  // `SecondaryNav`, `AnchorNav` and the glass icon are library exports, reached through the blog nav block.
   const libraryNames = [...new Set([...fromLibrary, ...[...ctx.used].filter((name) => TEMPLATE_IMPORTS[name] === '')])].sort()
 
   const header = [
