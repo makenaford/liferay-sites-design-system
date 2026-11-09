@@ -44,13 +44,13 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The liferay.com blog hub — `Solutions Library` -> `Blog Hub` (node `24944:62170`). Rendered from `blog-hub-page.ts` through `PageRenderer`; the page brought in the `blogGrid` and `blogFeature` section types and the hero’s `label`.',
+          'The liferay.com blog hub — `Solutions Library` -> `Blog Hub` (node `25212:55134`). Rendered from `blog-hub-page.ts` through `PageRenderer`; the page brought in the `blogGrid` and `blogFeature` section types and the hero’s `label`.',
           '',
-          'The hero leads with one post — the CMS MCP Server field report, with its author, read time and cover. Under it, `Featured` and `Most Recent`, then the topic shelves.',
+          'The hero is one line: the blog’s headline, and `Browse All Blogs` at its end (`layout: inline`). Under it, a feature with no heading of its own: the CMS MCP Server field report beside the three most recent posts. Then a row of four — the Featured three and the next most recent — and the topic shelves, one for each of the nine categories.',
           '',
           'Every shelf uses the same card — `Common Cards` `Type=Blog- no padding` (node `25025:53104`): no surface or padding, so the picture is the card; the topics in small caps over the headline; and the two-line byline at the foot. A Featured card names one category. The other options — glass and overlay cards, text and pill topics, the one-row byline — are still on `blogGrid` and `blogFeature`, side by side in `Card Styles`.',
           '',
-          'The topic shelves take turns rather than all leaning the same way: the frame’s lead-and-stack, its mirror (`reverse`), the two-column ruled list (`align: horizontal`), and a row of three or four cards (`columns`). Each shelf keeps its posts whatever its layout.',
+          'The topic shelves take turns, as the frame draws them: the lead-and-stack, the two-column ruled list (`align: horizontal`), then a row of three cards, and round again. Each shelf keeps its posts whatever its layout.',
           '',
           'The blog’s own bar sits under the header, as on a post (`Templates/Page Templates` -> `Blog`), without the reading-progress line — there is nothing to read through yet. At its end, an `AnchorNav` menu — `Jump to` and the shelf you are in — opens onto every shelf; its links are the shelves’ own titles, read from the sections that carry an `anchor`.',
           '',

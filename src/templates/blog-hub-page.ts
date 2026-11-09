@@ -235,6 +235,33 @@ const POST_DATA = {
     readTime: '10 Min Read',
     tags: ['Content Management System (CMS)'],
   },
+  /* The first two blogs in the Resource Hub's Blog + Content Management System (CMS) filter. */
+  knowledgeManagementPractices: {
+    title: 'Knowledge Management Best Practices for Better Access, Sharing, and Self-Service',
+    href: 'https://www.liferay.com/blog/knowledge-management-best-practices',
+    image: {
+      src: doc(
+        '10182/542802414/colleagues-gathered-in-an-office-sharing-ideas-around-a-docu.jpg/278bd24e-8d60-d674-c0dc-29afff26ddad/colleagues-gathered-in-an-office-sharing-ideas-around-a-docu.jpg?version=1.0&t=1793026179464',
+      ),
+      alt: '',
+    },
+    date: 'October 29, 2026',
+    readTime: '13 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
+  knowledgeManagementExamples: {
+    title: '4 Knowledge Management System Examples From Real Enterprises',
+    href: 'https://www.liferay.com/blog/knowledge-management-system-examples',
+    image: {
+      src: doc(
+        '10182/542802285/a-team-sitting-around-a-table-with-laptops-sharing-informati.jpg/3695987b-5f25-ee2e-e7cb-c37101d3f6d5/a-team-sitting-around-a-table-with-laptops-sharing-informati.jpg?version=1.0&t=1793026033866',
+      ),
+      alt: '',
+    },
+    date: 'October 29, 2026',
+    readTime: '12 Min Read',
+    tags: ['Content Management System (CMS)'],
+  },
   webtownPartnerPulse: {
     title: 'Partner Pulse: Webtown on 16 Years of Building Secure, AI-Ready Banking Portals with Liferay',
     href: 'https://www.liferay.com/blog/partner-pulse-webtown-16-years-of-building-portals',
@@ -522,10 +549,6 @@ const topicShelf = (layout: ShelfLayout, shelf: TopicShelf): SectionSpec => {
 const VIEW_ALL = { label: 'View All', href: '#' }
 
 /*
- * `Blog Hub` (node `24944:62170`). The hero leads with one post — the CMS MCP Server field report, which
- * was the third Featured card — and the Featured row takes the new `Rethinking SEO` interview in its place.
- */
-/*
  * The blog's closing ask, in place of the footer's `Ready for the future?` band — `Page Action Section`
  * (node `25037:46647`). Every blog page ends on it: the hub and each category.
  */
@@ -542,46 +565,40 @@ export const BLOG_NEWSLETTER: SectionSpec = {
   },
 }
 
+/*
+ * `Blog Hub` (node `25212:55134`). The hero is a headline alone; the page opens on the posts under it.
+ *
+ * The header is the headline and `Browse All Blogs` on one line. The opening feature leads with the CMS
+ * MCP Server field report, with the three most recent posts beside it. The row under that is the Featured three and the
+ * next most recent post — the frame repeats its first card in the fourth place.
+ */
 export const BLOG_HUB_PAGE: PageSpec = {
   hero: {
-    background: 'corner',
-    label: 'Liferay Blog',
-    title: { text: POSTS.cmsMcpServer.title },
-    description: {
-      text: "A CMS MCP server lets AI agents migrate legacy content and Asset Libraries into Liferay's new CMS. A field report on how it works today. By Marc Hermann, Managing Director of Portalworks",
-    },
-    byline: {
-      name: POSTS.cmsMcpServer.author!.name,
-      avatar: POSTS.cmsMcpServer.author!.avatar,
-      date: POSTS.cmsMcpServer.date,
-      readTime: POSTS.cmsMcpServer.readTime,
-    },
-    media: { ...POSTS.cmsMcpServer.image, ratio: '3:2' },
+    /* The header draws no bubble: the page opens on its posts, not on artwork. */
+    background: 'none',
+    layout: 'inline',
+    title: { text: 'Ideas for the people building better', highlight: 'digital experiences.' },
+    buttons: [{ label: 'Browse All Blogs', href: '#', variant: 'outline', arrow: true }],
   },
   sections: [
     {
-      type: 'blogGrid',
-      title: 'Featured',
-      anchor: 'featured',
+      type: 'blogFeature',
       ...CARD,
+      lead: filed(POSTS.cmsMcpServer, 'Content Management'),
+      posts: [POSTS.buyersWantFromAi, POSTS.modernizeLegacy, POSTS.evaluateCms].map((post) => ({
+        ...post,
+        tags: [],
+      })),
+    },
+    {
+      type: 'blogGrid',
+      ...CARD,
+      columns: 4,
       posts: [
         filed(POSTS.sevenReasons, 'Digital Experience'),
         filed(POSTS.digitalAgility, 'Digital Experience'),
         filed(POSTS.rethinkingSeo, 'AI and Automation'),
-      ],
-    },
-    {
-      type: 'blogGrid',
-      title: 'Most Recent',
-      anchor: 'most-recent',
-      ...CARD,
-      posts: [
-        filed(POSTS.buyersWantFromAi, 'Digital Experience'),
-        filed(POSTS.modernizeLegacy, 'Digital Experience'),
-        filed(POSTS.evaluateCms, 'Content Management'),
         filed(POSTS.vibeCodingExamples, 'Developer'),
-        filed(POSTS.aiAgentsInAction, 'AI and Automation'),
-        filed(POSTS.vibeCodingDebt, 'Developer'),
       ],
     },
     topicShelf('feature', {
@@ -604,7 +621,18 @@ export const BLOG_HUB_PAGE: PageSpec = {
       lead: POSTS.aiAgentsInAction,
       posts: [POSTS.translationNotEnough, POSTS.agentGovernanceAccess, POSTS.solvingAiGovernance],
     }),
-    topicShelf('reverse', {
+    topicShelf('grid', {
+      title: 'Content Management',
+      anchor: 'content-management',
+      ...CARD,
+      description:
+        'CMS strategy, headless versus traditional approaches, content operations, and migrations that scale with your organization.',
+      action: VIEW_ALL,
+      /* The first three blogs in the Resource Hub's Blog + Content Management System (CMS) filter, in its order. */
+      lead: POSTS.knowledgeManagementPractices,
+      posts: [POSTS.knowledgeManagementExamples, POSTS.structuredContent],
+    }),
+    topicShelf('feature', {
       title: 'Customer Experience',
       anchor: 'customer-experience',
       ...CARD,
@@ -614,7 +642,7 @@ export const BLOG_HUB_PAGE: PageSpec = {
       lead: POSTS.structuredContent,
       posts: [POSTS.evaluateCms, POSTS.webtownPartnerPulse, POSTS.intranetContentManagement],
     }),
-    topicShelf('grid', {
+    topicShelf('list', {
       title: 'Digital Commerce',
       anchor: 'digital-commerce',
       ...CARD,
@@ -657,7 +685,7 @@ export const BLOG_HUB_PAGE: PageSpec = {
       lead: POSTS.buyersWantFromAi,
       posts: [POSTS.technopolisPartnerPulse, POSTS.europeanAccessibilityAct, POSTS.skodaEmployeeValue],
     }),
-    topicShelf('reverse', {
+    topicShelf('feature', {
       title: 'SEO and Analytics',
       anchor: 'seo-and-analytics',
       ...CARD,
@@ -688,7 +716,11 @@ const leadStory = (post: BlogPostSpec, description: string): HeroSlide => ({
 export const BLOG_HUB_CAROUSEL_PAGE: PageSpec = {
   ...BLOG_HUB_PAGE,
   hero: {
-    ...BLOG_HUB_PAGE.hero,
+    background: 'corner',
+    ...leadStory(
+      POSTS.cmsMcpServer,
+      "A CMS MCP server lets AI agents migrate legacy content and Asset Libraries into Liferay's new CMS. A field report on how it works today. By Marc Hermann, Managing Director of Portalworks",
+    ),
     slides: [
       leadStory(
         POSTS.buyersWantFromAi,

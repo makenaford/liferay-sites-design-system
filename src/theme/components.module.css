@@ -5560,6 +5560,33 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   gap: 16px;
 }
 
+/*
+ * `layout: 'inline'` — the blog hub's header (node `25219:67225`): the heading in `Heading/H3` and the
+ * buttons at the row's end, 80 apart and centred on each other. The heading keeps 480 before the buttons
+ * wrap under it, 24 below.
+ */
+.hero[data-layout='inline'] .heroContent {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 80px;
+}
+
+.hero[data-layout='inline'] .heroTitle {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.hero[data-layout='inline'] .heroTitle > :where(h1, h2, h3, p) {
+  font-size: var(--sds-size-heading-f1);
+  line-height: var(--sds-line-height-heading-f1);
+}
+
+.hero[data-layout='inline'] .heroActions {
+  flex: none;
+}
+
 /* The `Form` cell: a single field with a contained button, which wants a width of its own. */
 .heroForm {
   width: min(480px, 100%);
@@ -7647,6 +7674,41 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 :is(.blogShelf, .sectionAnchor:has(> .blogShelf)) + :is(.blogShelf, .sectionAnchor:has(> .blogShelf))
   :is(.blogShelf > .sectionInner) {
   padding-top: 80px;
+}
+
+/*
+ * Blog shelves straight under the hero, with no heading of their own: the hero has already said what
+ * they are. The hero drops its foot padding, so the gap is the shelf's alone, at every width.
+ *
+ * The Blog Category page's grid starts 64 under the hero's description. The Blog Hub's opening feature
+ * (node `25212:55243`) sits 40 under its headline, the row of cards 40 under that, and the first topic
+ * shelf 120 under the row — the row's 40 and a shelf's 80.
+ */
+.hero:has(+ .blogShelf) .heroInner {
+  padding-block-end: 0;
+}
+
+.hero + .blogShelf > .sectionInner {
+  padding-top: 64px;
+}
+
+.hero + .blogShelf:has(.blogFeatureGrid) > .sectionInner {
+  padding-top: 40px;
+}
+
+/* The hub's headline sits 40 under the blog bar, not the hero's usual 80 (node `25211:59660`). */
+.hero:has(+ .blogShelf .blogFeatureGrid) {
+  --sds-hero-inner-top: calc(var(--sds-hero-chrome, 65px) + 40px);
+}
+
+/* After the shelf-run rule above, and at its specificity, so these win. */
+.blogShelf[data-untitled] + .blogShelf[data-untitled] :is(.blogShelf > .sectionInner) {
+  padding-top: 40px;
+}
+
+.blogShelf[data-untitled] + :is(.blogShelf, .sectionAnchor:has(> .blogShelf)):not([data-untitled])
+  :is(.blogShelf > .sectionInner) {
+  padding-top: 120px;
 }
 
 /*
@@ -14181,6 +14243,7 @@ a.secondaryNavTitle:focus-visible {
 .blogStack[data-divided] > .blogStackRow + .blogStackRow {
   border-top: 1px solid var(--sds-neutral-03);
 }
+
 
 /*
  * `blogGrid`'s two-column list — `AI And Automation` (node `25133:47480`): the stack's ruled rows, laid

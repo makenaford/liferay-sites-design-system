@@ -749,6 +749,14 @@ export const DEFS: Record<string, Shape> = {
                     "outline"
                   ]
                 }
+              },
+              {
+                "name": "arrow",
+                "optional": true,
+                "shape": {
+                  "kind": "boolean"
+                },
+                "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
               }
             ]
           }
@@ -1034,6 +1042,14 @@ export const DEFS: Record<string, Shape> = {
                     "outline"
                   ]
                 }
+              },
+              {
+                "name": "arrow",
+                "optional": true,
+                "shape": {
+                  "kind": "boolean"
+                },
+                "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
               }
             ]
           }
@@ -1147,7 +1163,8 @@ export const DEFS: Record<string, Shape> = {
           "options": [
             "default",
             "media-proof",
-            "stacked"
+            "stacked",
+            "inline"
           ]
         },
         "doc": "How the hero's pieces are arranged."
@@ -2409,6 +2426,14 @@ export const DEFS: Record<string, Shape> = {
                         "outline"
                       ]
                     }
+                  },
+                  {
+                    "name": "arrow",
+                    "optional": true,
+                    "shape": {
+                      "kind": "boolean"
+                    },
+                    "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
                   }
                 ]
               }
@@ -4266,10 +4291,11 @@ export const DEFS: Record<string, Shape> = {
           },
           {
             "name": "title",
-            "optional": false,
+            "optional": true,
             "shape": {
               "kind": "string"
-            }
+            },
+            "doc": "The shelf's heading. Leave it off for the hub's opening feature, which sits straight under the hero's headline (node `25212:55243`)."
           },
           {
             "name": "description",
