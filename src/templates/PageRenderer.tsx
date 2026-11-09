@@ -650,6 +650,7 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
               /* The file draws Medium in every hero, so this is the type's, not the page's. */
               size="md"
               variant={button.variant === 'outline' ? 'outline' : 'filled'}
+              rightSection={button.arrow ? <IconArrowRight /> : undefined}
             >
               {button.label}
             </MantineButton>
@@ -1437,6 +1438,7 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
       ref={rootRef}
       title={spec.title ? blogShelfTitle({ ...spec, title: spec.title }) : undefined}
       className={classes.blogShelf}
+      data-untitled={spec.title ? undefined : true}
       footer={
         pageSize ? (
           <Pagination
@@ -1488,7 +1490,11 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
 /** A topic shelf: the lead post beside a stack of the next ones, the two columns ending together. */
 function BlogFeatureSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogFeature' }> }) {
   return (
-    <Section title={blogShelfTitle(spec)} className={classes.blogShelf}>
+    <Section
+      title={spec.title ? blogShelfTitle({ ...spec, title: spec.title }) : undefined}
+      className={classes.blogShelf}
+      data-untitled={spec.title ? undefined : true}
+    >
       <SimpleGrid
         cols={{ base: 1, md: 2 }}
         spacing={24}

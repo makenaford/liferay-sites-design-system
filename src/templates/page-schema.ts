@@ -218,7 +218,13 @@ export interface HeroSpec {
    * Separate from `action` because they are different slots, not two spellings of one. A hero can draw
    * both — a form with a link under it *and* a button row — though no cell in the file currently does.
    */
-  buttons?: { label: string; href: string; variant?: 'solid' | 'outline' }[]
+  buttons?: {
+    label: string
+    href: string
+    variant?: 'solid' | 'outline'
+    /** The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`. */
+    arrow?: boolean
+  }[]
   /**
    * A site search in place of the email field — the Learn home page's. Wider than `form`, because a
    * query is longer than an address, and with no button: Enter submits.
@@ -249,9 +255,13 @@ export interface HeroSpec {
    *   under it. The media starts level with the heading, and the field and the proof row take the
    *   column's width (596 at most), so the badges sit at the column's end.
    *
+   * - `inline` — the blog hub's header (node `25219:67225`): no media, a one-line `Heading/H3` heading
+   *   and the buttons level with it at the row's end. The buttons drop under the heading once the row
+   *   is too narrow for both.
+   *
    * @default 'default'
    */
-  layout?: 'default' | 'media-proof' | 'stacked'
+  layout?: 'default' | 'media-proof' | 'stacked' | 'inline'
   /**
    * The value props under the description — a solution page's three bullets, each a UI icon and the
    * answer to a buyer's question.
@@ -1090,7 +1100,11 @@ type SectionBody =
    */
   | {
       type: 'blogFeature'
-      title: string
+      /**
+       * The shelf's heading. Leave it off for the hub's opening feature, which sits straight under the
+       * hero's headline (node `25212:55243`).
+       */
+      title?: string
       description?: string
       action?: LinkRef
       /** See `blogGrid`. `overlay` applies to the lead only. @default 'glass' */
