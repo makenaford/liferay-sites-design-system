@@ -14202,13 +14202,17 @@ a.secondaryNavTitle:focus-visible {
  * height — tags, a two-line title and the byline come to roughly 130 — so neither has space above or
  * below it. (A picture stretched to the text's height cannot hold 3:2 here: a stretched height does not
  * feed `aspect-ratio`, and the image grows to its file's own size.)
+ *
+ * The picture is 200 only while the card has room for it: in a narrower card it gives up width to the
+ * text, down to a 104px thumbnail, rather than leaving the title a 20-character column. At two across
+ * on a 1024 screen that keeps the title to two full lines and the read time on the date's row.
  */
 .blogStackRow > .cardRoot[data-align='horizontal'].blogCard {
   align-items: flex-start;
 }
 
 .blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardImage {
-  flex: 0 0 200px;
+  flex: 0 0 clamp(104px, 34%, 200px);
   align-self: flex-start;
   aspect-ratio: 3 / 2;
 }
@@ -14522,18 +14526,24 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* A phone has no room for a picture beside the text, so the stacked cards stack their picture too. */
+/*
+ * On a phone the stacked cards stay rows, with the picture as a thumbnail. Stacking it full width made
+ * each post a 340px card, so a shelf of three was two screens of pictures; as a list it reads as one.
+ * The title drops to 16px and may run to three lines in the narrower column.
+ */
 @media (max-width: 36em) {
-  /* `column-reverse` for the same reason `leading` is `row-reverse`: the image is ordered last. */
   .cardRoot[data-align='horizontal'].blogCard {
-    flex-direction: column-reverse;
-    align-items: stretch;
+    gap: 16px;
   }
 
   .cardRoot[data-align='horizontal'].blogCard > .cardImage,
   .blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardImage {
-    flex-basis: auto;
-    width: 100%;
-    aspect-ratio: 3 / 2;
+    flex: 0 0 clamp(104px, 34%, 132px);
+  }
+
+  .cardRoot[data-align='horizontal'].blogCard .cardTitle {
+    font-size: 16px;
+    -webkit-line-clamp: 3;
   }
 }
 
