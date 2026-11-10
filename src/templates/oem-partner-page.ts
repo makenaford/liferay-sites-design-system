@@ -1,4 +1,5 @@
-import heroPhoto from '../../assets/oem-partner/hero.jpg'
+import heroAnimation from '../../assets/oem-partner/hero-animation.webm'
+import heroPoster from '../../assets/oem-partner/hero-poster.png'
 import vaiLogo from '../../assets/oem-partner/vai-logo.png'
 import placecubeLogo from '../../assets/oem-partner/placecube.svg'
 import whyPartnerPhoto from '../../assets/oem-partner/why-partner.jpg'
@@ -18,7 +19,10 @@ import type { PageSpec } from './page-schema'
  * `Become an OEM Partner` in the hero jumps to the form at the foot of the page, where the steps after
  * applying sit beside it on a still corner glow.
  *
- * The photographs and the partners' logos are the frame's own. The answers the file leaves closed —
+ * The hero is the `OEM Partner- Animation` export — a partner's solution built on Liferay DXP — with its
+ * flat ground keyed out round the photograph so the corner bubble shows through. Only a dark export
+ * exists, so both canvases play it. The
+ * photographs and the partners' logos are the frame's own. The answers the file leaves closed —
  * four of the five `Why Partner` rows and two of the three FAQs — are drafts.
  */
 
@@ -30,7 +34,12 @@ export const OEM_PARTNER_PAGE: PageSpec = {
       text: 'No more building from scratch. Extend your software with enterprise-grade digital experiences and bring your product visions to market faster.',
     },
     buttons: [{ label: 'Become an OEM Partner', href: '#apply' }],
-    media: { src: heroPhoto, alt: 'Two colleagues talking across a laptop at a meeting table', ratio: '3:2' },
+    media: {
+      src: heroAnimation,
+      poster: heroPoster,
+      alt: 'Two colleagues in conversation beside a partner’s solution, powered by Liferay DXP with sites, commerce, self-service and security',
+      ratio: '3:2',
+    },
   },
   sections: [
     {
@@ -82,7 +91,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
           content: {
             title: '',
             description: '',
-            media: { src: whyPartnerPhoto, alt: 'A presenter in a blue blazer talking to a meeting room' },
+            media: { src: whyPartnerPhoto, alt: 'A presenter in a blue blazer talking to a meeting room', ratio: '3:2' },
             items: [
               {
                 question: 'Focus on Your Core Product',
@@ -197,7 +206,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
                   'Teams that want to keep engineering focused on their core technology while using a flexible digital experience platform to extend and differentiate their offering.',
               },
             ],
-            media: { src: rightPartnerPhoto, alt: 'A team laughing around a meeting table by a bright window' },
+            media: { src: rightPartnerPhoto, alt: 'A team laughing around a meeting table by a bright window', ratio: '3:2' },
           },
         },
       ],

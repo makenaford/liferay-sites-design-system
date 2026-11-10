@@ -1,13 +1,27 @@
-import heroHandshake from '../../assets/partner-home/hero-handshake.jpg'
-import agentBuilder from '../../assets/industry/hero-media.jpg'
+import heroAnimation from '../../assets/partner-home/hero-animation.webm'
+import heroAnimationLight from '../../assets/partner-home/hero-animation-light.webm'
+import heroPoster from '../../assets/partner-home/hero-poster.png'
+import whyPartnerPhoto from '../../assets/oem-partner/why-partner.jpg'
+import programSolution from '../../assets/partner-home/program-solution.png'
+import programOem from '../../assets/partner-home/program-oem.png'
+import programTechnology from '../../assets/partner-home/program-technology.png'
+import accentureMark from '../../assets/partner-home/logo-accenture.svg'
+import capgeminiMark from '../../assets/partner-home/logo-capgemini.svg'
+import tcsMark from '../../assets/partner-home/logo-tcs.svg'
+import stripeMark from '../../assets/partner-home/logo-stripe.svg'
+import vaiMark from '../../assets/oem-partner/logo-vai.svg'
+import placecubeMark from '../../assets/oem-partner/logo-placecube.svg'
+import smcMark from '../../assets/oem-partner/logo-smc.svg'
+import paypalMark from '../../assets/technology-partner/logo-paypal.svg'
 import type { PageSpec } from './page-schema'
 
 /*
- * The Liferay Partner home page, as data — Partner Pages -> `Partner Home` (node `148:32204`).
+ * The Liferay Partner home page, as data — Partner Pages -> `Partner Home` (node `290:57750`).
  *
- * The hero's handshake and the partner quote tiles are the frame's own; the `Why Partner` picture is the
- * agent-builder photograph the library already holds as `industry/hero-media.jpg`. The logo strip is
- * still set as wordmarks, and every link is `#` until the program pages exist.
+ * The hero is the Marketing Assets library's `partner-home-animation`, exported with a transparent
+ * ground so the corner bubble shows round it. The programs sit behind a pill bar, each with its own
+ * illustration — the frame's `Partner Illustrations` (node `464:29728`). The photographs, the partners'
+ * logos and the quote tiles are the frame's own, and every link is `#` until the program pages exist.
  */
 export const PARTNER_HOME_PAGE: PageSpec = {
   hero: {
@@ -16,10 +30,12 @@ export const PARTNER_HOME_PAGE: PageSpec = {
     description: {
       text: 'Partner with Liferay to expand your offerings, reach new markets, and create greater value for your customers.',
     },
-    buttons: [{ label: 'Become a Partner', href: '#' }],
     media: {
-      src: heroHandshake,
-      alt: 'Three colleagues at a meeting table, two of them shaking hands across it',
+      src: heroAnimation,
+      /* The light-canvas export: the glass cards are drawn from the light theme's tokens. */
+      srcLight: heroAnimationLight,
+      poster: heroPoster,
+      alt: 'Two colleagues shaking hands as your business connects to integrations, portals, growth, cloud, experiences and global reach',
       ratio: '3:2',
     },
   },
@@ -32,6 +48,16 @@ export const PARTNER_HOME_PAGE: PageSpec = {
       type: 'logoMarquee',
       label: 'Partners delivering with Liferay',
       logos: ['Accenture', 'Capgemini', 'TCS', 'VAI', 'Placecube', 'SMC', 'PayPal', 'Stripe'],
+      images: [
+        { src: accentureMark, alt: 'Accenture' },
+        { src: capgeminiMark, alt: 'Capgemini' },
+        { src: tcsMark, alt: 'TCS' },
+        { src: vaiMark, alt: 'VAI' },
+        { src: placecubeMark, alt: 'Placecube' },
+        { src: smcMark, alt: 'SMC' },
+        { src: paypalMark, alt: 'PayPal' },
+        { src: stripeMark, alt: 'Stripe' },
+      ],
     },
 
     {
@@ -43,7 +69,7 @@ export const PARTNER_HOME_PAGE: PageSpec = {
       title: 'Why Partner with Liferay?',
       description:
         'Join the Liferay partner network and transform your business with proven enterprise software that delivers powerful and scalable solutions.',
-      mediaSide: 'right',
+      mediaSide: 'left',
       tabs: [
         {
           value: 'why',
@@ -51,10 +77,7 @@ export const PARTNER_HOME_PAGE: PageSpec = {
           content: {
             title: '',
             description: '',
-            media: {
-              src: agentBuilder,
-              alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them',
-            },
+            media: { src: whyPartnerPhoto, alt: 'A presenter in a blue blazer talking to a meeting room', ratio: '3:2' },
             items: [
               {
                 icon: 'world',
@@ -94,34 +117,68 @@ export const PARTNER_HOME_PAGE: PageSpec = {
     },
 
     {
-      type: 'cardGrid',
-      cardSet: 'partner',
+      /*
+       * The three programs behind a pill bar (node `338:12552`): each its glass mark, its case and the way
+       * in, beside its own illustration.
+       */
+      type: 'tabbedContent',
       title: 'Explore Our Partnership Programs',
       description:
         'Whether you deliver solutions, build digital products, or extend your technology, there’s a partnership path designed to fit your business.',
-      align: 'center',
-      columns: 3,
-      cards: [
+      tabs: [
         {
-          icon: 'solution-partner',
-          title: 'Solution Partner',
-          description:
-            'Turn every Liferay deal into a 5x services opportunity: Deliver digital transformation solutions and build a strong services business around DXP. Access deal registration, co-selling support, enablement, and incentives designed to help you win more business and grow your practice.',
-          href: '#',
+          value: 'solution',
+          label: 'Solution Partner',
+          icon: 'group-2',
+          content: {
+            eyebrow: 'solution-partner',
+            eyebrowSize: 48,
+            title: 'Solution Partner',
+            description:
+              'Turn Liferay deals into a 5x services opportunity. Deliver digital transformation solutions and win more business with dedicated deal registration, co-selling, enablement, and incentives.',
+            action: { label: 'Learn More', href: '#' },
+            media: {
+              src: programSolution,
+              alt: 'A smiling partner shaking hands beside the Liferay Partner Portal, its deals pipeline and revenue growth',
+              ratio: '3:2',
+            },
+          },
         },
         {
-          icon: 'oem-partner',
-          title: 'OEM Partner',
-          description:
-            'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
-          href: '#',
+          value: 'oem',
+          label: 'OEM Partner',
+          icon: 'webhook',
+          content: {
+            eyebrow: 'oem-partner',
+            eyebrowSize: 48,
+            title: 'OEM Partner',
+            description:
+              'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
+            action: { label: 'Learn More', href: '#' },
+            media: {
+              src: programOem,
+              alt: 'Two colleagues in conversation beside a partner’s supplier portal, powered by Liferay DXP with sites, commerce, self-service and security',
+              ratio: '3:2',
+            },
+          },
         },
         {
-          icon: 'technology-partner',
-          title: 'Technology Partner',
-          description:
-            'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
-          href: '#',
+          value: 'technology',
+          label: 'Technology Partner',
+          icon: 'web',
+          content: {
+            eyebrow: 'technology-partner',
+            eyebrowSize: 48,
+            title: 'Technology Partner',
+            description:
+              'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
+            action: { label: 'Learn More', href: '#' },
+            media: {
+              src: programTechnology,
+              alt: 'Two colleagues at a tablet as Liferay DXP and a partner’s technology join into joint solutions',
+              ratio: '3:2',
+            },
+          },
         },
       ],
     },

@@ -65,6 +65,9 @@ export type IconName =
   | 'group-2'
   | 'git-branch'
   | 'target'
+  /* Partner Home's program tabs: OEM and Technology (Solution is `group-2`). */
+  | 'webhook'
+  | 'web'
 
 /** One slide of a carousel hero after the first — the copy and media a lead story carries. */
 export type HeroSlide = Pick<
@@ -539,6 +542,8 @@ export interface TabGroup<T> {
  */
 export interface PanelSpec {
   eyebrow?: GlassIconName
+  /** The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 48. @default 40 */
+  eyebrowSize?: 40 | 48
   /**
    * The pill above the heading — Figma's `Label` instance, which the detail pages use where the Home
    * page uses a glass icon. A panel draws one or the other, not both.

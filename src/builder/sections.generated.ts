@@ -1346,7 +1346,9 @@ export const DEFS: Record<string, Shape> = {
       "plugin",
       "group-2",
       "git-branch",
-      "target"
+      "target",
+      "webhook",
+      "web"
     ]
   },
   "ImageRatio": {
@@ -1439,6 +1441,18 @@ export const DEFS: Record<string, Shape> = {
           "kind": "ref",
           "name": "GlassIconName"
         }
+      },
+      {
+        "name": "eyebrowSize",
+        "optional": true,
+        "shape": {
+          "kind": "enum",
+          "options": [
+            40,
+            48
+          ]
+        },
+        "doc": "The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 48."
       },
       {
         "name": "label",

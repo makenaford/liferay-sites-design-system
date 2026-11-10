@@ -1679,6 +1679,23 @@ export function IconWeb(props: IconProps) {
   )
 }
 
+/** MingCute `webhook` (regular, system). */
+export function IconWebhook(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M13.912 9.312a3 3 0 1 0-3.824-4.624 3 3 0 0 0 3.824 4.624Zm-3.824 0-2.858 4.95m6.682-4.95 2.858 4.95M8.83 18a3 3 0 1 0-5.66-2 3 3 0 0 0 5.66 2Zm0 0h6.34m1.6-3.737a3 3 0 1 0 2.46 5.473 3 3 0 0 0-2.46-5.473Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `world_2` (regular, locations). */
 export function IconWorld2(props: IconProps) {
   return (

@@ -59,6 +59,8 @@ import {
   IconGitCompare,
   IconGitBranch,
   IconTarget,
+  IconWebhook,
+  IconWeb,
   IconCheck,
   IconDown,
   IconDashboard,
@@ -216,6 +218,8 @@ const ICONS: Record<IconName, ReactNode> = {
   'group-2': <IconGroup2 />,
   'git-branch': <IconGitBranch />,
   target: <IconTarget />,
+  webhook: <IconWebhook />,
+  web: <IconWeb />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -1904,7 +1908,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                   {panel.label}
                 </Label>
               ) : panel.eyebrow ? (
-                GLASS[panel.eyebrow](40)
+                GLASS[panel.eyebrow](panel.eyebrowSize ?? 40)
               ) : undefined
             }
             title={panel.title}

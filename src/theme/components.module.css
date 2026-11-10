@@ -8312,6 +8312,12 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 }
 
 .tabsRoot[data-pills] .tabsTabLabel {
+  /*
+   * As wide as its words, not the pill: Mantine's `flex: 1` stretched the label across a grown tab and
+   * centred the text inside it, which left the icon stranded at the pill's edge. Sized to its content,
+   * the icon and label centre together, 8 apart, as `Tabs Pill` draws them.
+   */
+  flex: 0 1 auto;
   /* Figma's label is the `Link` type at `Size=Large`. */
   font-size: var(--sds-pill-fz);
   line-height: var(--sds-pill-lh);
@@ -12712,7 +12718,12 @@ a.secondaryNavTitle:focus-visible {
   gap: 8px 16px;
 }
 
-.paginationSize {
+/*
+ * `Link` `Style=Secondary, Size=Medium` — 18 semibold, 97 wide with its chevron. Qualified by the summary,
+ * as `.paginationPage` is by its list: `UnstyledButton`'s reset is as specific, loads later, and would
+ * otherwise set it at Mantine's 16 in the inherited grey.
+ */
+.paginationSummary .paginationSize {
   display: inline-flex;
   align-items: center;
   gap: 4px;
