@@ -1,22 +1,26 @@
 import heroPhoto from '../../assets/oem-partner/hero.jpg'
 import vaiLogo from '../../assets/oem-partner/vai-logo.png'
 import placecubeLogo from '../../assets/oem-partner/placecube.svg'
-import agentBuilder from '../../assets/industry/hero-media.jpg'
+import whyPartnerPhoto from '../../assets/oem-partner/why-partner.jpg'
+import rightPartnerPhoto from '../../assets/oem-partner/right-partner.jpg'
+import vaiMark from '../../assets/oem-partner/logo-vai.svg'
+import placecubeMark from '../../assets/oem-partner/logo-placecube.svg'
+import smcMark from '../../assets/oem-partner/logo-smc.svg'
+import elixirMark from '../../assets/oem-partner/logo-elixir.svg'
+import inforMark from '../../assets/oem-partner/logo-infor.svg'
+import solteqMark from '../../assets/oem-partner/logo-solteq.svg'
 import type { PageSpec } from './page-schema'
 
 /*
- * The OEM partner page, as data — `Partner Pages` -> `OEM` (node `148:27740`).
+ * The OEM partner page, as data — `Partner Pages` -> `OEM` (node `290:57574`).
  *
  * The case for building on Liferay rather than from scratch, then who it suits, then the application.
  * `Become an OEM Partner` in the hero jumps to the form at the foot of the page, where the steps after
  * applying sit beside it on a still corner glow.
  *
- * The hero photograph and the partners' logos are the frame's own; the agent-builder photograph is the
- * library's `industry/hero-media.jpg`, the same picture. The answers the file leaves closed — four of
- * the five `Why Partner` rows and two of the three FAQs — are drafts.
+ * The photographs and the partners' logos are the frame's own. The answers the file leaves closed —
+ * four of the five `Why Partner` rows and two of the three FAQs — are drafts.
  */
-
-const STILL = { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
 
 export const OEM_PARTNER_PAGE: PageSpec = {
   hero: {
@@ -68,6 +72,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
       /* One tab, so no pill bar: the five reasons are the accordion's rows. */
       type: 'tabbedContent',
       title: 'Why Partner with Liferay?',
+      mediaSide: 'left',
       description:
         'Go beyond your core software to deliver more value, reach new opportunities, and bring modern digital experiences to market faster.',
       tabs: [
@@ -77,7 +82,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
           content: {
             title: '',
             description: '',
-            media: STILL,
+            media: { src: whyPartnerPhoto, alt: 'A presenter in a blue blazer talking to a meeting room' },
             items: [
               {
                 question: 'Focus on Your Core Product',
@@ -117,8 +122,16 @@ export const OEM_PARTNER_PAGE: PageSpec = {
 
     {
       type: 'logoMarquee',
-      label: 'Customers using Liferay',
-      logos: ['DATAMATICS', 'PETROBRAS', 'CITY OF BURBANK', 'Excellus', 'AIRBUS', 'Carrefour'],
+      label: 'Partners building on Liferay',
+      logos: ['VAI', 'Placecube', 'SMC', 'Elixir', 'Infor', 'Solteq'],
+      images: [
+        { src: vaiMark, alt: 'VAI' },
+        { src: placecubeMark, alt: 'Placecube' },
+        { src: smcMark, alt: 'SMC' },
+        { src: elixirMark, alt: 'Elixir' },
+        { src: inforMark, alt: 'Infor' },
+        { src: solteqMark, alt: 'Solteq' },
+      ],
     },
 
     {
@@ -184,7 +197,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
                   'Teams that want to keep engineering focused on their core technology while using a flexible digital experience platform to extend and differentiate their offering.',
               },
             ],
-            media: STILL,
+            media: { src: rightPartnerPhoto, alt: 'A team laughing around a meeting table by a bright window' },
           },
         },
       ],
@@ -260,13 +273,14 @@ export const OEM_PARTNER_PAGE: PageSpec = {
 
     {
       /*
-       * The ecosystem frame (Solutions Library node `25120:53447`): one section, the two ways into the
-       * ecosystem and then, under a smaller heading, the other two programs. Title-only cards, each icon beside its title.
+       * The ecosystem frame: one section, the two ways into the ecosystem and then, under a smaller
+       * heading, the other two programs. Centred, title-only cards, each icon over its title.
        */
       type: 'cardGrid',
       title: 'Discover the Liferay Ecosystem',
+      align: 'center',
       columns: 2,
-      cardHeader: 'horizontal',
+      cardHeader: 'center',
       cards: [
         { icon: 'user-badge', title: 'Partner Directory', href: '#' },
         { icon: 'commerce', title: 'Liferay Marketplace', href: '#' },

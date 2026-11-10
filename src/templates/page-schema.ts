@@ -617,9 +617,10 @@ type SectionBody =
       surface?: 'glass'
       /**
        * `horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node
-       * `25120:53447`), which are a title and nothing else. @default 'vertical'
+       * `25120:53447`), which are a title and nothing else. `center` stacks the two and centres them —
+       * the OEM page's ecosystem cards (node `290:57651`). @default 'vertical'
        */
-      cardHeader?: 'vertical' | 'horizontal'
+      cardHeader?: 'vertical' | 'center' | 'horizontal'
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
@@ -1124,7 +1125,17 @@ type SectionBody =
       posts: BlogPostSpec[]
     }
   /** `Logos scrolling section` — a 64px monochrome logo row, flush against the band above it. */
-  | { type: 'logoMarquee'; label: string; logos: string[] }
+  | {
+      type: 'logoMarquee'
+      label: string
+      /** Names, drawn as type — the placeholder wordmarks. */
+      logos: string[]
+      /**
+       * The real logo files, in place of `logos` when set. Each is drawn as a mask in the text colour, as
+       * the frame inks its strip, so a dark-on-white file still reads on the dark canvas.
+       */
+      images?: ImageRef[]
+    }
   /**
    * The blog post's body — `Solutions Library` -> `Blog` (node `24223:173039`). A sticky outline on
    * the left that follows the reader, an 800px column of headed sections on the right, then a call to

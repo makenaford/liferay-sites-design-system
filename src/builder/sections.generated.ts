@@ -1720,10 +1720,11 @@ export const DEFS: Record<string, Shape> = {
               "kind": "enum",
               "options": [
                 "vertical",
+                "center",
                 "horizontal"
               ]
             },
-            "doc": "`horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node `25120:53447`), which are a title and nothing else."
+            "doc": "`horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node `25120:53447`), which are a title and nothing else. `center` stacks the two and centres them — the OEM page's ecosystem cards…"
           },
           {
             "name": "cards",
@@ -4428,7 +4429,20 @@ export const DEFS: Record<string, Shape> = {
               "of": {
                 "kind": "string"
               }
-            }
+            },
+            "doc": "Names, drawn as type — the placeholder wordmarks."
+          },
+          {
+            "name": "images",
+            "optional": true,
+            "shape": {
+              "kind": "array",
+              "of": {
+                "kind": "ref",
+                "name": "ImageRef"
+              }
+            },
+            "doc": "The real logo files, in place of `logos` when set. Each is drawn as a mask in the text colour, as the frame inks its strip, so a dark-on-white file still reads on the dark canvas."
           },
           {
             "name": "anchor",
