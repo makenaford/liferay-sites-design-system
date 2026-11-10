@@ -1045,6 +1045,10 @@
   color: var(--sds-surfaces-text-primary);
 }
 
+.cardGridGroupTitle[data-align='center'] {
+  text-align: center;
+}
+
 /* ---------------------------------------------------------------------- surfaces
  *
  * Read from the card instances, not from the `Surface` set: the set's own rectangle carries a
@@ -7469,6 +7473,23 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
  */
 .marqueeRoot[data-monochrome] .marqueeCell {
   color: var(--sds-surfaces-text-primary);
+}
+
+/*
+ * A logo file inked in the cell's colour: the file is only the shape. The frame draws its partner
+ * logos in a 98x49 box, whatever the cell, so a wide wordmark and a tall mark like VAI's come out alike.
+ */
+.marqueeLogoMask {
+  display: block;
+  width: min(90%, 98px);
+  height: min(100%, 49px);
+  background: currentColor;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
 }
 
 /*

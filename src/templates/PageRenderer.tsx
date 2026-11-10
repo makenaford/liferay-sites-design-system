@@ -959,7 +959,7 @@ function GridCard({
 }: {
   card: CardSpec
   surface?: 'glass'
-  header?: 'vertical' | 'horizontal'
+  header?: 'vertical' | 'center' | 'horizontal'
 }) {
   /*
    * A picture over an icon is the Solutions Library's `Type=Industry`: the picture sits *inside* the
@@ -998,7 +998,7 @@ function GridCard({
           <Image src={card.image.src} alt={card.image.alt} ratio="3:2" radius={inset ? 'sm' : undefined} />
         ) : undefined
       }
-      headerAlign={header === 'horizontal' ? 'horizontal' : undefined}
+      headerAlign={header === 'vertical' ? undefined : header}
       hero={
         card.icon ? (
           GLASS[card.icon](card.points || card.links || header === 'horizontal' ? 48 : 40)
@@ -1126,7 +1126,9 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
           {grid(cards)}
           {spec.groups.map((group) => (
             <div key={group.title} className={classes.cardGridGroup}>
-              <h3 className={classes.cardGridGroupTitle}>{group.title}</h3>
+              <h3 className={classes.cardGridGroupTitle} data-align={spec.align}>
+                {group.title}
+              </h3>
               {grid(group.cards)}
             </div>
           ))}
@@ -1710,9 +1712,17 @@ function LogoMarqueeSection({ spec }: { spec: Extract<SectionSpec, { type: 'logo
   return (
     <Section spacing="none" pt={24}>
       <Marquee label={spec.label} monochrome size="lg">
-        {spec.logos.map((name) => (
-          <Wordmark key={name} name={name} />
-        ))}
+        {spec.images?.length
+          ? spec.images.map((image) => (
+              <span
+                key={image.src}
+                role="img"
+                aria-label={image.alt}
+                className={classes.marqueeLogoMask}
+                style={{ maskImage: `url("${image.src}")`, WebkitMaskImage: `url("${image.src}")` }}
+              />
+            ))
+          : spec.logos.map((name) => <Wordmark key={name} name={name} />)}
       </Marquee>
     </Section>
   )

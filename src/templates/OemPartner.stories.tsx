@@ -23,9 +23,9 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay OEM partner page — Partner Pages -> `OEM` (node `148:27740`). Rendered from `oem-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
+          'The Liferay OEM partner page — Partner Pages -> `OEM` (node `290:57574`). Rendered from `oem-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'The feature cards in glass; `Why Partner` and `Is Liferay the Right Partner` as one-tab `tabbedContent`s beside the agent-builder photograph; the partner quotes with each partner’s logo opposite the quote mark; and `Path to Partnership` on a still corner glow (`backdrop: \'glow\'`). `Become an OEM Partner` in the hero jumps to the form.',
+          'The feature cards in glass; `Why Partner` and `Is Liferay the Right Partner` as one-tab `tabbedContent`s, each beside its own photograph; the partners’ logos in the marquee, inked in the text colour; the partner quotes with each partner’s logo opposite the quote mark; and `Path to Partnership` on a still corner glow (`backdrop: \'glow\'`). `Become an OEM Partner` in the hero jumps to the form.',
           '',
           '## Not final yet',
           '',
