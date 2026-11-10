@@ -23,13 +23,13 @@ const meta = {
     docs: {
       description: {
         component: [
-          'The Liferay Solution Partner page — the copy of the `COPY - Solutions` sheet, laid out as Partner Pages -> `Solutions` (node `272:38182`). Rendered from `solution-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
+          'The Liferay Solution Partner page — the copy of the `COPY - Solutions` sheet, laid out as Partner Pages -> `Solutions` (node `290:57866`). Rendered from `solution-partner-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          '`Why Partner` as a one-tab accordion beside a photograph; the partner quotes and success stories as one row of four picture cards; the two partner tracks side by side (`tabbedContent` `layout: \'columns\'`); the tier cards carrying each level’s points, certified headcount and fee over a foldable benefits table (`compareLabel`); `Path to Partnership` on the corner glow; and `Still Evaluating?` as a glass bar (`highlightText` `surface: \'glass\'`).',
+          'The Solutions Partner animation in the hero; `Why Partner` as a one-tab accordion beside a photograph; the partners’ logos; four partner quotes as one row of cards, each on its partner’s tile; the two partner tracks side by side (`tabbedContent` `layout: \'columns\'`); the tier cards carrying each level’s points, certified headcount and fee over the `Program Benefits` table (`compareLabel`); `Path to Partnership` on the corner glow; and `Still Evaluating?` as a glass bar (`highlightText` `surface: \'glass\'`).',
           '',
           '## Not final yet',
           '',
-          '- **Where the frame and the copy sheet disagree, the sheet’s words stand**: the frame repeats the OEM page’s `Why Partner` line and first step, names Steven LaGow under both quotes, labels every card `Read the Story`, and draws five `Why Partner` rows to the sheet’s six.',
+          '- **Where the frame and the copy sheet disagree, the sheet’s words stand**: the frame’s first FAQ is a placeholder, and it titles the form card `Become a Technology Partner`.',
           '- **The ecosystem cards repeat the frame’s icons** — DAM on both destinations, the person-and-cubes mark on both programs.',
           '- **Every link is `href="#"`**, as on every other built page. The form sends nothing.',
         ].join('\n'),

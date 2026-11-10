@@ -859,7 +859,7 @@ type SectionBody =
       /** The fine print under the tier cards — how the points are earned. */
       tiersNote?: string
       /**
-       * Folds the table away behind a toggle with this label — `Compare every benefit and requirement`.
+       * Folds the table away behind a heading with this label — `Program Benefits`.
        * Open to start. Without it the table is always shown.
        */
       compareLabel?: string

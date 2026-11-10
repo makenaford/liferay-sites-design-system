@@ -14095,8 +14095,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* `Certified` in tertiary small caps over the headcount in primary small caps. */
-.tierFact,
-.tierFactLabel {
+.tierFact {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -14108,8 +14107,7 @@ a.secondaryNavTitle:focus-visible {
   color: var(--sds-surfaces-text-primary);
 }
 
-.tierFact > span,
-.tierFactLabel {
+.tierFact > span {
   color: var(--sds-surfaces-text-tertiary);
 }
 
@@ -14141,20 +14139,17 @@ a.secondaryNavTitle:focus-visible {
   color: var(--sds-surfaces-text-tertiary);
 }
 
-/* The comparison behind its toggle: a small-caps row with the compare icon, the chevron turning open. */
+/* The comparison behind its toggle: a heading across the content width, the chevron at its end turning open. */
 .compareFold > summary {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-block: 12px;
-  border-block-end: 1px solid var(--sds-neutral-01, #1f2531);
+  padding-block: 8px;
   list-style: none;
   cursor: pointer;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--sds-size-heading-f3);
+  line-height: 1.25;
+  font-weight: 700;
   color: var(--sds-surfaces-text-primary);
 }
 
@@ -14182,7 +14177,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 .compareFold[open] > summary {
-  margin-block-end: 16px;
+  margin-block-end: 24px;
 }
 
 
@@ -14210,7 +14205,6 @@ a.secondaryNavTitle:focus-visible {
 
 
 
-/* A level — the sheet's coins — as that many small accent dots. */
 
 
 /* ======================================================================================
@@ -14986,8 +14980,8 @@ html:has(.anchorMenu) {
  * where it does not, so the eye reads the ticks.
  */
 .comparisonScroll[data-variant='tiers'] {
-  border-color: var(--sds-glass-line-from);
-  background-image: linear-gradient(60deg, var(--sds-glass-step-01) 0%, var(--sds-glass-step-02) 100%);
+  border-color: transparent;
+  background: none;
 }
 
 .tierTable {
@@ -15004,7 +14998,7 @@ html:has(.anchorMenu) {
 
 .tierTable th,
 .tierTable td {
-  padding: 10px 12px;
+  padding: 14px 12px;
   border-block-start: 1px solid var(--sds-tier-rule);
   vertical-align: middle;
 }
@@ -15014,71 +15008,74 @@ html:has(.anchorMenu) {
 }
 
 .tierTable tbody th[scope='row'] {
-  padding-inline-start: 20px;
+  padding-inline-start: 32px;
   font-weight: 500;
   color: var(--sds-surfaces-text-primary);
 }
 
-/* The header: the feature column's label in small caps, the tiers as pills. */
+/*
+ * The header: the feature column's label in plain type, each tier a tab over its column — a card-grey
+ * box open at the foot, its name in the tier's metal, as the tier cards above write it.
+ */
 .tierTable thead th {
-  padding: 16px 6px 12px;
+  padding: 20px 12px;
   border-block-start: 0;
-  vertical-align: bottom;
+  vertical-align: middle;
 }
 
 .tierTable thead th:first-child {
-  padding-inline-start: 20px;
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sds-surfaces-text-tertiary);
-}
-
-.tierTable thead th[data-tier] > span {
-  display: block;
-  padding: 8px 6px;
-  border-radius: 8px;
+  padding-inline-start: 32px;
   font-size: 16px;
   line-height: 1.25;
   font-weight: 600;
-  text-align: center;
-  color: #fff;
-}
-
-.tierTable thead th[data-tier='0'] > span {
-  border: 1px solid var(--sds-glass-line-from);
-  background-color: var(--sds-surfaces-card-bg-grey);
   color: var(--sds-surfaces-text-primary);
 }
 
+.tierTable thead th[data-tier] {
+  border: 1px solid var(--sds-glass-line-from);
+  border-block-end: 0;
+  border-radius: 8px 8px 0 0;
+  background-color: var(--sds-surfaces-card-bg-grey);
+  text-align: center;
+}
+
+.tierTable thead th[data-tier] > span {
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.tierTable thead th[data-tier='1'] > span,
+.tierTable thead th[data-tier='2'] > span,
+.tierTable thead th[data-tier='3'] > span {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
 .tierTable thead th[data-tier='1'] > span {
-  background-image: linear-gradient(93deg, var(--sds-neutral-06, #758096) 0%, var(--sds-neutral-03, #404b5d) 100%);
+  background-image: linear-gradient(93deg, #b4bccb 0%, var(--sds-neutral-06, #758096) 100%);
 }
 
 .tierTable thead th[data-tier='2'] > span {
-  background-image: linear-gradient(93deg, #cc9600 0%, #b30065 100%);
+  background-image: linear-gradient(93deg, #ffb200 0%, #e5007f 100%);
 }
 
 .tierTable thead th[data-tier='3'] > span {
-  background-image: linear-gradient(93deg, #990057 0%, #0017e5 100%);
+  background-image: linear-gradient(93deg, #ff6fbf 0%, #8b7dff 100%);
 }
 
-/* A section: a small-caps divider with room above it, not a filled band. */
+/* A section: a tinted band across the table, its name in small caps. */
 .tierTable .tierGroup th {
-  padding: 22px 20px 6px;
+  padding: 18px 32px;
   font-size: 12px;
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--sds-brand-primary-lighten-3, var(--sds-surfaces-text-secondary));
-  background: none;
-}
-
-.tierTable thead + tbody .tierGroup th {
-  padding-block-start: 14px;
+  color: var(--sds-surfaces-text-primary);
+  background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 4%, transparent);
 }
 
 /* The row under the pointer, across every column — the line is easy to follow to its marks. */
@@ -15090,18 +15087,12 @@ html:has(.anchorMenu) {
 
 .tierYes {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: color-mix(in srgb, var(--sds-brand-primary-primary) 28%, transparent);
-  color: var(--sds-brand-primary-lighten-3, #70a2ff);
+  color: var(--sds-brand-primary-lighten-2, #6399ff);
 }
 
 .tierYes > svg {
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
 }
 
 .tierNo {
@@ -15114,32 +15105,14 @@ html:has(.anchorMenu) {
   color: var(--sds-surfaces-text-primary);
 }
 
-/* The margin as stacked coins. */
+/* The margin as a stack of coins, outlined in the tick's blue. */
 .tierLevel {
-  display: inline-flex;
-  align-items: center;
-}
-
-.tierLevel > span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 22px;
-  height: 22px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  /* Opaque, so each coin sits in front of the last rather than their rings tangling. */
-  background-color: var(--sds-surfaces-page-bg-base-default);
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 700;
-  color: var(--sds-accent-product-accent);
-}
-
-.tierLevel > span + span {
-  /* Two-thirds over the last, as the file stacks them: the back coins show as rims, the front one whole. */
-  margin-inline-start: -15px;
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+  fill: none;
+  stroke: var(--sds-brand-primary-lighten-2, #6399ff);
+  stroke-width: 1.5;
 }
 
 /*

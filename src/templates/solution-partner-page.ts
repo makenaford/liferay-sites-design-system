@@ -1,24 +1,35 @@
-import heroPhoto from '../../assets/solution-partner/hero.jpg'
+import heroAnimation from '../../assets/solution-partner/hero-animation.webm'
+import heroPoster from '../../assets/solution-partner/hero-poster.png'
+import whyPartnerPhoto from '../../assets/solution-partner/why-partner.jpg'
 import americaneagle from '../../assets/solution-partner/americaneagle.jpg'
 import inetum from '../../assets/solution-partner/inetum.jpg'
-import globalquark from '../../assets/solution-partner/globalquark-infographic.jpg'
-import vass from '../../assets/solution-partner/vass-interview.jpg'
-import agentBuilder from '../../assets/industry/hero-media.jpg'
+import globalquark from '../../assets/solution-partner/globalquark.jpg'
+import vass from '../../assets/solution-partner/vass.jpg'
+import accentureMark from '../../assets/partner-home/logo-accenture.svg'
+import capgeminiMark from '../../assets/partner-home/logo-capgemini.svg'
+import tcsMark from '../../assets/partner-home/logo-tcs.svg'
+import cognizantMark from '../../assets/solution-partner/logo-cognizant.svg'
+import nttDataMark from '../../assets/solution-partner/logo-ntt-data.svg'
+import infosysMark from '../../assets/solution-partner/logo-infosys.svg'
 import type { PageSpec } from './page-schema'
 
 /*
  * The Solution Partner page, as data — the `COPY - Solutions` tab of `LRDC Partner Pages Revamp`, with
  * its partner-level tables from `COPY - Solutions 5. Partnership`, laid out as Partner Pages ->
- * `Solutions` (node `272:38182`, formerly `205:11746`).
+ * `Solutions` (node `290:57866`, formerly `272:38182`).
  *
  * The copy is the sheet's, section for section; the frame is the layout. Where the two disagree — the
- * frame repeats the OEM page's `Why Partner` line and its first step, names Steven LaGow under both
- * quotes, and labels every card `Read the Story` — the sheet's words stand. The pictures are the frame's
- * own; the agent-builder photograph is the library's `industry/hero-media.jpg`, the same picture. Every
- * link is `#`.
+ * frame's placeholder first FAQ, and the form card it titles `Become a Technology Partner` — the sheet's
+ * words stand. The ecosystem cards are the frame's: four partner quotes, each on its partner's own tile.
+ * Every link is `#`.
+ *
+ * The hero is the Marketing Assets library's Solutions Partner animation. The export arrives on a dark
+ * ground, so it is cropped and re-encoded at 1200 wide with alpha — rounded corners, the transparent
+ * 34px strip `.heroMedia > video` clips off, and the dark keyed out round the `Deals Pipeline` card,
+ * which hangs ~36px past the photograph's right edge as it does in the frame.
  */
 
-const STILL = { src: agentBuilder, alt: 'Two colleagues at a laptop, an agent builder and a search workflow beside them' }
+const STILL = { src: whyPartnerPhoto, alt: 'A partner presenting to colleagues in a meeting room' }
 
 /** `Authorized`, `Silver`, `Gold`, `Platinum` — the sheet's ✔️ and — as booleans, its coins as levels. */
 const yes = true
@@ -33,7 +44,13 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       text: 'Partner with Liferay to unlock new opportunities, expand your services offering, and build long-term customer relationships.',
     },
     buttons: [{ label: 'Become a Solution Partner', href: '#apply' }],
-    media: { src: heroPhoto, alt: 'Two people shaking hands across a desk, one of them smiling', ratio: '3:2' },
+    media: {
+      /* Opaque but for its corners and the `Deals Pipeline` card's overhang, so one file serves both canvases. */
+      src: heroAnimation,
+      poster: heroPoster,
+      alt: 'A smiling partner beside the Liferay Partner Portal, its deals pipeline and revenue growth',
+      ratio: '3:2',
+    },
   },
   sections: [
     {
@@ -41,6 +58,8 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       type: 'tabbedContent',
       title: 'Why Partner with Liferay?',
       description: 'Discover the technology, support, and business opportunities that make Liferay a Partner-First choice.',
+      /* The photograph leads, as the frame draws it. */
+      mediaSide: 'left',
       tabs: [
         {
           value: 'why',
@@ -95,14 +114,21 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
     {
       type: 'logoMarquee',
       label: 'Liferay partners',
-      logos: ['Accenture', 'Capgemini', 'Tata Consultancy Services', 'Cognizant', 'NTT DATA', 'Infosys'],
+      logos: ['Accenture', 'Capgemini', 'TCS', 'Cognizant', 'NTT DATA', 'Infosys'],
+      images: [
+        { src: accentureMark, alt: 'Accenture' },
+        { src: capgeminiMark, alt: 'Capgemini' },
+        { src: tcsMark, alt: 'TCS' },
+        { src: cognizantMark, alt: 'Cognizant' },
+        { src: nttDataMark, alt: 'NTT DATA' },
+        { src: infosysMark, alt: 'Infosys' },
+      ],
     },
 
     {
       /*
-       * The partners' quotes and their success stories as one row of four (node `217:27595`): each card
-       * a picture, the words, and one link at the foot. A quote card has no title — the attribution
-       * follows the quote.
+       * Four partners' quotes as one row (node `338:13544`): each card the partner's tile, the quote,
+       * who said it, and one link at the foot. No titles — the attribution follows the quote.
        */
       type: 'cardGrid',
       title: 'Join the Liferay Global Partner Ecosystem',
@@ -117,28 +143,31 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
           description:
             '“It’s been easy for us to onboard ourselves. With the help of the Liferay team, we are able to better articulate and deliver the Liferay story.”',
           attribution: { name: 'Steven LaGow', role: 'Partner Director, Americaneagle.com' },
-          cta: { label: 'Watch the interview', href: '#' },
+          cta: { label: 'Read the Story', href: '#' },
         },
         {
           image: { src: inetum, alt: 'Inetum' },
           title: '',
           description:
             '“Growth does not happen without customer satisfaction. While we develop large accounts together, we can only do this if we repeatedly deliver successful projects.”',
-          attribution: { name: 'Tanguy Commault', role: 'Group VP - Digital eXperience Platforms, Inetum' },
-          cta: { label: 'Watch the interview', href: '#' },
+          attribution: { name: 'Tanguy Commault', role: 'Group VP, Inetum' },
+          cta: { label: 'Read the Story', href: '#' },
         },
         {
-          image: { src: globalquark, alt: '17+ Years of Growth: How GlobalQuark Scaled to $3.5M+ with Liferay' },
-          title: '17 Years of Partnership, 30+ New Clients and $3.5M in Annual Revenue:',
-          description: 'Growing Together with Liferay',
-          cta: { label: 'Access the infographic', href: '#' },
-        },
-        {
-          image: { src: vass, alt: 'Partner Pulse — VASS & Liferay: Leading the Digital Change in LATAM' },
-          title: 'How VASS is Navigating LATAM’s Digital Divide:',
+          image: { src: globalquark, alt: 'GlobalQuark' },
+          title: '',
           description:
-            'Sergio Rojas of VASS LATAM shares digital transformation insights and why VASS won Liferay’s LATAM Partner of the Year Award again.',
-          cta: { label: 'Read the interview', href: '#' },
+            '“What brought us together with Liferay almost 18 years ago, and continues to drive our partnership today, is their philosophy and business model.”',
+          attribution: { name: 'Alfredo Godoy', role: 'CEO, GlobalQuark' },
+          cta: { label: 'View the Infographic', href: '#' },
+        },
+        {
+          image: { src: vass, alt: 'VASS' },
+          title: '',
+          description:
+            '“Everybody’s looking for personalized experiences and omnichannel experiences across all channels and that’s what a platform like Liferay delivers to clients.”',
+          attribution: { name: 'Sergio Rojas', role: 'Senior Sales Manager LATAM, VASS' },
+          cta: { label: 'Read the Interview', href: '#' },
         },
       ],
     },
@@ -246,7 +275,7 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
         {
           name: 'Authorized',
           points: '0',
-          certified: 'No certified headcount minimum',
+          certified: '—',
           description: 'For companies beginning to grow their Liferay practice or focusing on deal referrals.',
           fee: '—',
         },
@@ -274,7 +303,7 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
       ],
       tiersNote:
         '*Partner tiers are earned through a points-based score evaluating four metrics: Growth ARR, NRR, Marketing & Demand Generation, and Certified Headcount.',
-      compareLabel: 'Compare every benefit and requirement',
+      compareLabel: 'Program Benefits',
       tables: [
         {
           label: 'Benefit Category & Feature',

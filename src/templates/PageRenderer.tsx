@@ -56,7 +56,6 @@ import {
   IconScale,
   IconPlugin,
   IconGroup2,
-  IconGitCompare,
   IconGitBranch,
   IconTarget,
   IconWebhook,
@@ -2767,15 +2766,19 @@ function TierCell({ value }: { value: boolean | string | { level: number } }) {
       </span>
     )
   }
-  /* The margin as stacked coins — one per level, overlapping, as the file draws them. */
+  /*
+   * The margin as a stack of coins, one disc per level, drawn as the file draws it: the top face whole,
+   * each coin under it a 4px band. The stack is centred in its 24 box, so the rows' marks share a middle.
+   */
+  const n = value.level
+  /* The face's centre, so face (6 tall) plus n bands (4 each) sit centred on y=12. */
+  const top = 12 - 2 * n
+  const rims = Array.from({ length: n }, (_, i) => `M3 ${top + 4 * (i + 1)}a9 3 0 0 0 18 0`).join('')
   return (
-    <span className={classes.tierLevel} aria-label={`Level ${value.level} of 4`} role="img">
-      {Array.from({ length: value.level }, (_, i) => (
-        <span key={i} aria-hidden>
-          $
-        </span>
-      ))}
-    </span>
+    <svg className={classes.tierLevel} viewBox="0 0 24 24" role="img" aria-label={`Level ${n} of 4`}>
+      <ellipse cx="12" cy={top} rx="9" ry="3" />
+      <path d={`M3 ${top}v${4 * n}M21 ${top}v${4 * n}${rims}`} />
+    </svg>
   )
 }
 
@@ -2880,21 +2883,23 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
             >
               <span className={classes.tierName}>{tier.name}</span>
               {tier.points ? (
-                /* `0 Points`, `10 + Points` — the score as a 49px figure, the unit beside it at 24. */
+                /*
+                 * `0 Points *`, `10 + Points *` — the score as a 49px figure, the unit beside it at 24, and
+                 * the asterisk pointing at `tiersNote`, which says how the points are earned.
+                 */
                 <span className={classes.tierPoints}>
-                  <strong>{tier.points}</strong> Points
+                  <strong>{tier.points}</strong> Points{spec.tiersNote ? ' *' : ''}
                 </span>
               ) : null}
               {tier.certified ? (
                 <span className={classes.tierFact}>
-                  <span>Certified</span>
+                  <span>Certifications required</span>
                   {tier.certified}
                 </span>
               ) : null}
               <p>{tier.description}</p>
               {tier.fee ? (
                 <span className={classes.tierFee}>
-                  <span className={classes.tierFactLabel}>Program Performance</span>
                   <span className={classes.tierFeeRow}>
                     <span>Annual Fee</span>
                     <strong>{tier.fee}</strong>
@@ -2907,10 +2912,9 @@ function TierTableSection({ spec }: { spec: Extract<SectionSpec, { type: 'tierTa
         {spec.tiersNote ? <p className={classes.tierNote}>{spec.tiersNote}</p> : null}
 
         {comparison && spec.compareLabel ? (
-          /* Folded away behind its own toggle, open to start — the cards above are the summary. */
+          /* Folded away behind its own heading, open to start — the cards above are the summary. */
           <details className={classes.compareFold} open>
             <summary>
-              <IconGitCompare aria-hidden />
               <span>{spec.compareLabel}</span>
               <IconDown aria-hidden className={classes.compareFoldChevron} />
             </summary>
