@@ -643,6 +643,11 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
              * deliberately non-polymorphic, and a hero CTA has to be an anchor. The theme keys on
              * `Button`, so the appearance is identical either way.
              */
+            button.variant === 'link' ? (
+              <Link key={button.label} href={button.href} rightSection={button.arrow ? <IconArrowRight /> : undefined}>
+                {button.label}
+              </Link>
+            ) : (
             <MantineButton
               key={button.label}
               component="a"
@@ -654,6 +659,7 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
             >
               {button.label}
             </MantineButton>
+            )
           ))}
           {hero.action ? (
             <Link href={hero.action.href} size="md" rightSection={<IconArrowRight />}>
@@ -1218,16 +1224,9 @@ function blogShelfTitle(spec: { title: string; description?: string; action?: Li
       actionsAlign="top"
       actions={
         spec.action ? (
-          <MantineButton
-            component="a"
-            href={spec.action.href}
-            variant="outline"
-            /* `Size=Medium` — 48 tall, 18px label. */
-            size="md"
-            rightSection={<IconArrowRight />}
-          >
+          <Link href={spec.action.href} size="lg" rightSection={<IconArrowRight />}>
             {spec.action.label}
-          </MantineButton>
+          </Link>
         ) : undefined
       }
     />

@@ -746,9 +746,11 @@ export const DEFS: Record<string, Shape> = {
                   "kind": "enum",
                   "options": [
                     "solid",
-                    "outline"
+                    "outline",
+                    "link"
                   ]
-                }
+                },
+                "doc": "`link` is a large text link rather than a button — the blog hub's `Browse All Blogs`."
               },
               {
                 "name": "arrow",
@@ -756,7 +758,7 @@ export const DEFS: Record<string, Shape> = {
                 "shape": {
                   "kind": "boolean"
                 },
-                "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
+                "doc": "The file's `Icon Right` — an arrow after the label."
               }
             ]
           }
@@ -1039,9 +1041,11 @@ export const DEFS: Record<string, Shape> = {
                   "kind": "enum",
                   "options": [
                     "solid",
-                    "outline"
+                    "outline",
+                    "link"
                   ]
-                }
+                },
+                "doc": "`link` is a large text link rather than a button — the blog hub's `Browse All Blogs`."
               },
               {
                 "name": "arrow",
@@ -1049,7 +1053,7 @@ export const DEFS: Record<string, Shape> = {
                 "shape": {
                   "kind": "boolean"
                 },
-                "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
+                "doc": "The file's `Icon Right` — an arrow after the label."
               }
             ]
           }
@@ -2424,9 +2428,11 @@ export const DEFS: Record<string, Shape> = {
                       "kind": "enum",
                       "options": [
                         "solid",
-                        "outline"
+                        "outline",
+                        "link"
                       ]
-                    }
+                    },
+                    "doc": "`link` is a large text link rather than a button — the blog hub's `Browse All Blogs`."
                   },
                   {
                     "name": "arrow",
@@ -2434,7 +2440,7 @@ export const DEFS: Record<string, Shape> = {
                     "shape": {
                       "kind": "boolean"
                     },
-                    "doc": "The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`."
+                    "doc": "The file's `Icon Right` — an arrow after the label."
                   }
                 ]
               }

@@ -221,8 +221,9 @@ export interface HeroSpec {
   buttons?: {
     label: string
     href: string
-    variant?: 'solid' | 'outline'
-    /** The file's `Icon Right` — an arrow after the label, as on the blog hub's `Browse All Blogs`. */
+    /** `link` is a large text link rather than a button — the blog hub's `Browse All Blogs`. */
+    variant?: 'solid' | 'outline' | 'link'
+    /** The file's `Icon Right` — an arrow after the label. */
     arrow?: boolean
   }[]
   /**
