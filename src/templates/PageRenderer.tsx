@@ -1488,6 +1488,7 @@ function BlogGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'blogGri
               turn(1)
             }}
             pageSizes={spec.pageSizes}
+            className={classes.blogPagination}
           />
         ) : undefined
       }

@@ -12818,7 +12818,8 @@ a.secondaryNavTitle:focus-visible {
    * out exactly as drawn while `12` or `128` stay inside a phone's row instead of widening every pill.
    */
   min-width: 42px;
-  padding: 12px 8px;
+  /* 40 tall, the previous and next buttons' height, so the whole row lines up: 8 + 24 + 8. */
+  padding: 8px;
   border-radius: var(--mantine-radius-sm);
   font-size: 18px;
   line-height: 24px;
@@ -12845,8 +12846,12 @@ a.secondaryNavTitle:focus-visible {
   color: var(--sds-action-neutral-inverted);
 }
 
-/* The catalog keeps the 24 it always had over its pager, on top of the section's own 24-gap. */
-.catalogPagination {
+/*
+ * The catalog and the blog category keep 24 over their pager, on top of the section's own 24-gap, so the
+ * last row of cards does not crowd the controls.
+ */
+.catalogPagination,
+.blogPagination {
   margin-block-start: 24px;
 }
 
