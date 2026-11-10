@@ -509,6 +509,10 @@ export const DEFS: Record<string, Shape> = {
   "GlassIconName": {
     "kind": "enum",
     "options": [
+      "retail",
+      "education",
+      "user",
+      "verification",
       "financial-services",
       "enterprise-websites",
       "customer-portals",
@@ -562,7 +566,10 @@ export const DEFS: Record<string, Shape> = {
       "general-ai",
       "user-cubes",
       "user-badge",
-      "user-screen"
+      "user-screen",
+      "technology-partner",
+      "oem-partner",
+      "solution-partner"
     ]
   },
   "Headline": {
@@ -1337,8 +1344,9 @@ export const DEFS: Record<string, Shape> = {
       "refund-dollar",
       "scale",
       "plugin",
-      "share-forward",
-      "git-compare"
+      "group-2",
+      "git-branch",
+      "target"
     ]
   },
   "ImageRatio": {
@@ -1731,6 +1739,17 @@ export const DEFS: Record<string, Shape> = {
             "doc": "`horizontal` sets each card's icon beside its title, at 48 and 24 — the ecosystem cards (node `25120:53447`), which are a title and nothing else. `center` stacks the two and centres them — the OEM page's ecosystem cards…"
           },
           {
+            "name": "cardSet",
+            "optional": true,
+            "shape": {
+              "kind": "enum",
+              "options": [
+                "partner"
+              ]
+            },
+            "doc": "`partner` is Partner Pages' `Common Cards` (node `290:57722`): the glass icon at 48, 8 between the title and its line, and the line at 18/1.25. Without it a card keeps the Solutions Library set's 40 icon, 4 gap and 24 l…"
+          },
+          {
             "name": "cards",
             "optional": true,
             "shape": {
@@ -1816,7 +1835,7 @@ export const DEFS: Record<string, Shape> = {
                 ]
               }
             },
-            "doc": "Further rows under the first, each under its own smaller heading, 64 below the row above — `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section."
+            "doc": "Further rows under the first, each under its own smaller heading, 40 below the row above — `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section."
           },
           {
             "name": "anchor",
@@ -2661,6 +2680,15 @@ export const DEFS: Record<string, Shape> = {
               }
             },
             "doc": "`logo` is the partner's mark, opposite the quote mark at the card's head — Partner Pages' OEM quote cards (node `212:27313`). Drawn at most 48 tall, right-aligned."
+          },
+          {
+            "name": "cta",
+            "optional": true,
+            "shape": {
+              "kind": "ref",
+              "name": "LinkRef"
+            },
+            "doc": "One line and an arrow across the foot of the cards — the Technology page's `Call to Action` bar (node `337:12875`), `Visit Liferay Marketplace for more integrations…`."
           },
           {
             "name": "anchor",

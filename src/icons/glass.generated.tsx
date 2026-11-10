@@ -12171,6 +12171,63 @@ export function IconGlassNotifications({ size = 48, ...props }: GlassIconProps) 
   )
 }
 
+/** Glass icon `user/oem-partner`. Dark artwork only — see the note above. */
+export function IconGlassOemPartner({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="0 0 66 58"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path d="M29.7459 42.0289C31.6826 43.8276 34.3713 43.4013 36.1844 41.4788L45.1591 30.9523C44.562 31.5856 37.5111 40.3695 36.1899 42.2052C35.2256 43.5457 34.1336 46.8271 35.8879 48.4549C37.8246 50.2536 39.5575 49.9916 41.8315 47.965C52.4569 38.4954 75.6097 23.3853 59.1422 8.01561L57.96 6.9176C50.2133 -0.277236 38.0535 0.123115 30.8008 7.81292L22.2295 18.9884C20.6895 21.7424 19.9326 23.3839 21.5757 24.913C23.2187 26.4396 25.3203 25.1268 26.9636 23.3852C27.6554 22.6514 32.9921 15.6598 33.2165 15.7117L24.252 28.2402C22.7073 30.7678 22.1881 32.8524 24.1247 34.6512C26.0614 36.4499 28.7477 35.6788 30.3886 33.9397C30.6629 33.6482 37.843 24.7532 38.1489 24.4315L29.8731 35.6131C28.0599 37.5355 27.8091 40.2253 29.7458 42.024L29.7459 42.0289Z" fill={`url(#${uid}-d-paint0_linear_423_9301)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_423_9301)`}>
+<path d="M45.8578 40.1464C47.7859 38.1667 47.3988 35.3537 45.4242 33.4206L34.5909 23.8301C35.2414 24.4667 44.291 32.0128 46.1856 33.431C47.5691 34.4661 50.984 35.6772 52.7289 33.8839C54.657 31.9042 54.2698 29.0912 52.2952 27.1581L41.1936 16.2892C42.0015 16.2581 42.6003 16.3849 43.1553 16.504C44.162 16.7187 45.006 16.8973 46.6631 16.0149C48.1499 15.2204 48.7074 13.5486 49.1875 12.0425C49.6082 10.7253 48.8829 9.31494 47.5691 8.89313L31.2612 3.65794C24.052 1.34182 16.1536 3.31117 10.8648 8.74044L9.68775 9.94897C1.97519 17.8677 2.1249 30.5559 10.0233 38.2884L21.5457 47.4726C24.3979 49.1391 26.1015 49.9647 27.7405 48.2852C29.3795 46.6057 28.0477 44.3853 26.2589 42.6333C25.5052 41.8958 18.296 36.1767 18.3553 35.9438L31.287 45.5679C33.9018 47.2345 36.0751 47.8219 38.0033 45.8422C39.9314 43.8626 39.1829 41.0444 37.3967 39.295C37.0973 39.0026 27.9341 31.3193 27.6037 30.9932L39.139 39.8695C41.1136 41.8026 43.9271 42.1235 45.8552 40.1438L45.8578 40.1464Z" fill="#70A1FF" fillOpacity="0.3"/>
+</g>
+<path fillRule="evenodd" clipRule="evenodd" d="M63.4013 25.4822C63.2083 26.1016 62.9097 26.6843 62.5004 27.1834C59.7588 30.5388 56.0193 30.915 52.6415 27.6981C43.8592 21.3089 38.2588 8.16207 30.2864 17.9354C28.5694 20.0416 27.0223 20.5486 24.3631 20.7942C22.0927 20.9928 19.4953 19.5346 19.0782 18.2777C18.6612 17.0208 18.8152 15.6951 19.8582 14.5121C19.8582 14.5121 25.7094 9.15769 28.7084 6.05323C38.4133 -3.99184 50.4401 0.51068 55.8485 4.97399C61.1077 9.31187 66.0966 16.8692 63.4013 25.4822Z" fill={`url(#${uid}-d-paint1_linear_423_9301)`}/>
+<defs>
+<filter id={`${uid}-d-filter0_dii_423_9301`} x="-2" y="-3.29785" width="61.9922" height="60.5039" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_423_9301"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_423_9301" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_423_9301"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_423_9301" result="effect3_innerShadow_423_9301"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_423_9301`} x1="50.6138" y1="6.75566" x2="21.1081" y2="31.9986" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.519945" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+<linearGradient id={`${uid}-d-paint1_linear_423_9301`} x1="52.6415" y1="2.70223" x2="10.8072" y2="56.9043" gradientUnits="userSpaceOnUse">
+<stop offset="0.130301" stopColor="#1514A4"/>
+<stop offset="0.407672" stopColor="#0B5FFF"/>
+<stop offset="0.775154" stopColor="#47FFFC"/>
+</linearGradient>
+</defs>
+    </svg>
+  )
+}
+
 /** Glass icon `capabilities/out-of-the-box`. */
 export function IconGlassOutOfTheBox({ size = 48, ...props }: GlassIconProps) {
   const uid = useId().replace(/:/g, '')
@@ -21101,6 +21158,57 @@ export function IconGlassSites({ size = 48, ...props }: GlassIconProps) {
   )
 }
 
+/** Glass icon `user/solution-partner`. Dark artwork only — see the note above. */
+export function IconGlassSolutionPartner({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fillRule="evenodd" clipRule="evenodd" d="M38.3438 11.5545C38.5357 11.2252 38.8105 10.9521 39.1409 10.7622C39.4713 10.5723 39.8457 10.4724 40.2268 10.4724C40.6079 10.4724 40.9823 10.5723 41.3127 10.7622C41.6431 10.9521 41.9179 11.2252 42.1098 11.5545L46.9829 19.9198L56.4466 21.9702C56.8189 22.0511 57.1634 22.2281 57.4459 22.4837C57.7284 22.7393 57.939 23.0644 58.0567 23.4268C58.1743 23.7891 58.195 24.1759 58.1165 24.5487C58.0381 24.9215 57.8633 25.2672 57.6095 25.5514L51.1586 32.7712L52.1349 42.4041C52.1735 42.7834 52.1118 43.1662 51.9561 43.5142C51.8004 43.8622 51.5562 44.1633 51.2477 44.3874C50.9393 44.6115 50.5774 44.7508 50.1983 44.7913C49.8192 44.8318 49.4361 44.7722 49.0873 44.6183L40.2268 40.7129L31.3663 44.6183C31.0175 44.7722 30.6344 44.8318 30.2553 44.7913C29.8762 44.7508 29.5143 44.6115 29.2059 44.3874C28.8974 44.1633 28.6532 43.8622 28.4975 43.5142C28.3418 43.1662 28.2801 42.7834 28.3187 42.4041L29.295 32.7712L22.844 25.5531C22.5899 25.269 22.4147 24.9231 22.336 24.5501C22.2573 24.1771 22.2778 23.7899 22.3955 23.4273C22.5132 23.0647 22.724 22.7393 23.0067 22.4837C23.2895 22.228 23.6344 22.0509 24.007 21.9702L33.4707 19.9198L38.3438 11.5545Z" fill={`url(#${uid}-d-paint0_linear_423_9313)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_423_9313)`}>
+<path d="M13.3232 35.1176C13.3232 34.2751 12.9952 33.4707 12.4136 32.8788C11.8321 32.2868 11.0418 31.9528 10.2142 31.9528H7.10512C6.27753 31.9528 5.48725 32.2868 4.90569 32.8788C4.32416 33.4707 3.99609 34.2751 3.99609 35.1176V47.7845C3.99609 48.6269 4.32416 49.4315 4.90569 50.0235C5.48725 50.6153 6.27753 50.9494 7.10512 50.9494H10.2142C11.0418 50.9494 11.8321 50.6153 12.4136 50.0235C12.9952 49.4315 13.3232 48.6269 13.3232 47.7845M13.3232 35.1176L22.4043 29.3344C23.4705 28.659 24.6559 28.2036 25.8936 28.0063C27.1312 27.8089 28.3987 27.8621 29.6139 28.1733L41.1705 31.118C45.2339 31.8086 43.7947 36.9086 40.6783 36.848C37.5619 36.7873 33.7445 35.7628 32.7751 35.6412C31.3512 35.4592 29.5396 37.2807 27.8098 38.4875C27.5488 39.3829 31.4482 43.064 35.3175 43.4283C39.1871 43.7926 45.6738 41.7965 46.6952 41.0981L54.4639 35.8309C57.3196 34.374 59.9961 35.7855 59.9961 39.0413V39.2158C59.9961 40.6277 59.34 41.9558 58.229 42.8057L48.6782 50.0994C47.9328 50.6685 47.0753 51.0555 46.1657 51.2453L36.1749 53.2793C33.4611 53.8334 30.6502 53.4464 28.175 52.1864L20.861 48.4677C19.9961 48.0274 19.0418 47.7997 18.0725 47.7997H13.3232V35.1176Z" fill="#70A1FF" fillOpacity="0.3"/>
+</g>
+<defs>
+<filter id={`${uid}-d-filter0_dii_423_9313`} x="-1.25411" y="22.6399" width="66.5004" height="37.886" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="3.50014"/>
+<feGaussianBlur stdDeviation="1.75007"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_423_9313"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_423_9313" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="2.6251"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_423_9313"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.75007"/>
+<feGaussianBlur stdDeviation="1.75007"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_423_9313" result="effect3_innerShadow_423_9313"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_423_9313`} x1="52.4034" y1="11.7846" x2="36.5027" y2="41.1592" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.485577" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+</defs>
+    </svg>
+  )
+}
+
 /** Glass icon `library/solutions/digital-commerce`. */
 export function IconGlassSolutionsDigitalCommerce({ size = 48, ...props }: GlassIconProps) {
   const uid = useId().replace(/:/g, '')
@@ -22647,6 +22755,57 @@ export function IconGlassTechnicalAccountManagement({ size = 48, ...props }: Gla
       <g className={classes.glassLight}>
         <g transform="translate(19 -5) scale(2)"><rect x="-6" y="-6" width="36" height="36" fill={`url(#${uid}-l-gi_grad)`} mask={`url(#${uid}-l-gi_backshape)`}/></g><g filter={`url(#${uid}-l-gi_dii)`}><path transform="translate(-7 0) scale(2.8333333333333335) translate(0 0) scale(1)" d="M12 13c2.396 0 4.575.694 6.178 1.672.8.488 1.484 1.064 1.978 1.69.486.615.844 1.351.844 2.138 0 .845-.411 1.511-1.003 1.986-.56.45-1.299.748-2.084.956-1.578.417-3.684.558-5.913.558s-4.335-.14-5.913-.558c-.785-.208-1.524-.506-2.084-.956C3.41 20.01 3 19.345 3 18.5c0-.787.358-1.523.844-2.139.494-.625 1.177-1.2 1.978-1.69C7.425 13.695 9.605 13 12 13m0-11a5 5 0 1 1 0 10 5 5 0 0 1 0-10" fill="#99BCFF" fillRule="evenodd" clipRule="evenodd" fillOpacity="0.5"/></g><defs><filter id={`${uid}-l-gi_dii`} x="-13" y="-6" width="82" height="82" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB"><feFlood floodOpacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dx="1.3"/><feGaussianBlur stdDeviation="0.65"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.344262 0 0 0 0 1 0 0 0 0.7 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1.5"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/><feBlend mode="normal" in2="shape" result="effect2_innerShadow"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="3"/><feGaussianBlur stdDeviation="2.5"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/><feColorMatrix type="matrix" values="0 0 0 0 0.376471 0 0 0 0 0.623529 0 0 0 0 1 0 0 0 0.4 0"/><feBlend mode="normal" in2="effect2_innerShadow" result="effect3_innerShadow"/></filter><clipPath id={`${uid}-l-gi_bgclip`} transform="translate(13 6)"><path transform="translate(-7 0) scale(2.8333333333333335) translate(0 0) scale(1)" d="M12 13c2.396 0 4.575.694 6.178 1.672.8.488 1.484 1.064 1.978 1.69.486.615.844 1.351.844 2.138 0 .845-.411 1.511-1.003 1.986-.56.45-1.299.748-2.084.956-1.578.417-3.684.558-5.913.558s-4.335-.14-5.913-.558c-.785-.208-1.524-.506-2.084-.956C3.41 20.01 3 19.345 3 18.5c0-.787.358-1.523.844-2.139.494-.625 1.177-1.2 1.978-1.69C7.425 13.695 9.605 13 12 13m0-11a5 5 0 1 1 0 10 5 5 0 0 1 0-10" fillRule="evenodd" clipRule="evenodd"/></clipPath><mask id={`${uid}-l-gi_backshape`} maskUnits="userSpaceOnUse" x="-24" y="-24" width="72" height="72"><path transform="translate(0 0) scale(1)" d="M9.965 2.809a1.511 1.511 0 0 0-1.401-.203 9.99 9.99 0 0 0-2.982 1.725 1.51 1.51 0 0 0-.524 1.313c.075.753-.058 1.48-.42 2.106-.361.627-.925 1.106-1.615 1.417a1.511 1.511 0 0 0-.875 1.113 10.059 10.059 0 0 0 0 3.44c.093.537.46.926.875 1.114.69.31 1.254.79 1.616 1.416.361.627.494 1.353.419 2.106-.045.452.107.964.524 1.313a9.989 9.989 0 0 0 2.982 1.725 1.51 1.51 0 0 0 1.4-.203c.615-.442 1.312-.691 2.036-.691s1.42.249 2.035.691c.37.266.89.39 1.401.203a9.99 9.99 0 0 0 2.982-1.725c.417-.349.57-.86.524-1.313-.075-.753.057-1.48.42-2.106.361-.627.925-1.105 1.615-1.416.414-.187.782-.577.875-1.114a10.062 10.062 0 0 0 0-3.44 1.511 1.511 0 0 0-.875-1.113c-.69-.311-1.254-.79-1.616-1.417-.362-.626-.494-1.353-.419-2.106a1.511 1.511 0 0 0-.524-1.313 9.99 9.99 0 0 0-2.982-1.725 1.511 1.511 0 0 0-1.4.203C13.42 3.25 12.723 3.5 12 3.5s-1.42-.249-2.035-.691M9 12a3 3 0 1 1 6 0 3 3 0 0 1-6 0" fill="white" fillRule="evenodd" clipRule="evenodd"/></mask><linearGradient id={`${uid}-l-gi_grad`} x1="7.5600000000000005" y1="21.336" x2="20.375999999999998" y2="0" gradientUnits="userSpaceOnUse"><stop stopColor="#1514A4"/><stop offset="0.485577" stopColor="#0B5FFF"/><stop offset="1" stopColor="#47FFFC"/></linearGradient></defs>
       </g>
+    </svg>
+  )
+}
+
+/** Glass icon `user/technology-partner`. Dark artwork only — see the note above. */
+export function IconGlassTechnologyPartner({ size = 48, ...props }: GlassIconProps) {
+  const uid = useId().replace(/:/g, '')
+
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path d="M57.871 12.9502C59.048 12.9502 60.0021 13.9043 60.0021 15.0813V42.3107C60.0021 43.4877 59.048 44.4418 57.871 44.4418H21.6428C20.4658 44.4418 19.5117 43.4877 19.5117 42.3107V15.0813C19.5117 13.9043 20.4658 12.9502 21.6428 12.9502H57.871ZM23.1683 15.1999C22.3924 15.2003 21.764 15.8288 21.7635 16.6046C21.7635 17.3809 22.3921 18.0111 23.1683 18.0115C23.9447 18.0115 24.5751 17.3811 24.5751 16.6046C24.5745 15.8286 23.9444 15.1999 23.1683 15.1999ZM27.6676 15.1999C26.8916 15.2 26.2634 15.8287 26.2629 16.6046C26.2629 17.3811 26.8913 18.0114 27.6676 18.0115C28.4441 18.0115 29.0745 17.3811 29.0745 16.6046C29.0739 15.8286 28.4438 15.1999 27.6676 15.1999ZM32.167 15.1999C31.3909 15.1999 30.7607 15.8286 30.7602 16.6046C30.7602 17.3811 31.3906 18.0115 32.167 18.0115C32.9434 18.0114 33.5718 17.3811 33.5718 16.6046C33.5712 15.8287 32.9431 15.2 32.167 15.1999Z" fill={`url(#${uid}-d-paint0_linear_423_9289)`}/>
+<g filter={`url(#${uid}-d-filter0_dii_423_9289)`}>
+<path d="M11.0109 37.2214C11.0109 36.5882 10.7643 35.9836 10.3272 35.5386C9.89005 35.0936 9.296 34.8426 8.67393 34.8426H6.33695C5.71488 34.8426 5.12085 35.0936 4.68371 35.5386C4.2466 35.9836 4 36.5882 4 37.2214V46.7427C4 47.376 4.2466 47.9807 4.68371 48.4258C5.12085 48.8705 5.71488 49.1217 6.33695 49.1217H8.67393C9.296 49.1217 9.89005 48.8705 10.3272 48.4258C10.7643 47.9807 11.0109 47.376 11.0109 46.7427M11.0109 37.2214L17.8368 32.8745C18.6382 32.3667 19.5293 32.0245 20.4597 31.8761C21.3899 31.7278 22.3426 31.7677 23.2561 32.0016L31.9427 34.2151C34.9971 34.7342 33.9153 38.5677 31.5728 38.5221C29.2303 38.4765 26.3609 37.7064 25.6322 37.615C24.5619 37.4782 23.2002 38.8474 21.9 39.7545C21.7038 40.4276 24.6349 43.1945 27.5433 43.4683C30.4519 43.7422 35.3277 42.2418 36.0955 41.7168L41.935 37.7577C44.0815 36.6625 46.0934 37.7235 46.0934 40.1708V40.302C46.0934 41.3632 45.6002 42.3615 44.7651 43.0004L37.5861 48.4828C37.0257 48.9105 36.3812 49.2014 35.6975 49.3441L28.1878 50.873C26.1479 51.2895 24.035 50.9986 22.1745 50.0515L16.6768 47.2563C16.0267 46.9254 15.3093 46.7542 14.5808 46.7542H11.0109V37.2214Z" fill="#70A1FF" fillOpacity="0.3"/>
+</g>
+<defs>
+<filter id={`${uid}-d-filter0_dii_423_9289`} x="-1.4314" y="26.3574" width="52.9566" height="31.9428" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="3.62093"/>
+<feGaussianBlur stdDeviation="1.81047"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_423_9289"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_423_9289" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="2.7157"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_423_9289"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1.81047"/>
+<feGaussianBlur stdDeviation="1.81047"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="effect2_innerShadow_423_9289" result="effect3_innerShadow_423_9289"/>
+</filter>
+<linearGradient id={`${uid}-d-paint0_linear_423_9289`} x1="54.6403" y1="9.51634" x2="35.2049" y2="45.4206" gradientUnits="userSpaceOnUse">
+<stop stopColor="#1514A4"/>
+<stop offset="0.485577" stopColor="#0B5FFF"/>
+<stop offset="1" stopColor="#47FFFC"/>
+</linearGradient>
+</defs>
     </svg>
   )
 }

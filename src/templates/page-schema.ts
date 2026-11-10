@@ -62,8 +62,9 @@ export type IconName =
   | 'refund-dollar'
   | 'scale'
   | 'plugin'
-  | 'share-forward'
-  | 'git-compare'
+  | 'group-2'
+  | 'git-branch'
+  | 'target'
 
 /** One slide of a carousel hero after the first — the copy and media a lead story carries. */
 export type HeroSlide = Pick<
@@ -363,6 +364,11 @@ export type ArticleBlock =
 
 /** A named illustrative icon from `assets/glass-icons/`. Resolved in `PageRenderer`. */
 export type GlassIconName =
+  /* Technology Partner's support cards (node `290:57722`). */
+  | 'retail'
+  | 'education'
+  | 'user'
+  | 'verification'
   | 'financial-services'
   | 'enterprise-websites'
   | 'customer-portals'
@@ -432,6 +438,10 @@ export type GlassIconName =
   | 'user-badge'
   /** The person with a screen — the Technology Partner card. */
   | 'user-screen'
+  /* The three programs' own marks — Figma's `Glass icon / User / Technology Partner`, `OEM Partner`, `Solution Partner`. */
+  | 'technology-partner'
+  | 'oem-partner'
+  | 'solution-partner'
 
 export interface CardSpec {
   title: string
@@ -622,11 +632,17 @@ type SectionBody =
        * the OEM page's ecosystem cards (node `290:57651`). @default 'vertical'
        */
       cardHeader?: 'vertical' | 'center' | 'horizontal'
+      /**
+       * `partner` is Partner Pages' `Common Cards` (node `290:57722`): the glass icon at 48, 8 between the
+       * title and its line, and the line at 18/1.25. Without it a card keeps the Solutions Library set's
+       * 40 icon, 4 gap and 24 line.
+       */
+      cardSet?: 'partner'
       /** Without tabs, `cards` renders directly; with them, the bar swaps the grid. */
       cards?: CardSpec[]
       tabs?: TabGroup<CardSpec[]>[]
       /**
-       * Further rows under the first, each under its own smaller heading, 64 below the row above —
+       * Further rows under the first, each under its own smaller heading, 40 below the row above —
        * `Discover the Liferay Ecosystem`, then `Other Ways to Partner with Liferay`, as one section.
        */
       groups?: { title: string; cards: CardSpec[] }[]
@@ -810,6 +826,11 @@ type SectionBody =
        * cards (node `212:27313`). Drawn at most 48 tall, right-aligned.
        */
       quotes: { quote: string; name: string; role?: string; link?: LinkRef; logo?: ImageRef }[]
+      /**
+       * One line and an arrow across the foot of the cards — the Technology page's `Call to Action` bar
+       * (node `337:12875`), `Visit Liferay Marketplace for more integrations…`.
+       */
+      cta?: LinkRef
     }
   /**
    * `Partner Levels Designed for Growth` — the tiers as cards, then the program overview: a table per

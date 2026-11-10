@@ -625,6 +625,23 @@ export function IconFolder2(props: IconProps) {
   )
 }
 
+/** MingCute `git_branch` (regular, development). */
+export function IconGitBranch(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 0v8m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m12-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 0v1a3 3 0 0 1-3 3H9a3 3 0 0 0-3 3"/>
+    </svg>
+  )
+}
+
 /** MingCute `git_compare` (regular, development). */
 export function IconGitCompare(props: IconProps) {
   return (
@@ -689,6 +706,23 @@ export function IconGroup(props: IconProps) {
       {...props}
     >
       <path fill="currentColor" d="M20 18a1 1 0 1 0 2 0zm-5 1a1 1 0 1 0 2 0zM2 19a1 1 0 1 0 2 0zm15-5v1h2v-2h-2zm4 2h-1v2h2v-2zm-1-7h-1a1 1 0 0 1-1 1v2a3 3 0 0 0 3-3zm-2 2v-1a1 1 0 0 1-1-1h-2a3 3 0 0 0 3 3zm-2-2h1a1 1 0 0 1 1-1V6a3 3 0 0 0-3 3zm2-2v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3zM6 14v1h7v-2H6zm10 3h-1v2h2v-2zM3 19h1v-2H2v2zM13 7.5h-1A2.5 2.5 0 0 1 9.5 10v2A4.5 4.5 0 0 0 14 7.5zM9.5 11v-1A2.5 2.5 0 0 1 7 7.5H5A4.5 4.5 0 0 0 9.5 12zM6 7.5h1A2.5 2.5 0 0 1 9.5 5V3A4.5 4.5 0 0 0 5 7.5zM9.5 4v1A2.5 2.5 0 0 1 12 7.5h2A4.5 4.5 0 0 0 9.5 3zM13 14v1a2 2 0 0 1 2 2h2a4 4 0 0 0-4-4zm-7 0v-1a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2zm13 0v1a1 1 0 0 1 1 1h2a3 3 0 0 0-3-3z"/>
+    </svg>
+  )
+}
+
+/** MingCute `group_2` (regular, users). */
+export function IconGroup2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M17.92 14H18c2.21 0 4 1.467 4 2.571 0 .84-1.034 1.228-2.5 1.367m-3.5-.08C16 19.513 13.09 20 9.5 20S3 19.514 3 17.857 5.91 14 9.5 14s6.5 2.2 6.5 3.857ZM13 7.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0ZM20 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/>
     </svg>
   )
 }
@@ -1288,23 +1322,6 @@ export function IconSettings6(props: IconProps) {
   )
 }
 
-/** MingCute `share_forward` (regular, system). */
-export function IconShareForward(props: IconProps) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="1em"
-      height="1em"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      focusable="false"
-      {...props}
-    >
-      <path fill="none" stroke="currentColor" strokeWidth="2" d="M16.207 7.726c-2.398-1.894-4.233-2.99-4.845-3.338-.106-.06-.238.044-.252.2-.059.61-.182 2.335-.255 4.403a.01.01 0 0 1-.01.01C6.432 9.006 3 12.586 3 17.001q0 .615.09 1.207a.01.01 0 0 0 .018.005q.413-.492.892-.92A8.97 8.97 0 0 1 10 15h.845a.01.01 0 0 1 .01.01c.076 2.158.207 3.909.262 4.469.013.13.115.197.217.14.576-.325 2.403-1.405 4.873-3.356 2.405-1.9 3.982-3.488 4.52-4.05.109-.114.12-.31.024-.41-.52-.543-2.134-2.175-4.544-4.078Z" clipRule="evenodd"/>
-    </svg>
-  )
-}
-
 /** MingCute `shield_shape` (regular, shapes). */
 export function IconShieldShape(props: IconProps) {
   return (
@@ -1454,6 +1471,23 @@ export function IconTag(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeWidth="2" d="M3.738 12.223a2 2 0 0 1-.578-1.595l.472-5.186a2 2 0 0 1 1.81-1.81l5.186-.472a2 2 0 0 1 1.595.578l7.823 7.823a2 2 0 0 1 0 2.828l-5.657 5.657a2 2 0 0 1-2.828 0z"/><path fill="none" stroke="currentColor" strokeWidth="2" d="M10.853 8.025a2 2 0 1 1-2.829 2.829 2 2 0 0 1 2.829-2.829Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `target` (regular, business). */
+export function IconTarget(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="currentColor" d="M12.89 4.049a1 1 0 1 0 .22-1.988l-.11.994zm9.049 6.841a1 1 0 0 0-1.988.22l.994-.11zm-10.69-1.796a1 1 0 1 0-.498-1.936l.249.968zm5.593 4.155a1 1 0 1 0-1.936-.498l.968.249zm-2.256-3.835h-1a1 1 0 0 0 1 1zm0-2.828-.707-.708a1 1 0 0 0-.293.708zM18.12 3.05h1a1 1 0 0 0-1.707-.707zm0 2.828h-1a1 1 0 0 0 1 1zm2.829 0 .707.708a1 1 0 0 0-.707-1.708zm-3.536 3.536v1a1 1 0 0 0 .707-.293zm-2.414 1A1 1 0 0 0 13.586 9l.707.707zm-3.242.414a1 1 0 1 0 1.414 1.414l-.707-.707zM21 12h-1a8 8 0 0 1-8 8v2c5.523 0 10-4.477 10-10zm-9 9v-1a8 8 0 0 1-8-8H2c0 5.523 4.477 10 10 10zm-9-9h1a8 8 0 0 1 8-8V2C6.477 2 2 6.477 2 12zm9-9v1q.452 0 .89.049l.11-.994.11-.994A10 10 0 0 0 12 2zm8.945 8-.994.11q.048.438.049.89h2q0-.562-.061-1.11zM12 16v-1a3 3 0 0 1-3-3H7a5 5 0 0 0 5 5zm-4-4h1c0-1.396.955-2.572 2.25-2.906L11 8.126l-.25-.968A5 5 0 0 0 7 12zm7.874 1-.969-.25A3 3 0 0 1 12 15v2a5 5 0 0 0 4.842-3.75zm-1.288-3.586h1V6.586h-2v2.828zm0-2.828.707.707 3.535-3.536-.707-.707-.707-.707-3.535 3.535zM18.12 3.05h-1v2.828h2V3.05zm0 2.828v1h2.829v-2H18.12zm2.829 0-.707-.707-3.536 3.536.707.707.707.707 3.536-3.535zm-3.536 3.536v-1h-2.828v2h2.828zm-3.121.293L13.586 9l-1.828 1.828.707.707.707.707L15 10.414z"/>
     </svg>
   )
 }

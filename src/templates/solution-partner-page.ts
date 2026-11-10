@@ -409,13 +409,15 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
 
     {
       /*
-       * The ecosystem frame (Solutions Library node `25120:53447`): one section, the two ways into the
-       * ecosystem and then, under a smaller heading, the other two programs. Title-only cards, each icon beside its title.
+       * The ecosystem frame (node `290:58310`): one section, the two ways into the ecosystem and then, under
+       * a smaller heading, the other two programs. Centred, title-only cards, each icon over its title.
        */
       type: 'cardGrid',
+      cardSet: 'partner',
       title: 'Discover the Liferay Ecosystem',
+      align: 'center',
       columns: 2,
-      cardHeader: 'horizontal',
+      cardHeader: 'center',
       cards: [
         { icon: 'user-badge', title: 'Partner Directory', href: '#' },
         { icon: 'commerce', title: 'Liferay Marketplace', href: '#' },
@@ -424,8 +426,8 @@ export const SOLUTION_PARTNER_PAGE: PageSpec = {
         {
           title: 'Other Ways to Partner with Liferay',
           cards: [
-          { icon: 'user-screen', title: 'Technology Partner', href: '#' },
-          { icon: 'user-cubes', title: 'OEM Partner', href: '#' },
+          { icon: 'technology-partner', title: 'Technology Partner', href: '#' },
+          { icon: 'oem-partner', title: 'OEM Partner', href: '#' },
           ],
         },
       ],

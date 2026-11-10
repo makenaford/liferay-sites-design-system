@@ -7939,7 +7939,8 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 
 .contentMediaFigure {
   overflow: hidden;
-  border-radius: 8px;
+  /* `Image Stats`' 16px corners. */
+  border-radius: var(--mantine-radius-lg);
 }
 
 .contentMediaFigure[data-ratio='3:2'] {
@@ -10990,7 +10991,9 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   position: relative;
   isolation: isolate;
   background-color: var(--sds-surfaces-page-bg-base-default);
-  border-radius: var(--mantine-radius-md);
+  /* `Image Stats`' 16px corners, clipping a still that is cropped to fill the box. */
+  border-radius: var(--mantine-radius-lg);
+  overflow: hidden;
   /*
    * One box, whatever is in it.
    *
@@ -13466,6 +13469,54 @@ a.secondaryNavTitle:focus-visible {
   color: var(--sds-surfaces-text-primary);
 }
 
+/* Partner Pages' `Common Cards` — see `cardSet` in page-schema.ts: 8 between title and line, 18/1.25. */
+.partnerCard .cardText[data-size='small'] {
+  gap: 8px;
+}
+
+.partnerCard .cardDescription {
+  line-height: 1.25;
+}
+
+/* Centred too, the icon sits 8 over the title (`Card hero` 48, `Content Text` at 56), not the set's 20. */
+.partnerCard .cardHeader[data-header-align='center'] {
+  gap: 8px;
+}
+
+/* A tabbed panel's key point: title over its line, 4 apart, in primary text (18/1.25 is on the `Text`). */
+.keyPointsLarge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.keyPointsLarge > * {
+  color: inherit;
+}
+
+/*
+ * The bar under the quote cards — `Call to Action` (node `337:12875`): the gradient card's top-to-bottom
+ * wash, `Gradient Card/01` into `Gradient Card/Blue`, behind the glass hairline and glow, 10px corners,
+ * 16 in and 24 between the line and its arrow.
+ */
+.quotesCta {
+  margin-top: 24px;
+  gap: 24px;
+  padding: 16px;
+  border-color: var(--sds-glass-line-from);
+  border-radius: 10px;
+  /*
+   * Figma's 175.74° is measured in the box's own unit square, so on a bar this wide it reads straight
+   * down; the same angle in CSS crosses the bar's length and runs left to right. `to bottom` is the look.
+   */
+  background-image: linear-gradient(to bottom, var(--sds-gradient-card-01) 0.76%, var(--sds-gradient-card-blue) 70.16%);
+  box-shadow: 0 0 6px 1px var(--sds-glass-shadow);
+  backdrop-filter: blur(50px);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
 .quoteCardFoot {
   display: flex;
   flex-wrap: wrap;
@@ -13498,19 +13549,20 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * `Path to Partnership` on a corner glow (node `245:11603`): brand purple in the top-right corner,
- * running through deep blue into the page by about 40% of the way across.
+ * `Path to Partnership` on a glow (node `245:11603`): brand purple on the right edge, running through
+ * deep blue into the page. It sits a third of the way down and fades out before the band's top and
+ * bottom, so the colour has no edge where the band begins — the file's corner was cut off square.
  *
- * On the light canvas that is the still gradient the file draws, and the drifting field is not shown.
+ * On the light canvas that is a still gradient, and the drifting field is not shown.
  */
 .glowBand {
   position: relative;
   isolation: isolate;
-  background-image: linear-gradient(
-    225deg,
+  background-image: radial-gradient(
+    55% 50% at 100% 40%,
     var(--sds-gradient-card-purple) 0%,
-    var(--sds-gradient-card-blue) 14%,
-    transparent 42%
+    var(--sds-gradient-card-blue) 30%,
+    transparent 100%
   );
 }
 
@@ -13522,11 +13574,15 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * On the dark canvas the corner moves: the Solutions hub's closing panel (`.ctaCardMesh`) in the same
- * corner the still glow lit — violet in the very corner, electric blue and the bubble's cyan rim under
- * it, deep indigo spreading toward the middle — on the footer's field, blur and flow. The rest of the
+ * On the dark canvas the glow moves: the Solutions hub's closing panel (`.ctaCardMesh`) colours —
+ * violet, electric blue, the bubble's cyan rim, deep indigo — on the footer's field, blur and flow,
+ * gathered on the band's right edge about a third of the way down, behind the form. The rest of the
  * band stays the page's own dark, so the steps and the form card keep their contrast; under reduced
  * motion it holds still, as the footer's does.
+ *
+ * The mask is what keeps it from having an edge. Lit at the top, the field was cut off square where
+ * the band begins; faded out to an ellipse on the right edge, it is clear before the band's top,
+ * bottom and the middle, so the colour disperses into the page on every side but the viewport's.
  *
  * Field positions are `(band% + 20) / 140`, the field being 140% of the band hung 20% off its top left.
  */
@@ -13536,14 +13592,17 @@ a.secondaryNavTitle:focus-visible {
 
 :where([data-mantine-color-scheme='dark']) .glowBandField {
   display: block;
+  -webkit-mask-image: radial-gradient(62% 52% at 100% 44%, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
+  mask-image: radial-gradient(62% 52% at 100% 44%, #000 0%, rgba(0, 0, 0, 0.6) 45%, transparent 100%);
 }
 
+/* Band points: violet at the edge 30% down, blue and cyan under it, indigo reaching in to about 70%. */
 :where([data-mantine-color-scheme='dark']) .glowBandField > * {
   background-image:
-    radial-gradient(20% 13% at 88% 14%, #8c2bff 0%, #8c2bff 35%, transparent 100%),
-    radial-gradient(26% 17% at 78% 21%, #1f3dff 0%, #1f3dff 25%, transparent 100%),
-    radial-gradient(14% 14% at 86% 34%, #2a9dff 0%, transparent 100%),
-    radial-gradient(28% 20% at 70% 24%, #1a0b6e 0%, transparent 100%);
+    radial-gradient(20% 18% at 86% 36%, #8c2bff 0%, #8c2bff 25%, transparent 100%),
+    radial-gradient(24% 20% at 80% 46%, #1f3dff 0%, #1f3dff 20%, transparent 100%),
+    radial-gradient(16% 16% at 85% 57%, #2a9dff 0%, transparent 100%),
+    radial-gradient(30% 26% at 72% 48%, #1a0b6e 0%, transparent 100%);
 }
 
 /* A band with the footer's mesh behind it: the field is the bottom layer, the content above it. */

@@ -35,11 +35,11 @@ export const OEM_PARTNER_PAGE: PageSpec = {
   sections: [
     {
       type: 'cardGrid',
+      cardSet: 'partner',
       title: 'Everything You Need to Move Faster',
       description:
         'Liferay DXP combines security, integration, and flexible capabilities to help you create modern digital experiences around your products.',
       align: 'center',
-      surface: 'glass',
       cards: [
         {
           icon: 'security',
@@ -277,6 +277,7 @@ export const OEM_PARTNER_PAGE: PageSpec = {
        * heading, the other two programs. Centred, title-only cards, each icon over its title.
        */
       type: 'cardGrid',
+      cardSet: 'partner',
       title: 'Discover the Liferay Ecosystem',
       align: 'center',
       columns: 2,
@@ -289,8 +290,8 @@ export const OEM_PARTNER_PAGE: PageSpec = {
         {
           title: 'Other Ways to Partner with Liferay',
           cards: [
-          { icon: 'user-screen', title: 'Technology Partner', href: '#' },
-          { icon: 'partners', title: 'Solution Partner', href: '#' },
+          { icon: 'technology-partner', title: 'Technology Partner', href: '#' },
+          { icon: 'solution-partner', title: 'Solution Partner', href: '#' },
           ],
         },
       ],

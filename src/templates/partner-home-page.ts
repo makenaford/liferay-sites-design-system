@@ -95,6 +95,7 @@ export const PARTNER_HOME_PAGE: PageSpec = {
 
     {
       type: 'cardGrid',
+      cardSet: 'partner',
       title: 'Explore Our Partnership Programs',
       description:
         'Whether you deliver solutions, build digital products, or extend your technology, there’s a partnership path designed to fit your business.',
@@ -102,21 +103,21 @@ export const PARTNER_HOME_PAGE: PageSpec = {
       columns: 3,
       cards: [
         {
-          icon: 'security',
+          icon: 'solution-partner',
           title: 'Solution Partner',
           description:
             'Turn every Liferay deal into a 5x services opportunity: Deliver digital transformation solutions and build a strong services business around DXP. Access deal registration, co-selling support, enablement, and incentives designed to help you win more business and grow your practice.',
           href: '#',
         },
         {
-          icon: 'module-integration',
+          icon: 'oem-partner',
           title: 'OEM Partner',
           description:
             'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
           href: '#',
         },
         {
-          icon: 'general-personalization',
+          icon: 'technology-partner',
           title: 'Technology Partner',
           description:
             'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',
@@ -175,12 +176,12 @@ export const PARTNER_HOME_PAGE: PageSpec = {
 
     {
       type: 'cardGrid',
+      cardSet: 'partner',
       title: 'Explore the Liferay Ecosystem',
-      align: 'center',
       columns: 2,
       cards: [
         {
-          icon: 'partners',
+          icon: 'user-badge',
           title: 'Partner Directory',
           description:
             'Connect with a global network of Liferay partners to deliver digital solutions across industries and markets.',

@@ -126,6 +126,9 @@
     "user/user-badge",
     "user/user-screen",
     "user/user-world",
-    "user/users"
+    "user/users",
+    "user/technology-partner",
+    "user/oem-partner",
+    "user/solution-partner"
   ]
 }

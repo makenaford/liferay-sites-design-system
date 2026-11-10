@@ -55,8 +55,10 @@ import {
   IconRefundDollar,
   IconScale,
   IconPlugin,
-  IconShareForward,
+  IconGroup2,
   IconGitCompare,
+  IconGitBranch,
+  IconTarget,
   IconCheck,
   IconDown,
   IconDashboard,
@@ -73,6 +75,10 @@ import {
   IconMonitor,
   IconPresentation1,
   IconGlassCertifications,
+  IconGlassRetail,
+  IconGlassEducation,
+  IconGlassUser,
+  IconGlassVerification,
   IconGlassCommerce,
   IconGlassCourses,
   IconGlassCustomerPortals,
@@ -103,6 +109,9 @@ import {
   IconGlassUserBadge,
   IconGlassUserCubes,
   IconGlassUserScreen,
+  IconGlassTechnologyPartner,
+  IconGlassOemPartner,
+  IconGlassSolutionPartner,
   IconGlassIntranets,
   IconGlassMail,
   IconGlassPartnerPortals,
@@ -204,11 +213,16 @@ const ICONS: Record<IconName, ReactNode> = {
   'refund-dollar': <IconRefundDollar />,
   scale: <IconScale />,
   plugin: <IconPlugin />,
-  'share-forward': <IconShareForward />,
-  'git-compare': <IconGitCompare />,
+  'group-2': <IconGroup2 />,
+  'git-branch': <IconGitBranch />,
+  target: <IconTarget />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
+  retail: (s) => <IconGlassRetail width={s} height={s} />,
+  education: (s) => <IconGlassEducation width={s} height={s} />,
+  user: (s) => <IconGlassUser width={s} height={s} />,
+  verification: (s) => <IconGlassVerification width={s} height={s} />,
   'financial-services': (s) => <IconGlassFinancialServices width={s} height={s} />,
   'enterprise-websites': (s) => <IconGlassEnterpriseWebsites width={s} height={s} />,
   'customer-portals': (s) => <IconGlassCustomerPortals width={s} height={s} />,
@@ -263,6 +277,9 @@ const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
   'user-cubes': (s) => <IconGlassUserCubes width={s} height={s} />,
   'user-badge': (s) => <IconGlassUserBadge width={s} height={s} />,
   'user-screen': (s) => <IconGlassUserScreen width={s} height={s} />,
+  'technology-partner': (s) => <IconGlassTechnologyPartner width={s} height={s} />,
+  'oem-partner': (s) => <IconGlassOemPartner width={s} height={s} />,
+  'solution-partner': (s) => <IconGlassSolutionPartner width={s} height={s} />,
 }
 
 /** A figure with its unit tight against it, and the arrow the file draws on a fall. */
@@ -411,8 +428,19 @@ export function PanelMedia({ media }: { media: ImageRef }) {
      * `fill`, because the box around this already has a ratio — see `.mediaFade`. Asking the image for
      * one too would give the box two opinions about its height, and the one that won would depend on
      * which media the open row happened to carry.
+     *
+     * A still that names a `ratio` is cropped to the box, as Figma's `Aspect Ratio` crops a photograph
+     * whose own shape is not 3:2; without one it is contained, the whole frame kept.
      */
-    return <Image src={failed && media.poster ? media.poster : media.src} alt={media.alt} fill fit="contain" radius="md" />
+    return (
+      <Image
+        src={failed && media.poster ? media.poster : media.src}
+        alt={media.alt}
+        fill
+        fit={media.ratio ? 'cover' : 'contain'}
+        radius="lg"
+      />
+    )
   }
 
   return (
@@ -962,10 +990,12 @@ function GridCard({
   card,
   surface,
   header,
+  cardSet,
 }: {
   card: CardSpec
   surface?: 'glass'
   header?: 'vertical' | 'center' | 'horizontal'
+  cardSet?: 'partner'
 }) {
   /*
    * A picture over an icon is the Solutions Library's `Type=Industry`: the picture sits *inside* the
@@ -993,6 +1023,7 @@ function GridCard({
        */
       surface={glass ? 'glass' : 'static'}
       interactive={card.href ? undefined : false}
+      className={cardSet === 'partner' ? classes.partnerCard : undefined}
       /*
        * `content`, not `all`: the image runs to the card's edges and only the text is inset. `all` pads
        * the image too, which put a 20px frame of card around every thumbnail and made the picture look
@@ -1007,7 +1038,7 @@ function GridCard({
       headerAlign={header === 'vertical' ? undefined : header}
       hero={
         card.icon ? (
-          GLASS[card.icon](card.points || card.links || header === 'horizontal' ? 48 : 40)
+          GLASS[card.icon](cardSet === 'partner' || card.points || card.links || header === 'horizontal' ? 48 : 40)
         ) : card.tag ? (
           <Label variant="gradient" size="md">
             {card.tag}
@@ -1096,7 +1127,7 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
     <SimpleGrid cols={{ base: 1, sm: 2, md: spec.columns ?? 4 }} spacing={24}>
       {row.map((card, i) => (
         // eslint-disable-next-line react/no-array-index-key
-        <GridCard key={`${card.title}-${i}`} card={card} surface={spec.surface} header={spec.cardHeader} />
+        <GridCard key={`${card.title}-${i}`} card={card} surface={spec.surface} header={spec.cardHeader} cardSet={spec.cardSet} />
       ))}
     </SimpleGrid>
   )
@@ -1128,7 +1159,8 @@ function CardGridSection({ spec }: { spec: Extract<SectionSpec, { type: 'cardGri
       }
     >
       {spec.groups?.length ? (
-        <Stack gap={64}>
+        /* 40 from the row above to the next group's heading — the ecosystem frames (node `290:57748`). */
+        <Stack gap={40}>
           {grid(cards)}
           {spec.groups.map((group) => (
             <div key={group.title} className={classes.cardGridGroup}>
@@ -1857,8 +1889,12 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
              */
             w="100%"
             mediaSide={spec.mediaSide ?? 'right'}
-            /* The accordion grows and shrinks as rows open; the picture stays where it can be seen. */
-            stickyMedia
+            /*
+             * The accordion grows and shrinks as rows open; the picture stays where it can be seen. A
+             * panel with no rows has nothing to outgrow, so its text centres on the picture, as the
+             * frames draw it (`Content`, items centred).
+             */
+            stickyMedia={Boolean(panel.items?.length)}
             /* A stat row under the media makes the column taller than 3:2, so the box takes its height. */
             mediaRatio={panel.stats?.length ? 'auto' : '3:2'}
             order={3}
@@ -1906,7 +1942,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
               ) : undefined
             }
           >
-            {panel.points?.length ? <KeyPoints points={panel.points} /> : null}
+            {panel.points?.length ? <KeyPoints points={panel.points} large /> : null}
             {panel.note ? (
               <p className={classes.panelNote}>
                 <span>{panel.note.label}</span>
@@ -2132,17 +2168,36 @@ function MediaBandSection({ spec }: { spec: Extract<SectionSpec, { type: 'mediaB
  * a character typed into the copy. Each point is a bold claim with an optional line under it, which is
  * how the file draws them: the claim is the thing being skimmed, the line is for whoever stopped.
  */
-function KeyPoints({ points }: { points: { title: string; description?: string }[] }) {
+/**
+ * `large` is the partner pages' `List` (Technology node `290:57701`): 18/1.25 throughout, the title
+ * `Paragraph/Default/Heavier` over its line in primary text, 4 between them and 20 between points.
+ */
+function KeyPoints({ points, large }: { points: { title: string; description?: string }[]; large?: boolean }) {
   return (
-    <List marker="check" spacing={16}>
+    <List marker="check" spacing={large ? 20 : 16}>
       {points.map((point, i) => (
         /* Position, not the text: the file draws three points that all read `Key Point Main List`. */
         // eslint-disable-next-line react/no-array-index-key
         <List.Item key={i}>
-          <Text fw={600}>{point.title}</Text>
-          {point.description ? (
-            <Text c="var(--sds-surfaces-text-secondary)">{point.description}</Text>
-          ) : null}
+          {large ? (
+            <span className={classes.keyPointsLarge}>
+              <Text span fz={18} lh={1.25} fw={700}>
+                {point.title}
+              </Text>
+              {point.description ? (
+                <Text span fz={18} lh={1.25}>
+                  {point.description}
+                </Text>
+              ) : null}
+            </span>
+          ) : (
+            <>
+              <Text fw={600}>{point.title}</Text>
+              {point.description ? (
+                <Text c="var(--sds-surfaces-text-secondary)">{point.description}</Text>
+              ) : null}
+            </>
+          )}
         </List.Item>
       ))}
     </List>
@@ -2676,6 +2731,15 @@ function QuotesSection({ spec }: { spec: Extract<SectionSpec, { type: 'quotes' }
           </figure>
         ))}
       </SimpleGrid>
+      {/* The article's `Call to Action` card, title only: the line and its arrow, 24 under the cards. */}
+      {spec.cta ? (
+        <a href={spec.cta.href} className={`${classes.articleCta} ${classes.quotesCta}`}>
+          <Text span className={classes.articleCtaText}>
+            {spec.cta.label}
+          </Text>
+          <IconArrowRight aria-hidden className={classes.articleCtaArrow} />
+        </a>
+      ) : null}
     </Section>
   )
 }
