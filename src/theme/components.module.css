@@ -7682,7 +7682,7 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 }
 
 /*
- * A run of `blogFeature` topic shelves sits 80 apart at every width, not a section's 240: the shelves are
+ * A run of `blogFeature` topic shelves sits 120 apart at every width, not a section's 240: the shelves are
  * one index of topics, and at full spacing each read as a page of its own. The run keeps the section
  * padding at its two ends. A shelf is matched bare or inside its `sectionAnchor` wrapper.
  */
@@ -7694,7 +7694,7 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 
 :is(.blogShelf, .sectionAnchor:has(> .blogShelf)) + :is(.blogShelf, .sectionAnchor:has(> .blogShelf))
   :is(.blogShelf > .sectionInner) {
-  padding-top: 80px;
+  padding-top: 120px;
 }
 
 /*
@@ -7703,7 +7703,7 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
  *
  * The Blog Category page's grid starts 64 under the hero's description. The Blog Hub's opening feature
  * (node `25212:55243`) sits 40 under its headline, the row of cards 40 under that, and the first topic
- * shelf 120 under the row — the row's 40 and a shelf's 80.
+ * shelf 120 under the row, the same gap as between shelves.
  */
 .hero:has(+ .blogShelf) .heroInner {
   padding-block-end: 0;
@@ -7907,6 +7907,14 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
 /* `actionsAlign="top"`: the action lines up with the heading rather than the description's last line. */
 .sectionTitleRoot[data-actions-align='top'] {
   align-items: flex-start;
+}
+
+/*
+ * The blog shelves' `View All` is a 24px link, not a 48px button, so at the top it sat above the
+ * heading's middle. One heading line tall, it centres on that line instead.
+ */
+.blogShelf .sectionTitleRoot[data-actions-align='top'] .sectionTitleActions {
+  min-height: calc(clamp(32px, calc(32px + (100cqi - 390px) * 0.004762), 37px) * 1.24);
 }
 
 .sectionTitleRoot[data-align='center'] .sectionTitleActions {
@@ -14219,22 +14227,22 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The frame's 200x133 picture at 3:2, top-aligned with the text beside it. The two are about the same
- * height — tags, a two-line title and the byline come to roughly 130 — so neither has space above or
- * below it. (A picture stretched to the text's height cannot hold 3:2 here: a stretched height does not
- * feed `aspect-ratio`, and the image grows to its file's own size.)
+ * A 3:2 thumbnail no taller than the text beside it, the two centred on each other. The frame's
+ * 200x133 assumed topics over the title; without them a two-line title and the byline come to about
+ * 96, and a 133 picture hung a third below the byline. At 144 wide the picture is that 96, so the title
+ * starts at its top edge and the byline ends at its foot. (A picture stretched to the text's height
+ * cannot hold 3:2 here: a stretched height does not feed `aspect-ratio`.)
  *
- * The picture is 200 only while the card has room for it: in a narrower card it gives up width to the
- * text, down to a 104px thumbnail, rather than leaving the title a 20-character column. At two across
- * on a 1024 screen that keeps the title to two full lines and the read time on the date's row.
+ * In a narrower card it gives up width to the text, down to a 104px thumbnail, rather than leaving the
+ * title a 20-character column.
  */
 .blogStackRow > .cardRoot[data-align='horizontal'].blogCard {
-  align-items: flex-start;
+  align-items: center;
 }
 
 .blogStackRow > .cardRoot[data-align='horizontal'].blogCard > .cardImage {
-  flex: 0 0 clamp(104px, 34%, 200px);
-  align-self: flex-start;
+  flex: 0 0 clamp(104px, 34%, 144px);
+  align-self: center;
   aspect-ratio: 3 / 2;
 }
 

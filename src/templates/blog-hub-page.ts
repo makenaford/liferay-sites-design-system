@@ -578,17 +578,19 @@ export const BLOG_HUB_PAGE: PageSpec = {
     background: 'none',
     layout: 'inline',
     title: { text: 'Ideas for the people building better', highlight: 'digital experiences.' },
-    buttons: [{ label: 'Browse All Blogs', href: '#', variant: 'outline', arrow: true }],
+    buttons: [{ label: 'Browse All Blogs', href: '#', variant: 'link', arrow: true }],
   },
   sections: [
     {
       type: 'blogFeature',
       ...CARD,
       lead: filed(POSTS.cmsMcpServer, 'Content Management'),
-      posts: [POSTS.buyersWantFromAi, POSTS.modernizeLegacy, POSTS.evaluateCms].map((post) => ({
-        ...post,
-        tags: [],
-      })),
+      /* Each filed under the first shelf it appears on further down. */
+      posts: [
+        filed(POSTS.buyersWantFromAi, 'Marketing Automation'),
+        filed(POSTS.modernizeLegacy, 'Digital Experience'),
+        filed(POSTS.evaluateCms, 'Customer Experience'),
+      ],
     },
     {
       type: 'blogGrid',
