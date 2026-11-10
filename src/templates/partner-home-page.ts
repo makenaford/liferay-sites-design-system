@@ -1,5 +1,4 @@
 import heroAnimation from '../../assets/partner-home/hero-animation.webm'
-import heroAnimationLight from '../../assets/partner-home/hero-animation-light.webm'
 import heroPoster from '../../assets/partner-home/hero-poster.png'
 import whyPartnerPhoto from '../../assets/oem-partner/why-partner.jpg'
 import programSolution from '../../assets/partner-home/program-solution.png'
@@ -18,8 +17,9 @@ import type { PageSpec } from './page-schema'
 /*
  * The Liferay Partner home page, as data — Partner Pages -> `Partner Home` (node `290:57750`).
  *
- * The hero is the Marketing Assets library's `partner-home-animation`, exported with a transparent
- * ground so the corner bubble shows round it. The programs sit behind a pill bar, each with its own
+ * The hero is the Marketing Assets library's `partner-home-animation`. The export arrives on a dark
+ * ground, so the asset is cropped to the photograph and re-encoded at 1200x800 with alpha: rounded
+ * corners, and the transparent 34px strip along the top that `.heroMedia > video` clips off. The programs sit behind a pill bar, each with its own
  * illustration — the frame's `Partner Illustrations` (node `464:29728`). The photographs, the partners'
  * logos and the quote tiles are the frame's own, and every link is `#` until the program pages exist.
  */
@@ -31,9 +31,8 @@ export const PARTNER_HOME_PAGE: PageSpec = {
       text: 'Partner with Liferay to expand your offerings, reach new markets, and create greater value for your customers.',
     },
     media: {
+      /* Opaque inside its rounded corners — the cards sit on the photograph — so one file serves both canvases. */
       src: heroAnimation,
-      /* The light-canvas export: the glass cards are drawn from the light theme's tokens. */
-      srcLight: heroAnimationLight,
       poster: heroPoster,
       alt: 'Two colleagues shaking hands as your business connects to integrations, portals, growth, cloud, experiences and global reach',
       ratio: '3:2',
@@ -132,7 +131,8 @@ export const PARTNER_HOME_PAGE: PageSpec = {
           icon: 'group-2',
           content: {
             eyebrow: 'solution-partner',
-            eyebrowSize: 48,
+            eyebrowSize: 64,
+            textSize: 'lg',
             title: 'Solution Partner',
             description:
               'Turn Liferay deals into a 5x services opportunity. Deliver digital transformation solutions and win more business with dedicated deal registration, co-selling, enablement, and incentives.',
@@ -150,7 +150,8 @@ export const PARTNER_HOME_PAGE: PageSpec = {
           icon: 'webhook',
           content: {
             eyebrow: 'oem-partner',
-            eyebrowSize: 48,
+            eyebrowSize: 64,
+            textSize: 'lg',
             title: 'OEM Partner',
             description:
               'Launch faster with Liferay DXP instead of building digital capabilities from scratch. Leverage a proven, flexible platform to accelerate development and focus on differentiating your own product.',
@@ -168,7 +169,8 @@ export const PARTNER_HOME_PAGE: PageSpec = {
           icon: 'web',
           content: {
             eyebrow: 'technology-partner',
-            eyebrowSize: 48,
+            eyebrowSize: 64,
+            textSize: 'lg',
             title: 'Technology Partner',
             description:
               'Build pre-integrated connectors and applications, earn referrals, co-market enterprise solutions, and showcase your applications on the Liferay Marketplace.',

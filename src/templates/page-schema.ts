@@ -542,8 +542,10 @@ export interface TabGroup<T> {
  */
 export interface PanelSpec {
   eyebrow?: GlassIconName
-  /** The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 48. @default 40 */
-  eyebrowSize?: 40 | 48
+  /** The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 64. @default 40 */
+  eyebrowSize?: 40 | 48 | 64
+  /** The heading and description one step up — Partner Home's programs, where each tab is a whole program. @default 'md' */
+  textSize?: 'md' | 'lg'
   /**
    * The pill above the heading — Figma's `Label` instance, which the detail pages use where the Home
    * page uses a glass icon. A panel draws one or the other, not both.

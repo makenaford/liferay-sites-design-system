@@ -1912,6 +1912,7 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
                 GLASS[panel.eyebrow](panel.eyebrowSize ?? 40)
               ) : undefined
             }
+            size={panel.textSize}
             title={panel.title}
             description={panel.description}
             actions={

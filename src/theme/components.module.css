@@ -8039,6 +8039,18 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   color: var(--sds-surfaces-text-primary);
 }
 
+/* `size="lg"`: one step up on both, over the same 390 -> 1440 container range. */
+.contentMediaRoot[data-size='lg'] .contentMediaHeading {
+  /* 28 -> 36: (36 - 28) / 1050 = 0.007619 */
+  font-size: clamp(28px, calc(28px + (100cqi - 390px) * 0.007619), 36px);
+  line-height: 1.22;
+}
+
+.contentMediaRoot[data-size='lg'] .contentMediaDescription {
+  /* 19 -> 23: (23 - 19) / 1050 = 0.00381 */
+  font-size: clamp(19px, calc(19px + (100cqi - 390px) * 0.00381), 23px);
+}
+
 .contentMediaActions {
   display: flex;
   flex-wrap: wrap;

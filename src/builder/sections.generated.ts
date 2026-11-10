@@ -1449,10 +1449,23 @@ export const DEFS: Record<string, Shape> = {
           "kind": "enum",
           "options": [
             40,
-            48
+            48,
+            64
           ]
         },
-        "doc": "The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 48."
+        "doc": "The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 64."
+      },
+      {
+        "name": "textSize",
+        "optional": true,
+        "shape": {
+          "kind": "enum",
+          "options": [
+            "md",
+            "lg"
+          ]
+        },
+        "doc": "The heading and description one step up — Partner Home's programs, where each tab is a whole program."
       },
       {
         "name": "label",

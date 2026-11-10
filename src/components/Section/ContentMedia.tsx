@@ -35,6 +35,8 @@ export interface ContentMediaProps extends BoxProps, Omit<ElementProps<'div'>, '
   stickyMedia?: boolean
   /** Above the heading — a `Label`, an eyebrow. */
   eyebrow?: ReactNode
+  /** `lg` sets the heading and description one step up, for a block that stands for a whole page. @default 'md' */
+  size?: 'md' | 'lg'
   title?: ReactNode
   description?: ReactNode
   /** Figma's `Action section`: a link, a button, or both. */
@@ -79,6 +81,7 @@ export const ContentMedia = forwardRef<HTMLDivElement, ContentMediaProps>(functi
     mediaRatio = '3:2',
     stickyMedia,
     eyebrow,
+    size = 'md',
     title,
     description,
     actions,
@@ -97,6 +100,7 @@ export const ContentMedia = forwardRef<HTMLDivElement, ContentMediaProps>(functi
       className={[classes.contentMediaRoot, className].filter(Boolean).join(' ')}
       data-media-side={mediaSide}
       data-sticky={stickyMedia || undefined}
+      data-size={size === 'lg' ? size : undefined}
       {...props}
     >
       {media ? (

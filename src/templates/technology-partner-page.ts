@@ -1,5 +1,4 @@
 import heroAnimation from '../../assets/technology-partner/hero-animation.webm'
-import heroAnimationLight from '../../assets/technology-partner/hero-animation-light.webm'
 import heroPoster from '../../assets/technology-partner/hero-poster.png'
 import whyPartnerPhoto from '../../assets/oem-partner/why-partner.jpg'
 import rightPartnerPhoto from '../../assets/oem-partner/right-partner.jpg'
@@ -22,8 +21,10 @@ import type { PageSpec } from './page-schema'
  * bar, then the support partners get, and it ends on the same application band.
  *
  * The hero is the Marketing Assets library's `technology-partner-animation` — two platforms joined
- * into joint solutions over the photograph — exported with a transparent ground so the corner bubble
- * shows round it. The two photographs are the frame's own, the same pictures as the OEM page's.
+ * into joint solutions over the photograph. The export arrives on a dark ground, so the asset is
+ * cropped and re-encoded at 1200 wide with alpha: rounded corners, the transparent 34px strip along
+ * the top that `.heroMedia > video` clips off, and the dark keyed out from round the last card, which
+ * hangs ~36px past the photograph's right edge as it does in the frame. The two photographs are the frame's own, the same pictures as the OEM page's.
  *
  * The copy follows the frame. Where the frame still carries the OEM page's words — `Define the
  * Partnership`'s `OEM partnership structure` — it is rewritten for this program. The answers the file
@@ -43,9 +44,8 @@ export const TECHNOLOGY_PARTNER_PAGE: PageSpec = {
     },
     buttons: [{ label: 'Become a Technology Partner', href: '#apply' }],
     media: {
+      /* Opaque but for its corners and the `Growth` card's overhang, so one file serves both canvases. */
       src: heroAnimation,
-      /* The light-canvas export: the glass cards are drawn from the light theme's tokens. */
-      srcLight: heroAnimationLight,
       poster: heroPoster,
       alt: 'Two colleagues at a tablet as Liferay DXP and a partner’s technology join into joint solutions: new services, markets, customers and growth',
       ratio: '3:2',
