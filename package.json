@@ -7,7 +7,7 @@
   "types": "src/index.ts",
   "packageManager": "pnpm@11.22.0",
   "engines": {
-    "node": ">=22.13"
+    "node": ">=22.18"
   },
   "scripts": {
     "assets:check": "node scripts/check-asset-size.mjs",

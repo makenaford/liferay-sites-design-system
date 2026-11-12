@@ -9,11 +9,12 @@
  *
  * What the generator does to each file, and why:
  *
- * 1. **Strips Figma's `<foreignObject>` blocks.** Figma exports a background blur as a `<div>` with
- *    `backdrop-filter` inside a `<foreignObject>`. That is invalid in most SVG renderers, needs a
- *    `style` string React will not accept as-is, and contributes nothing an icon-sized illustration
- *    shows. The real artwork is the sibling `<g filter="…">`, which is kept. The now-unused
- *    `bgblur_*` clip paths go with it.
+ * 1. **Rebuilds Figma's background blur in plain SVG**, exactly as the Marketing Assets library does.
+ *    Figma exports a glass shape's blur as a `<div>` with `backdrop-filter` inside a `<foreignObject>`,
+ *    which most renderers ignore and React cannot take as-is. Dropping it leaves the glass clear — the
+ *    back icon shows through sharp. So the library's own `portableBackdropBlur` (vendored, unchanged,
+ *    in `scripts/glass/`) cuts the glass's outline out of the artwork behind it and draws that artwork
+ *    again, blurred, inside the outline; `unmaskFills` runs first, as there. The foreignObject goes.
  * 2. **Namespaces every id per rendered instance**, and every reference to one — `url(#…)` and a `<use>`'s
  *    `href` alike. Ids like `paint0_linear_65_14601` happen to be
  *    unique across this export, but that is not enough on its own: the same icon rendered twice on one
@@ -30,6 +31,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative, sep } from 'node:path'
+import { portableBackdropBlur, unmaskFills } from './glass/figmaGlass.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = join(root, 'assets', 'glass-icons')
@@ -106,12 +108,11 @@ const toJsx = (markup) =>
  * the dark one's gradient.
  */
 function bodyOf(svg, variant) {
-  const stripped = svg
+  const stripped = portableBackdropBlur(unmaskFills(svg))
     .replace(/^[\s\S]*?<svg[^>]*>/, '')
     .replace(/<\/svg>\s*$/, '')
-    // Figma's background-blur export, and the clip paths only it referenced.
+    // What is left of Figma's background-blur export, now rebuilt in plain SVG above.
     .replace(/<foreignObject[\s\S]*?<\/foreignObject>/g, '')
-    .replace(/<clipPath[^>]*id="bgblur[^"]*"[\s\S]*?<\/clipPath>/g, '')
     .replace(/\sdata-figma-bg-blur-radius="[^"]*"/g, '')
     .trim()
 

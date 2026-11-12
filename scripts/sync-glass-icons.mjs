@@ -29,7 +29,9 @@
  * 2. **Fits the viewBox** to the artwork with `fit-glass-icon-viewbox.mjs`, on the library files only, so
  *    the set renders at one apparent size like the curated icons.
  *
- * Then `build-glass-icons.mjs` turns them into components. `library/SOURCE.json` records the commit the
+ * It also mirrors the library's glass transform — `src/figmaGlass.ts` and `src/svgMatrix.ts` — into
+ * `scripts/glass/`, so `build-glass-icons.mjs` rebuilds every icon's background blur exactly as the library
+ * renders it. Then `build-glass-icons.mjs` turns them into components. `library/SOURCE.json` records the commit the
  * mirror was taken from.
  *
  * Usage:
@@ -51,6 +53,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const darkDir = join(root, 'assets', 'glass-icons', 'library')
 const lightDir = join(root, 'assets', 'glass-icons-light', 'library')
 const sourceRecord = join(darkDir, 'SOURCE.json')
+/** The library's glass transform, which `build-glass-icons.mjs` runs on every icon, mirrored into `scripts/glass/`. */
+const GLASS_CODE = ['figmaGlass.ts', 'svgMatrix.ts']
+const codeDir = join(root, 'scripts', 'glass')
 
 const args = process.argv.slice(2)
 const checkOnly = args.includes('--check')
@@ -76,7 +81,7 @@ if (githubRef !== undefined) {
     commit = execFileSync('gh', ['api', `repos/${REPO}/commits/${ref}`, '--jq', '.sha'], { encoding: 'utf8' }).trim()
     const tarball = execFileSync('gh', ['api', `repos/${REPO}/tarball/${commit}`], { maxBuffer: 1 << 30 })
     writeFileSync(join(into, 'source.tgz'), tarball)
-    execFileSync('tar', ['-xzf', 'source.tgz', '--strip-components=1', '--wildcards', '*/assets/glass-icons/*'], { cwd: into })
+    execFileSync('tar', ['-xzf', 'source.tgz', '--strip-components=1', '--wildcards', '*/assets/glass-icons/*', ...GLASS_CODE.map((f) => `*/src/${f}`)], { cwd: into })
   } catch (error) {
     cleanup()
     console.error(`Could not fetch ${REPO}@${ref} with the GitHub CLI — is \`gh auth status\` signed in?\n${error.message}`)
@@ -185,6 +190,14 @@ for (const [theme, dir] of [['dark', darkDir], ['light', lightDir]]) {
     }
   }
 }
+for (const name of GLASS_CODE) {
+  const code = readFileSync(join(checkout, 'src', name), 'utf8')
+  const file = join(codeDir, name)
+  if (!existsSync(file)) changes.added.push(`scripts/glass/${name}`)
+  else if (readFileSync(file, 'utf8') !== code) changes.updated.push(`scripts/glass/${name}`)
+  else continue
+  toWrite.push({ file, svg: code })
+}
 
 const record = `${JSON.stringify({ $comment: 'Written by scripts/sync-glass-icons.mjs — the source of this mirror.', repository: REPO, commit }, null, 2)}\n`
 const recordChanged = !existsSync(sourceRecord) || readFileSync(sourceRecord, 'utf8') !== record
@@ -229,6 +242,6 @@ if (!total) {
 /* ------------------------------------------------------------------ fit and build */
 
 const run = (script, ...rest) => execFileSync(process.execPath, [join(root, 'scripts', script), ...rest], { stdio: 'inherit' })
-const written = toWrite.filter((w) => !w.remove).map((w) => w.file)
+const written = toWrite.filter((w) => !w.remove && w.file.endsWith('.svg')).map((w) => w.file)
 if (written.length) run('fit-glass-icon-viewbox.mjs', ...written)
 run('build-glass-icons.mjs')
