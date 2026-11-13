@@ -850,7 +850,6 @@ export const PAGE_PRESETS: PagePreset[] = [
           title: 'Card Title',
           description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
           align: 'left',
-          surface: 'glass',
           stories: [
             {
               customer: 'Sky TV',

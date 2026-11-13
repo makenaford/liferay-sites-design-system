@@ -361,7 +361,7 @@ export function HomePage({
           {...heroBackgroundProps}
           entrance
           banner={
-            <Card surface="glass" padding="none" radius="pill" w="100%" maw={1000}>
+            <Card surface="glass" interactive={false} padding="none" radius="pill" w="100%" maw={1000}>
               {/*
                * The row gives space back from the selects rather than wrapping.
                *
@@ -682,6 +682,8 @@ export function HomePage({
               {content.stories.items.map((story) => (
                 <Card
                   key={story.customer}
+                  /* A quote, not a link: glass like every other customer quote, without the lift. */
+                  interactive={false}
                   image={
                     <Image
                       src={CUSTOMER_THUMBNAILS[story.customer] ?? logoTile(story.customer, story.hue)}
@@ -1036,7 +1038,7 @@ export function HomePage({
                * which vendor this is, since there is no text in the row.
                */}
               {VENDOR_LOGOS.map((vendor) => (
-                <Card key={vendor.name} surface="glass" padding="none" w={64} h={64}>
+                <Card key={vendor.name} surface="glass" interactive={false} padding="none" w={64} h={64}>
                   <Group justify="center" align="center" h="100%">
                     <img
                       src={vendor.src}
@@ -1073,8 +1075,13 @@ export function HomePage({
                   interactive
                   surface="none"
                   padding="none"
-                  image={<Image src={TRENDING_IMAGES[i]} alt={item.alt ?? ''} ratio="3:2" radius="sm" />}
-                  top={
+                  /* The resource card, built as `PageRenderer`'s `ResourceCard` builds it: the tag is the hero. */
+                  image={
+                    <div className={classes.resourceCardImage}>
+                      <Image src={TRENDING_IMAGES[i]} alt={item.alt ?? ''} ratio="3:2" />
+                    </div>
+                  }
+                  hero={
                     /*
                      * Gradient, always: the tag is the one piece of colour on a card that is otherwise a
                      * photograph and two lines of type, and `glass` on top of a photograph is whatever the

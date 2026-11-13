@@ -277,7 +277,6 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       title: '1,200+ Enterprises Move the Needle With Liferay',
       titleHighlight: '1,200+ Enterprises',
       align: 'left',
-      surface: 'glass',
       action: { label: 'Browse all customer stories', href: '#' },
       /*
        * liferay.com's own eight, as its home page tells them. Mueller's figure is the live site's 70%;

@@ -725,8 +725,6 @@ type SectionBody =
       description?: string
       /** `left` puts the heading on the content edge, as the catalog draws it. @default 'center' */
       align?: 'left' | 'center'
-      /** `glass` is the catalog's card; the Home carousel's is the flat `static` one. @default 'static' */
-      surface?: 'glass' | 'static'
       /** The outline button on the heading's trailing edge — `Browse All Customer Stories`. */
       action?: LinkRef
       /**

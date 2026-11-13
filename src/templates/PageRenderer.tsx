@@ -1591,11 +1591,17 @@ const logoTile = (name: string) => {
 </svg>`)}`
 }
 
-function StoryCard({ story, surface = 'static' }: { story: StorySpec; surface?: 'glass' | 'static' }) {
+/**
+ * `Common Cards` `Type=CS- Quote` — and, with no figure, Partner Pages' `Quote 2`. One card wherever a
+ * customer is quoted: glass, as the file draws it, and never a target. It used to take a `surface`, and the
+ * Home carousel, the catalog and the templates each picked a different one, so the same testimonial looked
+ * like three different things.
+ */
+function StoryCard({ story }: { story: StorySpec }) {
   return (
     <Card
       /* A quote is content, not a destination — so even on glass it does not lift or take a pointer. */
-      surface={surface}
+      surface="glass"
       interactive={false}
       image={
         <Image
@@ -1728,13 +1734,13 @@ function CustomerStoriesSection({
         /* Inside the content width, unlike the carousel, so the row lines up with the sections around it. */
         <SimpleGrid cols={{ base: 1, sm: 2, md: Math.min(spec.stories.length, 3) }} spacing={13} className={classes.storyGrid}>
           {spec.stories.map((story) => (
-            <StoryCard key={story.customer} story={story} surface={spec.surface} />
+            <StoryCard key={story.customer} story={story} />
           ))}
         </SimpleGrid>
       ) : (
         <Carousel label={spec.title} gutter={80} indicators="none" arrows>
           {spec.stories.map((story) => (
-            <StoryCard key={story.customer} story={story} surface={spec.surface} />
+            <StoryCard key={story.customer} story={story} />
           ))}
         </Carousel>
       )}

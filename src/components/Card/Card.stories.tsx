@@ -30,21 +30,6 @@ function Cover({ ratio = '3:2' as const }) {
   return <Image src={PHOTO} alt="" ratio={ratio} radius={0} />
 }
 
-/** Figma's `card-image` `Property 1=Customer Story`: a customer logo centred on a flat panel. */
-function CustomerThumb({ name }: { name: string }) {
-  return (
-    <Box
-      bg="var(--sds-surfaces-card-bg-grey)"
-      c="var(--sds-surfaces-text-primary)"
-      fw={700}
-      fz="21"
-      style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}
-    >
-      {name}
-    </Box>
-  )
-}
-
 const meta = {
   title: 'Components/Card',
   component: Card,
@@ -92,7 +77,9 @@ const meta = {
         component: [
           'Figma `card-main` (node `16728:26513`) with `Surface`, `card-image`, `header-alignment`, `Card hero` and `Content Text`.',
           '',
-          '`card-main` is **one** component with four slots and a boolean per slot, and every card in the `Common Cards` set is that component with different slots filled. This mirrors it: a slot is a prop, and passing it is the toggle. There is no `type` prop, because Figma has not got one either — the five cards in `Card Examples` are five arrangements of the same thing, and each is five or six lines.',
+          '`card-main` is **one** component with four slots and a boolean per slot, and every card type is that component with different slots filled. This mirrors it: a slot is a prop, and passing it is the toggle. There is no `type` prop.',
+          '',
+          '**The card types the pages actually use are in `Components/Card Types`**, each rendered from a real page’s own data. The stories here are the props underneath them: the axes, the hover rule, the slots.',
           '',
           '**Where the hover goes depends on the layout, not on a style.** Figma’s `Surface` `State=Hover` cell is byte-for-byte its `State=Default`, so hover is inferred; `State=Focus` is the only state the file distinguishes, and it differs by one thing — the ring goes 1px to 2px. An image that runs to the card’s edge *is* the card’s edge, so a full-bleed card hovers on its **image** and a padded card hovers as a **card**.',
         ].join('\n'),
@@ -125,180 +112,6 @@ export const Playground: Story = {
     <Box w={320} maw="100%">
       <Card {...args} />
     </Box>
-  ),
-}
-
-/* ------------------------------------------------------------------ the five types in Card Examples */
-
-/**
- * **`Type=Resource`** — `Surface Style=no-bg`, `Padding=False`, a 3:2 image, a Label hero and a title.
- * Nothing behind it: an image and two lines of text.
- *
- * This is the card the hover rule was written for. With no padding, the image is the card's edge, so the
- * hover is on the image alone — it scales inside its own box and lifts its brightness while the card
- * stays exactly where it is.
- */
-export const Resource: Story = {
-  render: (args) => (
-    <Box w={320} maw="100%">
-      <Card
-        {...args}
-        component="a"
-        href="#"
-        interactive
-        surface="none"
-        padding="none"
-        image={<Cover />}
-        hero={
-          <Label size="sm" variant="gradient">
-            Guide
-          </Label>
-        }
-        title="The composable enterprise, in twelve decisions"
-      />
-    </Box>
-  ),
-}
-
-/**
- * **`Type=CS- Quote`** — `Padding=True`, a Customer Story image, a `Stat` in the **Top Content** slot,
- * a description with no title, and the quotee in **Bottom Content**.
- */
-export const CustomerQuote: Story = {
-  render: (args) => (
-    <Box w={320} maw="100%">
-      <Card
-        {...args}
-        image={<CustomerThumb name="Advanced Energy" />}
-        top={<Stat size="md" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
-        description="Liferay’s out-of-the-box features let us stand up eleven regional sites in a single quarter, on one codebase."
-        bottom={
-          <Stack gap="0">
-            <Text fz="16" fw={600} c="var(--sds-surfaces-text-primary)">
-              Anne Anderson
-            </Text>
-            <Text
-              fz="12"
-              fw={600}
-              c="var(--sds-surfaces-text-secondary)"
-              tt="uppercase"
-              line-height={1.5}
-              style={{ letterSpacing: '0.04em' }}
-            >
-              VP of Experience and Change Management
-            </Text>
-          </Stack>
-        }
-      />
-    </Box>
-  ),
-}
-
-/** **`Type=CS- Details`** — the same padded shape with a title and a description, and no slots. */
-export const CustomerStory: Story = {
-  render: (args) => (
-    <Box w={320} maw="100%">
-      <Card
-        {...args}
-        component="a"
-        href="#"
-        interactive
-        image={<CustomerThumb name="Advanced Energy" />}
-        title="NGO Empowers Educators and Families Across Twelve Countries"
-        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-      />
-    </Box>
-  ),
-}
-
-/**
- * **`Type=Icon-Left`** — no image, so `card-main`'s gap opens from 16 to 20. A 40px glass icon as the
- * hero, a title and a description.
- */
-export const IconLeft: Story = {
-  render: (args) => (
-    <Box w={320} maw="100%">
-      <Card
-        {...args}
-        hero={<IconGlassOutOfTheBox width={40} height={40} />}
-        title="Card Title"
-        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do."
-      />
-    </Box>
-  ),
-}
-
-/** **`Type=Icon-Center`** — the same card with `header-alignment Align=Center`: centred, gap 20, no description. */
-export const IconCenter: Story = {
-  args: {
-    interactive: true,
-    surface: "glass"
-  },
-
-  render: (args) => (
-    <Box w={320} maw="100%">
-      <Card
-        {...args}
-        headerAlign="center"
-        hero={<IconGlassCdn width={40} height={40} />}
-        title="Card Title"
-      />
-    </Box>
-  )
-}
-
-/** The five cards from `Card Examples`, side by side. */
-export const CardExamples: Story = {
-  render: (args) => (
-    <SimpleGrid cols={3} spacing="24" verticalSpacing="40">
-      <Card
-        {...args}
-        component="a"
-        href="#"
-        interactive
-        surface="none"
-        padding="none"
-        image={<Cover />}
-        hero={
-          <Label size="sm" variant="gradient">
-            Guide
-          </Label>
-        }
-        title="Resource"
-      />
-      <Card
-        {...args}
-        image={<CustomerThumb name="Advanced Energy" />}
-        top={<Stat size="sm" value="845" label="Months to Launch" rightSection={<IconArrowUp />} />}
-        description="CS- Quote: a stat on top, a quote, and the quotee underneath."
-        bottom={
-          <Text fz="16" fw={600}>
-            Anne Anderson
-          </Text>
-        }
-      />
-      <Card
-        {...args}
-        component="a"
-        href="#"
-        interactive
-        image={<CustomerThumb name="Advanced Energy" />}
-        title="CS- Details"
-        description="A title and a description over a customer thumbnail."
-      />
-      <Card
-        {...args}
-        hero={<IconGlassOutOfTheBox width={40} height={40} />}
-        title="Icon-Left"
-        description="No image, so the stack opens to 20px."
-      />
-      <Card
-        {...args}
-        headerAlign="center"
-        hero={<IconGlassMail width={40} height={40} />}
-        title="Icon-Center"
-      />
-    </SimpleGrid>
   ),
 }
 
