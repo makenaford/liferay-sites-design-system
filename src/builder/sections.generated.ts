@@ -2223,18 +2223,6 @@ export const DEFS: Record<string, Shape> = {
             "doc": "`left` puts the heading on the content edge, as the catalog draws it."
           },
           {
-            "name": "surface",
-            "optional": true,
-            "shape": {
-              "kind": "enum",
-              "options": [
-                "glass",
-                "static"
-              ]
-            },
-            "doc": "`glass` is the catalog's card; the Home carousel's is the flat `static` one."
-          },
-          {
             "name": "action",
             "optional": true,
             "shape": {

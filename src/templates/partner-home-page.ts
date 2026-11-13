@@ -207,7 +207,6 @@ export const PARTNER_HOME_PAGE: PageSpec = {
       description:
         'Connect with a community of partners, developers, and enterprise teams building what’s next with Liferay.',
       layout: 'grid',
-      surface: 'glass',
       stories: [
         {
           customer: 'puntus',
