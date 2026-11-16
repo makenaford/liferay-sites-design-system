@@ -8039,16 +8039,37 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   color: var(--sds-surfaces-text-primary);
 }
 
-/* `size="lg"`: one step up on both, over the same 390 -> 1440 container range. */
+/*
+ * `size="lg"` — Partner Home's programs (node `338:12556`): `H4/Heavier` 32 over `Paragraph/Large` 21,
+ * both at 1.25, 12 apart, with the 64 glass mark 16 above them. The row also sits 12 further from the
+ * pill bar than the 24 the section's stack gives it (`Content` padding-top 12).
+ */
+.contentMediaRoot[data-size='lg'] {
+  padding-top: 12px;
+}
+
+.contentMediaRoot[data-size='lg'] .contentMediaHeader {
+  gap: 12px;
+}
+
+/* Block, so the mark is its own 64 and not 71 — inline, it sat on a text baseline with the descender under it. */
+.contentMediaRoot[data-size='lg'] .contentMediaEyebrow > svg {
+  display: block;
+}
+
+.contentMediaRoot[data-size='lg'] .contentMediaEyebrow + .contentMediaHeader {
+  /* The column's 24, less 8: the mark is 16 above the heading. */
+  margin-top: -8px;
+}
+
 .contentMediaRoot[data-size='lg'] .contentMediaHeading {
-  /* 28 -> 36: (36 - 28) / 1050 = 0.007619 */
-  font-size: clamp(28px, calc(28px + (100cqi - 390px) * 0.007619), 36px);
-  line-height: 1.22;
+  /* 26 -> 32: (32 - 26) / 1050 = 0.005714 */
+  font-size: clamp(26px, calc(26px + (100cqi - 390px) * 0.005714), 32px);
+  line-height: 1.25;
 }
 
 .contentMediaRoot[data-size='lg'] .contentMediaDescription {
-  /* 19 -> 23: (23 - 19) / 1050 = 0.00381 */
-  font-size: clamp(19px, calc(19px + (100cqi - 390px) * 0.00381), 23px);
+  line-height: 1.25;
 }
 
 .contentMediaActions {
@@ -8349,6 +8370,12 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
   width: var(--sds-pill-icon);
   height: var(--sds-pill-icon);
   flex: none;
+}
+
+/* `State=Default` draws its `Icon Left` at 50%; the selected pill's is full strength. */
+.tabsRoot[data-pills] .tabsTab:not([data-active]) .tabsTabSection {
+  opacity: 0.5;
+  transition: opacity var(--sds-motion-medium) var(--sds-motion-ease-out);
 }
 
 /*
@@ -13631,6 +13658,17 @@ a.secondaryNavTitle:focus-visible {
     radial-gradient(24% 20% at 80% 46%, #1f3dff 0%, #1f3dff 20%, transparent 100%),
     radial-gradient(16% 16% at 85% 57%, #2a9dff 0%, transparent 100%),
     radial-gradient(30% 26% at 72% 48%, #1a0b6e 0%, transparent 100%);
+  /* Twice the footer's pace: here the field is the band's only motion, and at 14s it read as still. */
+  animation-duration: 7s;
+}
+
+/*
+ * The form card over the glow: the glass alone is ~5% white, so the field's brightest point showed
+ * straight through it and the inputs' hairlines were lost. A near-black tint under the glass keeps the
+ * colour visible at the card's edge but gives the fields a dark ground to sit on.
+ */
+:where([data-mantine-color-scheme='dark']) .glowBand .formRoot {
+  background-color: rgba(10, 12, 18, 0.72);
 }
 
 /* A band with the footer's mesh behind it: the field is the bottom layer, the content above it. */

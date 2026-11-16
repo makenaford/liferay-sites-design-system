@@ -1871,8 +1871,11 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         {spec.tabs.length > 1 ? (
         <Tabs
           variant="pills"
-          /* An icon on each pill costs about 40 a tab, so three with icons need 900 to keep their labels whole. */
-          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : spec.tabs.some((t) => t.icon) ? 900 : 776 }}
+          /*
+           * 776 holds three pills with icons too: Partner Home's programs (node `338:12555`) draw three at
+           * 252.8 each, and `Technology Partner`, the longest, needs 251 with its icon and padding.
+           */
+          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
           maw="100%"
           value={tab}
           onChange={(v) => {
@@ -1922,7 +1925,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             description={panel.description}
             actions={
               panel.action ? (
-                <Link href={panel.action.href} size="lg" rightSection={<IconArrowRight />}>
+                /* A program panel (`textSize: 'lg'`) draws its way in at `Link Size=Medium`, 18. */
+                <Link href={panel.action.href} size={panel.textSize === 'lg' ? 'md' : 'lg'} rightSection={<IconArrowRight />}>
                   {panel.action.label}
                 </Link>
               ) : undefined

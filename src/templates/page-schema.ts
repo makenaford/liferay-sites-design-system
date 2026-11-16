@@ -544,7 +544,10 @@ export interface PanelSpec {
   eyebrow?: GlassIconName
   /** The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 64. @default 40 */
   eyebrowSize?: 40 | 48 | 64
-  /** The heading and description one step up — Partner Home's programs, where each tab is a whole program. @default 'md' */
+  /**
+   * Partner Home's programs, where each tab is a whole program: the heading at 32 over a 21 description,
+   * both at 1.25, and the action at `Link Size=Medium`. @default 'md'
+   */
   textSize?: 'md' | 'lg'
   /**
    * The pill above the heading — Figma's `Label` instance, which the detail pages use where the Home
