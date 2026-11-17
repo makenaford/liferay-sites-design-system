@@ -61,6 +61,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
         score: '4.6',
         outOf: 5,
         source: 'by 233 verified users as of September 2026, Source: Gartner Peer Insights™',
+        sourceHref: '#',
       },
       marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
       badges: [
