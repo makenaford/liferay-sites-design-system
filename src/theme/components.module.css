@@ -13332,102 +13332,100 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /* =====================================================================================
- * Hero `layout="media-proof"` — the solution page's second option (node `24920:87684` as first drawn).
+ * Hero `layout="media-proof"` — the Solutions Library's hero, the detail page's and the hub's
+ * (node `25339:81552`, and `25300:65367` on the hub).
  *
- * Two aligned rows: the heading and value props beside the media, then the email field and links
- * beside the proof, which sits under the media, 16 below. The copy column steps out of the way
- * (`display: contents`) so its pieces are cells of one grid with the media, and the field and the
- * rating start on the same line whatever the copy's length. A filler row soaks up the difference
- * when the media is the taller side, so the heading and the value props keep their 40 between them.
+ * The copy — heading, value props, email field and links — in one half of the row, centred beside the
+ * other half: the picture with the Gartner section straight under it, 80 between them. The renderer hands the proof
+ * in with the media (see `renderHero`), so each column is one box and centring them is plain flexbox.
+ * 24 between the heading, the list and the field, 12 from the field to the links.
  * ===================================================================================== */
 
+.hero[data-layout='media-proof'] {
+  --sds-hero-inner-top: 29px;
+}
+
 .hero[data-layout='media-proof'] .heroInner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 596px);
-  grid-template-rows: auto auto auto 1fr auto auto;
-  grid-template-areas:
-    'label media'
-    'title media'
-    'desc media'
-    'fill media'
-    'form proof'
-    'actions proof';
-  /* Columns only: the hero's own 80 gap would otherwise open 80 between every row. */
-  gap: 0 80px;
-  align-items: start;
+  flex-direction: row;
+  align-items: center;
+  gap: 80px;
+  padding-block-end: 48px;
 }
 
-.hero[data-layout='media-proof'] .heroContent {
-  display: contents;
-}
-
-.hero[data-layout='media-proof'] .heroLabel {
-  grid-area: label;
-  margin-block-end: 24px;
-}
-
-.hero[data-layout='media-proof'] .heroTitle {
-  grid-area: title;
-}
-
-.hero[data-layout='media-proof'] .heroDescription {
-  grid-area: desc;
-  max-width: none;
-}
-
-/* 40 under the heading — matched as specifically as the breadcrumb heroes' 12, which would win. */
-.hero[data-layout='media-proof'] .heroTitle + .heroDescription {
-  margin-block-start: 40px;
-}
-
+.hero[data-layout='media-proof'] .heroContent,
 .hero[data-layout='media-proof'] .heroMedia {
-  grid-area: media;
+  /* Two equal halves of the row, whatever the width — the copy never narrower than the picture. */
+  flex: 1 1 0;
+  min-width: 0;
 }
 
-/* 16 under the taller of the two columns — tighter than the file's 80, so the two rows read as one block. */
+/* The list's frame carries 8 under it (`Content 2`), so 32 to the field. */
+.hero[data-layout='media-proof'] .heroDescription {
+  max-width: none;
+  padding-block-end: 8px;
+}
+
+/* The highlight takes a line of its own, as the hero's `Content Text` sets it (node `25339:66200`). */
+.hero[data-layout='media-proof'] .heroTitle .gradientText {
+  display: block;
+}
+
+/* The column's own 24 under the heading — matched as specifically as the breadcrumb heroes' -12. */
+.hero[data-layout='media-proof'] .heroTitle + .heroDescription {
+  margin-block-start: 0;
+}
+
 .hero[data-layout='media-proof'] .heroForm {
-  grid-area: form;
-  /* The file's field is the column's 596, not the default hero's 480. */
+  /* The file's field is 596, not the default hero's 480. */
   max-width: 596px;
   width: 100%;
-  margin-block-start: 16px;
 }
 
 .hero[data-layout='media-proof'] .heroActions {
-  grid-area: actions;
-  margin-block-start: 12px;
+  margin-block-start: -12px;
+  gap: 24px;
+}
+
+.hero[data-layout='media-proof'] .heroMedia {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Its video is already cut to the photograph and keyed to alpha (see `AI_HUB_ANIMATION`), so the home
+ * animation's two corrections stay off: no top crop, and no glass plate — which here would also sit
+ * behind the Gartner section, since the proof shares the media's box.
+ */
+.hero[data-layout='media-proof'] .heroMedia > video {
+  clip-path: none;
+  margin-block-start: 0;
+}
+
+.hero[data-layout='media-proof'] .heroMedia:has(> video)::before {
+  content: none;
 }
 
 .hero[data-layout='media-proof'] .heroProof {
-  grid-area: proof;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
   padding-top: 0;
-  margin-block-start: 16px;
 }
 
-
-
-/* One column on a narrow hero: the copy, the form and links, then the media and its proof. */
+/* One column on a narrow hero: the copy, the form and links, then the picture and its proof. */
 @container sds-hero (max-width: 900px) {
   .hero[data-layout='media-proof'] .heroInner {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: none;
-    grid-template-areas: 'label' 'title' 'desc' 'form' 'actions' 'media' 'proof';
-    row-gap: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 40px;
   }
 
-  .hero[data-layout='media-proof'] .heroForm {
-    margin-block-start: 32px;
+  .hero[data-layout='media-proof'] .heroContent {
+    max-width: none;
   }
 
   .hero[data-layout='media-proof'] .heroMedia {
-    margin-block-start: 40px;
-  }
-
-  .hero[data-layout='media-proof'] .heroProof {
-    margin-block-start: 24px;
+    flex: none;
   }
 }
 
@@ -13485,9 +13483,9 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The `media-proof` hero at the Solutions Detail frame's type (node `25339:81552`): the same 49px heading
- * as the hub's, and the value props in `Paragraph/Large/Regular` — regular, where the hub's are semibold —
- * in the primary text colour, 24 apart, each behind a 24px icon.
+ * The `media-proof` hero at the Solutions Library frames' type (nodes `25339:81552`, `25300:65367`): a
+ * 49px heading, and the value props in `Paragraph/Default/Regular` — 18, in the primary text colour —
+ * 24 apart, each behind a 24px icon.
  */
 .hero[data-layout='media-proof'] .heroTitle > :where(h1, h2) {
   font-size: 49px;
@@ -13496,7 +13494,7 @@ a.secondaryNavTitle:focus-visible {
 
 .hero[data-layout='media-proof'] .heroPoints {
   gap: 24px;
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1.25;
   color: var(--sds-surfaces-text-primary);
 }
@@ -13541,9 +13539,141 @@ a.secondaryNavTitle:focus-visible {
   height: 20px;
 }
 
-/* The two links under the field in the primary text colour, not the link blue. */
+/* The two links under the field: `Action/Link/Medium` — 18 semibold on 24 — in the primary text colour, 16px arrows. */
 .hero[data-layout='media-proof'] .heroActions a {
   color: var(--sds-surfaces-text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.hero[data-layout='media-proof'] .heroActions a svg {
+  width: 16px;
+  height: 16px;
+}
+
+/*
+ * The phone: the Solutions Library's mobile frame (node `25355:81546`).
+ *
+ * The full bubble rather than the corner one — `PageHero` swaps the file — set behind the heading and
+ * value props: the frame's box is 1060 wide at x -77, y -18 of the 414 screen, under a 20% wash of the
+ * page ground. 1060/414 = 256% and 77/414 = 18.6%; the file's own 1200x866 keeps its proportions, so
+ * its artwork (rows 142-680) lands from about 107 to 582, where the frame draws it fading out under the
+ * value props.
+ *
+ * Then the frame's column: no breadcrumb (its row keeps its height, so the copy still clears the bars,
+ * 40 under them), the heading in `Mobile/Display/H1/Heavy` with the highlight running on, 16 between the
+ * value props, the field stacked over a full-width button, the links as outline buttons, and 24 from the
+ * picture to the Gartner section.
+ */
+@container sds-hero (max-width: 767px) {
+  .hero[data-layout='media-proof'][data-background='full'] .heroVideo {
+    top: -18px;
+    left: -18.6%;
+    right: auto;
+    width: 256%;
+    height: auto;
+    aspect-ratio: 1200 / 866;
+    object-fit: fill;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 79%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 79%);
+  }
+
+  .hero[data-layout='media-proof'][data-background='full'] .heroBubble::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgb(7 11 19 / 0.2);
+  }
+
+  .hero[data-layout='media-proof'] {
+    --sds-hero-inner-top: 20px;
+  }
+
+  .hero[data-layout='media-proof'] .heroBreadcrumb > * {
+    display: none;
+  }
+
+  .hero[data-layout='media-proof'] .heroInner {
+    padding-inline: 24px;
+  }
+
+  .hero[data-layout='media-proof'] .heroTitle > :where(h1, h2) {
+    font-size: 41px;
+    line-height: 48px;
+  }
+
+  .hero[data-layout='media-proof'] .heroTitle .gradientText {
+    display: inline;
+  }
+
+  .hero[data-layout='media-proof'] .heroPoints {
+    gap: 16px;
+  }
+
+  /* `Input with Button`, stacked: the 55px field over a 48px button, one 12px-cornered piece. */
+  .hero[data-layout='media-proof'] .heroForm .fieldWrapper {
+    padding-block-end: 48px;
+    overflow: hidden;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm .fieldWrapper,
+  .hero[data-layout='media-proof'] .heroForm .fieldWrapper::after {
+    border-radius: 12px;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm .fieldRoot[data-contained-button] .fieldInput {
+    --input-height: 55px;
+    padding-inline-end: 16px;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm .fieldRoot[data-contained-button] .fieldSection[data-position='right'] {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: 48px;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm .containedButtonSlot {
+    flex: 1;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm .fieldSection[data-position='right'] button {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 0;
+  }
+
+  /* `CTA Input Group`: two `Style=Outline Size=Medium` buttons, full width, 12 apart, 24 under the field. */
+  .hero[data-layout='media-proof'] .heroActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-block-start: 0;
+  }
+
+  .hero[data-layout='media-proof'] .heroActions a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 12px 16px;
+    border: 1px solid rgb(255 255 255 / 0.7);
+    border-radius: 6px;
+    background: radial-gradient(120% 180% at 100% 0%, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0) 70%);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    box-shadow: 0 0 6px 1px rgb(0 0 0 / 0.08);
+    text-decoration: none;
+  }
+
+  .hero[data-layout='media-proof'] .heroActions a svg {
+    display: none;
+  }
+
+  .hero[data-layout='media-proof'] .heroProof {
+    margin-block-start: 24px;
+  }
 }
 
 /* =====================================================================================
@@ -13935,9 +14065,9 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The marks: `Label CTA` `Style=Filled Size=Small` as this section draws it — white at 10% behind a
- * 1px line of white at 25%, 2px corners, 2/8 padding, `Paragraph/X-Small/Semi Bold` in
- * `Surfaces/Text/Primary`, under the `glass effect dark` blur and the 8% ambient shadow. 4 between rows.
+ * The marks: `Label CTA` as the hero's `Gartner Section` draws it (node `25339:66472`) — white at 10%
+ * behind a 1px line of white at 25%, 2px corners, 2/4 padding, 12px regular in `Surfaces/Text/Primary`,
+ * under the `glass effect dark` blur and the 8% ambient shadow. 4 between rows.
  */
 .heroProofDrawn {
   row-gap: 4px;
@@ -13945,12 +14075,13 @@ a.secondaryNavTitle:focus-visible {
 
 .heroProofDrawn .labelRoot[data-variant] {
   height: auto;
-  padding: 2px 8px;
+  padding: 2px 4px;
   border: 1px solid rgb(255 255 255 / 0.25);
   border-radius: 2px;
   background-color: rgb(255 255 255 / 0.1);
   color: var(--sds-surfaces-text-primary);
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.25;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

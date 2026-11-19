@@ -88,7 +88,7 @@ const meta = {
           '- **The customer story has no logo tabs.** The frame’s `Tabs Menu Logo` row under it is not a section type yet; the story renders as `customerStory`.',
           '- **The challenges draw one link per row**; the frame draws two (`CTA Link 1`, `CTA Link 2`).',
           '- **The `What is a customer portal?` callout** is the content block’s lead line and link rather than the frame’s bordered card with an arrow.',
-          '- **The logos are wordmarks set as type**, as the hub’s are. Every link is `href="#"`, and the forms send nothing.',
+          '- **The logos are liferay.com’s customer strip**, not the frame’s set — the same six marks the hub runs. Every link is `href="#"`, and the forms send nothing.',
         ].join('\n'),
       },
     },

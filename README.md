@@ -3071,6 +3071,13 @@ design-system assets, so the marquee and the carousel tiles use stand-ins at the
 "Leader / Summer 2026" shield is omitted for the same reason; the rating, the stars and the attribution
 line are real.
 
+**The Solutions pages' customer strip is a second exception.** The Solutions Hub and Solutions Detail
+run liferay.com's own customer marquee — AT&T, Team Global Express, TriMedx, Broadcom, Lenovo and Hewlett
+Packard Enterprise — as the white PNGs that site serves, trimmed and committed in `assets/solutions/logos/`
+(`CUSTOMER_LOGO_MARQUEE` in `src/templates/customer-logos.ts`). The partner pages' strips commit their
+marks the same way. **If it needs undoing**, delete that folder and give both pages back a `logos`-only
+`logoMarquee`, which renders as wordmarks.
+
 **The integration row is the exception, and it changed.** It ran eight invented vendors — geometry in
 `currentColor`, no real trademark anywhere near the repository — and now carries twelve real marks in
 `assets/integrations/`: Microsoft Office, Google Cloud, Azure, Amazon S3, HubSpot, Stripe, PayPal,

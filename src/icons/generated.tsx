@@ -387,6 +387,23 @@ export function IconCloud(props: IconProps) {
   )
 }
 
+/** MingCute `code` (regular, development). */
+export function IconCode(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.216 4.106 9.784 19.894M6.5 7.757 2.257 12 6.5 16.243m11-8.486L21.743 12 17.5 16.243"/>
+    </svg>
+  )
+}
+
 /** MingCute `contacts_2` (regular, users). */
 export function IconContacts2(props: IconProps) {
   return (

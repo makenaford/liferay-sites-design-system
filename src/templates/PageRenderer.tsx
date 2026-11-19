@@ -1,5 +1,5 @@
 import { createContext, Fragment, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
-import { useReducedMotion } from '@mantine/hooks'
+import { useMediaQuery, useReducedMotion } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 import {
   Avatar,
@@ -65,6 +65,8 @@ import {
   IconUser2,
   IconUser3,
   IconDashboard3,
+  IconSearchAi,
+  IconCode,
   IconCheck,
   IconDown,
   IconDashboard,
@@ -229,6 +231,8 @@ const ICONS: Record<IconName, ReactNode> = {
   'user-2': <IconUser2 />,
   'user-circle': <IconUser3 />,
   gauge: <IconDashboard3 />,
+  'search-ai': <IconSearchAi />,
+  code: <IconCode />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -820,10 +824,26 @@ function HeroLogoBar({ logos }: { logos: NonNullable<HeroSpec['logos']> }) {
   )
 }
 
-function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
-  const background = hero.background ?? 'corner'
+/**
+ * The hero, knowing whether it is on a phone.
+ *
+ * The Solutions Library's mobile frame (node `25355:81546`) trades the `media-proof` hero's corner
+ * bubble for the full one, set behind the heading and value props. The bubble is a file, not a style —
+ * `Hero` plays the one that goes with its `background` — so the swap has to happen here, where the
+ * file is chosen; the stylesheet then places it (`.hero[data-layout='media-proof'][data-background='full']`).
+ * Read on first render rather than in an effect, so a phone never loads the corner file first.
+ */
+function PageHero({ hero, bubble }: { hero: HeroSpec; bubble?: BubbleOverride }) {
+  const phone = useMediaQuery('(max-width: 767px)', false, { getInitialValueInEffect: false })
+  return renderHero(hero, bubble, phone && hero.layout === 'media-proof')
+}
+
+function renderHero(hero: HeroSpec, bubble?: BubbleOverride, fullOnPhone = false) {
+  const background = fullOnPhone ? 'full' : (hero.background ?? 'corner')
   const carousel = Boolean(hero.slides?.length)
   const centeredCards = hero.layout === 'centered-cards'
+  /* `media-proof` draws the Gartner section straight under the picture, so it travels with the media. */
+  const mediaProof = hero.layout === 'media-proof'
   const copy = heroCopy(hero)
 
   return (
@@ -853,9 +873,18 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       form={carousel ? undefined : copy.form}
       actions={carousel ? undefined : copy.actions}
       /* `centered-cards` puts the proof after its cards, so it travels with them in `children`. */
-      proof={carousel || centeredCards ? undefined : copy.proof}
+      proof={carousel || centeredCards || mediaProof ? undefined : copy.proof}
       /* A form card takes the media column: the file draws one or the other there, never both. */
-      media={carousel ? undefined : copy.media}
+      media={
+        carousel ? undefined : mediaProof && copy.proof ? (
+          <>
+            {copy.media}
+            <div className={classes.heroProof}>{copy.proof}</div>
+          </>
+        ) : (
+          copy.media
+        )
+      }
     >
       {carousel ? <HeroCarousel hero={hero} /> : null}
       {centeredCards ? (
@@ -3757,7 +3786,7 @@ export interface BubbleOverride {
  * render functions underneath, so a section looks identical in Storybook and on the canvas.
  */
 export function HeroBlock({ hero }: { hero: HeroSpec }) {
-  return <>{renderHero(hero)}</>
+  return <PageHero hero={hero} />
 }
 
 /** One built-page section, with its anchor wrapper when it has one. See `HeroBlock`. */
@@ -3774,7 +3803,7 @@ export function SectionBlock({ section }: { section: SectionSpec }) {
 export function PageRenderer({ page, bubble }: { page: PageSpec; bubble?: BubbleOverride }) {
   return (
     <CountUpContext.Provider value={page.countUp ?? true}>
-      {renderHero(page.hero, bubble)}
+      <PageHero hero={page.hero} bubble={bubble} />
       {page.sections.map((section, index) =>
         /*
          * An anchored section is wrapped rather than given the id itself, so every section type takes one

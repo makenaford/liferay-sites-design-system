@@ -1,4 +1,6 @@
 import commerceDashboard from '../../assets/solutions/commerce-dashboard.webp'
+import aiHubAnimation from '../../assets/solutions/ai-hub-animation.webm'
+import aiHubStill from '../../assets/solutions/ai-hub-animation-still.webp'
 import keyCapability from '../../assets/solutions-detail/key-capability.jpg'
 import forgeDashboard from '../../assets/solutions-detail/forge-dashboard.jpg'
 import selfService from '../../assets/solutions-detail/self-service.jpg'
@@ -10,6 +12,7 @@ import g2Badge from '../../assets/home/badges/g2-leader-enterprise-fall-2026.png
 import agentBuilder from '../../assets/industry/hero-media.jpg'
 import type { PageSpec } from './page-schema'
 import { CUSTOMER_STORIES } from './customer-stories'
+import { CUSTOMER_LOGO_MARQUEE } from './customer-logos'
 
 /*
  * A solution's own page, as data — laid out as the Solutions Library's `Solutions Detail` frame (Figma
@@ -24,6 +27,23 @@ import { CUSTOMER_STORIES } from './customer-stories'
  * challenges' agent builder is `industry/hero-media`, and the rest are the frame's own, in
  * `assets/solutions-detail/`.
  */
+
+/*
+ * The Solutions Library heroes' motion: the marketing assets' `AI Hub- Animation` (Different Teams), two
+ * people at a laptop with the Agent Builder, Liferay Search and Google Gemini panels building over them.
+ *
+ * The dark export is 1600x1066 on an opaque #060a12 ground with 44px of it round the photograph. Re-encoded
+ * here: the empty left, top and bottom margins cropped off (1556x980), and the ground keyed to alpha —
+ * hard outside the photograph's 28px corners, soft in the right margin, where the panels and their glow
+ * run past the photograph's edge. 8.4s; the still is its 6s frame, with every panel in. Re-export, and
+ * the crop and the key need re-measuring.
+ */
+export const AI_HUB_ANIMATION = {
+  src: aiHubAnimation,
+  poster: aiHubStill,
+  alt: 'Two colleagues at a laptop, with an agent workflow — Agent Builder, Liferay Search and Google Gemini — assembling beside them',
+  ratio: '3:2',
+} as const
 
 const DASHBOARD = {
   src: commerceDashboard,
@@ -73,14 +93,10 @@ export const SOLUTIONS_DETAIL_PAGE: PageSpec = {
         { src: g2Badge, alt: 'G2 Leader, Enterprise, Fall 2026' },
       ],
     },
-    media: { ...DASHBOARD, ratio: '3:2' },
+    media: AI_HUB_ANIMATION,
   },
   sections: [
-    {
-      type: 'logoMarquee',
-      label: 'Trusted by 1,200+ enterprises',
-      logos: ['DATAMATICS', 'PETROBRAS', 'City of Burbank', 'Excellus', 'AIRBUS', 'Carrefour'],
-    },
+    CUSTOMER_LOGO_MARQUEE,
     {
       /* Node `25152:63063`: four glass cards, each the frame's SSO-and-audit-trail picture over its claim. */
       type: 'cardGrid',

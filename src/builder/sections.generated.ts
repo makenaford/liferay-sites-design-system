@@ -1398,7 +1398,9 @@ export const DEFS: Record<string, Shape> = {
       "cloud",
       "user-2",
       "user-circle",
-      "gauge"
+      "gauge",
+      "search-ai",
+      "code"
     ]
   },
   "ImageRatio": {

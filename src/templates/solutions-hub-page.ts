@@ -6,10 +6,13 @@ import g2Badge from '../../assets/home/badges/g2-leader-enterprise-fall-2026.png
 import workflowStill from '../../assets/home/teams/b2b-commerce.png'
 import agentBuilder from '../../assets/industry/hero-media.jpg'
 import webPortals from '../../assets/home/trending/web-portals.jpg'
-import digitalStrategy from '../../assets/home/trending/digital-strategy.jpg'
-import b2bEcommerce from '../../assets/home/trending/b2b-ecommerce.jpg'
+import aiBlueprint from '../../assets/solutions-detail/ai-blueprint.jpg'
+import einaSalut from '../../assets/solutions-detail/einasalut.png'
+import governmentEcm from '../../assets/solutions-detail/government-ecm.jpg'
 import type { PageSpec } from './page-schema'
 import { CUSTOMER_STORIES } from './customer-stories'
+import { CUSTOMER_LOGO_MARQUEE } from './customer-logos'
+import { AI_HUB_ANIMATION } from './solutions-detail-page'
 
 /*
  * The Solutions hub, as data — laid out as the Solutions Library's `Solutions Hub` frame (Figma
@@ -20,8 +23,10 @@ import { CUSTOMER_STORIES } from './customer-stories'
  * `Ready for the future?` band, its second row of industry cards repeating the first — the mockup's
  * words win and the frame's shape holds them.
  *
- * Pictures: the hero's permit application and the first industry card's SSO sign-in are the frame's own;
- * the operator at the orders dashboard is the library's `commerce-dashboard`, the same picture. The
+ * Pictures: the permit application and the first industry card's SSO sign-in are the frame's own; the
+ * operator at the orders dashboard in the overview is the library's `commerce-dashboard`, the same
+ * picture; the hero plays the Solutions Library's AI Hub animation (`AI_HUB_ANIMATION`). The resources
+ * are the frame's guide, story and blog, the Solutions Detail page's three. The
  * frame draws three industries, so the other three cards borrow a photograph from elsewhere in the library.
  */
 
@@ -34,33 +39,34 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
   /* The figures print as written: they sit in cards read side by side, not in a band of their own. */
   countUp: false,
   /*
-   * The frame's `Hero` (node `24920:87684`): one column — the heading, the value props, the email field,
-   * the links, then the rating beside the badges with the marks under it — beside the picture. The
-   * `Solutions` bar above it is the story's, since the page's chrome is.
+   * The frame's `Hero` (node `25300:65367`), the Solutions Detail hero's `media-proof` layout: the heading,
+   * the value props, the email field and the links, centred beside the picture with the Gartner section
+   * under it. The `Solutions` bar above it is the story's, since the page's chrome is — the frame borrows
+   * the detail page's `Digital Commerce` bar.
    */
   hero: {
     background: 'corner',
-    layout: 'stacked',
+    layout: 'media-proof',
     breadcrumbs: [
       { label: 'Home', href: '#' },
       { label: 'Solutions', href: '#' },
     ],
-    title: { text: 'Build the Digital Solutions Your', highlight: 'Business Runs On' },
+    title: { text: 'Build The Digital Solutions', highlight: 'Your Business Runs On' },
     points: [
-      { icon: 'file-code', text: 'Portals, websites, commerce, and intranets on one composable platform' },
-      { icon: 'sparkles', text: 'AI-assisted content, search, and personalization built into every solution' },
-      { icon: 'list-check', text: 'Connect ERP, CRM, and legacy systems with headless APIs and low-code' },
+      { icon: 'web', text: 'Portals, websites, commerce, and intranets on one composable platform' },
+      { icon: 'search-ai', text: 'AI-assisted content, search, and personalization built into every solution' },
+      { icon: 'code', text: 'Connect ERP, CRM, and legacy systems with headless APIs and low-code' },
     ],
-    form: { placeholder: 'Work email', submit: 'Contact Sales' },
+    form: { placeholder: 'Enter Your Email', submit: 'Contact Sales' },
     links: [
-      { label: 'Request a demo', href: '#' },
-      { label: 'Browse all solutions', href: '#portals' },
+      { label: 'Request a Demo', href: '#' },
+      { label: 'Browse All Solutions', href: '#portals' },
     ],
     proof: {
       rating: {
         score: '4.6',
         outOf: 5,
-        source: 'by 233 verified users as of September 2026, Source: Gartner Peer Insights™',
+        source: 'by 64 verified users as of May 2026, Source: Gartner Peer Insights',
         sourceHref: '#',
       },
       marks: ['SOC 2 Type 2', 'ISO/IEC 27001', 'HIPAA', 'CSTAR'],
@@ -69,24 +75,16 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
         { src: g2Badge, alt: 'G2 Leader, Enterprise, Fall 2026' },
       ],
     },
-    media: {
-      src: permitApplication,
-      alt: 'A man reading his phone beside a permit application form: permit type, name, location and project description',
-      ratio: '3:2',
-    },
+    media: AI_HUB_ANIMATION,
   },
   sections: [
-    {
-      type: 'logoMarquee',
-      label: 'Trusted by 1,200+ enterprises',
-      logos: ['Lenovo', 'BROADCOM', 'Hewlett Packard Enterprise', 'AT&T', 'Sky', 'AIRBUS'],
-    },
+    CUSTOMER_LOGO_MARQUEE,
     {
       type: 'contentBlock',
       anchor: 'overview',
       label: 'Overview',
       labelSize: 'lg',
-      title: 'What can you build on Liferay DXP?',
+      title: 'What Can You Build On Liferay DXP?',
       description:
         'Liferay solutions are proven blueprints for the experiences enterprises depend on most: authenticated portals for customers, partners, and suppliers; high-performing public websites; B2B and B2C commerce; and modern intranets. Each one is built on the same composable platform, so content, identity, integrations, and AI are shared across every experience. Start with the solution you need today and expand without re-platforming tomorrow.',
       actionLead: 'Looking for individual features instead?',
@@ -275,10 +273,10 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
     {
       type: 'customerStories',
       anchor: 'customer-stories',
-      title: '1,200+ Enterprises Move the Needle With Liferay',
+      title: '1,200+ Enterprises Move The Needle With Liferay',
       titleHighlight: '1,200+ Enterprises',
       align: 'left',
-      action: { label: 'Browse all customer stories', href: '#' },
+      action: { label: 'Browse All Customer Stories', href: '#' },
       /*
        * liferay.com's own eight, as its home page tells them. Mueller's figure is the live site's 70%;
        * the testimonials sheet the Home page follows says 73.
@@ -290,7 +288,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
     {
       type: 'capabilityMap',
       anchor: 'platform',
-      title: 'Every solution runs on one AI-enhanced platform',
+      title: 'Every Solution Runs On One AI-Enhanced Platform',
       description:
         'The same capabilities that power your portal also power your website, storefront, and intranet. Explore the building blocks behind every Liferay solution.',
       hub: { icon: 'dxp', label: 'DXP' },
@@ -342,39 +340,39 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       backdrop: 'mesh',
       /* The frame's `Section` (node `25122:54773`): the ask beside the field rather than over it. */
       layout: 'split',
-      title: 'See the solution you need, built on the platform you’ll keep',
+      title: 'See The Solution You Need, Built On The Platform You’ll Keep',
       description:
         'Talk to a Liferay specialist about your portal, website, commerce, or intranet goals and get a tailored walkthrough with your use case in mind.',
-      placeholder: 'Work email',
+      placeholder: 'Enter Your Email',
       submit: 'Contact Sales',
-      buttons: [{ label: 'Book a custom demo', href: '#' }],
+      buttons: [{ label: 'Book a Custom Demo', href: '#' }],
       asideLead: 'Not ready yet?',
       aside: { label: 'Get monthly DXP insights in your inbox', href: '#' },
     },
     {
       type: 'resourceGrid',
       anchor: 'resources',
-      title: 'Plan your next solution',
+      title: 'Plan Your Next Solution',
       description:
         'Free guides and checklists to help you scope requirements, compare architectures, and build the business case. No forms required.',
       card: 'resource',
       cards: [
         {
-          image: { src: webPortals, alt: '' },
+          image: { src: aiBlueprint, alt: '' },
           tag: 'Guide',
-          title: 'Web portals explained: types, features, and how to choose a platform',
+          title: 'AI Transformation Blueprint: From Use Cases to Enterprise Impact',
           href: '#',
         },
         {
-          image: { src: digitalStrategy, alt: '' },
-          tag: 'Article',
-          title: 'DXP vs. CMS vs. portal: which architecture fits your roadmap?',
+          image: { src: einaSalut, alt: '' },
+          tag: 'Customer Story',
+          title: 'EINASalut: The Smart Digital Ecosystem for Improving Public Health on Liferay DXP',
           href: '#',
         },
         {
-          image: { src: b2bEcommerce, alt: '' },
-          tag: 'Checklist',
-          title: 'The B2B commerce requirements checklist for manufacturers',
+          image: { src: governmentEcm, alt: '' },
+          tag: 'Blog',
+          title: 'Enterprise Content Management for Government',
           href: '#',
         },
       ],
@@ -383,7 +381,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
       type: 'faq',
       anchor: 'faq',
       layout: 'side',
-      title: 'Frequently asked questions',
+      title: 'Frequently Asked Questions',
       takeaways: [
         'Liferay DXP powers portals, websites, commerce, and intranets on one platform.',
         'Every solution shares the same content, security, and integration layer.',
