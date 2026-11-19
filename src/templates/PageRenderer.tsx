@@ -60,6 +60,11 @@ import {
   IconTarget,
   IconWebhook,
   IconWeb,
+  IconBook2,
+  IconCloud,
+  IconUser2,
+  IconUser3,
+  IconDashboard3,
   IconCheck,
   IconDown,
   IconDashboard,
@@ -219,6 +224,11 @@ const ICONS: Record<IconName, ReactNode> = {
   target: <IconTarget />,
   webhook: <IconWebhook />,
   web: <IconWeb />,
+  book: <IconBook2 />,
+  cloud: <IconCloud />,
+  'user-2': <IconUser2 />,
+  'user-circle': <IconUser3 />,
+  gauge: <IconDashboard3 />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -593,6 +603,9 @@ function HeroFormCard({ spec }: { spec: NonNullable<HeroSpec['formCard']> }) {
  * slide is drawn exactly as the hero it stands in for.
  */
 function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
+  /* The card layouts draw the value props as glass cards, not as bullets under the heading. */
+  const cards = hero.layout === 'centered-cards' || hero.layout === 'split-cards'
+  const points = cards ? undefined : hero.points
   return {
     label: (
       hero.logo ? (
@@ -615,7 +628,7 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
       </Heading>
     ),
     description: (
-      hero.description || hero.points?.length ? (
+      hero.description || points?.length ? (
         <>
           {hero.description ? (
             <p>
@@ -630,10 +643,10 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
               ) : null}
             </p>
           ) : null}
-          {hero.points?.length ? (
+          {points?.length ? (
             /* The value props: a UI icon in a small glass tile, and the answer beside it. */
             <ul className={classes.heroPoints}>
-              {hero.points.map((point) => (
+              {points.map((point) => (
                 <li key={point.text}>
                   {point.icon ? (
                     <span className={classes.heroPointIcon} aria-hidden>
@@ -707,7 +720,11 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
     ),
     proof: (
       hero.proof ? (
-        renderProof(hero.proof)
+        /*
+         * The Solutions Library's heroes draw the `Gartner Section` at its own sizes — the hub's `stacked`
+         * and card heroes, and the Solutions Detail frame's `media-proof` (node `25339:81552`).
+         */
+        renderProof(hero.proof, hero.layout === 'stacked' || hero.layout === 'media-proof' || cards)
       ) : hero.readTime ? (
         <Label variant="glass" size="md">
           {hero.readTime}
@@ -731,6 +748,8 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
     media: (
       hero.formCard ? (
         <HeroFormCard spec={hero.formCard} />
+      ) : hero.layout === 'split-cards' && hero.points?.length ? (
+        <HeroGlassPoints points={hero.points} stacked />
       ) : hero.media ? (
         <HeroMedia media={hero.media} />
       ) : undefined
@@ -766,9 +785,45 @@ function HeroCarousel({ hero }: { hero: HeroSpec }) {
   )
 }
 
+/**
+ * The value props as glass cards, each led by its glass icon — a row of three under a `centered-cards`
+ * hero's actions, or `stacked` down a `split-cards` hero's media column with the icon beside the line.
+ * They are not links, so they carry no arrow.
+ */
+function HeroGlassPoints({ points, stacked = false }: { points: NonNullable<HeroSpec['points']>; stacked?: boolean }) {
+  return (
+    <ul className={classes.heroGlassPoints} data-stacked={stacked || undefined}>
+      {points.map((point) => (
+        <li key={point.text}>
+          {point.glassIcon ? GLASS[point.glassIcon](stacked ? 48 : 40) : null}
+          {point.text}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * The logo marquee pinned to the foot of a `centered-cards` hero, in a thin glass bar over the bubble:
+ * the label on the left behind a hairline, the wordmarks running beside it at the small size.
+ */
+function HeroLogoBar({ logos }: { logos: NonNullable<HeroSpec['logos']> }) {
+  return (
+    <div className={classes.heroLogoBar}>
+      <p className={classes.heroLogoBarLabel}>{logos.label}</p>
+      <Marquee label={logos.label} monochrome size="sm">
+        {logos.logos.map((name) => (
+          <Wordmark key={name} name={name} />
+        ))}
+      </Marquee>
+    </div>
+  )
+}
+
 function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
   const background = hero.background ?? 'corner'
   const carousel = Boolean(hero.slides?.length)
+  const centeredCards = hero.layout === 'centered-cards'
   const copy = heroCopy(hero)
 
   return (
@@ -797,11 +852,19 @@ function renderHero(hero: HeroSpec, bubble?: BubbleOverride) {
       description={carousel ? undefined : copy.description}
       form={carousel ? undefined : copy.form}
       actions={carousel ? undefined : copy.actions}
-      proof={carousel ? undefined : copy.proof}
+      /* `centered-cards` puts the proof after its cards, so it travels with them in `children`. */
+      proof={carousel || centeredCards ? undefined : copy.proof}
       /* A form card takes the media column: the file draws one or the other there, never both. */
       media={carousel ? undefined : copy.media}
     >
       {carousel ? <HeroCarousel hero={hero} /> : null}
+      {centeredCards ? (
+        <>
+          {hero.points?.length ? <HeroGlassPoints points={hero.points} /> : null}
+          {copy.proof ? <div className={classes.heroProof}>{copy.proof}</div> : null}
+          {hero.logos ? <HeroLogoBar logos={hero.logos} /> : null}
+        </>
+      ) : null}
     </Hero>
   )
 }
@@ -883,23 +946,47 @@ function Byline({ byline }: { byline: NonNullable<HeroSpec['byline']> }) {
   )
 }
 
-function renderProof(proof: NonNullable<HeroSpec['proof']>) {
+/**
+ * The rating's source line with the source's name as a link — `Source: Gartner Peer Insights`, the name
+ * underlined in the link colour as the `Gartner Section` draws it. Everything after `Source: ` is the name.
+ */
+function RatingSource({ source, href }: { source: string; href: string }) {
+  const at = source.lastIndexOf('Source: ')
+  if (at < 0) return <>{source}</>
+  const lead = source.slice(0, at + 'Source: '.length)
+  return (
+    <>
+      {lead}
+      <a className={classes.heroProofSource} href={href}>
+        {source.slice(lead.length)}
+      </a>
+    </>
+  )
+}
+
+/**
+ * The rating, badges and marks. `drawn` is the `Gartner Section` at the sizes and colours the Solutions
+ * hub's hero draws it: the score at 36 in the primary text colour, 20px stars on the glass icons' aqua
+ * to blue, the source's name as a link, and the section's own glass marks (`.heroProofDrawn`).
+ * The other pages keep the smaller row they were built with.
+ */
+function renderProof(proof: NonNullable<HeroSpec['proof']>, drawn = false) {
   /* With badges the rating is one block beside them; without, its two lines flow in the proof row as before. */
   const Wrap = proof.badges?.length ? 'div' : Fragment
   const rating = proof.rating ? (
     <Wrap>
-      <Group gap={8} wrap="nowrap">
-        <Text fz={28} fw={700} lh={1}>
+      <Group gap={8} wrap="nowrap" className={drawn ? classes.heroProofDrawn : undefined}>
+        <Text fz={drawn ? 36 : 28} fw={700} lh={1} c={drawn ? 'var(--sds-surfaces-text-primary)' : undefined}>
           {proof.rating.score}
         </Text>
         {/*
          * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
          * stars — a better rating than the number beside it claimed.
          */}
-        <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} />
+        <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} size={drawn ? 20 : undefined} sweep={drawn ? 'across' : undefined} />
       </Group>
       <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
-        {proof.rating.source}
+        {proof.rating.sourceHref ? <RatingSource source={proof.rating.source} href={proof.rating.sourceHref} /> : proof.rating.source}
       </Text>
     </Wrap>
   ) : null
@@ -920,7 +1007,7 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>) {
         rating
       )}
       {proof.marks?.length ? (
-        <Group gap={8} wrap="wrap">
+        <Group gap={8} wrap="wrap" className={drawn ? classes.heroProofDrawn : undefined}>
           {proof.marks.map((mark) => (
             <Label key={mark} variant="glass" size="sm" radius="sm">
               {mark}
@@ -1871,8 +1958,11 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
         {spec.tabs.length > 1 ? (
         <Tabs
           variant="pills"
-          /* An icon on each pill costs about 40 a tab, so three with icons need 900 to keep their labels whole. */
-          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : spec.tabs.some((t) => t.icon) ? 900 : 776 }}
+          /*
+           * 776 holds three pills with icons too: Partner Home's programs (node `338:12555`) draw three at
+           * 252.8 each, and `Technology Partner`, the longest, needs 251 with its icon and padding.
+           */
+          w={{ base: '100%', md: spec.tabs.length > 3 ? 1080 : 776 }}
           maw="100%"
           value={tab}
           onChange={(v) => {
@@ -1922,7 +2012,8 @@ function TabbedContentSection({ spec }: { spec: Extract<SectionSpec, { type: 'ta
             description={panel.description}
             actions={
               panel.action ? (
-                <Link href={panel.action.href} size="lg" rightSection={<IconArrowRight />}>
+                /* A program panel (`textSize: 'lg'`) draws its way in at `Link Size=Medium`, 18. */
+                <Link href={panel.action.href} size={panel.textSize === 'lg' ? 'md' : 'lg'} rightSection={<IconArrowRight />}>
                   {panel.action.label}
                 </Link>
               ) : undefined

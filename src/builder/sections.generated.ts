@@ -1136,9 +1136,17 @@ export const DEFS: Record<string, Shape> = {
                     "shape": {
                       "kind": "string"
                     }
+                  },
+                  {
+                    "name": "sourceHref",
+                    "optional": true,
+                    "shape": {
+                      "kind": "string"
+                    }
                   }
                 ]
-              }
+              },
+              "doc": "`sourceHref` links the name after `Source: ` in `source`, as the `Gartner Section` draws it."
             },
             {
               "name": "marks",
@@ -1175,10 +1183,39 @@ export const DEFS: Record<string, Shape> = {
             "default",
             "media-proof",
             "stacked",
-            "inline"
+            "inline",
+            "centered-cards",
+            "split-cards"
           ]
         },
         "doc": "How the hero's pieces are arranged."
+      },
+      {
+        "name": "logos",
+        "optional": true,
+        "shape": {
+          "kind": "object",
+          "fields": [
+            {
+              "name": "label",
+              "optional": false,
+              "shape": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "logos",
+              "optional": false,
+              "shape": {
+                "kind": "array",
+                "of": {
+                  "kind": "string"
+                }
+              }
+            }
+          ]
+        },
+        "doc": "The logo marquee pinned to the foot of a `centered-cards` hero, in place of a `logoMarquee` section."
       },
       {
         "name": "points",
@@ -1194,6 +1231,14 @@ export const DEFS: Record<string, Shape> = {
                 "shape": {
                   "kind": "ref",
                   "name": "IconName"
+                }
+              },
+              {
+                "name": "glassIcon",
+                "optional": true,
+                "shape": {
+                  "kind": "ref",
+                  "name": "GlassIconName"
                 }
               },
               {
@@ -1348,7 +1393,12 @@ export const DEFS: Record<string, Shape> = {
       "git-branch",
       "target",
       "webhook",
-      "web"
+      "web",
+      "book",
+      "cloud",
+      "user-2",
+      "user-circle",
+      "gauge"
     ]
   },
   "ImageRatio": {
@@ -1465,7 +1515,7 @@ export const DEFS: Record<string, Shape> = {
             "lg"
           ]
         },
-        "doc": "The heading and description one step up — Partner Home's programs, where each tab is a whole program."
+        "doc": "Partner Home's programs, where each tab is a whole program: the heading at 32 over a 21 description, both at 1.25, and the action at `Link Size=Medium`."
       },
       {
         "name": "label",

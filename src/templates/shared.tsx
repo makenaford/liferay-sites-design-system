@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useReducedMotion } from '@mantine/hooks'
 import { Box, Group, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { Button } from '../components/Button'
@@ -151,6 +151,11 @@ export interface StarRatingProps {
   size?: number
   /** The accessible sentence. Without it the rating is decorative and the figure beside it carries it. */
   label?: string
+  /**
+   * Which way each star's gradient runs: `diagonal`, like the glass icons, or `across`, left to right, as
+   * the Solutions hub's `Gartner Section` draws its `Icon/Star Filled`. @default 'diagonal'
+   */
+  sweep?: 'diagonal' | 'across'
 }
 
 /**
@@ -170,10 +175,15 @@ export interface StarRatingProps {
  * The fill runs once, on entering the viewport, and `prefers-reduced-motion` gets it filled already —
  * the rating is the content; the filling is the decoration.
  */
-export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps) {
+export function StarRating({ value, max = 5, size = 16, label, sweep = 'diagonal' }: StarRatingProps) {
   const reducedMotion = useReducedMotion()
   const ref = useRef<SVGSVGElement>(null)
   const [filled, setFilled] = useState(false)
+  /* Per instance, so a second rating on the page with another sweep does not borrow this one's defs. */
+  const id = useId()
+  const fillId = `sds-star-fill${id}`
+  const liftId = `sds-star-lift${id}`
+  const clipId = `sds-star-clip${id}`
 
   const clamped = Math.max(0, Math.min(max, value))
   const width = size * max
@@ -243,7 +253,7 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
          * Diagonal, like the icons' own gradients. Across a row five times wider than it is tall the
          * tilt is slight, but it keeps the ramp from reading as five flat colour steps.
          */}
-        <linearGradient id="sds-star-fill" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={fillId} x1="0" y1="0" x2="1" y2={sweep === 'across' ? 0 : 1}>
           <stop offset="0%" stopColor="var(--sds-star-fill-from)" />
           <stop offset="100%" stopColor="var(--sds-star-fill-to)" />
         </linearGradient>
@@ -257,10 +267,10 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
          * at 25%` becomes 1 and 1 here, and a little more opacity because there is no frosted card in
          * between doing part of the job.
          */}
-        <filter id="sds-star-lift" x="-30%" y="-30%" width="160%" height="160%">
+        <filter id={liftId} x="-30%" y="-30%" width="160%" height="160%">
           <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#000000" floodOpacity="0.35" />
         </filter>
-        <clipPath id="sds-star-clip">
+        <clipPath id={clipId}>
           {/*
            * The width is the whole animation. A `transition` on an SVG geometry attribute is not
            * reliable across engines, so it is set as a style property, which is.
@@ -292,16 +302,16 @@ export function StarRating({ value, max = 5, size = 16, label }: StarRatingProps
         className={classes.starTrack}
         fill="var(--sds-surfaces-text-secondary)"
         opacity={0.5}
-        filter="url(#sds-star-lift)"
+        filter={`url(#${liftId})`}
       >
         {stars}
       </g>
 
       <g
         className={classes.starFill}
-        fill="url(#sds-star-fill)"
-        clipPath="url(#sds-star-clip)"
-        filter="url(#sds-star-lift)"
+        fill={`url(#${fillId})`}
+        clipPath={`url(#${clipId})`}
+        filter={`url(#${liftId})`}
       >
         {stars}
       </g>

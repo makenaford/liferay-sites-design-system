@@ -68,6 +68,12 @@ export type IconName =
   /* Partner Home's program tabs: OEM and Technology (Solution is `group-2`). */
   | 'webhook'
   | 'web'
+  /* The Solutions Detail frame's value props (a book, a cloud), its tabs and its challenges. */
+  | 'book'
+  | 'cloud'
+  | 'user-2'
+  | 'user-circle'
+  | 'gauge'
 
 /** One slide of a carousel hero after the first — the copy and media a lead story carries. */
 export type HeroSlide = Pick<
@@ -242,7 +248,8 @@ export interface HeroSpec {
   action?: LinkRef
   /** The Gartner rating and the compliance marks. */
   proof?: {
-    rating?: { score: string; outOf: number; source: string }
+    /** `sourceHref` links the name after `Source: ` in `source`, as the `Gartner Section` draws it. */
+    rating?: { score: string; outOf: number; source: string; sourceHref?: string }
     marks?: string[]
     /** Analyst badges beside the rating — Gartner Customers' Choice, G2 Leader. */
     badges?: ImageRef[]
@@ -264,14 +271,28 @@ export interface HeroSpec {
    *   and the buttons level with it at the row's end. The buttons drop under the heading once the row
    *   is too narrow for both.
    *
+   * - `centered-cards` — the Solutions hub's centred hero (Page Hero Update, node `19:1488`): no picture,
+   *   the whole first screen. The heading, the email field and the `buttons` centred, then the value props
+   *   as a row of glass cards led by their `glassIcon`, the Gartner section, and `logos` pinned to the
+   *   foot in a glass bar.
+   *
+   * - `split-cards` — no picture: the heading, the email field and the `links` on the left, the value
+   *   props stacked as glass cards in the media column, each led by its `glassIcon`, and the proof as a
+   *   full-width strip under both columns.
+   *
    * @default 'default'
    */
-  layout?: 'default' | 'media-proof' | 'stacked' | 'inline'
+  layout?: 'default' | 'media-proof' | 'stacked' | 'inline' | 'centered-cards' | 'split-cards'
+  /** The logo marquee pinned to the foot of a `centered-cards` hero, in place of a `logoMarquee` section. */
+  logos?: { label: string; logos: string[] }
   /**
    * The value props under the description — a solution page's three bullets, each a UI icon and the
    * answer to a buyer's question.
+   *
+   * `glassIcon` is for the `centered-cards` and `split-cards` layouts, where each point is a card led by a
+   * glass icon.
    */
-  points?: { icon?: IconName; text: string }[]
+  points?: { icon?: IconName; glassIcon?: GlassIconName; text: string }[]
   /**
    * Arrow links under the form or buttons — a solution page's `Request a demo` and `Calculate your
    * savings`. `action` is the single link a landing hero draws; this is the row.
@@ -544,7 +565,10 @@ export interface PanelSpec {
   eyebrow?: GlassIconName
   /** The eyebrow's size: Home's capabilities draw it at 40, Partner Home's programs at 64. @default 40 */
   eyebrowSize?: 40 | 48 | 64
-  /** The heading and description one step up — Partner Home's programs, where each tab is a whole program. @default 'md' */
+  /**
+   * Partner Home's programs, where each tab is a whole program: the heading at 32 over a 21 description,
+   * both at 1.25, and the action at `Link Size=Medium`. @default 'md'
+   */
   textSize?: 'md' | 'lg'
   /**
    * The pill above the heading — Figma's `Label` instance, which the detail pages use where the Home
