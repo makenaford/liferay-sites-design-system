@@ -370,6 +370,23 @@ export function IconClose(props: IconProps) {
   )
 }
 
+/** MingCute `cloud` (regular, weather). */
+export function IconCloud(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M21 14a5 5 0 0 1-5 5H7a4 4 0 0 1-.966-7.883 5.5 5.5 0 0 1 10.777-2.052A5 5 0 0 1 21 14Z"/>
+    </svg>
+  )
+}
+
 /** MingCute `contacts_2` (regular, users). */
 export function IconContacts2(props: IconProps) {
   return (
@@ -434,6 +451,23 @@ export function IconDashboard(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M21 12a9 9 0 1 1-18 0m18 0a9 9 0 0 0-9-9m9 9h-2M3 12a9 9 0 0 1 9-9m-9 9h2m7-9v2m3.536 3.464s-2.133 4.255-2.758 4.88c-.625.624-1.606.656-2.192.07s-.554-1.567.07-2.192 4.88-2.758 4.88-2.758Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `dashboard_3` (regular, devices). */
+export function IconDashboard3(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M21 12a9 9 0 1 1-18 0m18 0h-2m2 0a8.97 8.97 0 0 0-2.636-6.364M3 12a9 9 0 0 1 9-9m-9 9h2m7-9v2m0-2a8.97 8.97 0 0 1 6.364 2.636m-12.728 0L7.05 7.05m11.314-1.414-4.95 4.95m0 0a2 2 0 1 0-2.828 2.828 2 2 0 0 0 2.828-2.828Z"/>
     </svg>
   )
 }
@@ -1624,6 +1658,40 @@ export function IconUser1Filled(props: IconProps) {
       {...props}
     >
       <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="3" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+    </svg>
+  )
+}
+
+/** MingCute `user_2` (regular, users). */
+export function IconUser2(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm4 13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4z"/>
+    </svg>
+  )
+}
+
+/** MingCute `user_3` (regular, users). */
+export function IconUser3(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      {...props}
+    >
+      <path fill="none" stroke="currentColor" strokeWidth="2" d="M20 18.5c0 1.933-3.582 2.5-8 2.5s-8-.567-8-2.5S7.582 14 12 14s8 2.567 8 4.5ZM16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
     </svg>
   )
 }

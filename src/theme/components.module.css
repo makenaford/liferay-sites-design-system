@@ -13484,6 +13484,68 @@ a.secondaryNavTitle:focus-visible {
   height: 24px;
 }
 
+/*
+ * The `media-proof` hero at the Solutions Detail frame's type (node `25339:81552`): the same 49px heading
+ * as the hub's, and the value props in `Paragraph/Large/Regular` — regular, where the hub's are semibold —
+ * in the primary text colour, 24 apart, each behind a 24px icon.
+ */
+.hero[data-layout='media-proof'] .heroTitle > :where(h1, h2) {
+  font-size: 49px;
+  line-height: 1.25;
+}
+
+.hero[data-layout='media-proof'] .heroPoints {
+  gap: 24px;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--sds-surfaces-text-primary);
+}
+
+.hero[data-layout='media-proof'] .heroPointIcon > svg {
+  width: 24px;
+  height: 24px;
+}
+
+/*
+ * The frame's `Input with Button` (node `24908:69418`): the 44px button 8 in from every edge, so a 60px
+ * field, and its words in `Paragraph/Default/Semi Bold` — 18, in the primary text colour — the weight the
+ * value props above it carry.
+ */
+.hero[data-layout='media-proof'] .heroForm .fieldInput {
+  --input-height: 60px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hero[data-layout='media-proof'] .heroForm .fieldInput::placeholder {
+  color: var(--sds-surfaces-text-primary);
+  opacity: 1;
+}
+
+/* Round: the field and its button are both pills, the field's ring in `Neutral/04`. */
+.hero[data-layout='media-proof'] .heroForm .fieldWrapper,
+.hero[data-layout='media-proof'] .heroForm .fieldWrapper::after {
+  border-radius: 1000px;
+}
+
+/* `Size=Small` with the `Action/Button/Medium` label: 18 on 24, 10 and 16 of padding, a 20px arrow. */
+.hero[data-layout='media-proof'] .heroForm .fieldSection[data-position='right'] button {
+  padding: 10px 16px;
+  border-radius: 1000px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.hero[data-layout='media-proof'] .heroForm .fieldSection[data-position='right'] button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* The two links under the field in the primary text colour, not the link blue. */
+.hero[data-layout='media-proof'] .heroActions a {
+  color: var(--sds-surfaces-text-primary);
+}
+
 /* =====================================================================================
  * Hero `layout="centered-cards"` — the Solutions hub's centred hero (Page Hero Update, node `19:1488`).
  *
@@ -13848,6 +13910,66 @@ a.secondaryNavTitle:focus-visible {
 
 .heroProofSource:hover {
   color: var(--sds-action-link-hover-link);
+}
+
+/*
+ * The Solutions hub's `Gartner Section` (node `25305:69568`) at its own colours, on the score row and
+ * the marks row that `renderProof` tags when `drawn`.
+ *
+ * Stars: each `Icon/Star Filled` runs `#47FFFC` into `Brand/Primary` left to right (the glass icons'
+ * aqua end, which has no token of its own), the empty ones white at 20%, and no lift.
+ */
+.heroProofDrawn .starRating {
+  --sds-star-fill-from: #47fffc;
+  --sds-star-fill-to: var(--sds-brand-primary-primary);
+}
+
+.heroProofDrawn .starTrack {
+  fill: #fff;
+  opacity: 0.2;
+}
+
+.heroProofDrawn .starTrack,
+.heroProofDrawn .starFill {
+  filter: none;
+}
+
+/*
+ * The marks: `Label CTA` `Style=Filled Size=Small` as this section draws it — white at 10% behind a
+ * 1px line of white at 25%, 2px corners, 2/8 padding, `Paragraph/X-Small/Semi Bold` in
+ * `Surfaces/Text/Primary`, under the `glass effect dark` blur and the 8% ambient shadow. 4 between rows.
+ */
+.heroProofDrawn {
+  row-gap: 4px;
+}
+
+.heroProofDrawn .labelRoot[data-variant] {
+  height: auto;
+  padding: 2px 8px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 2px;
+  background-color: rgb(255 255 255 / 0.1);
+  color: var(--sds-surfaces-text-primary);
+  font-size: 14px;
+  line-height: 1.25;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 0 4px 1px rgb(0 0 0 / 0.08);
+}
+
+/* On the light canvas white disappears, so the stars and marks fall back to the light ramp and line. */
+:where([data-mantine-color-scheme='light']) .heroProofDrawn .starRating {
+  --sds-star-fill-from: var(--sds-brand-primary-primary);
+  --sds-star-fill-to: var(--sds-accent-cyan);
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofDrawn .starTrack {
+  fill: #70a2ff;
+}
+
+:where([data-mantine-color-scheme='light']) .heroProofDrawn .labelRoot[data-variant] {
+  border-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 20%, transparent);
+  background-color: color-mix(in srgb, var(--sds-surfaces-text-primary) 4%, transparent);
 }
 
 /* The rating beside the analyst badges. */
@@ -14857,7 +14979,7 @@ a.secondaryNavTitle:focus-visible {
  */
 .blogAvatarBrand {
   background-color: var(--sds-brand-primary-primary);
-  border: 1px solid rgb(111 160 255 / 0.6);
+  border: 1px solid var(--sds-glass-line-from);
 }
 
 .blogBylineWho {
@@ -14979,6 +15101,15 @@ a.secondaryNavTitle:focus-visible {
 .blogCard[data-card='blogGlass'] .blogBylineAuthor > :first-child {
   /* The author row's gap is 12; this brings the portrait to 4 from the name. */
   margin-right: -8px;
+}
+
+/*
+ * `Blog- no padding` (node `25025:53104`) draws the same 32px portrait 4 from the name, centred on the
+ * name and date rather than sitting on the row's baseline with the read time.
+ */
+.blogCard[data-card='blog'] .blogBylineAuthor > :first-child {
+  margin-right: -8px;
+  align-self: center;
 }
 
 /* `tagStyle="caps"` — `Small Caps/Small Caps Smaller/Semi Bold`: 12/120%, uppercase, 6% tracking. */

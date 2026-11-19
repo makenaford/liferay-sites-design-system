@@ -1393,7 +1393,12 @@ export const DEFS: Record<string, Shape> = {
       "git-branch",
       "target",
       "webhook",
-      "web"
+      "web",
+      "book",
+      "cloud",
+      "user-2",
+      "user-circle",
+      "gauge"
     ]
   },
   "ImageRatio": {

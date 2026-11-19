@@ -60,6 +60,11 @@ import {
   IconTarget,
   IconWebhook,
   IconWeb,
+  IconBook2,
+  IconCloud,
+  IconUser2,
+  IconUser3,
+  IconDashboard3,
   IconCheck,
   IconDown,
   IconDashboard,
@@ -219,6 +224,11 @@ const ICONS: Record<IconName, ReactNode> = {
   target: <IconTarget />,
   webhook: <IconWebhook />,
   web: <IconWeb />,
+  book: <IconBook2 />,
+  cloud: <IconCloud />,
+  'user-2': <IconUser2 />,
+  'user-circle': <IconUser3 />,
+  gauge: <IconDashboard3 />,
 }
 
 const GLASS: Record<GlassIconName, (size: number) => ReactNode> = {
@@ -710,8 +720,11 @@ function heroCopy(hero: HeroSpec, Heading: 'h1' | 'h2' = 'h1') {
     ),
     proof: (
       hero.proof ? (
-        /* The Solutions hub's `stacked` hero draws the `Gartner Section` at its own sizes. */
-        renderProof(hero.proof, hero.layout === 'stacked' || cards)
+        /*
+         * The Solutions Library's heroes draw the `Gartner Section` at its own sizes — the hub's `stacked`
+         * and card heroes, and the Solutions Detail frame's `media-proof` (node `25339:81552`).
+         */
+        renderProof(hero.proof, hero.layout === 'stacked' || hero.layout === 'media-proof' || cards)
       ) : hero.readTime ? (
         <Label variant="glass" size="md">
           {hero.readTime}
@@ -952,8 +965,9 @@ function RatingSource({ source, href }: { source: string; href: string }) {
 }
 
 /**
- * The rating, badges and marks. `drawn` is the `Gartner Section` at the sizes the Solutions hub's
- * hero draws it: the score at 36, 20px stars, the source's name as a link, and `Style=Filled` marks.
+ * The rating, badges and marks. `drawn` is the `Gartner Section` at the sizes and colours the Solutions
+ * hub's hero draws it: the score at 36 in the primary text colour, 20px stars on the glass icons' aqua
+ * to blue, the source's name as a link, and the section's own glass marks (`.heroProofDrawn`).
  * The other pages keep the smaller row they were built with.
  */
 function renderProof(proof: NonNullable<HeroSpec['proof']>, drawn = false) {
@@ -961,15 +975,15 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>, drawn = false) {
   const Wrap = proof.badges?.length ? 'div' : Fragment
   const rating = proof.rating ? (
     <Wrap>
-      <Group gap={8} wrap="nowrap">
-        <Text fz={drawn ? 36 : 28} fw={700} lh={1}>
+      <Group gap={8} wrap="nowrap" className={drawn ? classes.heroProofDrawn : undefined}>
+        <Text fz={drawn ? 36 : 28} fw={700} lh={1} c={drawn ? 'var(--sds-surfaces-text-primary)' : undefined}>
           {proof.rating.score}
         </Text>
         {/*
          * The score as drawn, not rounded to whole stars. `Math.round` turned 4.6 into five filled
          * stars — a better rating than the number beside it claimed.
          */}
-        <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} size={drawn ? 20 : undefined} />
+        <StarRating value={Number(proof.rating.score) || 0} max={proof.rating.outOf} size={drawn ? 20 : undefined} sweep={drawn ? 'across' : undefined} />
       </Group>
       <Text fz="xs" c="var(--sds-surfaces-text-secondary)">
         {proof.rating.sourceHref ? <RatingSource source={proof.rating.source} href={proof.rating.sourceHref} /> : proof.rating.source}
@@ -993,9 +1007,9 @@ function renderProof(proof: NonNullable<HeroSpec['proof']>, drawn = false) {
         rating
       )}
       {proof.marks?.length ? (
-        <Group gap={8} wrap="wrap">
+        <Group gap={8} wrap="wrap" className={drawn ? classes.heroProofDrawn : undefined}>
           {proof.marks.map((mark) => (
-            <Label key={mark} variant={drawn ? 'filled' : 'glass'} size="sm" radius="sm">
+            <Label key={mark} variant="glass" size="sm" radius="sm">
               {mark}
             </Label>
           ))}

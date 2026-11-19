@@ -68,6 +68,12 @@ export type IconName =
   /* Partner Home's program tabs: OEM and Technology (Solution is `group-2`). */
   | 'webhook'
   | 'web'
+  /* The Solutions Detail frame's value props (a book, a cloud), its tabs and its challenges. */
+  | 'book'
+  | 'cloud'
+  | 'user-2'
+  | 'user-circle'
+  | 'gauge'
 
 /** One slide of a carousel hero after the first — the copy and media a lead story carries. */
 export type HeroSlide = Pick<
