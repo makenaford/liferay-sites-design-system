@@ -79,6 +79,8 @@ const IMAGE_HERO: PageSpec = {
   ...SOLUTIONS_HUB_PAGE,
   hero: {
     ...SOLUTIONS_HUB_PAGE.hero,
+    /* Its own frame keeps the one-column `stacked` hero the hub's page has moved off. */
+    layout: 'stacked',
     title: { text: 'Tailor the Solutions You Need on a Flexible Platform' },
     points: [
       { icon: 'file-code', text: 'Extend legacy systems by connecting existing and new applications' },
@@ -191,7 +193,7 @@ const meta = {
         component: [
           'The Liferay Solutions hub, laid out as the Solutions Library’s `Solutions Hub` frame (Figma `Solutions-Library--2026`, node `24920:83473`) with the copy of liferay.com/solutions as the solutions-and-capabilities mockup has it. Rendered from `solutions-hub-page.ts` through `PageRenderer`, so every section is a library section type rather than bespoke markup.',
           '',
-          'The hero is the frame’s `Hero` (node `24920:87684`): the `Solutions` product bar under the site header, then one column — the heading, the value props, the email field, the links, and the rating beside the badges with the marks under it — beside the picture, on the corner bubble that runs up behind both bars.',
+          'The hero is the frame’s `Hero` (node `25300:65367`), the Solutions Detail page’s `media-proof` layout: the `Solutions` product bar under the site header, then the heading, the value props, the email field and the links, centred beside the picture with the Gartner section under it, on the corner bubble that runs up behind both bars. The frame draws the detail page’s `Digital Commerce` bar there; the hub keeps its own `Solutions` bar.',
           '',
           'The page frame brought card grids whose cards carry a checked list and a figure (`Common Cards` `Type=Portal`) or a picture, two links and three figures (`Type=Industry`); the customer carousel with a button on its heading; a centred line under the product map; the closing ask as a panel (`Page Action Section`, node `25113:53301`) on the footer’s drifting mesh, darkened and recoloured from the hero’s bubble — indigo, electric blue, cyan and violet down its right side under a dark vignette — laid out side by side — the ask on the left, the field with `Book a custom demo` and the newsletter link on the right (`surface: \'card\'`, `backdrop: \'mesh\'`, `layout: \'split\'`); and the FAQ with its key takeaways beside the questions (`layout: \'side\'`).',
           '',

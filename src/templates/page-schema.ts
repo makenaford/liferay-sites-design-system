@@ -74,6 +74,9 @@ export type IconName =
   | 'user-2'
   | 'user-circle'
   | 'gauge'
+  /* The Solutions hub frame's value props: the web, AI search and code. */
+  | 'search-ai'
+  | 'code'
 
 /** One slide of a carousel hero after the first — the copy and media a lead story carries. */
 export type HeroSlide = Pick<
