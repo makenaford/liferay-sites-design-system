@@ -825,21 +825,21 @@ function HeroLogoBar({ logos }: { logos: NonNullable<HeroSpec['logos']> }) {
 }
 
 /**
- * The hero, knowing whether it is on a phone.
+ * The hero, knowing whether it is one column wide.
  *
- * The Solutions Library's mobile frame (node `25355:81546`) trades the `media-proof` hero's corner
- * bubble for the full one, set behind the heading and value props. The bubble is a file, not a style —
+ * The Solutions Library's tablet and mobile frames (nodes `25360:44707`, `25249:14028`) trade the
+ * `media-proof` hero's corner bubble for the full one, set behind the heading and value props. The bubble is a file, not a style —
  * `Hero` plays the one that goes with its `background` — so the swap has to happen here, where the
  * file is chosen; the stylesheet then places it (`.hero[data-layout='media-proof'][data-background='full']`).
  * Read on first render rather than in an effect, so a phone never loads the corner file first.
  */
 function PageHero({ hero, bubble }: { hero: HeroSpec; bubble?: BubbleOverride }) {
-  const phone = useMediaQuery('(max-width: 767px)', false, { getInitialValueInEffect: false })
-  return renderHero(hero, bubble, phone && hero.layout === 'media-proof')
+  const narrow = useMediaQuery('(max-width: 1100px)', false, { getInitialValueInEffect: false })
+  return renderHero(hero, bubble, narrow && hero.layout === 'media-proof')
 }
 
-function renderHero(hero: HeroSpec, bubble?: BubbleOverride, fullOnPhone = false) {
-  const background = fullOnPhone ? 'full' : (hero.background ?? 'corner')
+function renderHero(hero: HeroSpec, bubble?: BubbleOverride, fullBubble = false) {
+  const background = fullBubble ? 'full' : (hero.background ?? 'corner')
   const carousel = Boolean(hero.slides?.length)
   const centeredCards = hero.layout === 'centered-cards'
   /* `media-proof` draws the Gartner section straight under the picture, so it travels with the media. */

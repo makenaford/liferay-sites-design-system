@@ -8119,7 +8119,12 @@ body:has(.headerShell[data-position='fixed']) .heroBreadcrumb {
     position: static;
   }
 
-  .contentMediaRoot {
+  /*
+   * `[data-sticky]` included: its `flex-start` outranks the bare class, and stacked it left the figure
+   * at its content's width — the challenges panel's picture filled 60% of a tablet column.
+   */
+  .contentMediaRoot,
+  .contentMediaRoot[data-sticky] {
     flex-direction: column;
     align-items: stretch;
   }
@@ -11848,8 +11853,10 @@ a.secondaryNavTitle:focus-visible {
 
 /* ------------------------------------------------------------------------------ the phone menu
  *
- * The file's `Mobile` frames, below 768px. None of it exists above that width: the toggle, the sheet
- * and the scrim are display-none, and the row of items and the dropdowns are the bar.
+ * The file's `Mobile` frames, and its `Tablet` ones (the Solutions Library's `Size=Tablet`, node
+ * `25360:44707`, draws the bar collapsed at 768) — so below 1024px, where four items and the product's
+ * name no longer fit a row and the last one was cut off at the edge. None of it exists above that width:
+ * the toggle, the sheet and the scrim are display-none, and the row of items and the dropdowns are the bar.
  */
 .secondaryNavToggle,
 .secondaryNavSheet,
@@ -11857,7 +11864,7 @@ a.secondaryNavTitle:focus-visible {
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .secondaryNavList,
   .secondaryNavAction,
   .secondaryNavScrollActions,
@@ -11865,12 +11872,16 @@ a.secondaryNavTitle:focus-visible {
     display: none;
   }
 
-  /* `Navigation bar`: 56 high, 24px either side, the name at the start and the toggle at the end. */
+  /*
+   * `Navigation bar`: 56 high, the name at the start and the toggle at the end. The bar's own gutter
+   * either side rather than the frame's 24, so the name sits under the header's logo at every width the
+   * collapsed bar now covers — 24 was right only on the 414 frame.
+   */
   .secondaryNavInner {
     justify-content: space-between;
     gap: 16px;
     min-height: 56px;
-    padding-inline: 24px;
+    padding-inline: var(--sds-secondary-nav-gutter);
   }
 
   /*
@@ -12017,7 +12028,7 @@ a.secondaryNavTitle:focus-visible {
   }
 }
 
-@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce) {
   .secondaryNavToggle > svg,
   .secondaryNavSheetChevron {
     transition: none;
@@ -12604,6 +12615,22 @@ a.secondaryNavTitle:focus-visible {
 /* `Type=Industry`'s figures: the row across the card's foot. `StatBar` draws the rules between them. */
 .cardStats {
   width: 100%;
+}
+
+/*
+ * In a card the figures share the row rather than each taking its label's width: three side by side
+ * needed ~320px, and a three-up grid's card is 247 at a 1024 screen, so the last one ran out of the
+ * card and off the page. The labels wrap instead.
+ */
+@media (min-width: 576px) {
+  .cardStats {
+    gap: 12px;
+  }
+
+  .cardStats > .stat {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 /*
@@ -13392,7 +13419,7 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * Its video is already cut to the photograph and keyed to alpha (see `AI_HUB_ANIMATION`), so the home
+ * Its video is already cut to the photograph and keyed to alpha (see `HERO_ANIMATION`), so the home
  * animation's two corrections stay off: no top crop, and no glass plate — which here would also sit
  * behind the Gartner section, since the proof shares the media's box.
  */
@@ -13408,25 +13435,34 @@ a.secondaryNavTitle:focus-visible {
 .hero[data-layout='media-proof'] .heroProof {
   flex-direction: column;
   align-items: stretch;
-  gap: 16px;
+  /* The `Gartner Section` (node `25339:66472`): the rating row and the marks, 8 apart. */
+  gap: 8px;
   padding-top: 0;
 }
 
-/* One column on a narrow hero: the copy, the form and links, then the picture and its proof. */
-@container sds-hero (max-width: 900px) {
-  .hero[data-layout='media-proof'] .heroInner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 40px;
-  }
+/*
+ * Its rating row: the score and stars over the footnote in a 54px block, centred in it, beside the
+ * badges at the row's end and foot, 8 between them.
+ */
+.hero[data-layout='media-proof'] .heroProofRow {
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 8px;
+}
 
-  .hero[data-layout='media-proof'] .heroContent {
-    max-width: none;
-  }
+/* One row at every width, as the mobile frame draws it too: the footnote wraps before the badges do. */
+.hero[data-layout='media-proof'] .heroProofRow > :first-child {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 54px;
+}
 
-  .hero[data-layout='media-proof'] .heroMedia {
-    flex: none;
-  }
+/* The footnote on its own type's 1.25, not the 24px line it inherited, which pushed the row to 60. */
+.hero[data-layout='media-proof'] .heroProofRow > :first-child > p {
+  line-height: 1.25;
 }
 
 /* =====================================================================================
@@ -13553,25 +13589,77 @@ a.secondaryNavTitle:focus-visible {
 }
 
 /*
- * The phone: the Solutions Library's mobile frame (node `25355:81546`).
+ * One column at tablet width and under: the Solutions Library's `Size=Tablet` and `Size=Mobile` frames
+ * (nodes `25360:44707`, `25249:14028`). From 1100 rather than the drawn 768: two halves of a 1024 screen
+ * leave the copy 414 wide and the heading four lines deep, so a landscape tablet takes the tablet frame.
  *
- * The full bubble rather than the corner one — `PageHero` swaps the file — set behind the heading and
- * value props: the frame's box is 1060 wide at x -77, y -18 of the 414 screen, under a 20% wash of the
- * page ground. 1060/414 = 256% and 77/414 = 18.6%; the file's own 1200x866 keeps its proportions, so
- * its artwork (rows 142-680) lands from about 107 to 582, where the frame draws it fading out under the
- * value props.
+ * Both reorder the hero: the copy, then the Gartner section, then the picture — the proof moves above the
+ * media it sits under on a desktop, which `order` does inside the media's box. Both drop the breadcrumb
+ * (its row keeps its height, so the copy still clears the bars, 40 under them), set the heading in
+ * `Mobile/Display/H1/Heavy`, run the value props 16 apart, and space the blocks 24.
  *
- * Then the frame's column: no breadcrumb (its row keeps its height, so the copy still clears the bars,
- * 40 under them), the heading in `Mobile/Display/H1/Heavy` with the highlight running on, 16 between the
- * value props, the field stacked over a full-width button, the links as outline buttons, and 24 from the
- * picture to the Gartner section.
+ * The bubble is the full one here (`PageHero` swaps the file at this width), under a 20% wash of the page
+ * ground. Tablet's box is 1414 wide at x -67, y -18 of the 768 screen: 184% and 8.7%. The file's own
+ * 1200x866 keeps its proportions, so its artwork (rows 142-680) falls behind the copy and fades out under
+ * the links.
  */
-@container sds-hero (max-width: 767px) {
+@container sds-hero (max-width: 1100px) {
+  .hero[data-layout='media-proof'] {
+    --sds-hero-inner-top: 20px;
+  }
+
+  .hero[data-layout='media-proof'] .heroBreadcrumb > * {
+    display: none;
+  }
+
+  /* The library's gutter rather than the frames' 24, so the copy lines up with the bars above it at every width. */
+  .hero[data-layout='media-proof'] .heroInner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding-block-end: 40px;
+  }
+
+  .hero[data-layout='media-proof'] .heroContent {
+    flex: none;
+    max-width: none;
+  }
+
+  .hero[data-layout='media-proof'] .heroTitle > :where(h1, h2) {
+    font-size: 41px;
+    line-height: 48px;
+  }
+
+  .hero[data-layout='media-proof'] .heroPoints {
+    gap: 16px;
+  }
+
+  .hero[data-layout='media-proof'] .heroForm {
+    max-width: none;
+  }
+
+  .hero[data-layout='media-proof'] .heroMedia {
+    flex: none;
+    gap: 24px;
+  }
+
+  .hero[data-layout='media-proof'] .heroProof {
+    order: -1;
+  }
+
+  /*
+   * The file's artwork starts 142 rows into its 866 — 16.4% of the video's own height — and starts with a
+   * straight cut. Set at the frame's y -18 that cut landed just under the product bar, a hard line across
+   * the page. Lifting the video by those 16.4% (a `translate`, which is a share of the element's own
+   * height, whatever width it is drawn at) and 40 more puts the cut above the screen, so the bubble runs
+   * up under the bars and shows faintly through them, as the frames draw it.
+   */
   .hero[data-layout='media-proof'][data-background='full'] .heroVideo {
-    top: -18px;
-    left: -18.6%;
+    top: -40px;
+    transform: translateY(-16.4%);
+    left: -8.7%;
     right: auto;
-    width: 256%;
+    width: 184%;
     height: auto;
     aspect-ratio: 1200 / 866;
     object-fit: fill;
@@ -13585,30 +13673,36 @@ a.secondaryNavTitle:focus-visible {
     inset: 0;
     background-color: rgb(7 11 19 / 0.2);
   }
+}
 
-  .hero[data-layout='media-proof'] {
-    --sds-hero-inner-top: 20px;
+/* Tablet: the rating hugs its footnote and the badges follow it, 8 on, rather than sitting at the row's end. */
+@container sds-hero (641px <= width <= 1100px) {
+  .hero[data-layout='media-proof'] .heroProofRow {
+    justify-content: flex-start;
   }
 
-  .hero[data-layout='media-proof'] .heroBreadcrumb > * {
-    display: none;
+  .hero[data-layout='media-proof'] .heroProofRow > :first-child {
+    flex: none;
   }
+}
 
-  .hero[data-layout='media-proof'] .heroInner {
-    padding-inline: 24px;
-  }
-
-  .hero[data-layout='media-proof'] .heroTitle > :where(h1, h2) {
-    font-size: 41px;
-    line-height: 48px;
+/*
+ * The phone: `Size=Mobile` (node `25249:14028`), on top of the one-column rules above. 640 rather than
+ * the library's 767: a 768 tablet's hero is 764 once the page has a scrollbar, and that is the tablet frame.
+ *
+ * The bubble's box is 1197 wide at x -100 of the 414 screen: 289% and 24.2%, lifted as above. The heading's
+ * highlight runs on rather than taking a line; the field stacks over a full-width button, the links
+ * become outline buttons 12 under it, and the picture runs wider than the column — the frame's 414
+ * export carries 11px of its own ground either side, so the photograph lands 12 inside the screen's edge.
+ */
+@container sds-hero (max-width: 640px) {
+  .hero[data-layout='media-proof'][data-background='full'] .heroVideo {
+    left: -24.2%;
+    width: 289%;
   }
 
   .hero[data-layout='media-proof'] .heroTitle .gradientText {
     display: inline;
-  }
-
-  .hero[data-layout='media-proof'] .heroPoints {
-    gap: 16px;
   }
 
   /* `Input with Button`, stacked: the 55px field over a 48px button, one 12px-cornered piece. */
@@ -13643,12 +13737,12 @@ a.secondaryNavTitle:focus-visible {
     border-radius: 0;
   }
 
-  /* `CTA Input Group`: two `Style=Outline Size=Medium` buttons, full width, 12 apart, 24 under the field. */
+  /* `CTA Input Group`: two `Style=Outline Size=Medium` buttons, full width, 12 apart and 12 under the field. */
   .hero[data-layout='media-proof'] .heroActions {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    margin-block-start: 0;
+    margin-block-start: -12px;
   }
 
   .hero[data-layout='media-proof'] .heroActions a {
@@ -13671,8 +13765,14 @@ a.secondaryNavTitle:focus-visible {
     display: none;
   }
 
-  .hero[data-layout='media-proof'] .heroProof {
-    margin-block-start: 24px;
+  .hero[data-layout='media-proof'] .heroMedia {
+    gap: 16px;
+  }
+
+  .hero[data-layout='media-proof'] .heroMedia > video {
+    width: calc(100% + 24px);
+    max-width: none;
+    margin-inline: -12px;
   }
 }
 

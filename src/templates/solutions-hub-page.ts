@@ -12,7 +12,7 @@ import governmentEcm from '../../assets/solutions-detail/government-ecm.jpg'
 import type { PageSpec } from './page-schema'
 import { CUSTOMER_STORIES } from './customer-stories'
 import { CUSTOMER_LOGO_MARQUEE } from './customer-logos'
-import { AI_HUB_ANIMATION } from './solutions-detail-page'
+import { HERO_ANIMATION } from './solutions-detail-page'
 
 /*
  * The Solutions hub, as data — laid out as the Solutions Library's `Solutions Hub` frame (Figma
@@ -25,7 +25,7 @@ import { AI_HUB_ANIMATION } from './solutions-detail-page'
  *
  * Pictures: the permit application and the first industry card's SSO sign-in are the frame's own; the
  * operator at the orders dashboard in the overview is the library's `commerce-dashboard`, the same
- * picture; the hero plays the Solutions Library's AI Hub animation (`AI_HUB_ANIMATION`). The resources
+ * picture; the hero plays the Solutions Library's Integrations animation (`HERO_ANIMATION`). The resources
  * are the frame's guide, story and blog, the Solutions Detail page's three. The
  * frame draws three industries, so the other three cards borrow a photograph from elsewhere in the library.
  */
@@ -75,7 +75,7 @@ export const SOLUTIONS_HUB_PAGE: PageSpec = {
         { src: g2Badge, alt: 'G2 Leader, Enterprise, Fall 2026' },
       ],
     },
-    media: AI_HUB_ANIMATION,
+    media: HERO_ANIMATION,
   },
   sections: [
     CUSTOMER_LOGO_MARQUEE,
